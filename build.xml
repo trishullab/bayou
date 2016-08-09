@@ -1,0 +1,278 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="dsl" default="all">
+  
+  
+  <property file="build.properties"/>
+  <!-- Uncomment the following property if no tests compilation is needed -->
+  <!-- 
+  <property name="skip.tests" value="true"/>
+   -->
+  
+  <!-- Compiler options -->
+  
+  <property name="compiler.debug" value="on"/>
+  <property name="compiler.generate.no.warnings" value="off"/>
+  <property name="compiler.args" value=""/>
+  <property name="compiler.max.memory" value="700m"/>
+  <patternset id="ignored.files">
+    <exclude name="**/*.hprof/**"/>
+    <exclude name="**/*.pyc/**"/>
+    <exclude name="**/*.pyo/**"/>
+    <exclude name="**/*.rbc/**"/>
+    <exclude name="**/*.yarb/**"/>
+    <exclude name="**/*~/**"/>
+    <exclude name="**/.DS_Store/**"/>
+    <exclude name="**/.git/**"/>
+    <exclude name="**/.hg/**"/>
+    <exclude name="**/.svn/**"/>
+    <exclude name="**/CVS/**"/>
+    <exclude name="**/RCS/**"/>
+    <exclude name="**/SCCS/**"/>
+    <exclude name="**/__pycache__/**"/>
+    <exclude name="**/_svn/**"/>
+    <exclude name="**/rcs/**"/>
+    <exclude name="**/vssver.scc/**"/>
+    <exclude name="**/vssver2.scc/**"/>
+  </patternset>
+  <patternset id="library.patterns">
+    <include name="*.war"/>
+    <include name="*.swc"/>
+    <include name="*.apk"/>
+    <include name="*.zip"/>
+    <include name="*.ear"/>
+    <include name="*.egg"/>
+    <include name="*.ane"/>
+    <include name="*.jar"/>
+  </patternset>
+  <patternset id="compiler.resources">
+    <exclude name="**/?*.java"/>
+    <exclude name="**/?*.form"/>
+    <exclude name="**/?*.class"/>
+    <exclude name="**/?*.groovy"/>
+    <exclude name="**/?*.scala"/>
+    <exclude name="**/?*.flex"/>
+    <exclude name="**/?*.kt"/>
+    <exclude name="**/?*.clj"/>
+    <exclude name="**/?*.aj"/>
+  </patternset>
+  
+  <!-- JDK definitions -->
+  
+  <property name="jdk.bin.1.8" value="${jdk.home.1.8}/bin"/>
+  <path id="jdk.classpath.1.8">
+    <fileset dir="${jdk.home.1.8}">
+      <include name="jre/lib/charsets.jar"/>
+      <include name="jre/lib/deploy.jar"/>
+      <include name="jre/lib/ext/cldrdata.jar"/>
+      <include name="jre/lib/ext/dnsns.jar"/>
+      <include name="jre/lib/ext/jaccess.jar"/>
+      <include name="jre/lib/ext/jfxrt.jar"/>
+      <include name="jre/lib/ext/localedata.jar"/>
+      <include name="jre/lib/ext/nashorn.jar"/>
+      <include name="jre/lib/ext/sunec.jar"/>
+      <include name="jre/lib/ext/sunjce_provider.jar"/>
+      <include name="jre/lib/ext/sunpkcs11.jar"/>
+      <include name="jre/lib/ext/zipfs.jar"/>
+      <include name="jre/lib/javaws.jar"/>
+      <include name="jre/lib/jce.jar"/>
+      <include name="jre/lib/jfr.jar"/>
+      <include name="jre/lib/jfxswt.jar"/>
+      <include name="jre/lib/jsse.jar"/>
+      <include name="jre/lib/management-agent.jar"/>
+      <include name="jre/lib/plugin.jar"/>
+      <include name="jre/lib/resources.jar"/>
+      <include name="jre/lib/rt.jar"/>
+      <include name="lib/ant-javafx.jar"/>
+      <include name="lib/dt.jar"/>
+      <include name="lib/javafx-mx.jar"/>
+      <include name="lib/jconsole.jar"/>
+      <include name="lib/packager.jar"/>
+      <include name="lib/sa-jdi.jar"/>
+      <include name="lib/tools.jar"/>
+    </fileset>
+  </path>
+  
+  <property name="project.jdk.home" value="${jdk.home.1.8}"/>
+  <property name="project.jdk.bin" value="${jdk.bin.1.8}"/>
+  <property name="project.jdk.classpath" value="jdk.classpath.1.8"/>
+  
+  
+  <!-- Project Libraries -->
+  
+  <path id="library.lib.classpath">
+    <pathelement location="${basedir}/lib/commons-cli-1.3.1.jar"/>
+    <pathelement location="${basedir}/lib/org.eclipse.core.contenttype_3.5.100.v20160418-1621.jar"/>
+    <pathelement location="${basedir}/lib/org.eclipse.core.jobs_3.8.0.v20160509-0411.jar"/>
+    <pathelement location="${basedir}/lib/org.eclipse.core.resources_3.11.0.v20160503-1608.jar"/>
+    <pathelement location="${basedir}/lib/org.eclipse.core.runtime_3.12.0.v20160606-1342.jar"/>
+    <pathelement location="${basedir}/lib/org.eclipse.equinox.common_3.8.0.v20160509-1230.jar"/>
+    <pathelement location="${basedir}/lib/org.eclipse.equinox.preferences_3.6.0.v20160120-1756.jar"/>
+    <pathelement location="${basedir}/lib/org.eclipse.jdt.core_3.12.0.v20160516-2131.jar"/>
+    <pathelement location="${basedir}/lib/org.eclipse.osgi_3.11.0.v20160603-1336.jar"/>
+  </path>
+  <!-- Register Custom Compiler Taskdefs -->
+  <property name="javac2.home" value="${idea.home}/lib"/>
+  <path id="javac2.classpath">
+    <pathelement location="${javac2.home}/javac2.jar"/>
+    <pathelement location="${javac2.home}/jdom.jar"/>
+    <pathelement location="${javac2.home}/asm-all.jar"/>
+    <pathelement location="${javac2.home}/jgoodies-forms.jar"/>
+  </path>
+  <target name="register.custom.compilers">
+    <taskdef name="javac2" classname="com.intellij.ant.Javac2" classpathref="javac2.classpath"/>
+    <taskdef name="instrumentIdeaExtensions" classname="com.intellij.ant.InstrumentIdeaExtensions" classpathref="javac2.classpath"/>
+  </target>
+  
+  <!-- Modules -->
+  
+  
+  <!-- Module dsl -->
+  
+  <dirname property="module.dsl.basedir" file="${ant.file}"/>
+  
+  
+  <property name="module.jdk.home.dsl" value="${project.jdk.home}"/>
+  <property name="module.jdk.bin.dsl" value="${project.jdk.bin}"/>
+  <property name="module.jdk.classpath.dsl" value="${project.jdk.classpath}"/>
+  
+  <property name="compiler.args.dsl" value="-encoding UTF-8 -source 8 -target 8 ${compiler.args}"/>
+  
+  <property name="dsl.output.dir" value="${module.dsl.basedir}/out/production/dsl"/>
+  <property name="dsl.testoutput.dir" value="${module.dsl.basedir}/out/test/dsl"/>
+  
+  <path id="dsl.module.bootclasspath">
+    <!-- Paths to be included in compilation bootclasspath -->
+  </path>
+  
+  <path id="dsl.module.production.classpath">
+    <path refid="${module.jdk.classpath.dsl}"/>
+    <path refid="library.lib.classpath"/>
+    <fileset dir="${basedir}/lib">
+      <patternset refid="library.patterns"/>
+    </fileset>
+  </path>
+  
+  <path id="dsl.runtime.production.module.classpath">
+    <pathelement location="${dsl.output.dir}"/>
+    <path refid="library.lib.classpath"/>
+    <fileset dir="${basedir}/lib">
+      <patternset refid="library.patterns"/>
+    </fileset>
+  </path>
+  
+  <path id="dsl.module.classpath">
+    <path refid="${module.jdk.classpath.dsl}"/>
+    <pathelement location="${dsl.output.dir}"/>
+    <path refid="library.lib.classpath"/>
+    <fileset dir="${basedir}/lib">
+      <patternset refid="library.patterns"/>
+    </fileset>
+  </path>
+  
+  <path id="dsl.runtime.module.classpath">
+    <pathelement location="${dsl.testoutput.dir}"/>
+    <pathelement location="${dsl.output.dir}"/>
+    <path refid="library.lib.classpath"/>
+    <fileset dir="${basedir}/lib">
+      <patternset refid="library.patterns"/>
+    </fileset>
+  </path>
+  
+  
+  <patternset id="excluded.from.module.dsl">
+    <patternset refid="ignored.files"/>
+  </patternset>
+  
+  <patternset id="excluded.from.compilation.dsl">
+    <patternset refid="excluded.from.module.dsl"/>
+  </patternset>
+  
+  <path id="dsl.module.sourcepath">
+    <dirset dir="${module.dsl.basedir}">
+      <include name="src"/>
+    </dirset>
+  </path>
+  
+  
+  <target name="compile.module.dsl" depends="compile.module.dsl.production,compile.module.dsl.tests" description="Compile module dsl"/>
+  
+  <target name="compile.module.dsl.production" depends="register.custom.compilers" description="Compile module dsl; production classes">
+    <mkdir dir="${dsl.output.dir}"/>
+    <javac2 destdir="${dsl.output.dir}" debug="${compiler.debug}" nowarn="${compiler.generate.no.warnings}" memorymaximumsize="${compiler.max.memory}" fork="true" executable="${module.jdk.bin.dsl}/javac">
+      <compilerarg line="${compiler.args.dsl}"/>
+      <bootclasspath refid="dsl.module.bootclasspath"/>
+      <classpath refid="dsl.module.production.classpath"/>
+      <src refid="dsl.module.sourcepath"/>
+      <patternset refid="excluded.from.compilation.dsl"/>
+    </javac2>
+    
+    <copy todir="${dsl.output.dir}">
+      <fileset dir="${module.dsl.basedir}/src">
+        <patternset refid="compiler.resources"/>
+        <type type="file"/>
+      </fileset>
+    </copy>
+  </target>
+  
+  <target name="compile.module.dsl.tests" depends="register.custom.compilers,compile.module.dsl.production" description="compile module dsl; test classes" unless="skip.tests"/>
+  
+  <target name="clean.module.dsl" description="cleanup module">
+    <delete dir="${dsl.output.dir}"/>
+    <delete dir="${dsl.testoutput.dir}"/>
+  </target>
+  
+  <target name="init" description="Build initialization">
+    <!-- Perform any build initialization in this target -->
+  </target>
+  
+  <target name="clean" depends="clean.module.dsl, clean.artifact.dsl:jar" description="cleanup all"/>
+  
+  <target name="build.modules" depends="init, clean, compile.module.dsl" description="build all modules"/>
+  
+  <target name="init.artifacts">
+    <property name="artifacts.temp.dir" value="${basedir}/__artifacts_temp"/>
+    <property name="artifact.output.dsl:jar" value="${basedir}/out/artifacts/dsl_jar"/>
+    <mkdir dir="${artifacts.temp.dir}"/>
+    <property name="temp.jar.path.dsl.jar" value="${artifacts.temp.dir}/dsl.jar"/>
+  </target>
+  
+  <target name="clean.artifact.dsl:jar" description="clean dsl:jar artifact output">
+    <delete dir="${artifact.output.dsl:jar}"/>
+  </target>
+  
+  <target name="artifact.dsl:jar" depends="init.artifacts, compile.module.dsl" description="Build &#39;dsl:jar&#39; artifact">
+    <mkdir dir="${artifact.output.dsl:jar}"/>
+    <jar destfile="${temp.jar.path.dsl.jar}" duplicate="preserve" filesetmanifest="mergewithoutmain">
+      <zipfileset dir="${dsl.output.dir}"/>
+    </jar>
+    <copy file="${temp.jar.path.dsl.jar}" tofile="${artifact.output.dsl:jar}/dsl.jar"/>
+    <copy file="${basedir}/lib/org.eclipse.core.jobs_3.8.0.v20160509-0411.jar" tofile="${artifact.output.dsl:jar}/org.eclipse.core.jobs_3.8.0.v20160509-0411.jar"/>
+    <copy file="${basedir}/lib/org.eclipse.core.resources_3.11.0.v20160503-1608.jar" tofile="${artifact.output.dsl:jar}/org.eclipse.core.resources_3.11.0.v20160503-1608.jar"/>
+    <copy file="${basedir}/lib/org.eclipse.osgi_3.11.0.v20160603-1336.jar" tofile="${artifact.output.dsl:jar}/org.eclipse.osgi_3.11.0.v20160603-1336.jar"/>
+    <copy file="${basedir}/lib/org.eclipse.core.contenttype_3.5.100.v20160418-1621.jar" tofile="${artifact.output.dsl:jar}/org.eclipse.core.contenttype_3.5.100.v20160418-1621.jar"/>
+    <copy file="${basedir}/lib/org.eclipse.equinox.common_3.8.0.v20160509-1230.jar" tofile="${artifact.output.dsl:jar}/org.eclipse.equinox.common_3.8.0.v20160509-1230.jar"/>
+    <copy file="${basedir}/lib/org.eclipse.jdt.core_3.12.0.v20160516-2131.jar" tofile="${artifact.output.dsl:jar}/org.eclipse.jdt.core_3.12.0.v20160516-2131.jar"/>
+    <copy file="${basedir}/lib/org.eclipse.equinox.preferences_3.6.0.v20160120-1756.jar" tofile="${artifact.output.dsl:jar}/org.eclipse.equinox.preferences_3.6.0.v20160120-1756.jar"/>
+    <copy file="${basedir}/lib/org.eclipse.core.runtime_3.12.0.v20160606-1342.jar" tofile="${artifact.output.dsl:jar}/org.eclipse.core.runtime_3.12.0.v20160606-1342.jar"/>
+    <copy file="${basedir}/lib/commons-cli-1.3.1.jar" tofile="${artifact.output.dsl:jar}/commons-cli-1.3.1.jar"/>
+    <copy file="${basedir}/lib/gson-2.6.3.jar" tofile="${artifact.output.dsl:jar}/gson-2.6.3.jar"/>
+    <copy file="${basedir}/lib/commons-io-2.5.jar" tofile="${artifact.output.dsl:jar}/commons-io-2.5.jar"/>
+    <copy file="${basedir}/lib/commons-cli-1.3.1.jar" tofile="${artifact.output.dsl:jar}/commons-cli-1.3.1.jar"/>
+    <copy file="${basedir}/lib/org.eclipse.osgi_3.11.0.v20160603-1336.jar" tofile="${artifact.output.dsl:jar}/org.eclipse.osgi_3.11.0.v20160603-1336.jar"/>
+    <copy file="${basedir}/lib/org.eclipse.core.jobs_3.8.0.v20160509-0411.jar" tofile="${artifact.output.dsl:jar}/org.eclipse.core.jobs_3.8.0.v20160509-0411.jar"/>
+    <copy file="${basedir}/lib/org.eclipse.jdt.core_3.12.0.v20160516-2131.jar" tofile="${artifact.output.dsl:jar}/org.eclipse.jdt.core_3.12.0.v20160516-2131.jar"/>
+    <copy file="${basedir}/lib/org.eclipse.core.runtime_3.12.0.v20160606-1342.jar" tofile="${artifact.output.dsl:jar}/org.eclipse.core.runtime_3.12.0.v20160606-1342.jar"/>
+    <copy file="${basedir}/lib/org.eclipse.equinox.common_3.8.0.v20160509-1230.jar" tofile="${artifact.output.dsl:jar}/org.eclipse.equinox.common_3.8.0.v20160509-1230.jar"/>
+    <copy file="${basedir}/lib/org.eclipse.core.resources_3.11.0.v20160503-1608.jar" tofile="${artifact.output.dsl:jar}/org.eclipse.core.resources_3.11.0.v20160503-1608.jar"/>
+    <copy file="${basedir}/lib/org.eclipse.core.contenttype_3.5.100.v20160418-1621.jar" tofile="${artifact.output.dsl:jar}/org.eclipse.core.contenttype_3.5.100.v20160418-1621.jar"/>
+    <copy file="${basedir}/lib/org.eclipse.equinox.preferences_3.6.0.v20160120-1756.jar" tofile="${artifact.output.dsl:jar}/org.eclipse.equinox.preferences_3.6.0.v20160120-1756.jar"/>
+  </target>
+  
+  <target name="build.all.artifacts" depends="artifact.dsl:jar" description="Build all artifacts">
+    
+    <!-- Delete temporary files -->
+    <delete dir="${artifacts.temp.dir}"/>
+  </target>
+  
+  <target name="all" depends="build.modules, build.all.artifacts" description="build all"/>
+</project>
