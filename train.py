@@ -84,10 +84,11 @@ def train(args):
             state = model.initial_state.eval()
             for b in range(data_loader.num_batches):
                 start = time.time()
-                x, y = data_loader.next_batch()
+                x, c, y = data_loader.next_batch()
                 feed = {model.targets: y, model.initial_state: state}
                 for i in range(args.seq_length):
                     feed[model.input_data[i].name] = x[i]
+                    feed[model.caps_data[i].name] = c[i]
                 train_loss, state, _ = sess.run([model.cost, model.final_state, model.train_op], feed)
                 end = time.time()
                 print("{}/{} (epoch {}), train_loss = {:.3f}, time/batch = {:.3f}" \

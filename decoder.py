@@ -1,5 +1,5 @@
 # Modified from Tensorflow's seq2seq.py
-
+import tensorflow as tf
 from tensorflow.python.framework import dtypes
 from tensorflow.python.framework import ops
 from tensorflow.python.ops import array_ops
@@ -22,7 +22,7 @@ def _extract_argmax_and_embed(embedding, output_projection=None,
   return loop_function
 
 
-def rnn_decoder(decoder_inputs, initial_state, cell, loop_function=None,
+def rnn_decoder(decoder_inputs, caps_inputs, initial_state, icell, ccell, loop_function=None,
                 scope=None):
   with variable_scope.variable_scope(scope or "rnn_decoder"):
     state = initial_state
@@ -34,7 +34,12 @@ def rnn_decoder(decoder_inputs, initial_state, cell, loop_function=None,
           inp = loop_function(prev, i)
       if i > 0:
         variable_scope.get_variable_scope().reuse_variables()
-      output, state = cell(inp, state)
+      with tf.variable_scope('icell'):
+        outputi, statei = icell(inp, state)
+      with tf.variable_scope('ccell'):
+        outputc, statec = ccell(inp, state)
+      output = tf.select(caps_inputs[i], outputc, outputi)
+      state = tf.select(caps_inputs[i], statec, statei)
       outputs.append(output)
       if loop_function is not None:
         prev = output
@@ -42,8 +47,10 @@ def rnn_decoder(decoder_inputs, initial_state, cell, loop_function=None,
 
 
 def embedding_rnn_decoder(decoder_inputs,
+                          caps_inputs,
                           initial_state,
-                          cell,
+                          icell,
+                          ccell,
                           num_symbols,
                           embedding_size,
                           output_projection=None,
@@ -64,5 +71,5 @@ def embedding_rnn_decoder(decoder_inputs,
         update_embedding_for_previous) if feed_previous else None
     emb_inp = (
         embedding_ops.embedding_lookup(embedding, i) for i in decoder_inputs)
-    return rnn_decoder(emb_inp, initial_state, cell,
+    return rnn_decoder(emb_inp, caps_inputs, initial_state, icell, ccell,
                        loop_function=loop_function)

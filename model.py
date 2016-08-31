@@ -12,18 +12,22 @@ class Model():
             args.batch_size = 1
             args.seq_length = 1
 
-        self.cell = rnn_cell.BasicLSTMCell(args.rnn_size)
-        self.cell = rnn_cell.MultiRNNCell([self.cell] * args.num_layers)
+        self.icell = rnn_cell.BasicLSTMCell(args.rnn_size)
+        self.icell = rnn_cell.MultiRNNCell([self.icell] * args.num_layers)
+        self.ccell = rnn_cell.BasicLSTMCell(args.rnn_size)
+        self.ccell = rnn_cell.MultiRNNCell([self.ccell] * args.num_layers)
 
         self.input_data = [tf.placeholder(tf.int32, [args.batch_size], name='input{0}'.format(i))
                 for i in range(args.seq_length)]
+        self.caps_data = [tf.placeholder(tf.bool, [args.batch_size], name='caps{0}'.format(i))
+                for i in range(args.seq_length)]
         self.targets = tf.placeholder(tf.int32, [args.batch_size, args.seq_length])
-        self.initial_state = self.cell.zero_state(args.batch_size, tf.float32)
+        self.initial_state = self.icell.zero_state(args.batch_size, tf.float32)
 
         softmax_w = tf.get_variable("softmax_w", [args.rnn_size, args.vocab_size])
         softmax_b = tf.get_variable("softmax_b", [args.vocab_size])
 
-        outputs, last_state = decoder.embedding_rnn_decoder(self.input_data, self.initial_state, self.cell, args.vocab_size, args.rnn_size, (softmax_w,softmax_b), feed_previous=infer)
+        outputs, last_state = decoder.embedding_rnn_decoder(self.input_data, self.caps_data, self.initial_state, self.icell, self.ccell, args.vocab_size, args.rnn_size, (softmax_w,softmax_b), feed_previous=infer)
         output = tf.reshape(tf.concat(1, outputs), [-1, args.rnn_size])
         self.logits = tf.matmul(output, softmax_w) + softmax_b
         self.probs = tf.nn.softmax(self.logits)
@@ -33,8 +37,11 @@ class Model():
         self.final_state = last_state
         self.train_op = tf.train.AdamOptimizer(args.learning_rate).minimize(self.cost)
 
+        var_params = [np.prod([dim.value for dim in var.get_shape()]) for var in tf.trainable_variables()]
+        print('Model parameters: {}'.format(np.sum(var_params)))
+
     def sample(self, sess, chars, vocab, num=200, prime='The '):
-        state = self.cell.zero_state(1, tf.float32).eval()
+        state = self.icell.zero_state(1, tf.float32).eval()
         for char in prime[:-1]:
             x = np.zeros((1, 1))
             x[0, 0] = vocab[char]
