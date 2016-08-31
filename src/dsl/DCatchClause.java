@@ -21,7 +21,11 @@ public class DCatchClause extends DASTNode {
 
         @Override
         public DCatchClause handle() {
-            return new DCatchClause(new DBlock.Handle(catchClause.getBody(), visitor).handle());
+            DBlock body = new DBlock.Handle(catchClause.getBody(), visitor).handle();
+            if (body != null)
+                return new DCatchClause(body);
+
+            return null;
         }
     }
 }
