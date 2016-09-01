@@ -22,13 +22,13 @@ ast_map = {
         'DWhileStatement'               : [ ('cond',True), ('body',True) ]
         }
 STOP = ('STOP',False)
-CHILD_EDGE, SIBLING_EDGE = 'V', 'H'
+CHILD_EDGE, SIBLING_EDGE, LEAF_EDGE = 'V', 'H', 'L'
 
 def get_paths(js):
     node = js['node']
     assert node in ast_map, 'Unrecognized AST node: {:s}'.format(node)
     if ast_map[node] == []:
-        return [[node]]
+        return [[(node, LEAF_EDGE)]]
     lst = []
     for child in ast_map[node]:
         if type(child) is list:
@@ -40,7 +40,7 @@ def get_paths(js):
         else:
             if child[0] in js:
                 lst.append((js[child[0]], child[1]))
-    children_paths = [get_paths(child) if nt else [[child]] for child, nt in lst]
+    children_paths = [get_paths(child) if nt else [[(child, LEAF_EDGE)]] for child, nt in lst]
     prefix = [(node, CHILD_EDGE)]
     paths = []
     for i, child_paths in enumerate(children_paths):
