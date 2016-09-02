@@ -22,6 +22,9 @@ ast_map = {
         'DWhileStatement'               : [ ('cond',True), ('body',True) ]
         }
 STOP = ('STOP',False)
+
+# Type of edge to the next node along the path. Note: LEAF_EDGE is redundant since it's always the last edge
+# along a path, but it's there to keep the data format consistent.
 CHILD_EDGE, SIBLING_EDGE, LEAF_EDGE = 'V', 'H', 'L'
 
 def get_paths(js):

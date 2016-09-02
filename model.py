@@ -12,22 +12,20 @@ class Model():
             args.batch_size = 1
             args.seq_length = 1
 
-        self.icell = rnn_cell.BasicLSTMCell(args.rnn_size)
-        self.icell = rnn_cell.MultiRNNCell([self.icell] * args.num_layers)
-        self.ccell = rnn_cell.BasicLSTMCell(args.rnn_size)
-        self.ccell = rnn_cell.MultiRNNCell([self.ccell] * args.num_layers)
+        self.cell1 = rnn_cell.MultiRNNCell([rnn_cell.BasicLSTMCell(args.rnn_size)] * args.num_layers)
+        self.cell2 = rnn_cell.MultiRNNCell([rnn_cell.BasicLSTMCell(args.rnn_size)] * args.num_layers)
 
-        self.input_data = [tf.placeholder(tf.int32, [args.batch_size], name='input{0}'.format(i))
+        self.node_data = [tf.placeholder(tf.int32, [args.batch_size], name='node{0}'.format(i))
                 for i in range(args.seq_length)]
-        self.caps_data = [tf.placeholder(tf.bool, [args.batch_size], name='caps{0}'.format(i))
+        self.edge_data = [tf.placeholder(tf.bool, [args.batch_size], name='edge{0}'.format(i))
                 for i in range(args.seq_length)]
         self.targets = tf.placeholder(tf.int32, [args.batch_size, args.seq_length])
-        self.initial_state = self.icell.zero_state(args.batch_size, tf.float32)
+        self.initial_state = self.cell1.zero_state(args.batch_size, tf.float32)
 
         softmax_w = tf.get_variable("softmax_w", [args.rnn_size, args.vocab_size])
         softmax_b = tf.get_variable("softmax_b", [args.vocab_size])
 
-        outputs, last_state = decoder.embedding_rnn_decoder(self.input_data, self.caps_data, self.initial_state, self.icell, self.ccell, args.vocab_size, args.rnn_size, (softmax_w,softmax_b), feed_previous=infer)
+        outputs, last_state = decoder.embedding_rnn_decoder(self.node_data, self.edge_data, self.initial_state, self.cell1, self.cell2, args.vocab_size, args.rnn_size, (softmax_w,softmax_b), feed_previous=infer)
         output = tf.reshape(tf.concat(1, outputs), [-1, args.rnn_size])
         self.logits = tf.matmul(output, softmax_w) + softmax_b
         self.probs = tf.nn.softmax(self.logits)
@@ -41,13 +39,13 @@ class Model():
         print('Model parameters: {}'.format(np.sum(var_params)))
 
     def sample(self, sess, chars, vocab, num=200, prime='The '):
-        state = self.icell.zero_state(1, tf.float32).eval()
+        state = self.cell1.zero_state(1, tf.float32).eval()
         for char in prime[:-1]:
             x = np.zeros((1, 1))
             x[0, 0] = vocab[char]
             feed = {self.initial_state:state}
             for i in range(self.args.seq_length):
-                feed[self.input_data[i]] = x[i]
+                feed[self.node_data[i]] = x[i]
             [state] = sess.run([self.final_state], feed)
 
         def weighted_pick(weights):
@@ -62,7 +60,7 @@ class Model():
             x[0, 0] = vocab[char]
             feed = {self.initial_state:state}
             for i in range(self.args.seq_length):
-                feed[self.input_data[i].name] = x[i]
+                feed[self.node_data[i].name] = x[i]
             [probs, state] = sess.run([self.probs, self.final_state], feed)
             p = probs[0]
 
