@@ -1,5 +1,6 @@
 import sys
 import json
+import itertools
 
 # These names should correspond to the names used in the JSON input.
 # If the input was generated with Gson, this corresponds to the variable names in datasyn-dsl.
@@ -52,12 +53,15 @@ def get_paths(js):
     return paths
 
 def print_data(filename):
-    with open(filename) as f:
-        [print(path) for path in get_paths(json.loads(f.read()))]
+    [print(path) for path in read_data(filename)]
 
 def read_data(filename):
     with open(filename) as f:
-        return get_paths(json.loads(f.read()))
+        js = json.loads(f.read())
+    if 'asts' in js:
+        data = [get_paths(ast) for ast in js['asts']]
+        return itertools.chain.from_iterable(data)
+    return get_paths(js)
 
 if __name__ == '__main__':
     print_data(sys.argv[1])
