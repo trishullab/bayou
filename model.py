@@ -3,6 +3,7 @@ from tensorflow.python.ops import rnn_cell
 from tensorflow.python.ops import seq2seq
 
 import decoder
+from data_reader import CHILD_EDGE, SIBLING_EDGE
 import numpy as np
 
 class Model():
@@ -36,38 +37,28 @@ class Model():
         self.train_op = tf.train.AdamOptimizer(args.learning_rate).minimize(self.cost)
 
         var_params = [np.prod([dim.value for dim in var.get_shape()]) for var in tf.trainable_variables()]
-        print('Model parameters: {}'.format(np.sum(var_params)))
+        if not infer:
+            print('Model parameters: {}'.format(np.sum(var_params)))
 
-    def sample(self, sess, chars, vocab, num=200, prime='The '):
-        state = self.cell1.zero_state(1, tf.float32).eval()
-        for char in prime[:-1]:
-            x = np.zeros((1, 1))
-            x[0, 0] = vocab[char]
-            feed = {self.initial_state:state}
-            for i in range(self.args.seq_length):
-                feed[self.node_data[i]] = x[i]
-            [state] = sess.run([self.final_state], feed)
+    def sample(self, sess, prime, chars, vocab):
 
         def weighted_pick(weights):
             t = np.cumsum(weights)
             s = np.sum(weights)
             return(int(np.searchsorted(t, np.random.rand(1)*s)))
 
-        ret = prime
-        char = prime[-1]
-        for n in range(num):
-            x = np.zeros((1, 1))
-            x[0, 0] = vocab[char]
-            feed = {self.initial_state:state}
-            for i in range(self.args.seq_length):
-                feed[self.node_data[i].name] = x[i]
+        state = self.cell1.zero_state(1, tf.float32).eval()
+        for node, edge in prime:
+            assert edge == CHILD_EDGE or edge == SIBLING_EDGE, 'invalid edge: {}'.format(edge)
+            node_data, edge_data = np.zeros((1,), dtype=np.int32), np.zeros((1,), dtype=np.int32)
+            node_data[0] = vocab[node]
+            edge_data[0] = edge == CHILD_EDGE
+
+            feed = {self.initial_state: state,
+                    self.node_data[0].name: node_data,
+                    self.edge_data[0].name: edge_data}
             [probs, state] = sess.run([self.probs, self.final_state], feed)
-            p = probs[0]
 
-            sample = weighted_pick(p)
-            pred = chars[sample]
-            ret += pred
-            char = pred
-        return ret
-
-
+        dist = probs[0]
+        sample = chars[weighted_pick(dist)]
+        return dist, sample

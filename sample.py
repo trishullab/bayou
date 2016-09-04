@@ -1,25 +1,18 @@
-from __future__ import print_function
-import numpy as np
 import tensorflow as tf
 
 import argparse
-import time
 import os
+import ast
 from six.moves import cPickle
 
-from utils import TextLoader
 from model import Model
-
-from six import text_type
 
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--save_dir', type=str, default='save',
                        help='model directory to store checkpointed models')
-    parser.add_argument('-n', type=int, default=500,
-                       help='number of characters to sample')
-    parser.add_argument('--prime', type=text_type, default=u' ',
-                       help='prime text')
+    parser.add_argument('--prime', default='[("DBlock", "V")]',
+                       help='prime path')
 
     args = parser.parse_args()
     sample(args)
@@ -36,7 +29,9 @@ def sample(args):
         ckpt = tf.train.get_checkpoint_state(args.save_dir)
         if ckpt and ckpt.model_checkpoint_path:
             saver.restore(sess, ckpt.model_checkpoint_path)
-            print(model.sample(sess, chars, vocab, args.n, args.prime))
+            dist, sample = model.sample(sess, ast.literal_eval(args.prime), chars, vocab)
+            print(dist)
+            print('sample: {}'.format(sample))
 
 if __name__ == '__main__':
     main()
