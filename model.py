@@ -40,7 +40,7 @@ class Model():
         if not infer:
             print('Model parameters: {}'.format(np.sum(var_params)))
 
-    def sample(self, sess, prime, chars, vocab):
+    def predict(self, sess, prime, chars, vocab):
 
         def weighted_pick(weights):
             t = np.cumsum(weights)
@@ -60,5 +60,5 @@ class Model():
             [probs, state] = sess.run([self.probs, self.final_state], feed)
 
         dist = probs[0]
-        sample = chars[weighted_pick(dist)]
-        return dist, sample
+        prediction = chars[weighted_pick(dist)]
+        return dist, prediction

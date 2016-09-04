@@ -15,9 +15,9 @@ def main():
                        help='prime path')
 
     args = parser.parse_args()
-    sample(args)
+    predict(args)
 
-def sample(args):
+def predict(args):
     with open(os.path.join(args.save_dir, 'config.pkl'), 'rb') as f:
         saved_args = cPickle.load(f)
     with open(os.path.join(args.save_dir, 'chars_vocab.pkl'), 'rb') as f:
@@ -29,9 +29,9 @@ def sample(args):
         ckpt = tf.train.get_checkpoint_state(args.save_dir)
         if ckpt and ckpt.model_checkpoint_path:
             saver.restore(sess, ckpt.model_checkpoint_path)
-            dist, sample = model.sample(sess, ast.literal_eval(args.prime), chars, vocab)
+            dist, prediction = model.predict(sess, ast.literal_eval(args.prime), chars, vocab)
             print(dist)
-            print('sample: {}'.format(sample))
+            print('prediction: {}'.format(prediction))
 
 if __name__ == '__main__':
     main()
