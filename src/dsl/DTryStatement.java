@@ -11,12 +11,10 @@ public class DTryStatement extends DStatement {
     final String node = "DTryStatement";
     final DBlock tryBlock;
     final List<DCatchClause> catchClauses;
-    final DBlock finallyBlock;
 
-    private DTryStatement(DBlock tryBlock, List<DCatchClause> catchClauses, DBlock finallyBlock) {
+    private DTryStatement(DBlock tryBlock, List<DCatchClause> catchClauses) {
         this.tryBlock = tryBlock;
         this.catchClauses = catchClauses;
-        this.finallyBlock = finallyBlock;
     }
 
     public static class Handle extends Handler {
@@ -37,12 +35,9 @@ public class DTryStatement extends DStatement {
                 if (dclause != null)
                     catchClauses.add(dclause);
             }
-            DBlock finallyBlock = null;
-            if (statement.getFinally() != null)
-                finallyBlock = new DBlock.Handle(statement.getFinally(), visitor).handle();
 
             if (tryBlock != null)
-                return new DTryStatement(tryBlock, catchClauses, finallyBlock);
+                return new DTryStatement(tryBlock, catchClauses);
 
             return null;
         }
