@@ -37,19 +37,18 @@ def get_paths(js):
     for child in ast_map[node]:
         if type(child) is list:
             child, nt = child[0]
-            if child in js:
-                for child_node in js[child]:
-                    lst.append((child_node, nt))
-                lst.append(STOP)
+            for child_node in js[child]:
+                lst.append((child_node, nt))
+            lst.append(STOP)
         else:
-            if child[0] in js:
-                lst.append((js[child[0]], child[1]))
-    children_paths = [get_paths(child) if nt else [[(child, LEAF_EDGE)]] for child, nt in lst]
+            lst.append((js[child[0]], child[1]))
+    children_paths = [get_paths(child) if nt and child is not None else [[(child, LEAF_EDGE)]] for child, nt in lst]
     prefix = [(node, CHILD_EDGE)]
     paths = []
     for i, child_paths in enumerate(children_paths):
         paths += [prefix + child_path for child_path in child_paths]
-        prefix += [(lst[i][0]['node'] if lst[i][1] else lst[i][0], SIBLING_EDGE)]
+        child, nt = lst[i][0], lst[i][1]
+        prefix += [(child['node'] if nt and child is not None else child, SIBLING_EDGE)]
     return paths
 
 def print_data(filename):
