@@ -17,7 +17,7 @@ ast_map = {
         'DName'                         : [ ],
         'DNullLiteral'                  : [ ],
         'DParenthesizedExpression'      : [ ('expression',True) ],
-        'DTryStatement'                 : [ ('tryBlock',True), [('catchClauses',True)], ('finallyBlock',True) ],
+        'DTryStatement'                 : [ ('tryBlock',True), [('catchClauses',True)] ],
         'DVariableDeclarationFragment'  : [ ('name',True), ('initializer',True) ],
         'DVariableDeclarationStatement' : [ [('fragments',True)] ],
         'DWhileStatement'               : [ ('cond',True), ('body',True) ]
