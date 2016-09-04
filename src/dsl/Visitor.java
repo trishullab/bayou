@@ -32,7 +32,7 @@ public class Visitor extends ASTVisitor {
     }
 
     private void printJson(DBlock ast) {
-        Gson gson = new GsonBuilder().setPrettyPrinting().create();
+        Gson gson = new GsonBuilder().setPrettyPrinting().serializeNulls().create();
         output.write(gson.toJson(ast));
         output.write("\n");
         output.flush();
