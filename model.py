@@ -23,12 +23,12 @@ class Model():
         self.targets = tf.placeholder(tf.int32, [args.batch_size, args.seq_length])
         self.initial_state = self.cell1.zero_state(args.batch_size, tf.float32)
 
-        softmax_w = tf.get_variable("softmax_w", [args.rnn_size, args.vocab_size])
-        softmax_b = tf.get_variable("softmax_b", [args.vocab_size])
+        projection_w = tf.get_variable("projection_w", [args.rnn_size, args.vocab_size])
+        projection_b = tf.get_variable("projection_b", [args.vocab_size])
 
-        outputs, last_state = decoder.embedding_rnn_decoder(self.node_data, self.edge_data, self.initial_state, self.cell1, self.cell2, args.vocab_size, args.rnn_size, (softmax_w,softmax_b), feed_previous=infer)
+        outputs, last_state = decoder.embedding_rnn_decoder(self.node_data, self.edge_data, self.initial_state, self.cell1, self.cell2, args.vocab_size, args.rnn_size, (projection_w,projection_b), feed_previous=infer)
         output = tf.reshape(tf.concat(1, outputs), [-1, args.rnn_size])
-        self.logits = tf.matmul(output, softmax_w) + softmax_b
+        self.logits = tf.matmul(output, projection_w) + projection_b
         self.probs = tf.nn.softmax(self.logits)
         self.cost = seq2seq.sequence_loss([self.logits],
                 [tf.reshape(self.targets, [-1])],
