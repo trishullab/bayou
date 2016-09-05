@@ -11,6 +11,8 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--save_dir', type=str, default='save',
                        help='model directory to store checkpointed models')
+    parser.add_argument('--topk', type=int, default=5,
+                       help='print top-k values in distribution')
     parser.add_argument('--prime', default='[("DBlock", "V")]',
                        help='prime path')
 
@@ -30,8 +32,11 @@ def predict(args):
         if ckpt and ckpt.model_checkpoint_path:
             saver.restore(sess, ckpt.model_checkpoint_path)
             dist, prediction = model.predict(sess, ast.literal_eval(args.prime), chars, vocab)
-            print(dist)
-            print('prediction: {}'.format(prediction))
+            dist = [(chars[i], prob) for i, prob in enumerate(dist)]
+
+            for node, prob in sorted(dist, key=lambda x:x[1], reverse=True)[:args.topk]:
+                print('{:.2f} : {}'.format(prob, node))
+            print('prediction : {}'.format(prediction))
 
 if __name__ == '__main__':
     main()
