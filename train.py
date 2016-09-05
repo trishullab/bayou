@@ -7,7 +7,7 @@ import time
 import os
 from six.moves import cPickle
 
-from utils import TextLoader
+from utils import DataLoader
 from model import Model
 
 def main():
@@ -41,7 +41,7 @@ def main():
 
 
 def train(args):
-    data_loader = TextLoader(args.input_file[0], args.batch_size, args.seq_length)
+    data_loader = DataLoader(args.input_file[0], args.batch_size, args.seq_length)
     args.vocab_size = data_loader.vocab_size
     
     # check compatibility if training is continued from previously saved model

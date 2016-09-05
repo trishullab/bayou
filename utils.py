@@ -5,7 +5,7 @@ from six.moves import cPickle
 import numpy as np
 import data_reader
 
-class TextLoader():
+class DataLoader():
     def __init__(self, input_file, batch_size, seq_length):
         self.batch_size = batch_size
         self.seq_length = seq_length
