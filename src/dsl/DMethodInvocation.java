@@ -27,13 +27,15 @@ public class DMethodInvocation extends DExpression {
 
         @Override
         public DMethodInvocation handle() {
-            String className = invocation.resolveMethodBinding().getDeclaringClass().getQualifiedName();
-            if (className.contains("<")) /* be agnostic to generic versions */
-                className = className.substring(0, className.indexOf("<"));
-            if (visitor.options.API_CLASSES.contains(className))
-                return new DMethodInvocation(className + "." + getSignature(invocation.resolveMethodBinding()));
-            else
-                return null;
+            IMethodBinding binding = invocation.resolveMethodBinding();
+            if (binding != null) {
+                String className = binding.getDeclaringClass().getQualifiedName();
+                if (className.contains("<")) /* be agnostic to generic versions */
+                    className = className.substring(0, className.indexOf("<"));
+                if (visitor.options.API_CLASSES.contains(className))
+                    return new DMethodInvocation(className + "." + getSignature(invocation.resolveMethodBinding()));
+            }
+            return null;
         }
 
         private String getSignature(IMethodBinding method) {

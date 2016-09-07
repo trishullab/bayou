@@ -27,13 +27,15 @@ public class DClassInstanceCreation extends DExpression {
 
         @Override
         public DClassInstanceCreation handle() {
-            String className = creation.resolveConstructorBinding().getDeclaringClass().getQualifiedName();
-            if (className.contains("<")) /* be agnostic to generic versions */
-                className = className.substring(0, className.indexOf("<"));
-            if (visitor.options.API_CLASSES.contains(className))
-                return new DClassInstanceCreation(className + "." + getSignature(creation.resolveConstructorBinding()));
-            else
-                return null;
+            IMethodBinding binding = creation.resolveConstructorBinding();
+            if (binding != null) {
+                String className = binding.getDeclaringClass().getQualifiedName();
+                if (className.contains("<")) /* be agnostic to generic versions */
+                    className = className.substring(0, className.indexOf("<"));
+                if (visitor.options.API_CLASSES.contains(className))
+                    return new DClassInstanceCreation(className + "." + getSignature(creation.resolveConstructorBinding()));
+            }
+            return null;
         }
 
         private String getSignature(IMethodBinding constructor) {
