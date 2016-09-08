@@ -38,7 +38,10 @@ public class DAssignment extends DExpression {
             DExpression drhs = new DExpression.Handle(assignment.getRightHandSide(), visitor).handle();
 
             if (dlhs != null && drhs != null && op != null)
-                return new DAssignment(dlhs, op, drhs);
+                if (dlhs instanceof DName && drhs instanceof DName)
+                    return null;
+                else
+                    return new DAssignment(dlhs, op, drhs);
 
             return null;
         }
