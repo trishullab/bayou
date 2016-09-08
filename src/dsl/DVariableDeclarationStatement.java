@@ -1,5 +1,7 @@
 package dsl;
 
+import org.eclipse.jdt.core.dom.ITypeBinding;
+import org.eclipse.jdt.core.dom.Type;
 import org.eclipse.jdt.core.dom.VariableDeclarationFragment;
 import org.eclipse.jdt.core.dom.VariableDeclarationStatement;
 
@@ -25,7 +27,21 @@ public class DVariableDeclarationStatement extends DStatement {
 
         @Override
         public DVariableDeclarationStatement handle() {
+            Type t = statement.getType();
+            if (! (t.isSimpleType() || t.isParameterizedType()))
+                return null;
+
             List<DVariableDeclarationFragment> fragments = new ArrayList<>();
+            ITypeBinding binding = t.resolveBinding();
+
+            if (binding == null)
+                return null;
+
+            String className = binding.getQualifiedName();
+            if (className.contains("<")) /* be agnostic to generic versions */
+                className = className.substring(0, className.indexOf("<"));
+            if (! visitor.options.API_CLASSES.contains(className))
+                return null;
 
             for (Object o : statement.fragments()) {
                 VariableDeclarationFragment fragment = (VariableDeclarationFragment) o;

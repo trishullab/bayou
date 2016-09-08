@@ -29,7 +29,11 @@ public class DBlock extends DStatement {
             for (Object o : block.statements()) {
                 Statement s = (Statement) o;
                 DStatement statement = new DStatement.Handle(s, visitor).handle();
-                if (statement != null)
+                if (statement == null)
+                    continue;
+                if (statement instanceof DBlock)
+                    statements.addAll(((DBlock) statement).statements);
+                else
                     statements.add(statement);
             }
 
