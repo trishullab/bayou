@@ -43,7 +43,8 @@ public class Driver {
         parser.setSource(FileUtils.readFileToString(input, "utf-8").toCharArray());
         parser.setKind(ASTParser.K_COMPILATION_UNIT);
         parser.setUnitName("Program.java");
-        parser.setEnvironment(new String[] { "" }, new String[] { "" }, new String[] { "UTF-8" }, true);
+        parser.setEnvironment(new String[] { System.getenv("CLASSPATH") },
+                new String[] { "" }, new String[] { "UTF-8" }, true);
         parser.setResolveBindings(true);
 
         return (CompilationUnit) parser.createAST(null);
