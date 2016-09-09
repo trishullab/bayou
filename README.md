@@ -4,16 +4,11 @@ Domain Specific Language (DSL) used for DataSyn, that is a subset of the Eclipse
 # Requirements
 - JDK 1.8
 
-# Compilation
-To compile the code, run `ant` from the project's root directory.
+# Compilation and Usage
+Ensure that the correct JDK path is specified in `build.properties`.
 
-# Basic Usage
-Ensure that the CLASSPATH variable contains the jars in the lib directory:
+To compile the code, run `ant` from the project's root directory. Once this successfully completes, run
 
-`export CLASSPATH=/path/to/datasyn-dsl/lib/*`
-
-Then, run
-
-`java dsl.Driver`
+`java -jar out/artifacts/dsl_jar/dsl.jar`
 
 and follow the usage instructions.
