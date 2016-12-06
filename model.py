@@ -13,8 +13,8 @@ class Model():
             args.batch_size = 1
             args.seq_length = 1
 
-        self.cell1 = rnn_cell.MultiRNNCell([rnn_cell.BasicLSTMCell(args.rnn_size)] * args.num_layers)
-        self.cell2 = rnn_cell.MultiRNNCell([rnn_cell.BasicLSTMCell(args.rnn_size)] * args.num_layers)
+        self.cell1 = rnn_cell.BasicLSTMCell(args.rnn_size, state_is_tuple=False)
+        self.cell2 = rnn_cell.BasicLSTMCell(args.rnn_size, state_is_tuple=False)
 
         self.node_data = [tf.placeholder(tf.int32, [args.batch_size], name='node{0}'.format(i))
                 for i in range(args.seq_length)]
