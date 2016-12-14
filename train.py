@@ -41,6 +41,7 @@ def main():
 def train(args):
     data_loader = DataLoader(args.input_file[0], args.batch_size, args.seq_length)
     args.vocab_size = data_loader.vocab_size
+    args.ntopics = data_loader.ntopics
     
     # check compatibility if training is continued from previously saved model
     if args.init_from is not None:
@@ -64,11 +65,12 @@ def train(args):
             state = model.initial_state.eval()
             for b in range(data_loader.num_batches):
                 start = time.time()
-                x, e, y = data_loader.next_batch()
+                x, e, t, y = data_loader.next_batch()
                 feed = {model.targets: y, model.initial_state: state}
                 for j in range(args.seq_length):
                     feed[model.node_data[j].name] = x[j]
                     feed[model.edge_data[j].name] = e[j]
+                    feed[model.topic_data[j].name] = t[j]
                 train_loss, state, _ = sess.run([model.cost, model.final_state, model.train_op], feed)
                 end = time.time()
                 print("{}/{} (epoch {}), train_loss = {:.3f}, time/batch = {:.3f}" \

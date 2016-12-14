@@ -22,7 +22,7 @@ def _extract_argmax_and_embed(embedding, output_projection=None,
   return loop_function
 
 
-def rnn_decoder(decoder_inputs, edge_inputs, initial_state, cell1, cell2, loop_function=None,
+def rnn_decoder(decoder_inputs, edge_inputs, topics, initial_state, cell1, cell2, loop_function=None,
                 scope=None):
   with variable_scope.variable_scope(scope or "rnn_decoder"):
     state = initial_state
@@ -35,9 +35,9 @@ def rnn_decoder(decoder_inputs, edge_inputs, initial_state, cell1, cell2, loop_f
       if i > 0:
         variable_scope.get_variable_scope().reuse_variables()
       with variable_scope.variable_scope('cell1'): # cell1 handles CHILD_EDGE
-        output1, state1 = cell1(inp, state)
+        output1, state1 = cell1(inp, topics[i], state)
       with variable_scope.variable_scope('cell2'): # cell2 handles SIBLING_EDGE (LEAF_EDGE is dummy for synthesis)
-        output2, state2 = cell2(inp, state)
+        output2, state2 = cell2(inp, topics[i], state)
       output = tf.select(edge_inputs[i], output1, output2)
       state = tf.select(edge_inputs[i], state1, state2)
       outputs.append(output)
@@ -48,6 +48,7 @@ def rnn_decoder(decoder_inputs, edge_inputs, initial_state, cell1, cell2, loop_f
 
 def embedding_rnn_decoder(decoder_inputs,
                           edge_inputs,
+                          topics,
                           initial_state,
                           cell1,
                           cell2,
@@ -71,5 +72,5 @@ def embedding_rnn_decoder(decoder_inputs,
         update_embedding_for_previous) if feed_previous else None
     emb_inp = (
         embedding_ops.embedding_lookup(embedding, i) for i in decoder_inputs)
-    return rnn_decoder(emb_inp, edge_inputs, initial_state, cell1, cell2,
+    return rnn_decoder(emb_inp, edge_inputs, topics, initial_state, cell1, cell2,
                        loop_function=loop_function)
