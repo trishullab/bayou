@@ -18,6 +18,8 @@ public abstract class DStatement extends DASTNode {
                 return new DBlock.Handle((Block) statement, visitor).handle();
             if (statement instanceof ExpressionStatement)
                 return new DExpressionStatement.Handle((ExpressionStatement) statement, visitor).handle();
+            if (statement instanceof IfStatement)
+                return new DIfStatement.Handle((IfStatement) statement, visitor).handle();
             if (statement instanceof WhileStatement)
                 return new DWhileStatement.Handle((WhileStatement) statement, visitor).handle();
             if (statement instanceof TryStatement)
