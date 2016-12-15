@@ -25,6 +25,8 @@ public class DBlock extends DStatement {
 
         @Override
         public DBlock handle() {
+            if (block == null)
+                return null;
             List<DStatement> statements = new ArrayList<DStatement>();
             for (Object o : block.statements()) {
                 Statement s = (Statement) o;
