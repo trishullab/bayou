@@ -40,6 +40,8 @@ public class DAssignment extends DExpression {
             if (dlhs != null && drhs != null && op != null)
                 if (dlhs instanceof DName && drhs instanceof DName)
                     return null;
+                else if (dlhs instanceof DName && drhs instanceof DNullLiteral)
+                    return null;
                 else
                     return new DAssignment(dlhs, op, drhs);
 
