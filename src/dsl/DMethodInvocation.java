@@ -28,7 +28,7 @@ public class DMethodInvocation extends DExpression {
         @Override
         public DMethodInvocation handle() {
             IMethodBinding binding = invocation.resolveMethodBinding();
-            if (binding != null) {
+            if (binding != null && binding.getDeclaringClass() != null) {
                 String className = binding.getDeclaringClass().getQualifiedName();
                 if (className.contains("<")) /* be agnostic to generic versions */
                     className = className.substring(0, className.indexOf("<"));

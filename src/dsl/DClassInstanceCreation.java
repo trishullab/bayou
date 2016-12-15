@@ -28,7 +28,7 @@ public class DClassInstanceCreation extends DExpression {
         @Override
         public DClassInstanceCreation handle() {
             IMethodBinding binding = creation.resolveConstructorBinding();
-            if (binding != null) {
+            if (binding != null && binding.getDeclaringClass() != null) {
                 String className = binding.getDeclaringClass().getQualifiedName();
                 if (className.contains("<")) /* be agnostic to generic versions */
                     className = className.substring(0, className.indexOf("<"));
