@@ -12,6 +12,7 @@ ast_map = {
         'DCatchClause'                  : [ ('body',True) ],
         'DClassInstanceCreation'        : [ ('constructor',False) ],
         'DExpressionStatement'          : [ ('expression',True) ],
+        'DIfStatement'                  : [ ('cond',True), ('thenStmt',True), ('elseStmt',True) ],
         'DInfixExpression'              : [ ('left',True), ('right',True), ('operator',False) ],
         'DMethodInvocation'             : [ ('methodName',False) ],
         'DName'                         : [ ],
