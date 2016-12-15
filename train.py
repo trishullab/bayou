@@ -16,6 +16,8 @@ def main():
                        help='input data file')
     parser.add_argument('--save_dir', type=str, default='save',
                        help='directory to store checkpointed models')
+    parser.add_argument('--cell', type=str, default='rnn', choices=['rnn', 'lstm'],
+                       help='type of RNN cell')
     parser.add_argument('--rnn_size', type=int, default=128,
                        help='size of RNN hidden state')
     parser.add_argument('--batch_size', type=int, default=50,

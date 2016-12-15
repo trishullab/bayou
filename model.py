@@ -14,8 +14,9 @@ class Model():
             args.batch_size = 1
             args.seq_length = 1
 
-        self.cell1 = TopicRNNCell(args.rnn_size)
-        self.cell2 = TopicRNNCell(args.rnn_size)
+        cell = TopicLSTMCell if args.cell == 'lstm' else TopicRNNCell
+        self.cell1 = cell(args.rnn_size)
+        self.cell2 = cell(args.rnn_size)
 
         self.node_data = [tf.placeholder(tf.int32, [args.batch_size], name='node{0}'.format(i))
                 for i in range(args.seq_length)]

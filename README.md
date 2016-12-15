@@ -7,7 +7,7 @@ Inspired from [char-rnn-tensorflow](https://github.com/sherjilozair/char-rnn-ten
 # Requirements
 - Python3 (Tested with 3.5.1)
 - [sklearn](http://scikit-learn.org/stable) for LDA (Tested with 0.18.1)
-- [Tensorflow](https://www.tensorflow.org) (Tested with 0.12.0rc0)
+- [Tensorflow](https://www.tensorflow.org) (Tested with 0.12.0rc1)
 
 # Basic Usage
 Run `python3 lda.py --input_file DATA.json` and follow instructions to run LDA and produce topic distributions for each AST in the dataset DATA.json (see DSL for more details on how to generate this).
