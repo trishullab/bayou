@@ -2,6 +2,8 @@ package dsl;
 
 import org.eclipse.jdt.core.dom.CatchClause;
 
+import java.util.List;
+
 public class DCatchClause extends DASTNode {
 
     final String node = "DCatchClause";
@@ -26,6 +28,11 @@ public class DCatchClause extends DASTNode {
                 return new DCatchClause(body);
 
             return null;
+        }
+
+        @Override
+        public void updateSequences(List<Sequence> soFar) {
+            new DBlock.Handle(catchClause.getBody(), visitor).updateSequences(soFar);
         }
     }
 }

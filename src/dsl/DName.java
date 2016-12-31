@@ -2,6 +2,8 @@ package dsl;
 
 import org.eclipse.jdt.core.dom.Name;
 
+import java.util.List;
+
 public class DName extends DExpression {
 
     final String node = "DName";
@@ -16,5 +18,8 @@ public class DName extends DExpression {
         public DName handle() {
             return new DName();
         }
+
+        @Override
+        public void updateSequences(List<Sequence> soFar) { }
     }
 }

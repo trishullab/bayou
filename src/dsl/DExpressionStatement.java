@@ -2,6 +2,8 @@ package dsl;
 
 import org.eclipse.jdt.core.dom.ExpressionStatement;
 
+import java.util.List;
+
 public class DExpressionStatement extends DStatement {
 
     final String node = "DExpressionStatement";
@@ -25,6 +27,11 @@ public class DExpressionStatement extends DStatement {
             if (exp != null)
                 return new DExpressionStatement(exp);
             return null;
+        }
+
+        @Override
+        public void updateSequences(List<Sequence> soFar) {
+            new DExpression.Handle(expressionStatement.getExpression(), visitor).updateSequences(soFar);
         }
     }
 }

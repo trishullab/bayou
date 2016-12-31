@@ -2,6 +2,8 @@ package dsl;
 
 import org.eclipse.jdt.core.dom.WhileStatement;
 
+import java.util.List;
+
 public class DWhileStatement extends DStatement {
 
     final String node = "DWhileStatement";
@@ -32,6 +34,15 @@ public class DWhileStatement extends DStatement {
                 return body;
 
             return null;
+        }
+
+        @Override
+        public void updateSequences(List<Sequence> soFar) {
+            for (int i = 0; i < visitor.options.NUM_UNROLLS; i++) {
+                new DExpression.Handle(statement.getExpression(), visitor).updateSequences(soFar);
+                new DStatement.Handle(statement.getBody(), visitor).updateSequences(soFar);
+            }
+            new DExpression.Handle(statement.getExpression(), visitor).updateSequences(soFar);
         }
     }
 }

@@ -2,6 +2,9 @@ package dsl;
 
 import org.eclipse.jdt.core.dom.IfStatement;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class DIfStatement extends DStatement {
 
     final String node = "DIfStatement";
@@ -36,6 +39,18 @@ public class DIfStatement extends DStatement {
             if (elseStmt != null)
                 return elseStmt;
             return null;
+        }
+
+        @Override
+        public void updateSequences(List<Sequence> soFar) {
+            List<Sequence> copy = new ArrayList<>();
+            for (Sequence seq : soFar)
+                copy.add(new Sequence(seq.calls));
+            new DStatement.Handle(statement.getThenStatement(), visitor).updateSequences(soFar);
+            new DStatement.Handle(statement.getElseStatement(), visitor).updateSequences(copy);
+            for (Sequence seq : copy)
+                if (! soFar.contains(seq))
+                    soFar.add(seq);
         }
     }
 }

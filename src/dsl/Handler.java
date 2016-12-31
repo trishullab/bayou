@@ -1,7 +1,9 @@
 package dsl;
 
+import java.util.List;
+
 public abstract class Handler {
-    Visitor visitor;
+    protected Visitor visitor;
     protected Handler(Visitor visitor) {
         this.visitor = visitor;
     }
@@ -9,4 +11,5 @@ public abstract class Handler {
     protected Handler() {}
 
     abstract DASTNode handle();
+    abstract void updateSequences(List<Sequence> soFar);
 }

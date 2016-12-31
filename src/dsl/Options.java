@@ -43,6 +43,7 @@ public class Options {
     JsonObject config;
 
     final List<String> API_CLASSES;
+    final int NUM_UNROLLS;
 
     public Options(String[] args) throws ParseException, IOException {
         this.cmdLine = readCommandLine(args);
@@ -52,6 +53,11 @@ public class Options {
         for (JsonElement e : this.config.getAsJsonArray("api-classes"))
             classes.add(e.getAsString());
         this.API_CLASSES = Collections.unmodifiableList(classes);
+
+        if (this.config.has("num-unrolls"))
+            this.NUM_UNROLLS = this.config.getAsJsonPrimitive("num-unrolls").getAsInt();
+        else
+            this.NUM_UNROLLS = 1;
     }
 
     private CommandLine readCommandLine(String[] args) throws ParseException {

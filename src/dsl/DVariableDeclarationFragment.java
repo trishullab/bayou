@@ -2,6 +2,8 @@ package dsl;
 
 import org.eclipse.jdt.core.dom.VariableDeclarationFragment;
 
+import java.util.List;
+
 public class DVariableDeclarationFragment extends DVariableDeclaration {
 
     final String node = "DVariableDeclarationFragment";
@@ -30,6 +32,11 @@ public class DVariableDeclarationFragment extends DVariableDeclaration {
                 return new DVariableDeclarationFragment(name, initializer);
 
             return null;
+        }
+
+        @Override
+        public void updateSequences(List<Sequence> soFar) {
+            new DExpression.Handle(fragment.getInitializer(), visitor).updateSequences(soFar);
         }
     }
 }

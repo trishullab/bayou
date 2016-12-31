@@ -2,6 +2,8 @@ package dsl;
 
 import org.eclipse.jdt.core.dom.NullLiteral;
 
+import java.util.List;
+
 public class DNullLiteral extends DExpression {
 
     final String node = "DNullLiteral";
@@ -16,5 +18,8 @@ public class DNullLiteral extends DExpression {
         public DNullLiteral handle() {
             return new DNullLiteral();
         }
+
+        @Override
+        public void updateSequences(List<Sequence> soFar) { }
     }
 }

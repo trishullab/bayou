@@ -6,6 +6,8 @@ import org.eclipse.jdt.core.dom.*;
 
 import java.io.FileNotFoundException;
 import java.io.PrintWriter;
+import java.util.ArrayList;
+import java.util.List;
 
 public class Visitor extends ASTVisitor {
 
@@ -16,9 +18,11 @@ public class Visitor extends ASTVisitor {
 
     class JSONOutputWrapper {
         DBlock ast;
+        List<Sequence> sequences;
 
-        public JSONOutputWrapper(DBlock ast) {
+        public JSONOutputWrapper(DBlock ast, List<Sequence> sequences) {
             this.ast = ast;
+            this.sequences = sequences;
         }
     }
 
@@ -36,14 +40,19 @@ public class Visitor extends ASTVisitor {
     @Override
     public boolean visit(MethodDeclaration method) {
         DBlock ast = new DBlock.Handle(method.getBody(), this).handle();
-        if (ast != null)
-            printJson(ast);
+        if (ast != null) {
+            List<Sequence> sequences = new ArrayList<>();
+            sequences.add(new Sequence());
+            new DBlock.Handle(method.getBody(), this).updateSequences(sequences);
+
+            printJson(ast, sequences);
+        }
         return false;
     }
 
     boolean first = true;
-    private void printJson(DBlock ast) {
-        JSONOutputWrapper out = new JSONOutputWrapper(ast);
+    private void printJson(DBlock ast, List<Sequence> sequences) {
+        JSONOutputWrapper out = new JSONOutputWrapper(ast, sequences);
         output.write(first? "" : ",\n");
         output.write(gson.toJson(out));
         output.flush();

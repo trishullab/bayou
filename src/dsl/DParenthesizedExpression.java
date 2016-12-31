@@ -2,6 +2,8 @@ package dsl;
 
 import org.eclipse.jdt.core.dom.ParenthesizedExpression;
 
+import java.util.List;
+
 public class DParenthesizedExpression extends DExpression {
 
     final String node = "DParenthesizedExpression";
@@ -26,6 +28,11 @@ public class DParenthesizedExpression extends DExpression {
             if (exp != null)
                 return new DParenthesizedExpression(exp);
             return null;
+        }
+
+        @Override
+        public void updateSequences(List<Sequence> soFar) {
+            new DExpression.Handle(expression.getExpression(), visitor).updateSequences(soFar);
         }
     }
 }

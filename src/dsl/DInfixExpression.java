@@ -2,6 +2,8 @@ package dsl;
 
 import org.eclipse.jdt.core.dom.InfixExpression;
 
+import java.util.List;
+
 public class DInfixExpression extends DExpression {
 
     final String node = "DInfixExpression";
@@ -44,6 +46,12 @@ public class DInfixExpression extends DExpression {
                 return new DInfixExpression(dleft, op, dright);
 
             return null;
+        }
+
+        @Override
+        public void updateSequences(List<Sequence> soFar) {
+            new DExpression.Handle(expr.getLeftOperand(), visitor).updateSequences(soFar);
+            new DExpression.Handle(expr.getRightOperand(), visitor).updateSequences(soFar);
         }
     }
 }

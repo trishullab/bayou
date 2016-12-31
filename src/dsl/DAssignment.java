@@ -2,6 +2,8 @@ package dsl;
 
 import org.eclipse.jdt.core.dom.Assignment;
 
+import java.util.List;
+
 public class DAssignment extends DExpression {
 
     final String node = "DAssignment";
@@ -46,6 +48,11 @@ public class DAssignment extends DExpression {
                     return new DAssignment(dlhs, op, drhs);
 
             return null;
+        }
+
+        @Override
+        public void updateSequences(List<Sequence> soFar) {
+            new DExpression.Handle(assignment.getRightHandSide(), visitor).updateSequences(soFar);
         }
     }
 }

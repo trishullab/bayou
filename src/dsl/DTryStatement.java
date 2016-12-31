@@ -41,5 +41,20 @@ public class DTryStatement extends DStatement {
 
             return null;
         }
+
+        @Override
+        public void updateSequences(List<Sequence> soFar) {
+            new DBlock.Handle(statement.getBody(), visitor).updateSequences(soFar);
+            for (Object o : statement.catchClauses()) {
+                CatchClause clause = (CatchClause) o;
+                List<Sequence> copy = new ArrayList<>();
+                for (Sequence seq : soFar)
+                    copy.add(new Sequence(seq.calls));
+                new DCatchClause.Handle(clause, visitor).updateSequences(copy);
+                for (Sequence seq : copy)
+                    if (!soFar.contains(seq))
+                        soFar.add(seq);
+            }
+        }
     }
 }
