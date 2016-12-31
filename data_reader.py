@@ -28,15 +28,15 @@ call_nodes = [ ('DClassInstanceCreation','constructor'), ('DMethodInvocation','m
 
 STOP = ('STOP',False)
 
-# Type of edge to the next node along the path. Note: LEAF_EDGE is redundant since it's always the last edge
-# along a path, but it's there to keep the data format consistent.
+# Type of edge to the next node along the path. Note: LEAF_EDGE is redundant since it's always 
+# the last edge along a path, but it's there to keep the data format consistent.
 CHILD_EDGE, SIBLING_EDGE, LEAF_EDGE = 'V', 'H', 'L'
 
-def get_paths(js, topic):
+def get_ast_paths(js):
     node = js['node']
     assert node in ast_map, 'Unrecognized AST node: {:s}'.format(node)
     if ast_map[node] == []:
-        return [[(node, LEAF_EDGE, topic)]]
+        return [[(node, LEAF_EDGE)]]
     lst = []
     for child in ast_map[node]:
         if type(child) is list:
@@ -46,14 +46,18 @@ def get_paths(js, topic):
             lst.append(STOP)
         else:
             lst.append((js[child[0]], child[1]))
-    children_paths = [get_paths(child, topic) if nt and child is not None else [[(child, LEAF_EDGE, topic)]] for child, nt in lst]
-    prefix = [(node, CHILD_EDGE, topic)]
+    children_paths = [get_ast_paths(child) if nt and child is not None else [[(child, LEAF_EDGE)]]
+                            for child, nt in lst]
+    prefix = [(node, CHILD_EDGE)]
     paths = []
     for i, child_paths in enumerate(children_paths):
         paths += [prefix + child_path for child_path in child_paths]
         child, nt = lst[i][0], lst[i][1]
-        prefix += [(child['node'] if nt and child is not None else child, SIBLING_EDGE, topic)]
+        prefix += [(child['node'] if nt and child is not None else child, SIBLING_EDGE)]
     return paths
+
+def get_seqs(js):
+    return [sequence['calls'] for sequence in js]
 
 def print_data(filename):
     [print(path) for path in read_data(filename)]
@@ -61,10 +65,13 @@ def print_data(filename):
 def read_data(filename):
     with open(filename) as f:
         js = json.loads(f.read())
-    if 'programs' in js:
-        data = [get_paths(program['ast'], topic) for program in js['programs'] for topic in program['topic']]
-        return itertools.chain.from_iterable(data)
-    return get_paths(js['ast'], js['topic'])
+    inputs, targets = [], []
+    for program in js['programs']:
+        seqs, ast_paths = get_seqs(program['sequences']), get_ast_paths(program['ast'])
+        inp, tar = zip(*itertools.product(seqs, ast_paths))
+        inputs += inp
+        targets += tar
+    return inputs, targets
 
 if __name__ == '__main__':
     print_data(sys.argv[1])

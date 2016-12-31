@@ -1,9 +1,10 @@
-import codecs
 import os
-import collections
-from six.moves import cPickle
+import itertools
 import numpy as np
-import data_reader
+
+from data_reader import read_data, CHILD_EDGE
+
+CLASS0 = 'CLASS0'
 
 def weighted_pick(weights):
     t = np.cumsum(weights)
@@ -11,64 +12,60 @@ def weighted_pick(weights):
     return int(np.searchsorted(t, np.random.rand(1)*s))
 
 class DataLoader():
-    def __init__(self, input_file, batch_size, seq_length):
-        self.batch_size = batch_size
-        self.seq_length = seq_length
-
+    def __init__(self, input_file, args):
+        # inputs is a list of sequences, targets is a list of ASTs which are in turn a list of
+        # sequences
         print("reading text file")
-        self.preprocess(input_file)
-        self.create_batches()
-        self.reset_batch_pointer()
+        raw_inputs, raw_targets = read_data(input_file)
+        assert len(raw_inputs) == len(raw_targets), 'Number of inputs and targets do not match'
 
-    def preprocess(self, input_file):
-        paths = data_reader.read_data(input_file)
-        data = [word for path in paths for word in path]
-        data_nodes, data_edges, data_topics = zip(*data)
-        counter = collections.Counter(data_nodes)
-        count_pairs = sorted(counter.items(), key=lambda x: -x[1])
-        self.chars, _ = zip(*count_pairs)
-        self.vocab_size = len(self.chars)
-        self.vocab = dict(zip(self.chars, range(len(self.chars))))
-        self.tensor = np.array(list(map(self.vocab.get, data_nodes)))
-        # bool array representing True:CHILD_EDGE or False:SIBLING_EDGE
-        self.edges = np.array([edge == data_reader.CHILD_EDGE for edge in data_edges], dtype=np.bool)
-        self.topics = np.array([np.array(t) for t in data_topics])
-        self.ntopics = len(self.topics[0])
+        # setup input and target chars/vocab, using class 0 for padding
+        self.input_chars = [CLASS0] + list(set(itertools.chain.from_iterable(raw_inputs)))
+        self.input_vocab = dict(zip(self.input_chars, range(len(self.input_chars))))
+        args.input_vocab_size = len(self.input_vocab)
 
-    def create_batches(self):
-        self.num_batches = int(self.tensor.size / (self.batch_size *
-                                                   self.seq_length))
+        self.target_chars = [CLASS0] + list(set([node for path in raw_targets 
+                                                      for (node, _) in path]))
+        self.target_vocab = dict(zip(self.target_chars, range(len(self.target_chars))))
+        args.target_vocab_size = len(self.target_vocab)
 
-        # When the data (tensor) is too small, let's give them a better error message
-        if self.num_batches==0:
-            assert False, "Not enough data. Make seq_length and batch_size small."
+        # align with number of batches
+        args.num_batches = int(len(raw_inputs) / args.batch_size)
+        assert args.num_batches > 0, 'Not enough data'
+        sz = args.num_batches * args.batch_size
+        raw_inputs = raw_inputs[:sz]
+        raw_targets = raw_targets[:sz]
 
-        self.tensor = self.tensor[:self.num_batches * self.batch_size * self.seq_length]
-        self.edges = self.edges[:self.num_batches * self.batch_size * self.seq_length]
-        self.topics = self.topics[:self.num_batches * self.batch_size * self.seq_length]
-        xdata = self.tensor
-        edata = self.edges
-        tdata = self.topics
-        ydata = np.copy(self.tensor)
-        ydata[:-1] = xdata[1:]
-        ydata[-1] = xdata[0]
-        self.x_batches = np.split(xdata.reshape(self.batch_size, -1), self.num_batches, 1)
-        self.e_batches = np.split(edata.reshape(self.batch_size, -1), self.num_batches, 1)
-        self.t_batches = np.split(tdata.reshape(self.batch_size, -1, self.ntopics), self.num_batches, 1)
-        self.y_batches = np.split(ydata.reshape(self.batch_size, -1), self.num_batches, 1)
+        # apply the dict on inputs and targets
+        self.inputs = np.zeros((sz, args.max_seq_length, 1), dtype=np.int32)
+        self.inputs_len = np.zeros(sz, dtype=np.int32)
+        for i, seq in enumerate(raw_inputs):
+            assert len(seq) < args.max_seq_length, 'Sequence too long, increase max_seq_length'
+            self.inputs[i, :len(seq), 0] = list(map(self.input_vocab.get, seq))
+            self.inputs_len[i] = len(seq)
 
+        self.nodes = np.zeros((sz, args.max_ast_depth), dtype=np.int32)
+        self.edges = np.zeros((sz, args.max_ast_depth), dtype=np.bool)
+        self.targets = np.zeros((sz, args.max_ast_depth), dtype=np.int32)
+        for i, path in enumerate(raw_targets):
+            assert len(path) < args.max_ast_depth, 'Path too long, increase max_ast_depth'
+            self.nodes[i, :len(path)] = list(map(self.target_vocab.get, [p[0] for p in path]))
+            self.edges[i, :len(path)] = [p[1] == CHILD_EDGE for p in path]
+            self.targets[i, :len(path)-1] = self.nodes[i, 1:len(path)] # shifted left by one
+
+        # split into batches
+        self.inputs = np.split(self.inputs, args.num_batches, axis=0)
+        self.inputs_len = np.split(self.inputs_len, args.num_batches, axis=0)
+        self.nodes = np.split(self.nodes, args.num_batches, axis=0)
+        self.edges = np.split(self.edges, args.num_batches, axis=0)
+        self.targets = np.split(self.targets, args.num_batches, axis=0)
+
+        # reset batches
+        self.reset_batches()
 
     def next_batch(self):
-        x, e, t, y = [], [], [], self.y_batches[self.pointer]
-        for i in range(self.seq_length):
-            x.append(np.array([self.x_batches[self.pointer][batch][i] for batch in  
-                range(self.batch_size)], dtype=np.int32))
-            e.append(np.array([self.e_batches[self.pointer][batch][i] for batch in  
-                range(self.batch_size)], dtype=np.bool_))
-            t.append(np.array([self.t_batches[self.pointer][batch][i] for batch in  
-                range(self.batch_size)], dtype=np.float))
-        self.pointer += 1
-        return x, e, t, y
+        x, l, n, e, y = next(self.batches)
+        return x, l, np.transpose(n), np.transpose(e), y
 
-    def reset_batch_pointer(self):
-        self.pointer = 0
+    def reset_batches(self):
+        self.batches = zip(self.inputs, self.inputs_len, self.nodes, self.edges, self.targets)

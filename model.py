@@ -1,65 +1,75 @@
 import tensorflow as tf
-from tensorflow.python.ops import seq2seq
-
-import decoder
-from utils import weighted_pick
-from cells import TopicRNNCell, TopicLSTMCell
-from data_reader import CHILD_EDGE, SIBLING_EDGE
 import numpy as np
+
+from variational import VariationalEncoder, VariationalDecoder
+from data_reader import CHILD_EDGE, SIBLING_EDGE
 
 class Model():
     def __init__(self, args, infer=False):
         self.args = args
         if infer:
             args.batch_size = 1
-            args.seq_length = 1
+            args.max_ast_depth = 1
 
-        cell = TopicLSTMCell if args.cell == 'lstm' else TopicRNNCell
-        self.cell1 = cell(args.rnn_size)
-        self.cell2 = cell(args.rnn_size)
+        # setup the encoder
+        self.encoder = VariationalEncoder(args)
 
-        self.node_data = [tf.placeholder(tf.int32, [args.batch_size], name='node{0}'.format(i))
-                for i in range(args.seq_length)]
-        self.edge_data = [tf.placeholder(tf.bool, [args.batch_size], name='edge{0}'.format(i))
-                for i in range(args.seq_length)]
-        self.topic_data = [tf.placeholder(tf.float32, [args.batch_size, args.ntopics], name='topic{0}'.format(i))
-                for i in range(args.seq_length)]
-        self.targets = tf.placeholder(tf.int32, [args.batch_size, args.seq_length])
-        self.initial_state = self.cell1.zero_state(args.batch_size, tf.float32)
+        # sample from Normal(0,1) and reparameterize
+        samples = tf.random_normal([args.batch_size, args.rnn_size], 0., 1., dtype=tf.float32)
+        self.psi = self.encoder.psi_mean + (self.encoder.psi_stdv * samples)
 
-        projection_w = tf.get_variable("projection_w", [args.rnn_size, args.vocab_size])
-        projection_b = tf.get_variable("projection_b", [args.vocab_size])
+        # setup the decoder with psi as the initial state
+        self.decoder = VariationalDecoder(args, initial_state=self.psi, infer=infer)
 
-        outputs, last_state = decoder.embedding_rnn_decoder(self.node_data, self.edge_data, self.topic_data, self.initial_state, self.cell1, self.cell2, args.vocab_size, args.rnn_size, (projection_w,projection_b), feed_previous=infer)
-        output = tf.reshape(tf.concat(1, outputs), [-1, args.rnn_size])
-        self.logits = tf.matmul(output, projection_w) + projection_b
-        self.probs = tf.nn.softmax(self.logits)
-        self.cost = seq2seq.sequence_loss([self.logits],
-                [tf.reshape(self.targets, [-1])],
-                [tf.ones([args.batch_size * args.seq_length])])
-        self.final_state = last_state
+        # get the decoder outputs
+        output = tf.reshape(tf.concat(1, self.decoder.outputs), [-1, args.rnn_size])
+        logits = tf.matmul(output, self.decoder.projection_w) + self.decoder.projection_b
+        self.probs = tf.nn.softmax(logits)
+
+        # define losses
+        self.targets = tf.placeholder(tf.int32, [args.batch_size, args.max_ast_depth])
+        self.latent_loss = 0.5 * tf.reduce_sum(tf.square(self.encoder.psi_mean)
+                                    + tf.square(self.encoder.psi_stdv)
+                                    - tf.log(tf.square(self.encoder.psi_stdv)) - 1, 1)
+        self.generation_loss = tf.nn.seq2seq.sequence_loss([logits],
+                                    [tf.reshape(self.targets, [-1])],
+                                    [tf.ones([args.batch_size * args.max_ast_depth])])
+        self.cost = tf.reduce_mean(self.latent_loss + self.generation_loss)
         self.train_op = tf.train.AdamOptimizer(args.learning_rate).minimize(self.cost)
 
-        var_params = [np.prod([dim.value for dim in var.get_shape()]) for var in tf.trainable_variables()]
+        var_params = [np.prod([dim.value for dim in var.get_shape()])
+                            for var in tf.trainable_variables()]
         if not infer:
             print('Model parameters: {}'.format(np.sum(var_params)))
 
-    def predict(self, sess, prime, topic, chars, vocab):
+    def probability(self, sess, seq, nodes, edges, input_vocab, target_vocab):
 
-        state = self.cell1.zero_state(1, tf.float32).eval()
-        t = np.array(np.reshape(topic, (1, -1)), dtype=np.float)
-        for node, edge in prime:
+        # apply the dict on inputs (batch_size is 1 during inference)
+        x = np.zeros((1, self.args.max_seq_length, 1), dtype=np.int32)
+        x[0, :len(seq), 0] = list(map(input_vocab.get, seq))
+        l = np.array([len(seq)], dtype=np.int32)
+
+        # setup initial states and feed
+        init_state_mean = self.encoder.cell_mean_init.eval()
+        init_state_stdv = self.encoder.cell_stdv_init.eval()
+        feed = { self.encoder.seq: x,
+                 self.encoder.seq_length: l,
+                 self.encoder.cell_mean_init: init_state_mean,
+                 self.encoder.cell_stdv_init: init_state_stdv }
+
+        # run the encoder and get psi
+        [state] = sess.run([self.psi], feed)
+
+        # run the decoder for every time step (beginning with psi as the initial state)
+        for node, edge in zip(nodes, edges):
             assert edge == CHILD_EDGE or edge == SIBLING_EDGE, 'invalid edge: {}'.format(edge)
-            node_data, edge_data = np.zeros((1,), dtype=np.int32), np.zeros((1,), dtype=np.int32)
-            node_data[0] = vocab[node]
-            edge_data[0] = edge == CHILD_EDGE
+            n = np.array([target_vocab[node]], dtype=np.int32)
+            e = np.array([edge == CHILD_EDGE], dtype=np.bool)
 
-            feed = {self.initial_state: state,
-                    self.node_data[0].name: node_data,
-                    self.edge_data[0].name: edge_data,
-                    self.topic_data[0].name: t}
-            [probs, state] = sess.run([self.probs, self.final_state], feed)
+            feed = { self.decoder.initial_state: state,
+                     self.decoder.nodes[0].name: n,
+                     self.decoder.edges[0].name: e }
+            [probs, state] = sess.run([self.probs, self.decoder.state], feed)
 
         dist = probs[0]
-        prediction = chars[weighted_pick(dist)]
-        return dist, prediction
+        return dist
