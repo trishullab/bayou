@@ -1,5 +1,6 @@
 package dsl;
 
+import org.eclipse.jdt.core.dom.Expression;
 import org.eclipse.jdt.core.dom.IMethodBinding;
 import org.eclipse.jdt.core.dom.MethodInvocation;
 
@@ -13,9 +14,11 @@ public class DMethodInvocation extends DExpression {
 
     final String node = "DMethodInvocation";
     final String methodName;
+    final List<List<Refinement>> argRefinements;
 
-    private DMethodInvocation(String methodName) {
+    private DMethodInvocation(String methodName, List<List<Refinement>> argRefinements) {
         this.methodName = methodName;
+        this.argRefinements = argRefinements;
     }
 
     public static class Handle extends Handler {
@@ -29,8 +32,12 @@ public class DMethodInvocation extends DExpression {
         @Override
         public DMethodInvocation handle() {
             String className = checkAndGetClassName();
-            if (className != null)
-                return new DMethodInvocation(className + "." + getSignature(invocation.resolveMethodBinding()));
+            if (className != null) {
+                List<List<Refinement>> argRefinements = new ArrayList<>();
+                for (Object arg : invocation.arguments())
+                    argRefinements.add(Refinement.getRefinements((Expression) arg));
+                return new DMethodInvocation(className + "." + getSignature(invocation.resolveMethodBinding()), argRefinements);
+            }
             return null;
         }
 

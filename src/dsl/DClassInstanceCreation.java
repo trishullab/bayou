@@ -1,6 +1,7 @@
 package dsl;
 
 import org.eclipse.jdt.core.dom.ClassInstanceCreation;
+import org.eclipse.jdt.core.dom.Expression;
 import org.eclipse.jdt.core.dom.IMethodBinding;
 
 import java.util.ArrayList;
@@ -13,9 +14,11 @@ public class DClassInstanceCreation extends DExpression {
 
     final String node = "DClassInstanceCreation";
     String constructor;
+    final List<List<Refinement>> argRefinements;
 
-    private DClassInstanceCreation(String constructor) {
+    private DClassInstanceCreation(String constructor, List<List<Refinement>> argRefinements) {
         this.constructor = constructor;
+        this.argRefinements = argRefinements;
     }
 
     public static class Handle extends Handler {
@@ -29,8 +32,12 @@ public class DClassInstanceCreation extends DExpression {
         @Override
         public DClassInstanceCreation handle() {
             String className = checkAndGetClassName();
-            if (className != null)
-                return new DClassInstanceCreation(className + "." + getSignature(creation.resolveConstructorBinding()));
+            if (className != null) {
+                List<List<Refinement>> argRefinements = new ArrayList<>();
+                for (Object arg : creation.arguments())
+                    argRefinements.add(Refinement.getRefinements((Expression) arg));
+                return new DClassInstanceCreation(className + "." + getSignature(creation.resolveConstructorBinding()), argRefinements);
+            }
             return null;
         }
 
