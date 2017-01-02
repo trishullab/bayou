@@ -35,7 +35,7 @@ public class DMethodInvocation extends DExpression {
             if (className != null) {
                 List<List<Refinement>> argRefinements = new ArrayList<>();
                 for (Object arg : invocation.arguments())
-                    argRefinements.add(Refinement.getRefinements((Expression) arg));
+                    argRefinements.add(Refinement.getRefinements((Expression) arg, visitor));
                 return new DMethodInvocation(className + "." + getSignature(invocation.resolveMethodBinding()), argRefinements);
             }
             return null;

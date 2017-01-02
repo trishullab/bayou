@@ -1,6 +1,7 @@
 package dsl;
 
 import org.eclipse.jdt.core.dom.Expression;
+import org.eclipse.jdt.core.dom.Name;
 import org.eclipse.jdt.core.dom.StringLiteral;
 
 import java.util.regex.Pattern;
@@ -10,7 +11,11 @@ public class RefinementString extends Refinement {
     int length;
     boolean containsPunct;
 
-    public RefinementString(Expression e) {
+    public RefinementString(Expression e, Visitor visitor) {
+        super(visitor);
+        if (knownConstants(e))
+            return;
+
         if ( !(e instanceof StringLiteral)) {
             this.exists = false;
             this.length = 0;
@@ -18,10 +23,29 @@ public class RefinementString extends Refinement {
             return;
         }
 
-        StringLiteral s = (StringLiteral) e;
-        Pattern p = Pattern.compile("[^a-z0-9 ]", Pattern.CASE_INSENSITIVE);
+        String s = ((StringLiteral) e).getLiteralValue();
         this.exists = true;
-        this.length = s.getLiteralValue().length();
-        this.containsPunct = p.matcher(s.getLiteralValue()).find();
+        this.length = s.length();
+        this.containsPunct = hasPunct(s);
+    }
+
+    private boolean knownConstants(Expression e) {
+        if (! (e instanceof Name))
+            return false;
+        String s = ((Name) e).getFullyQualifiedName();
+        if (visitor.options.KNOWN_CONSTANTS_STRING.containsKey(s)) {
+            String v = visitor.options.KNOWN_CONSTANTS_STRING.get(s);
+            this.exists = true;
+            this.length = v.length();
+            this.containsPunct = hasPunct(v);
+
+            return true;
+        }
+        return false;
+    }
+
+    private boolean hasPunct(String s) {
+        Pattern p = Pattern.compile("[^a-z0-9 ]", Pattern.CASE_INSENSITIVE);
+        return p.matcher(s).find();
     }
 }

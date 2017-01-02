@@ -35,7 +35,7 @@ public class DClassInstanceCreation extends DExpression {
             if (className != null) {
                 List<List<Refinement>> argRefinements = new ArrayList<>();
                 for (Object arg : creation.arguments())
-                    argRefinements.add(Refinement.getRefinements((Expression) arg));
+                    argRefinements.add(Refinement.getRefinements((Expression) arg, visitor));
                 return new DClassInstanceCreation(className + "." + getSignature(creation.resolveConstructorBinding()), argRefinements);
             }
             return null;
