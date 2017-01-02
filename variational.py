@@ -18,20 +18,27 @@ class VariationalEncoder(object):
                                         embedding_classes=args.input_vocab_size,
                                         embedding_size=args.rnn_size)
                 self.cell_mean_init = self.cell_mean.zero_state(args.batch_size, tf.float32)
-                _, self.psi_mean = tf.nn.dynamic_rnn(self.cell_mean, self.seq,
+                _, psi_mean = tf.nn.dynamic_rnn(self.cell_mean, self.seq,
                                         sequence_length=self.seq_length,
                                         initial_state=self.cell_mean_init,
                                         dtype=tf.float32)
+                latent_w_mean = tf.get_variable('latent_w_mean', [args.rnn_size, args.latent_size])
+                latent_b_mean = tf.get_variable('latent_b_mean', [args.latent_size])
+                self.psi_mean = tf.matmul(psi_mean, latent_w_mean) + latent_b_mean
+
             # standard deviation RNN
             with tf.variable_scope('stdv'):
                 self.cell_stdv = tf.nn.rnn_cell.EmbeddingWrapper(cell2, 
                                             embedding_classes=args.input_vocab_size,
                                             embedding_size=args.rnn_size)
                 self.cell_stdv_init = self.cell_stdv.zero_state(args.batch_size, tf.float32)
-                _, self.psi_stdv = tf.nn.dynamic_rnn(self.cell_stdv, self.seq,
+                _, psi_stdv = tf.nn.dynamic_rnn(self.cell_stdv, self.seq,
                                         sequence_length=self.seq_length,
                                         initial_state=self.cell_stdv_init,
                                         dtype=tf.float32)
+                latent_w_stdv = tf.get_variable('latent_w_stdv', [args.rnn_size, args.latent_size])
+                latent_b_stdv = tf.get_variable('latent_b_stdv', [args.latent_size])
+                self.psi_stdv = tf.matmul(psi_stdv, latent_w_stdv) + latent_b_stdv
 
 class VariationalDecoder(object):
     def __init__(self, args, initial_state, infer=False):

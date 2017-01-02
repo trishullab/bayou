@@ -15,11 +15,14 @@ class Model():
         self.encoder = VariationalEncoder(args)
 
         # sample from Normal(0,1) and reparameterize
-        samples = tf.random_normal([args.batch_size, args.rnn_size], 0., 1., dtype=tf.float32)
+        samples = tf.random_normal([args.batch_size, args.latent_size], 0., 1., dtype=tf.float32)
         self.psi = self.encoder.psi_mean + (self.encoder.psi_stdv * samples)
 
         # setup the decoder with psi as the initial state
-        self.decoder = VariationalDecoder(args, initial_state=self.psi, infer=infer)
+        expansion_w = tf.get_variable('expansion_w', [args.latent_size, args.rnn_size])
+        expansion_b = tf.get_variable('expansion_b', [args.rnn_size])
+        self.initial_state = tf.matmul(self.psi, expansion_w) + expansion_b
+        self.decoder = VariationalDecoder(args, initial_state=self.initial_state, infer=infer)
 
         # get the decoder outputs
         output = tf.reshape(tf.concat(1, self.decoder.outputs), [-1, args.rnn_size])
@@ -58,7 +61,7 @@ class Model():
                  self.encoder.cell_stdv_init: init_state_stdv }
 
         # run the encoder and get psi
-        [state] = sess.run([self.psi], feed)
+        [psi, state] = sess.run([self.psi, self.initial_state], feed)
 
         # run the decoder for every time step (beginning with psi as the initial state)
         for node, edge in zip(nodes, edges):

@@ -18,6 +18,8 @@ def main():
                        help='directory to store checkpointed models')
     parser.add_argument('--cell', type=str, default='rnn', choices=['rnn', 'lstm'],
                        help='type of RNN cell')
+    parser.add_argument('--latent_size', type=int, default=8,
+                       help='dimensions of latent space')
     parser.add_argument('--rnn_size', type=int, default=128,
                        help='size of RNN hidden state')
     parser.add_argument('--batch_size', type=int, default=50,
