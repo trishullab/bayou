@@ -20,6 +20,8 @@ public class DIfStatement extends DStatement {
 
     @Override
     public void updateSequences(List<Sequence> soFar) {
+        if (cond != null)
+            cond.updateSequences(soFar);
         List<Sequence> copy = new ArrayList<>();
         for (Sequence seq : soFar)
             copy.add(new Sequence(seq.calls));
