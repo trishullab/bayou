@@ -30,8 +30,8 @@ public class DName extends DExpression {
             if (binding == null || ! (binding instanceof IVariableBinding))
                 return null;
             ITypeBinding type = ((IVariableBinding) binding).getType();
-            if (type != null && type.getDeclaringClass() != null) {
-                String className = type.getDeclaringClass().getQualifiedName();
+            if (type != null && type.getQualifiedName() != null) {
+                String className = type.getQualifiedName();
                 if (className.contains("<")) /* be agnostic to generic versions */
                     className = className.substring(0, className.indexOf("<"));
                 /* consider only java or android types, ignoring those local to the package */
