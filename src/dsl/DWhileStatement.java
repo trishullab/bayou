@@ -10,9 +10,26 @@ public class DWhileStatement extends DStatement {
     final DExpression cond;
     final DStatement body;
 
+    // needed for updateSequences, but should not be in JSON
+    private transient Visitor visitor;
+
     private DWhileStatement(DExpression cond, DStatement body) {
         this.cond = cond;
         this.body = body;
+    }
+
+    @Override
+    public void updateSequences(List<Sequence> soFar) {
+        for (int i = 0; i < visitor.options.NUM_UNROLLS; i++) {
+            cond.updateSequences(soFar);
+            body.updateSequences(soFar);
+        }
+        cond.updateSequences(soFar);
+    }
+
+    public DWhileStatement setVisitor(Visitor visitor) {
+        this.visitor = visitor;
+        return this;
     }
 
     public static class Handle extends Handler {
@@ -29,20 +46,11 @@ public class DWhileStatement extends DStatement {
             DStatement body = new DStatement.Handle(statement.getBody(), visitor).handle();
 
             if (cond != null && body != null)
-                return new DWhileStatement(cond, body);
+                return new DWhileStatement(cond, body).setVisitor(visitor);
             if (body != null)
                 return body;
 
             return null;
-        }
-
-        @Override
-        public void updateSequences(List<Sequence> soFar) {
-            for (int i = 0; i < visitor.options.NUM_UNROLLS; i++) {
-                new DExpression.Handle(statement.getExpression(), visitor).updateSequences(soFar);
-                new DStatement.Handle(statement.getBody(), visitor).updateSequences(soFar);
-            }
-            new DExpression.Handle(statement.getExpression(), visitor).updateSequences(soFar);
         }
     }
 }

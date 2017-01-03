@@ -13,6 +13,11 @@ public class DCatchClause extends DASTNode {
         this.body = body;
     }
 
+    @Override
+    public void updateSequences(List<Sequence> soFar) {
+        body.updateSequences(soFar);
+    }
+
     public static class Handle extends Handler {
         CatchClause catchClause;
 
@@ -28,11 +33,6 @@ public class DCatchClause extends DASTNode {
                 return new DCatchClause(body);
 
             return null;
-        }
-
-        @Override
-        public void updateSequences(List<Sequence> soFar) {
-            new DBlock.Handle(catchClause.getBody(), visitor).updateSequences(soFar);
         }
     }
 }

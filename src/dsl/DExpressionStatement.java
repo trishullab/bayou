@@ -13,6 +13,11 @@ public class DExpressionStatement extends DStatement {
         this.expression = expression;
     }
 
+    @Override
+    public void updateSequences(List<Sequence> soFar) {
+        expression.updateSequences(soFar);
+    }
+
     public static class Handle extends Handler {
         ExpressionStatement expressionStatement;
 
@@ -27,11 +32,6 @@ public class DExpressionStatement extends DStatement {
             if (exp != null)
                 return new DExpressionStatement(exp);
             return null;
-        }
-
-        @Override
-        public void updateSequences(List<Sequence> soFar) {
-            new DExpression.Handle(expressionStatement.getExpression(), visitor).updateSequences(soFar);
         }
     }
 }

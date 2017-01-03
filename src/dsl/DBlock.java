@@ -15,6 +15,12 @@ public class DBlock extends DStatement {
         this.statements = statements;
     }
 
+    @Override
+    public void updateSequences(List<Sequence> soFar) {
+        for (DStatement statement : statements)
+            statement.updateSequences(soFar);
+    }
+
     public static class Handle extends Handler {
         Block block;
 
@@ -43,16 +49,6 @@ public class DBlock extends DStatement {
                 return new DBlock(statements);
 
             return null;
-        }
-
-        @Override
-        public void updateSequences(List<Sequence> soFar) {
-            if (block == null)
-                return;
-            for (Object o : block.statements()) {
-                Statement s = (Statement) o;
-                new DStatement.Handle(s, visitor).updateSequences(soFar);
-            }
         }
     }
 }

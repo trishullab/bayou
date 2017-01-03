@@ -17,6 +17,12 @@ public class DVariableDeclarationStatement extends DStatement {
         this.fragments = fragments;
     }
 
+    @Override
+    public void updateSequences(List<Sequence> soFar) {
+        for (DVariableDeclarationFragment fragment : fragments)
+            fragment.updateSequences(soFar);
+    }
+
     public static class Handle extends Handler {
         VariableDeclarationStatement statement;
 
@@ -54,14 +60,6 @@ public class DVariableDeclarationStatement extends DStatement {
                 return new DVariableDeclarationStatement(fragments);
 
             return null;
-        }
-
-        @Override
-        public void updateSequences(List<Sequence> soFar) {
-            for (Object o : statement.fragments()) {
-                VariableDeclarationFragment fragment = (VariableDeclarationFragment) o;
-                new DVariableDeclarationFragment.Handle(fragment, visitor).updateSequences(soFar);
-            }
         }
     }
 }

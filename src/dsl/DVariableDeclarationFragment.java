@@ -15,6 +15,11 @@ public class DVariableDeclarationFragment extends DVariableDeclaration {
         this.initializer = initializer;
     }
 
+    @Override
+    public void updateSequences(List<Sequence> soFar) {
+        initializer.updateSequences(soFar);
+    }
+
     public static class Handle extends Handler {
 
         VariableDeclarationFragment fragment;
@@ -32,11 +37,6 @@ public class DVariableDeclarationFragment extends DVariableDeclaration {
                 return new DVariableDeclarationFragment(name, initializer);
 
             return null;
-        }
-
-        @Override
-        public void updateSequences(List<Sequence> soFar) {
-            new DExpression.Handle(fragment.getInitializer(), visitor).updateSequences(soFar);
         }
     }
 }

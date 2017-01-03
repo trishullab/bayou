@@ -2,8 +2,6 @@ package dsl;
 
 import org.eclipse.jdt.core.dom.*;
 
-import java.util.List;
-
 public abstract class DExpression extends DASTNode {
 
     public static class Handle extends Handler {
@@ -32,24 +30,6 @@ public abstract class DExpression extends DASTNode {
                 return new DParenthesizedExpression.Handle((ParenthesizedExpression) expression, visitor).handle();
 
             return null;
-        }
-
-        @Override
-        public void updateSequences(List<Sequence> soFar) {
-            if (expression instanceof Name)
-                new DName.Handle((Name) expression, visitor).updateSequences(soFar);
-            if (expression instanceof NullLiteral)
-                new DNullLiteral.Handle((NullLiteral) expression, visitor).updateSequences(soFar);
-            if (expression instanceof MethodInvocation)
-                new DMethodInvocation.Handle((MethodInvocation) expression, visitor).updateSequences(soFar);
-            if (expression instanceof ClassInstanceCreation)
-                new DClassInstanceCreation.Handle((ClassInstanceCreation) expression, visitor).updateSequences(soFar);
-            if (expression instanceof InfixExpression)
-                new DInfixExpression.Handle((InfixExpression) expression, visitor).updateSequences(soFar);
-            if (expression instanceof Assignment)
-                new DAssignment.Handle((Assignment) expression, visitor).updateSequences(soFar);
-            if (expression instanceof ParenthesizedExpression)
-                new DParenthesizedExpression.Handle((ParenthesizedExpression) expression, visitor).updateSequences(soFar);
         }
     }
 }

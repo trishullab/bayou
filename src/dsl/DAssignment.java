@@ -21,6 +21,11 @@ public class DAssignment extends DExpression {
         this.operator = operator;
     }
 
+    @Override
+    public void updateSequences(List<Sequence> soFar) {
+        rhs.updateSequences(soFar);
+    }
+
     public static class Handle extends Handler {
         Assignment assignment;
 
@@ -48,11 +53,6 @@ public class DAssignment extends DExpression {
                     return new DAssignment(dlhs, op, drhs);
 
             return null;
-        }
-
-        @Override
-        public void updateSequences(List<Sequence> soFar) {
-            new DExpression.Handle(assignment.getRightHandSide(), visitor).updateSequences(soFar);
         }
     }
 }

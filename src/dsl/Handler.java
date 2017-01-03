@@ -11,5 +11,4 @@ public abstract class Handler {
     protected Handler() {}
 
     abstract DASTNode handle();
-    abstract void updateSequences(List<Sequence> soFar);
 }

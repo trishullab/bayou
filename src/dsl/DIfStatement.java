@@ -18,6 +18,18 @@ public class DIfStatement extends DStatement {
         this.elseStmt = elseStmt;
     }
 
+    @Override
+    public void updateSequences(List<Sequence> soFar) {
+        List<Sequence> copy = new ArrayList<>();
+        for (Sequence seq : soFar)
+            copy.add(new Sequence(seq.calls));
+        thenStmt.updateSequences(soFar);
+        elseStmt.updateSequences(copy);
+        for (Sequence seq : copy)
+            if (! soFar.contains(seq))
+                soFar.add(seq);
+    }
+
     public static class Handle extends Handler {
         IfStatement statement;
 
@@ -39,18 +51,6 @@ public class DIfStatement extends DStatement {
             if (elseStmt != null)
                 return elseStmt;
             return null;
-        }
-
-        @Override
-        public void updateSequences(List<Sequence> soFar) {
-            List<Sequence> copy = new ArrayList<>();
-            for (Sequence seq : soFar)
-                copy.add(new Sequence(seq.calls));
-            new DStatement.Handle(statement.getThenStatement(), visitor).updateSequences(soFar);
-            new DStatement.Handle(statement.getElseStatement(), visitor).updateSequences(copy);
-            for (Sequence seq : copy)
-                if (! soFar.contains(seq))
-                    soFar.add(seq);
         }
     }
 }

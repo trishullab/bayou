@@ -43,7 +43,7 @@ public class Visitor extends ASTVisitor {
         if (ast != null) {
             List<Sequence> sequences = new ArrayList<>();
             sequences.add(new Sequence());
-            new DBlock.Handle(method.getBody(), this).updateSequences(sequences);
+            ast.updateSequences(sequences);
 
             printJson(ast, sequences);
         }

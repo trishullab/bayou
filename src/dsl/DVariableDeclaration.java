@@ -1,4 +1,4 @@
 package dsl;
 
-public class DVariableDeclaration extends DASTNode {
+public abstract class DVariableDeclaration extends DASTNode {
 }

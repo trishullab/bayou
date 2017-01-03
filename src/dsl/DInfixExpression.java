@@ -22,6 +22,12 @@ public class DInfixExpression extends DExpression {
         this.operator = operator;
     }
 
+    @Override
+    public void updateSequences(List<Sequence> soFar) {
+        left.updateSequences(soFar);
+        right.updateSequences(soFar);
+    }
+
     public static class Handle extends Handler {
         InfixExpression expr;
 
@@ -46,12 +52,6 @@ public class DInfixExpression extends DExpression {
                 return new DInfixExpression(dleft, op, dright);
 
             return null;
-        }
-
-        @Override
-        public void updateSequences(List<Sequence> soFar) {
-            new DExpression.Handle(expr.getLeftOperand(), visitor).updateSequences(soFar);
-            new DExpression.Handle(expr.getRightOperand(), visitor).updateSequences(soFar);
         }
     }
 }

@@ -16,6 +16,9 @@ public class DName extends DExpression {
         this.type = type;
     }
 
+    @Override
+    public void updateSequences(List<Sequence> soFar) { }
+
     public static class Handle extends Handler {
 
         Name name;
@@ -42,8 +45,5 @@ public class DName extends DExpression {
 
             return null;
         }
-
-        @Override
-        public void updateSequences(List<Sequence> soFar) { }
     }
 }

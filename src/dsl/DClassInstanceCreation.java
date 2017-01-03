@@ -21,6 +21,12 @@ public class DClassInstanceCreation extends DExpression {
         this.argRefinements = argRefinements;
     }
 
+    @Override
+    public void updateSequences(List<Sequence> soFar) {
+        for (Sequence seq : soFar)
+            seq.addCall(constructor);
+    }
+
     public static class Handle extends Handler {
         ClassInstanceCreation creation;
 
@@ -39,14 +45,6 @@ public class DClassInstanceCreation extends DExpression {
                 return new DClassInstanceCreation(className + "." + getSignature(creation.resolveConstructorBinding()), argRefinements);
             }
             return null;
-        }
-
-        @Override
-        public void updateSequences(List<Sequence> soFar) {
-            String className = checkAndGetClassName();
-            if (className != null)
-                for (Sequence seq : soFar)
-                    seq.addCall(className + "." + getSignature(creation.resolveConstructorBinding()));
         }
 
         private String getSignature(IMethodBinding constructor) {

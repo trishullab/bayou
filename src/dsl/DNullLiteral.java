@@ -8,6 +8,9 @@ public class DNullLiteral extends DExpression {
 
     final String node = "DNullLiteral";
 
+    @Override
+    public void updateSequences(List<Sequence> soFar) { }
+
     public static class Handle extends Handler {
 
         public Handle(NullLiteral __ununsed__, Visitor visitor) {
@@ -18,8 +21,5 @@ public class DNullLiteral extends DExpression {
         public DNullLiteral handle() {
             return new DNullLiteral();
         }
-
-        @Override
-        public void updateSequences(List<Sequence> soFar) { }
     }
 }

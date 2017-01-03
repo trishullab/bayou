@@ -21,6 +21,12 @@ public class DMethodInvocation extends DExpression {
         this.argRefinements = argRefinements;
     }
 
+    @Override
+    public void updateSequences(List<Sequence> soFar) {
+        for (Sequence seq : soFar)
+            seq.addCall(methodName);
+    }
+
     public static class Handle extends Handler {
         MethodInvocation invocation;
 
@@ -39,14 +45,6 @@ public class DMethodInvocation extends DExpression {
                 return new DMethodInvocation(className + "." + getSignature(invocation.resolveMethodBinding()), argRefinements);
             }
             return null;
-        }
-
-        @Override
-        public void updateSequences(List<Sequence> soFar) {
-            String className = checkAndGetClassName();
-            if (className != null)
-                for (Sequence seq : soFar)
-                    seq.addCall(className + "." + getSignature(invocation.resolveMethodBinding()));
         }
 
         /* check if the class corresponding to this method invocation is in API_CLASSES, and return

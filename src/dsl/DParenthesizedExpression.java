@@ -13,6 +13,11 @@ public class DParenthesizedExpression extends DExpression {
         this.expression = expression;
     }
 
+    @Override
+    public void updateSequences(List<Sequence> soFar) {
+        expression.updateSequences(soFar);
+    }
+
     public static class Handle extends Handler {
 
         ParenthesizedExpression expression;
@@ -28,11 +33,6 @@ public class DParenthesizedExpression extends DExpression {
             if (exp != null)
                 return new DParenthesizedExpression(exp);
             return null;
-        }
-
-        @Override
-        public void updateSequences(List<Sequence> soFar) {
-            new DExpression.Handle(expression.getExpression(), visitor).updateSequences(soFar);
         }
     }
 }
