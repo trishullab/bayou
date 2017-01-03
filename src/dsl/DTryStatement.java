@@ -26,7 +26,7 @@ public class DTryStatement extends DStatement {
         }
 
         @Override
-        public DTryStatement handle() {
+        public DStatement handle() {
             DBlock tryBlock = new DBlock.Handle(statement.getBody(), visitor).handle();
             List<DCatchClause> catchClauses = new ArrayList<>();
             for (Object o : statement.catchClauses()) {
@@ -36,8 +36,10 @@ public class DTryStatement extends DStatement {
                     catchClauses.add(dclause);
             }
 
-            if (tryBlock != null)
+            if (tryBlock != null && catchClauses.size() > 0)
                 return new DTryStatement(tryBlock, catchClauses);
+            if (tryBlock != null)
+                return tryBlock;
 
             return null;
         }

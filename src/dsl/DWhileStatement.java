@@ -28,7 +28,7 @@ public class DWhileStatement extends DStatement {
             DExpression cond = new DExpression.Handle(statement.getExpression(), visitor).handle();
             DStatement body = new DStatement.Handle(statement.getBody(), visitor).handle();
 
-            if (cond != null)
+            if (cond != null && body != null)
                 return new DWhileStatement(cond, body);
             if (body != null)
                 return body;
