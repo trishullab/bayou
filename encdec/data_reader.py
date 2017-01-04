@@ -42,9 +42,16 @@ def read_data(filename):
     inputs, targets = [], []
     for program in js['programs']:
         seqs, ast_paths = get_seqs(program['sequences']), get_ast_paths(program['ast'])
-        inp, tar = zip(*itertools.product(seqs, ast_paths))
-        inputs += inp
-        targets += tar
+        seqs = list(sorted(seqs))
+        powerset = itertools.chain.from_iterable(itertools.combinations(seqs, r) for r in
+                        range(len(seqs) + 1))
+        for subset in powerset:
+            subset = list(subset)
+            if subset == []:
+                continue
+            for path in ast_paths:
+                inputs.append(subset)
+                targets.append(path)
     return inputs, targets
 
 if __name__ == '__main__':

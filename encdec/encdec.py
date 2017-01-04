@@ -2,12 +2,15 @@ import tensorflow as tf
 
 class Encoder(object):
     def __init__(self, args):
-        cell_fn = tf.nn.rnn_cell.BasicLSTMCell if args.cell == 'lstm' \
-                  else tf.nn.rnn_cell.BasicRNNCell 
-        cell = cell_fn(args.rnn_size)
+        if args.cell == 'lstm':
+            cell = tf.nn.rnn_cell.BasicLSTMCell(args.rnn_size, state_is_tuple=False)
+        else:
+            cell = tf.nn.rnn_cell.BasicRNNCell(args.rnn_size)
 
-        self.seq = tf.placeholder(tf.int32, [args.batch_size, args.max_seq_length, 1], name='seq')
-        self.seq_length = tf.placeholder(tf.int32, [args.batch_size], name='seq_length')
+        self.seq = [tf.placeholder(tf.int32, [args.batch_size, args.max_seq_length, 1], 
+                        name='seq{0}'.format(i)) for i in range(args.max_seqs)]
+        self.seq_length = [tf.placeholder(tf.int32, [args.batch_size],
+                            name='seq_length{0}'.format(i)) for i in range(args.max_seqs)]
 
         with tf.variable_scope('encoder'):
             # dynamic RNN
@@ -15,18 +18,26 @@ class Encoder(object):
                                     embedding_classes=args.input_vocab_size,
                                     embedding_size=args.rnn_size)
             self.cell_init = self.cell.zero_state(args.batch_size, tf.float32)
-            _, self.encoding = tf.nn.dynamic_rnn(self.cell, self.seq,
-                                    sequence_length=self.seq_length,
-                                    initial_state=self.cell_init,
-                                    dtype=tf.float32)
+            encodings = []
+            for i, (seq, seq_length) in enumerate(zip(self.seq, self.seq_length)):
+                if i > 0:
+                    tf.get_variable_scope().reuse_variables()
+                _, encoding_seq = tf.nn.dynamic_rnn(self.cell, seq,
+                                        sequence_length=seq_length,
+                                        initial_state=self.cell_init,
+                                        dtype=tf.float32)
+                encodings.append(encoding_seq)
+            self.encoding = tf.reduce_mean(tf.pack(encodings), axis=0)
 
 class Decoder(object):
     def __init__(self, args, initial_state, infer=False):
         # to handle different types of edges (CHILD_EDGE, SIBLING_EDGE)
-        cell_fn = tf.nn.rnn_cell.BasicLSTMCell if args.cell == 'lstm' \
-                  else tf.nn.rnn_cell.BasicRNNCell 
-        cell1 = cell_fn(args.rnn_size)
-        cell2 = cell_fn(args.rnn_size)
+        if args.cell == 'lstm':
+            cell1 = tf.nn.rnn_cell.BasicLSTMCell(args.rnn_size, state_is_tuple=False)
+            cell2 = tf.nn.rnn_cell.BasicLSTMCell(args.rnn_size, state_is_tuple=False)
+        else:
+            cell1 = tf.nn.rnn_cell.BasicRNNCell(args.rnn_size)
+            cell2 = tf.nn.rnn_cell.BasicRNNCell(args.rnn_size)
 
         # placeholders
         self.initial_state = initial_state

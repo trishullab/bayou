@@ -12,8 +12,8 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--save_dir', type=str, default='save',
                        help='model directory to laod from')
-    parser.add_argument('--input_sequence', type=str, required=True,
-                       help='input sequence')
+    parser.add_argument('--input_sequences', type=str, required=True,
+                       help='set of input sequences')
     parser.add_argument('--prime', default='[("DBlock", "V")]',
                        help='prime output path')
     parser.add_argument('--topk', type=int, default=5,
@@ -31,7 +31,7 @@ def predict(args):
     model = Model(saved_args, True)
 
     # parse the inputs
-    seq = ast.literal_eval(args.input_sequence)
+    seqs = ast.literal_eval(args.input_sequences)
     nodes, edges = zip(*ast.literal_eval(args.prime))
 
     with tf.Session() as sess:
@@ -43,7 +43,7 @@ def predict(args):
             saver.restore(sess, ckpt.model_checkpoint_path)
 
             # predict with model
-            dist = model.probability(sess, seq, nodes, edges, input_vocab, target_vocab)
+            dist = model.infer(sess, seqs, nodes, edges, input_vocab, target_vocab)
             dist_dict = [(target_chars[i], prob) for i, prob in enumerate(dist)]
 
             for node, prob in sorted(dist_dict, key=lambda x:x[1], reverse=True)[:args.topk]:
