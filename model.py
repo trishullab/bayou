@@ -37,7 +37,7 @@ class Model():
         self.generation_loss = tf.nn.seq2seq.sequence_loss([logits],
                                     [tf.reshape(self.targets, [-1])],
                                     [tf.ones([args.batch_size * args.max_ast_depth])])
-        self.cost = tf.reduce_mean(self.latent_loss + self.generation_loss)
+        self.cost = tf.reduce_mean(args.weight_loss * self.generation_loss + self.latent_loss)
         self.train_op = tf.train.AdamOptimizer(args.learning_rate).minimize(self.cost)
 
         var_params = [np.prod([dim.value for dim in var.get_shape()])
@@ -61,7 +61,7 @@ class Model():
                  self.encoder.cell_stdv_init: init_state_stdv }
 
         # run the encoder and get psi
-        [psi, state] = sess.run([self.psi, self.initial_state], feed)
+        [state] = sess.run([self.initial_state], feed)
 
         # run the decoder for every time step (beginning with psi as the initial state)
         for node, edge in zip(nodes, edges):

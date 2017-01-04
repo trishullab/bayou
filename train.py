@@ -28,6 +28,8 @@ def main():
                        help='maximum RNN sequence length')
     parser.add_argument('--max_ast_depth', type=int, default=20,
                        help='maximum depth of AST')
+    parser.add_argument('--weight_loss', type=int, default=100,
+                       help='weight given to generation loss as opposed to latent loss')
     parser.add_argument('--num_epochs', type=int, default=50,
                        help='number of epochs')
     parser.add_argument('--learning_rate', type=float, default=0.002,
@@ -81,12 +83,17 @@ def train(args):
                     feed[model.decoder.edges[j].name] = e[j]
 
                 # run the optimizer
-                latent_loss, generation_loss, _ = sess.run([model.latent_loss,
-                                                    model.generation_loss, model.train_op], feed)
+                cost, latent, generation, mean, stdv, _ = sess.run([model.cost,
+                                                                model.latent_loss,
+                                                                model.generation_loss,
+                                                                model.encoder.psi_mean,
+                                                                model.encoder.psi_stdv,
+                                                                model.train_op], feed)
                 end = time.time()
-                print('{}/{} (epoch {}), latent: {:.3f}, generation: {:.3f} time/batch: {:.3f}' \
-                    .format(i * args.num_batches + b, args.num_epochs * args.num_batches, i,
-                            np.mean(latent_loss), generation_loss, end - start))
+                print('{}/{} (epoch {}), latent: {:.3f}, generation: {:.3f}, cost: {:.3f}, '\
+                        'mean: {:.3f}, stdv: {:.3f}, time: {:.3f}'.format(i*args.num_batches + b,
+                        args.num_epochs * args.num_batches, i, np.mean(latent), generation,
+                        np.mean(cost), np.mean(mean), np.mean(stdv), end - start))
             checkpoint_path = os.path.join(args.save_dir, 'model.ckpt')
             saver.save(sess, checkpoint_path)
             print('model saved to {}'.format(checkpoint_path))
