@@ -34,6 +34,8 @@ def main():
                        help='number of epochs')
     parser.add_argument('--learning_rate', type=float, default=0.002,
                        help='learning rate')
+    parser.add_argument('--print_every', type=int, default=1,
+                       help='print training output every n steps')
     parser.add_argument('--init_from', type=str, default=None,
                        help='continue training from previously checkpointed model saved here')
     args = parser.parse_args()
@@ -45,7 +47,7 @@ def train(args):
     
     # check compatibility if training is continued from previously saved model
     if args.init_from is not None:
-        check_compat(args, data_loader)
+        ckpt = check_compat(args, data_loader)
         
     with open(os.path.join(args.save_dir, 'config.pkl'), 'wb') as f:
         pickle.dump(args, f)
@@ -90,10 +92,12 @@ def train(args):
                                                                 model.encoder.psi_stdv,
                                                                 model.train_op], feed)
                 end = time.time()
-                print('{}/{} (epoch {}), latent: {:.3f}, generation: {:.3f}, cost: {:.3f}, '\
-                        'mean: {:.3f}, stdv: {:.3f}, time: {:.3f}'.format(i*args.num_batches + b,
-                        args.num_epochs * args.num_batches, i, np.mean(latent), generation,
-                        np.mean(cost), np.mean(mean), np.mean(stdv), end - start))
+                step = i * args.num_batches + b
+                if step % args.print_every == 0:
+                    print('{}/{} (epoch {}), latent: {:.3f}, generation: {:.3f}, cost: {:.3f}, '\
+                            'mean: {:.3f}, stdv: {:.3f}, time: {:.3f}'.format(step,
+                            args.num_epochs * args.num_batches, i, np.mean(latent), generation,
+                            np.mean(cost), np.mean(mean), np.mean(stdv), end - start))
             checkpoint_path = os.path.join(args.save_dir, 'model.ckpt')
             saver.save(sess, checkpoint_path)
             print('model saved to {}'.format(checkpoint_path))
@@ -111,21 +115,22 @@ def check_compat(args, data_loader):
     assert ckpt.model_checkpoint_path,'No model path found in checkpoint'
 
     # open old config and check if models are compatible
-    with open(os.path.join(args.init_from, 'config.pkl')) as f:
+    with open(os.path.join(args.init_from, 'config.pkl'), 'rb') as f:
         saved_model_args = pickle.load(f)
-    need_be_same = ['model', 'rnn_size' , 'num_layers' , 'max_seq_length', 'max_ast_depth']
+    need_be_same = ['cell', 'rnn_size' , 'latent_size', 'max_seq_length', 'max_ast_depth']
     for checkme in need_be_same:
         assert vars(saved_model_args)[checkme] == vars(args)[checkme], \
                     'Command line argument and saved model disagree on "%s" '%checkme
     
     # open saved vocab/dict and check if vocabs/dicts are compatible
-    with open(os.path.join(args.init_from, 'chars_vocab.pkl')) as f:
+    with open(os.path.join(args.init_from, 'chars_vocab.pkl'), 'rb') as f:
         input_chars, input_vocab, target_chars, target_vocab = pickle.load(f)
     assert input_chars == data_loader.input_chars and \
            input_vocab == data_loader.input_vocab and \
            target_chars == data_loader.target_chars and \
            target_vocab == data_loader.target_vocab, \
            'Data and saved model disagree on character vocabulary!'
+    return ckpt
 
 if __name__ == '__main__':
     main()

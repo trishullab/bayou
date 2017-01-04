@@ -1,4 +1,5 @@
 import os
+import pickle
 import itertools
 import numpy as np
 
@@ -20,13 +21,19 @@ class DataLoader():
         assert len(raw_inputs) == len(raw_targets), 'Number of inputs and targets do not match'
 
         # setup input and target chars/vocab, using class 0 for padding
-        self.input_chars = [CLASS0] + list(set(itertools.chain.from_iterable(raw_inputs)))
-        self.input_vocab = dict(zip(self.input_chars, range(len(self.input_chars))))
-        args.input_vocab_size = len(self.input_vocab)
+        if args.init_from is None:
+            self.input_chars = [CLASS0] + list(set(itertools.chain.from_iterable(raw_inputs)))
+            self.input_vocab = dict(zip(self.input_chars, range(len(self.input_chars))))
 
-        self.target_chars = [CLASS0] + list(set([node for path in raw_targets 
-                                                      for (node, _) in path]))
-        self.target_vocab = dict(zip(self.target_chars, range(len(self.target_chars))))
+            self.target_chars = [CLASS0] + list(set([node for path in raw_targets 
+                                                          for (node, _) in path]))
+            self.target_vocab = dict(zip(self.target_chars, range(len(self.target_chars))))
+        else:
+            with open(os.path.join(args.init_from, 'chars_vocab.pkl'), 'rb') as f:
+                self.input_chars, self.input_vocab, self.target_chars, self.target_vocab = \
+                        pickle.load(f)
+
+        args.input_vocab_size = len(self.input_vocab)
         args.target_vocab_size = len(self.target_vocab)
 
         # align with number of batches
