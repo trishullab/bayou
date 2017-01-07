@@ -11,7 +11,7 @@ ast_map = {
         'DIfStatement'                  : [ ('cond',True), ('thenStmt',True), ('elseStmt',True) ],
         'DInfixExpression'              : [ ('left',True), ('right',True), ('operator',False) ],
         'DMethodInvocation'             : [ ('methodName',False) ],
-        'DName'                         : [ ],
+        'DName'                         : [ ('type', False) ],
         'DNullLiteral'                  : [ ],
         'DParenthesizedExpression'      : [ ('expression',True) ],
         'DTryStatement'                 : [ ('tryBlock',True), [('catchClauses',True)] ],
@@ -20,7 +20,7 @@ ast_map = {
         'DWhileStatement'               : [ ('cond',True), ('body',True) ]
         }
 # These nodes can have an API call
-call_nodes = [ ('DClassInstanceCreation','constructor'), ('DMethodInvocation','methodName') ]
+call_nodes = [ 'DClassInstanceCreation', 'DMethodInvocation' ]
 
 STOP = ('STOP',False)
 
