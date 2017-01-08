@@ -17,6 +17,11 @@ public class DName extends DExpression {
     }
 
     @Override
+    public String sketch() {
+        return "<type:" + type + ">";
+    }
+
+    @Override
     public void updateSequences(List<Sequence> soFar) { }
 
     public static class Handle extends Handler {

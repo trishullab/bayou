@@ -18,6 +18,11 @@ public class DParenthesizedExpression extends DExpression {
         expression.updateSequences(soFar);
     }
 
+    @Override
+    public String sketch() {
+        return "(" + expression.sketch() + ")";
+    }
+
     public static class Handle extends Handler {
 
         ParenthesizedExpression expression;

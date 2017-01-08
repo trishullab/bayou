@@ -14,6 +14,11 @@ public class DCatchClause extends DASTNode {
     }
 
     @Override
+    public String sketch() {
+        return "catch (" + HOLE() + ")" + body.sketch();
+    }
+
+    @Override
     public void updateSequences(List<Sequence> soFar) {
         body.updateSequences(soFar);
     }

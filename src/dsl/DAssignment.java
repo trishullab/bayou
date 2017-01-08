@@ -22,6 +22,13 @@ public class DAssignment extends DExpression {
     }
 
     @Override
+    public String sketch() {
+        return (lhs == null? HOLE() : lhs.sketch())
+                + " = "
+                + (rhs == null? HOLE() : rhs.sketch());
+    }
+
+    @Override
     public void updateSequences(List<Sequence> soFar) {
         rhs.updateSequences(soFar);
     }

@@ -22,6 +22,11 @@ public class DClassInstanceCreation extends DExpression {
     }
 
     @Override
+    public String sketch() {
+        return constructor;
+    }
+
+    @Override
     public void updateSequences(List<Sequence> soFar) {
         for (Sequence seq : soFar)
             seq.addCall(constructor);

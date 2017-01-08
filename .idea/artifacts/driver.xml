@@ -1,6 +1,6 @@
 <component name="ArtifactManager">
-  <artifact name="dsl:jar">
-    <output-path>$PROJECT_DIR$/out/artifacts/dsl_jar</output-path>
+  <artifact name="driver">
+    <output-path>$PROJECT_DIR$/out/artifacts/driver</output-path>
     <root id="root">
       <element id="archive" name="dsl.jar">
         <element id="module-output" name="dsl" />

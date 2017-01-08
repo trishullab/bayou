@@ -1,0 +1,25 @@
+<component name="ArtifactManager">
+  <artifact name="pprinter">
+    <output-path>$PROJECT_DIR$/out/artifacts/pprinter</output-path>
+    <root id="root">
+      <element id="archive" name="dsl.jar">
+        <element id="directory" name="META-INF">
+          <element id="file-copy" path="$PROJECT_DIR$/src/pprinter/META-INF/MANIFEST.MF" />
+        </element>
+        <element id="module-output" name="dsl" />
+      </element>
+      <element id="file-copy" path="$PROJECT_DIR$/lib/gson-2.6.3.jar" />
+      <element id="file-copy" path="$PROJECT_DIR$/lib/commons-io-2.5.jar" />
+      <element id="file-copy" path="$PROJECT_DIR$/lib/commons-cli-1.3.1.jar" />
+      <element id="file-copy" path="$PROJECT_DIR$/lib/org.eclipse.osgi_3.11.0.v20160603-1336.jar" />
+      <element id="file-copy" path="$PROJECT_DIR$/lib/org.eclipse.core.jobs_3.8.0.v20160509-0411.jar" />
+      <element id="file-copy" path="$PROJECT_DIR$/lib/org.eclipse.jdt.core_3.12.0.v20160516-2131.jar" />
+      <element id="file-copy" path="$PROJECT_DIR$/lib/org.eclipse.core.runtime_3.12.0.v20160606-1342.jar" />
+      <element id="file-copy" path="$PROJECT_DIR$/lib/org.eclipse.equinox.common_3.8.0.v20160509-1230.jar" />
+      <element id="file-copy" path="$PROJECT_DIR$/lib/org.eclipse.core.resources_3.11.0.v20160503-1608.jar" />
+      <element id="file-copy" path="$PROJECT_DIR$/lib/org.eclipse.core.contenttype_3.5.100.v20160418-1621.jar" />
+      <element id="file-copy" path="$PROJECT_DIR$/lib/org.eclipse.equinox.preferences_3.6.0.v20160120-1756.jar" />
+      <element id="library" level="project" name="lib" />
+    </root>
+  </artifact>
+</component>

@@ -21,6 +21,15 @@ public class DBlock extends DStatement {
             statement.updateSequences(soFar);
     }
 
+    @Override
+    public String sketch() {
+        String s = "{";
+        for (DStatement statement : statements)
+            s += statement == null? HOLE() : statement.sketch();
+        s += "}";
+        return s;
+    }
+
     public static class Handle extends Handler {
         Block block;
 

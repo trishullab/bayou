@@ -16,6 +16,13 @@ public class DVariableDeclarationFragment extends DVariableDeclaration {
     }
 
     @Override
+    public String sketch() {
+        return (name == null? HOLE() : name.sketch())
+                + " = "
+                + (initializer == null? HOLE() : initializer.sketch());
+    }
+
+    @Override
     public void updateSequences(List<Sequence> soFar) {
         initializer.updateSequences(soFar);
     }

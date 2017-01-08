@@ -23,6 +23,13 @@ public class DInfixExpression extends DExpression {
     }
 
     @Override
+    public String sketch() {
+        String op = (operator == Operator.EQUALS? " == " : (operator == Operator.NOT_EQUALS? " != " : " ?? "));
+        return (left == null? HOLE() : left.sketch()) + op
+                + (right == null? HOLE() : right.sketch());
+    }
+
+    @Override
     public void updateSequences(List<Sequence> soFar) {
         left.updateSequences(soFar);
         right.updateSequences(soFar);

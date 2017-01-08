@@ -1,0 +1,17 @@
+Manifest-Version: 1.0
+Class-Path: gson-2.6.3.jar commons-io-2.5.jar commons-cli-1.3.1.jar or
+ g.eclipse.osgi_3.11.0.v20160603-1336.jar org.eclipse.core.jobs_3.8.0.
+ v20160509-0411.jar org.eclipse.jdt.core_3.12.0.v20160516-2131.jar org
+ .eclipse.core.runtime_3.12.0.v20160606-1342.jar org.eclipse.equinox.c
+ ommon_3.8.0.v20160509-1230.jar org.eclipse.core.resources_3.11.0.v201
+ 60503-1608.jar org.eclipse.core.contenttype_3.5.100.v20160418-1621.ja
+ r org.eclipse.equinox.preferences_3.6.0.v20160120-1756.jar org.eclips
+ e.core.jobs_3.8.0.v20160509-0411.jar org.eclipse.core.resources_3.11.
+ 0.v20160503-1608.jar org.eclipse.osgi_3.11.0.v20160603-1336.jar org.e
+ clipse.core.contenttype_3.5.100.v20160418-1621.jar org.eclipse.equino
+ x.common_3.8.0.v20160509-1230.jar org.eclipse.jdt.core_3.12.0.v201605
+ 16-2131.jar org.eclipse.equinox.preferences_3.6.0.v20160120-1756.jar 
+ org.eclipse.core.runtime_3.12.0.v20160606-1342.jar commons-cli-1.3.1.
+ jar
+Main-Class: pprinter.PrettyPrinter
+

@@ -19,6 +19,12 @@ public class DWhileStatement extends DStatement {
     }
 
     @Override
+    public String sketch() {
+        return "while (" + (cond == null? HOLE() : cond.sketch()) + ")"
+                + (body == null? HOLE() : body.sketch());
+    }
+
+    @Override
     public void updateSequences(List<Sequence> soFar) {
         for (int i = 0; i < visitor.options.NUM_UNROLLS; i++) {
             cond.updateSequences(soFar);

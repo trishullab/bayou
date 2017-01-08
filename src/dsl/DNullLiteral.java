@@ -11,6 +11,11 @@ public class DNullLiteral extends DExpression {
     @Override
     public void updateSequences(List<Sequence> soFar) { }
 
+    @Override
+    public String sketch() {
+        return "null";
+    }
+
     public static class Handle extends Handler {
 
         public Handle(NullLiteral __ununsed__, Visitor visitor) {

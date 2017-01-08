@@ -22,6 +22,11 @@ public class DMethodInvocation extends DExpression {
     }
 
     @Override
+    public String sketch() {
+        return methodName;
+    }
+
+    @Override
     public void updateSequences(List<Sequence> soFar) {
         for (Sequence seq : soFar)
             seq.addCall(methodName);

@@ -18,6 +18,14 @@ public class DTryStatement extends DStatement {
     }
 
     @Override
+    public String sketch() {
+        String s = "try " + (tryBlock == null? "{" + HOLE() + "}": tryBlock.sketch());
+        for (DCatchClause clause : catchClauses)
+            s += clause == null? HOLE() : clause.sketch();
+        return s;
+    }
+
+    @Override
     public void updateSequences(List<Sequence> soFar) {
         tryBlock.updateSequences(soFar);
         for (DCatchClause clause : catchClauses) {

@@ -23,6 +23,19 @@ public class DVariableDeclarationStatement extends DStatement {
             fragment.updateSequences(soFar);
     }
 
+    @Override
+    public String sketch() {
+        String s = "";
+        int i = 0;
+        for (DVariableDeclarationFragment fragment : fragments) {
+            s += (fragment == null? HOLE() : fragment.sketch());
+            if (i < fragments.size()-1)
+                s += ",";
+        }
+        s += ";";
+        return s;
+    }
+
     public static class Handle extends Handler {
         VariableDeclarationStatement statement;
 

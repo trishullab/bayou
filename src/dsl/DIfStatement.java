@@ -19,6 +19,14 @@ public class DIfStatement extends DStatement {
     }
 
     @Override
+    public String sketch() {
+        return "if (" + (cond == null? HOLE() : cond.sketch()) + ")"
+                + (thenStmt == null? HOLE() : thenStmt.sketch())
+                + "else "
+                + (elseStmt == null? HOLE() : elseStmt.sketch());
+    }
+
+    @Override
     public void updateSequences(List<Sequence> soFar) {
         if (cond != null)
             cond.updateSequences(soFar);

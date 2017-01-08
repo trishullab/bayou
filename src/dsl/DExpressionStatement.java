@@ -14,6 +14,11 @@ public class DExpressionStatement extends DStatement {
     }
 
     @Override
+    public String sketch() {
+        return expression.sketch() + ";";
+    }
+
+    @Override
     public void updateSequences(List<Sequence> soFar) {
         expression.updateSequences(soFar);
     }
