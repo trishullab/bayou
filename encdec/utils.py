@@ -18,7 +18,7 @@ class DataLoader():
 
         # each input is a (sorted) set of sequences, each output is ONE path in the AST
         print("reading text file")
-        raw_inputs, raw_targets = read_data(input_file)
+        raw_inputs, raw_targets = read_data(input_file, args)
         assert len(raw_inputs) == len(raw_targets), 'Number of inputs and targets do not match'
 
         # setup input and target chars/vocab, using class 0 for padding
@@ -48,9 +48,9 @@ class DataLoader():
         self.inputs = np.zeros((sz, args.max_seqs, args.max_seq_length, 1), dtype=np.int32)
         self.inputs_len = np.zeros((sz, args.max_seqs), dtype=np.int32)
         for i, set_of_seqs in enumerate(raw_inputs):
-            assert len(set_of_seqs) < args.max_seqs, 'Too many sequences, increase max_seqs'
+            assert len(set_of_seqs) <= args.max_seqs, 'Too many sequences, increase max_seqs'
             for j, seq in enumerate(set_of_seqs):
-                assert len(seq) < args.max_seq_length, 'Sequence too long, increase max_seq_length'
+                assert len(seq) <= args.max_seq_length, 'Sequence too long, increase max_seq_length'
                 self.inputs[i, j, :len(seq), 0] = list(map(self.input_vocab.get, seq))
                 self.inputs_len[i, j] = len(seq)
 
@@ -58,7 +58,7 @@ class DataLoader():
         self.edges = np.zeros((sz, args.max_ast_depth), dtype=np.bool)
         self.targets = np.zeros((sz, args.max_ast_depth), dtype=np.int32)
         for i, path in enumerate(raw_targets):
-            assert len(path) < args.max_ast_depth, 'Path too long, increase max_ast_depth'
+            assert len(path) <= args.max_ast_depth, 'Path too long, increase max_ast_depth'
             self.nodes[i, :len(path)] = list(map(self.target_vocab.get, [p[0] for p in path]))
             self.edges[i, :len(path)] = [p[1] == CHILD_EDGE for p in path]
             self.targets[i, :len(path)-1] = self.nodes[i, 1:len(path)] # shifted left by one

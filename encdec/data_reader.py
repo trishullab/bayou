@@ -1,6 +1,7 @@
 import os
 import sys
 import json
+import random
 import itertools
 
 sys.path.append(os.path.abspath(os.path.join('..', '')))
@@ -36,22 +37,46 @@ def get_seqs(js):
 def print_data(filename):
     [print(path) for path in read_data(filename)]
 
-def read_data(filename):
+def blowup_and_sample(seqs, args):
+    sub_seqs = []
+    for seq in seqs:
+        cuts = [seq[:i] for i in range(1, len(seq)+1)]
+        for s in cuts:
+            if s not in sub_seqs:
+                sub_seqs += [s]
+    if len(sub_seqs) > 15: # to prevent memory hog in powerset calculation below
+        assert False
+    powerset = list(itertools.chain.from_iterable(itertools.combinations(sub_seqs, r) for r in
+                    range(1, len(sub_seqs) + 1)))
+    random.shuffle(powerset)
+    chosen = powerset[:args.max_seqs]
+    return sorted(chosen)
+
+def read_data(filename, args):
     with open(filename) as f:
         js = json.loads(f.read())
     inputs, targets = [], []
+    ignored, done = 0, 0
+
     for program in js['programs']:
-        seqs, ast_paths = get_seqs(program['sequences']), get_ast_paths(program['ast'])
-        seqs = list(sorted(seqs))
-        powerset = itertools.chain.from_iterable(itertools.combinations(seqs, r) for r in
-                        range(len(seqs) + 1))
-        for subset in powerset:
-            subset = list(subset)
-            if subset == []:
-                continue
+        seqs = get_seqs(program['sequences'])
+        ast_paths = get_ast_paths(program['ast'])
+        try:
+            samples = blowup_and_sample(seqs, args)
             for path in ast_paths:
-                inputs.append(subset)
-                targets.append(path)
+                assert len(path) <= args.max_ast_depth
+            for subset in samples:
+                for path in ast_paths:
+                    for seq in subset:
+                        assert len(seq) <= args.max_seq_length
+                    inputs.append(subset)
+                    targets.append(path)
+        except AssertionError:
+            ignored += 1
+        done += 1
+        print('{:8d} programs done'.format(done), end='\r')
+
+    print('\n{:8d} programs ignored'.format(ignored))
     return inputs, targets
 
 if __name__ == '__main__':
