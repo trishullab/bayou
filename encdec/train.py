@@ -52,7 +52,8 @@ def train(args):
     with open(os.path.join(args.save_dir, 'chars_vocab.pkl'), 'wb') as f:
         pickle.dump((data_loader.input_chars, data_loader.input_vocab,
                        data_loader. target_chars, data_loader.target_vocab), f)
-        
+    print(args)
+
     model = Model(args)
 
     with tf.Session() as sess:

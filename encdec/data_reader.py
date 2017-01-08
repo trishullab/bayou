@@ -37,7 +37,7 @@ def get_seqs(js):
 def print_data(filename):
     [print(path) for path in read_data(filename)]
 
-def blowup_and_sample(seqs, args):
+def blowup_and_sample(seqs):
     sub_seqs = []
     for seq in seqs:
         cuts = [seq[:i] for i in range(1, len(seq)+1)]
@@ -49,8 +49,8 @@ def blowup_and_sample(seqs, args):
     powerset = list(itertools.chain.from_iterable(itertools.combinations(sub_seqs, r) for r in
                     range(1, len(sub_seqs) + 1)))
     random.shuffle(powerset)
-    chosen = powerset[:args.max_seqs]
-    return sorted(chosen)
+    samples = powerset[:10] # some number of samples
+    return samples
 
 def read_data(filename, args):
     with open(filename) as f:
@@ -62,14 +62,17 @@ def read_data(filename, args):
         seqs = get_seqs(program['sequences'])
         ast_paths = get_ast_paths(program['ast'])
         try:
-            samples = blowup_and_sample(seqs, args)
+            samples = blowup_and_sample(seqs)
             for path in ast_paths:
                 assert len(path) <= args.max_ast_depth
-            for subset in samples:
+            for sub_set in samples:
+                subset = list(sub_set)
+                assert len(subset) <= args.max_seqs
+                for seq in subset:
+                    assert len(seq) <= args.max_seq_length
+                sorted_s = sorted(subset)
                 for path in ast_paths:
-                    for seq in subset:
-                        assert len(seq) <= args.max_seq_length
-                    inputs.append(subset)
+                    inputs.append(sorted_s)
                     targets.append(path)
         except AssertionError:
             ignored += 1
