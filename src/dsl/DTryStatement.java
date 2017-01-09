@@ -11,10 +11,12 @@ public class DTryStatement extends DStatement {
     final String node = "DTryStatement";
     final DBlock tryBlock;
     final List<DCatchClause> catchClauses;
+    final DBlock finallyBlock;
 
-    private DTryStatement(DBlock tryBlock, List<DCatchClause> catchClauses) {
+    private DTryStatement(DBlock tryBlock, List<DCatchClause> catchClauses, DBlock finallyBlock) {
         this.tryBlock = tryBlock;
         this.catchClauses = catchClauses;
+        this.finallyBlock = finallyBlock;
     }
 
     @Override
@@ -22,6 +24,8 @@ public class DTryStatement extends DStatement {
         String s = "try " + (tryBlock == null? "{" + HOLE() + "}": tryBlock.sketch());
         for (DCatchClause clause : catchClauses)
             s += clause == null? HOLE() : clause.sketch();
+        if (finallyBlock != null)
+            s += "finally " + finallyBlock.sketch();
         return s;
     }
 
@@ -37,6 +41,7 @@ public class DTryStatement extends DStatement {
                 if (!soFar.contains(seq))
                     soFar.add(seq);
         }
+        finallyBlock.updateSequences(soFar);
     }
 
     public static class Handle extends Handler {
@@ -57,9 +62,10 @@ public class DTryStatement extends DStatement {
                 if (dclause != null)
                     catchClauses.add(dclause);
             }
+            DBlock finallyBlock = new DBlock.Handle(statement.getFinally(), visitor).handle();
 
-            if (tryBlock != null && catchClauses.size() > 0)
-                return new DTryStatement(tryBlock, catchClauses);
+            if (tryBlock != null && (catchClauses.size() > 0 || finallyBlock != null))
+                return new DTryStatement(tryBlock, catchClauses, finallyBlock);
             if (tryBlock != null)
                 return tryBlock;
 
