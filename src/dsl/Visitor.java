@@ -17,10 +17,12 @@ public class Visitor extends ASTVisitor {
     final Gson gson;
 
     class JSONOutputWrapper {
+        String file;
         DBlock ast;
         List<Sequence> sequences;
 
-        public JSONOutputWrapper(DBlock ast, List<Sequence> sequences) {
+        public JSONOutputWrapper(String file, DBlock ast, List<Sequence> sequences) {
+            this.file = file;
             this.ast = ast;
             this.sequences = sequences;
         }
@@ -52,7 +54,8 @@ public class Visitor extends ASTVisitor {
 
     boolean first = true;
     private void printJson(DBlock ast, List<Sequence> sequences) {
-        JSONOutputWrapper out = new JSONOutputWrapper(ast, sequences);
+        String file = options.cmdLine.getOptionValue("input-file");
+        JSONOutputWrapper out = new JSONOutputWrapper(file, ast, sequences);
         output.write(first? "" : ",\n");
         output.write(gson.toJson(out));
         output.flush();
