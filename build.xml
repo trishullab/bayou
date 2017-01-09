@@ -52,46 +52,6 @@
     <exclude name="**/?*.aj"/>
   </patternset>
   
-  <!-- JDK definitions -->
-  
-  <property name="jdk.bin.1.8" value="${jdk.home.1.8}/bin"/>
-  <path id="jdk.classpath.1.8">
-    <fileset dir="${jdk.home.1.8}">
-      <include name="jre/lib/charsets.jar"/>
-      <include name="jre/lib/deploy.jar"/>
-      <include name="jre/lib/ext/cldrdata.jar"/>
-      <include name="jre/lib/ext/dnsns.jar"/>
-      <include name="jre/lib/ext/jaccess.jar"/>
-      <include name="jre/lib/ext/jfxrt.jar"/>
-      <include name="jre/lib/ext/localedata.jar"/>
-      <include name="jre/lib/ext/nashorn.jar"/>
-      <include name="jre/lib/ext/sunec.jar"/>
-      <include name="jre/lib/ext/sunjce_provider.jar"/>
-      <include name="jre/lib/ext/sunpkcs11.jar"/>
-      <include name="jre/lib/ext/zipfs.jar"/>
-      <include name="jre/lib/javaws.jar"/>
-      <include name="jre/lib/jce.jar"/>
-      <include name="jre/lib/jfr.jar"/>
-      <include name="jre/lib/jfxswt.jar"/>
-      <include name="jre/lib/jsse.jar"/>
-      <include name="jre/lib/management-agent.jar"/>
-      <include name="jre/lib/plugin.jar"/>
-      <include name="jre/lib/resources.jar"/>
-      <include name="jre/lib/rt.jar"/>
-      <include name="lib/ant-javafx.jar"/>
-      <include name="lib/dt.jar"/>
-      <include name="lib/javafx-mx.jar"/>
-      <include name="lib/jconsole.jar"/>
-      <include name="lib/packager.jar"/>
-      <include name="lib/sa-jdi.jar"/>
-      <include name="lib/tools.jar"/>
-    </fileset>
-  </path>
-  
-  <property name="project.jdk.home" value="${jdk.home.1.8}"/>
-  <property name="project.jdk.bin" value="${jdk.bin.1.8}"/>
-  <property name="project.jdk.classpath" value="jdk.classpath.1.8"/>
-  
   
   <!-- Project Libraries -->
   
@@ -115,9 +75,6 @@
   <dirname property="module.dsl.basedir" file="${ant.file}"/>
   
   
-  <property name="module.jdk.home.dsl" value="${project.jdk.home}"/>
-  <property name="module.jdk.bin.dsl" value="${project.jdk.bin}"/>
-  <property name="module.jdk.classpath.dsl" value="${project.jdk.classpath}"/>
   
   <property name="compiler.args.dsl" value="-encoding UTF-8 -source 8 -target 8 ${compiler.args}"/>
   
@@ -129,7 +86,6 @@
   </path>
   
   <path id="dsl.module.production.classpath">
-    <path refid="${module.jdk.classpath.dsl}"/>
     <path refid="library.lib.classpath"/>
     <fileset dir="${basedir}/lib">
       <patternset refid="library.patterns"/>
@@ -145,7 +101,6 @@
   </path>
   
   <path id="dsl.module.classpath">
-    <path refid="${module.jdk.classpath.dsl}"/>
     <pathelement location="${dsl.output.dir}"/>
     <path refid="library.lib.classpath"/>
     <fileset dir="${basedir}/lib">
@@ -182,7 +137,7 @@
   
   <target name="compile.module.dsl.production" description="Compile module dsl; production classes">
     <mkdir dir="${dsl.output.dir}"/>
-    <javac destdir="${dsl.output.dir}" debug="${compiler.debug}" nowarn="${compiler.generate.no.warnings}" memorymaximumsize="${compiler.max.memory}" fork="true" executable="${module.jdk.bin.dsl}/javac">
+    <javac destdir="${dsl.output.dir}" debug="${compiler.debug}" nowarn="${compiler.generate.no.warnings}" memorymaximumsize="${compiler.max.memory}" fork="true">
       <compilerarg line="${compiler.args.dsl}"/>
       <bootclasspath refid="dsl.module.bootclasspath"/>
       <classpath refid="dsl.module.production.classpath"/>
@@ -218,9 +173,8 @@
     <property name="artifact.output.driver" value="${basedir}/out/artifacts/driver"/>
     <property name="artifact.output.pprinter" value="${basedir}/out/artifacts/pprinter"/>
     <mkdir dir="${artifacts.temp.dir}"/>
-    <property name="temp.jar.path.dsl.jar" value="${artifacts.temp.dir}/dsl.jar"/>
-    <property name="temp.jar.path.dsl.jar2" value="${artifacts.temp.dir}/1/dsl.jar"/>
-    <mkdir dir="${artifacts.temp.dir}/1"/>
+    <property name="temp.jar.path.driver.jar" value="${artifacts.temp.dir}/driver.jar"/>
+    <property name="temp.jar.path.pprinter.jar" value="${artifacts.temp.dir}/pprinter.jar"/>
   </target>
   
   <target name="clean.artifact.driver" description="clean driver artifact output">
@@ -231,12 +185,12 @@
     <delete dir="${artifact.output.pprinter}"/>
   </target>
   
-  <target name="artifact.driver" depends="init.artifacts, compile.module.dsl" description="Build &#39;driver&#39; artifact">
+  <target name="artifact.driver" depends="init.artifacts, compile.module.dsl, artifact.pprinter" description="Build &#39;driver&#39; artifact">
     <mkdir dir="${artifact.output.driver}"/>
-    <jar destfile="${temp.jar.path.dsl.jar}" duplicate="preserve" filesetmanifest="mergewithoutmain">
+    <jar destfile="${temp.jar.path.driver.jar}" duplicate="preserve" filesetmanifest="merge">
       <zipfileset dir="${dsl.output.dir}"/>
     </jar>
-    <copy file="${temp.jar.path.dsl.jar}" tofile="${artifact.output.driver}/dsl.jar"/>
+    <copy file="${temp.jar.path.driver.jar}" tofile="${artifact.output.driver}/driver.jar"/>
     <copy file="${basedir}/lib/org.eclipse.core.jobs_3.8.0.v20160509-0411.jar" tofile="${artifact.output.driver}/org.eclipse.core.jobs_3.8.0.v20160509-0411.jar"/>
     <copy file="${basedir}/lib/org.eclipse.core.resources_3.11.0.v20160503-1608.jar" tofile="${artifact.output.driver}/org.eclipse.core.resources_3.11.0.v20160503-1608.jar"/>
     <copy file="${basedir}/lib/org.eclipse.osgi_3.11.0.v20160603-1336.jar" tofile="${artifact.output.driver}/org.eclipse.osgi_3.11.0.v20160603-1336.jar"/>
@@ -257,15 +211,18 @@
     <copy file="${basedir}/lib/org.eclipse.core.resources_3.11.0.v20160503-1608.jar" tofile="${artifact.output.driver}/org.eclipse.core.resources_3.11.0.v20160503-1608.jar"/>
     <copy file="${basedir}/lib/org.eclipse.core.contenttype_3.5.100.v20160418-1621.jar" tofile="${artifact.output.driver}/org.eclipse.core.contenttype_3.5.100.v20160418-1621.jar"/>
     <copy file="${basedir}/lib/org.eclipse.equinox.preferences_3.6.0.v20160120-1756.jar" tofile="${artifact.output.driver}/org.eclipse.equinox.preferences_3.6.0.v20160120-1756.jar"/>
+    <copy todir="${artifact.output.driver}">
+      <fileset dir="${artifact.output.pprinter}"/>
+    </copy>
   </target>
   
   <target name="artifact.pprinter" depends="init.artifacts, compile.module.dsl" description="Build &#39;pprinter&#39; artifact">
     <mkdir dir="${artifact.output.pprinter}"/>
-    <jar destfile="${temp.jar.path.dsl.jar2}" duplicate="preserve" filesetmanifest="mergewithoutmain">
+    <jar destfile="${temp.jar.path.pprinter.jar}" duplicate="preserve" filesetmanifest="merge">
       <zipfileset file="${basedir}/src/pprinter/META-INF/MANIFEST.MF" prefix="META-INF"/>
       <zipfileset dir="${dsl.output.dir}"/>
     </jar>
-    <copy file="${temp.jar.path.dsl.jar2}" tofile="${artifact.output.pprinter}/dsl.jar"/>
+    <copy file="${temp.jar.path.pprinter.jar}" tofile="${artifact.output.pprinter}/pprinter.jar"/>
     <copy file="${basedir}/lib/gson-2.6.3.jar" tofile="${artifact.output.pprinter}/gson-2.6.3.jar"/>
     <copy file="${basedir}/lib/commons-io-2.5.jar" tofile="${artifact.output.pprinter}/commons-io-2.5.jar"/>
     <copy file="${basedir}/lib/commons-cli-1.3.1.jar" tofile="${artifact.output.pprinter}/commons-cli-1.3.1.jar"/>

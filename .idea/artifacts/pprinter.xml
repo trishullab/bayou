@@ -2,7 +2,7 @@
   <artifact name="pprinter">
     <output-path>$PROJECT_DIR$/out/artifacts/pprinter</output-path>
     <root id="root">
-      <element id="archive" name="dsl.jar">
+      <element id="archive" name="pprinter.jar">
         <element id="directory" name="META-INF">
           <element id="file-copy" path="$PROJECT_DIR$/src/pprinter/META-INF/MANIFEST.MF" />
         </element>
