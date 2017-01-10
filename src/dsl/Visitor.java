@@ -16,13 +16,20 @@ public class Visitor extends ASTVisitor {
     final PrintWriter output;
     final Gson gson;
 
+    // denotes what is the API of the current AST, will be set by
+    // some classes in the DSL that can determine this
+    // NOTE: this is only a guess
+    String API;
+
     class JSONOutputWrapper {
         String file;
+        String API;
         DBlock ast;
         List<Sequence> sequences;
 
-        public JSONOutputWrapper(String file, DBlock ast, List<Sequence> sequences) {
+        public JSONOutputWrapper(String file, String API, DBlock ast, List<Sequence> sequences) {
             this.file = file;
+            this.API = API;
             this.ast = ast;
             this.sequences = sequences;
         }
@@ -41,6 +48,7 @@ public class Visitor extends ASTVisitor {
 
     @Override
     public boolean visit(MethodDeclaration method) {
+        this.API = null;
         DBlock ast = new DBlock.Handle(method.getBody(), this).handle();
         if (ast != null) {
             List<Sequence> sequences = new ArrayList<>();
@@ -55,7 +63,7 @@ public class Visitor extends ASTVisitor {
     boolean first = true;
     private void printJson(DBlock ast, List<Sequence> sequences) {
         String file = options.cmdLine.getOptionValue("input-file");
-        JSONOutputWrapper out = new JSONOutputWrapper(file, ast, sequences);
+        JSONOutputWrapper out = new JSONOutputWrapper(file, this.API, ast, sequences);
         output.write(first? "" : ",\n");
         output.write(gson.toJson(out));
         output.flush();
