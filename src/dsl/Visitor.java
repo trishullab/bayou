@@ -48,9 +48,9 @@ public class Visitor extends ASTVisitor {
 
     @Override
     public boolean visit(MethodDeclaration method) {
-        this.API = null;
+        API = null;
         DBlock ast = new DBlock.Handle(method.getBody(), this).handle();
-        if (ast != null) {
+        if (ast != null && API != null) {
             List<Sequence> sequences = new ArrayList<>();
             sequences.add(new Sequence());
             ast.updateSequences(sequences);
