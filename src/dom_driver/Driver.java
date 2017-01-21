@@ -10,15 +10,14 @@
  * the corresponding DSL element. The handle() method may return null if
  * the Eclipse AST element does not satisfy the conditions to be in the DSL.
  *
- * Note that if the DSL element is a subclass of DExpression or DStatement
+ * Note that if the DSL element is a subclass of DOMExpression or DASTNode
  * it has to be added to the switch cases in the Handles of both these classes.
  */
 
 
 
-package dsl;
+package dom_driver;
 
-import com.google.gson.JsonParseException;
 import org.apache.commons.cli.*;
 import org.apache.commons.io.FileUtils;
 import org.eclipse.jdt.core.dom.AST;

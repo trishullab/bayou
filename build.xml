@@ -52,6 +52,46 @@
     <exclude name="**/?*.aj"/>
   </patternset>
   
+  <!-- JDK definitions -->
+  
+  <property name="jdk.bin.1.8" value="${jdk.home.1.8}/bin"/>
+  <path id="jdk.classpath.1.8">
+    <fileset dir="${jdk.home.1.8}">
+      <include name="jre/lib/charsets.jar"/>
+      <include name="jre/lib/deploy.jar"/>
+      <include name="jre/lib/ext/cldrdata.jar"/>
+      <include name="jre/lib/ext/dnsns.jar"/>
+      <include name="jre/lib/ext/jaccess.jar"/>
+      <include name="jre/lib/ext/jfxrt.jar"/>
+      <include name="jre/lib/ext/localedata.jar"/>
+      <include name="jre/lib/ext/nashorn.jar"/>
+      <include name="jre/lib/ext/sunec.jar"/>
+      <include name="jre/lib/ext/sunjce_provider.jar"/>
+      <include name="jre/lib/ext/sunpkcs11.jar"/>
+      <include name="jre/lib/ext/zipfs.jar"/>
+      <include name="jre/lib/javaws.jar"/>
+      <include name="jre/lib/jce.jar"/>
+      <include name="jre/lib/jfr.jar"/>
+      <include name="jre/lib/jfxswt.jar"/>
+      <include name="jre/lib/jsse.jar"/>
+      <include name="jre/lib/management-agent.jar"/>
+      <include name="jre/lib/plugin.jar"/>
+      <include name="jre/lib/resources.jar"/>
+      <include name="jre/lib/rt.jar"/>
+      <include name="lib/ant-javafx.jar"/>
+      <include name="lib/dt.jar"/>
+      <include name="lib/javafx-mx.jar"/>
+      <include name="lib/jconsole.jar"/>
+      <include name="lib/packager.jar"/>
+      <include name="lib/sa-jdi.jar"/>
+      <include name="lib/tools.jar"/>
+    </fileset>
+  </path>
+  
+  <property name="project.jdk.home" value="${jdk.home.1.8}"/>
+  <property name="project.jdk.bin" value="${jdk.bin.1.8}"/>
+  <property name="project.jdk.classpath" value="jdk.classpath.1.8"/>
+  
   
   <!-- Project Libraries -->
   
@@ -75,6 +115,9 @@
   <dirname property="module.dsl.basedir" file="${ant.file}"/>
   
   
+  <property name="module.jdk.home.dsl" value="${project.jdk.home}"/>
+  <property name="module.jdk.bin.dsl" value="${project.jdk.bin}"/>
+  <property name="module.jdk.classpath.dsl" value="${project.jdk.classpath}"/>
   
   <property name="compiler.args.dsl" value="-encoding UTF-8 -source 8 -target 8 ${compiler.args}"/>
   
@@ -86,6 +129,7 @@
   </path>
   
   <path id="dsl.module.production.classpath">
+    <path refid="${module.jdk.classpath.dsl}"/>
     <path refid="library.lib.classpath"/>
     <fileset dir="${basedir}/lib">
       <patternset refid="library.patterns"/>
@@ -101,6 +145,7 @@
   </path>
   
   <path id="dsl.module.classpath">
+    <path refid="${module.jdk.classpath.dsl}"/>
     <pathelement location="${dsl.output.dir}"/>
     <path refid="library.lib.classpath"/>
     <fileset dir="${basedir}/lib">
@@ -137,7 +182,7 @@
   
   <target name="compile.module.dsl.production" description="Compile module dsl; production classes">
     <mkdir dir="${dsl.output.dir}"/>
-    <javac destdir="${dsl.output.dir}" debug="${compiler.debug}" nowarn="${compiler.generate.no.warnings}" memorymaximumsize="${compiler.max.memory}" fork="true">
+    <javac destdir="${dsl.output.dir}" debug="${compiler.debug}" nowarn="${compiler.generate.no.warnings}" memorymaximumsize="${compiler.max.memory}" fork="true" executable="${module.jdk.bin.dsl}/javac">
       <compilerarg line="${compiler.args.dsl}"/>
       <bootclasspath refid="dsl.module.bootclasspath"/>
       <classpath refid="dsl.module.production.classpath"/>

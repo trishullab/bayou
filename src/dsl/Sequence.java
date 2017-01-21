@@ -14,6 +14,10 @@ public class Sequence {
         this.calls = new ArrayList<>(calls);
     }
 
+    public List<String> getCalls() {
+        return calls;
+    }
+
     public void addCall(String apiCall) {
         calls.add(apiCall);
     }
@@ -23,13 +27,7 @@ public class Sequence {
         if (o == null || ! (o instanceof Sequence))
             return false;
         Sequence seq = (Sequence) o;
-        List<String> otherSequence = seq.calls;
-        if (calls.size() != otherSequence.size())
-            return false;
-        for (int i = 0; i < calls.size(); i++)
-            if (! calls.get(i).equals(otherSequence.get(i)))
-                return false;
-        return true;
+        return calls.equals(seq.calls);
     }
 
     @Override

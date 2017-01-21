@@ -13,5 +13,5 @@ Class-Path: org.eclipse.core.jobs_3.8.0.v20160509-0411.jar org.eclipse
  es_3.11.0.v20160503-1608.jar org.eclipse.core.contenttype_3.5.100.v20
  160418-1621.jar org.eclipse.equinox.preferences_3.6.0.v20160120-1756.
  jar
-Main-Class: dsl.Driver
+Main-Class: dom_driver.Driver
 

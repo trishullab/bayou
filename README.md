@@ -9,6 +9,6 @@ Ensure that the correct JDK path is specified in `build.properties`.
 
 To compile the code, run `ant` from the project's root directory. Once this successfully completes, run
 
-`java -jar out/artifacts/dsl_jar/dsl.jar`
+`java -jar out/artifacts/driver/driver.jar`
 
 and follow the usage instructions.

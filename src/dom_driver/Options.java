@@ -1,4 +1,4 @@
-package dsl;
+package dom_driver;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
@@ -40,11 +40,11 @@ public class Options {
     CommandLine cmdLine;
     JsonObject config;
 
-    final List<String> API_CLASSES;
-    final Map<String, Boolean> KNOWN_CONSTANTS_BOOLEAN;
-    final Map<String, Float> KNOWN_CONSTANTS_NUMBER;
-    final Map<String, String> KNOWN_CONSTANTS_STRING;
-    final int NUM_UNROLLS;
+    public final List<String> API_CLASSES;
+    public final Map<String, Boolean> KNOWN_CONSTANTS_BOOLEAN;
+    public final Map<String, Float> KNOWN_CONSTANTS_NUMBER;
+    public final Map<String, String> KNOWN_CONSTANTS_STRING;
+    public final int NUM_UNROLLS;
 
     public Options(String[] args) throws ParseException, IOException {
         this.cmdLine = readCommandLine(args);

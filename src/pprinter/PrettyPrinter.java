@@ -2,7 +2,7 @@ package pprinter;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import dsl.*;
+import dom_driver.*;
 import org.apache.commons.cli.*;
 
 import java.io.IOException;
@@ -15,7 +15,7 @@ public class PrettyPrinter {
     CommandLine cmdLine;
 
     class JSONInputWrapper {
-        List<DBlock> asts;
+        List<DOMBlock> asts;
     }
 
     public PrettyPrinter(String[] args) {
@@ -54,22 +54,23 @@ public class PrettyPrinter {
             return;
         }
 
-        RuntimeTypeAdapterFactory<DStatement> stmtFactory = RuntimeTypeAdapterFactory.of(DStatement.class, "node")
-                .registerSubtype(DBlock.class)
-                .registerSubtype(DExpressionStatement.class)
-                .registerSubtype(DIfStatement.class)
-                .registerSubtype(DTryStatement.class)
-                .registerSubtype(DVariableDeclarationStatement.class)
-                .registerSubtype(DWhileStatement.class);
+        /*
+        RuntimeTypeAdapterFactory<DOMStatement> stmtFactory = RuntimeTypeAdapterFactory.of(DOMStatement.class, "node")
+                .registerSubtype(DOMBlock.class)
+                .registerSubtype(DOMExpressionStatement.class)
+                .registerSubtype(DOMIfStatement.class)
+                .registerSubtype(DOMTryStatement.class)
+                .registerSubtype(DOMVariableDeclarationStatement.class)
+                .registerSubtype(DOMWhileStatement.class);
 
-        RuntimeTypeAdapterFactory<DExpression> exprFactory = RuntimeTypeAdapterFactory.of(DExpression.class, "node")
-                .registerSubtype(DName.class)
-                .registerSubtype(DNullLiteral.class)
-                .registerSubtype(DMethodInvocation.class)
-                .registerSubtype(DClassInstanceCreation.class)
-                .registerSubtype(DInfixExpression.class)
-                .registerSubtype(DAssignment.class)
-                .registerSubtype(DParenthesizedExpression.class);
+        RuntimeTypeAdapterFactory<DOMExpression> exprFactory = RuntimeTypeAdapterFactory.of(DOMExpression.class, "node")
+                .registerSubtype(DOMName.class)
+                .registerSubtype(DOMNullLiteral.class)
+                .registerSubtype(DOMMethodInvocation.class)
+                .registerSubtype(DOMClassInstanceCreation.class)
+                .registerSubtype(DOMInfixExpression.class)
+                .registerSubtype(DOMAssignment.class)
+                .registerSubtype(DOMParenthesizedExpression.class);
 
         Gson gson = new GsonBuilder().serializeNulls()
                 .registerTypeAdapterFactory(stmtFactory)
@@ -77,8 +78,9 @@ public class PrettyPrinter {
                 .create();
 
         JSONInputWrapper js = gson.fromJson(s, JSONInputWrapper.class);
-        for (DBlock ast : js.asts)
+        for (DOMBlock ast : js.asts)
             System.out.println(ast.sketch() + "\n");
+            */
     }
 
     public static void main(String args[]) {

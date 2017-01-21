@@ -1,4 +1,4 @@
-package dsl;
+package dom_driver;
 
 import org.eclipse.jdt.core.dom.Expression;
 import org.eclipse.jdt.core.dom.Name;
@@ -11,8 +11,7 @@ public class RefinementString extends Refinement {
     int length;
     boolean containsPunct;
 
-    public RefinementString(Expression e, Visitor visitor) {
-        super(visitor);
+    public RefinementString(Expression e) {
         if (knownConstants(e))
             return;
 
@@ -33,8 +32,8 @@ public class RefinementString extends Refinement {
         if (! (e instanceof Name))
             return false;
         String s = ((Name) e).getFullyQualifiedName();
-        if (visitor.options.KNOWN_CONSTANTS_STRING.containsKey(s)) {
-            String v = visitor.options.KNOWN_CONSTANTS_STRING.get(s);
+        if (Visitor.V().options.KNOWN_CONSTANTS_STRING.containsKey(s)) {
+            String v = Visitor.V().options.KNOWN_CONSTANTS_STRING.get(s);
             this.exists = true;
             this.length = v.length();
             this.containsPunct = hasPunct(v);

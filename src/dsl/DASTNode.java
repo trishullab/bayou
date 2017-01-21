@@ -3,7 +3,11 @@ package dsl;
 import java.util.List;
 
 public abstract class DASTNode {
-    abstract void updateSequences(List<Sequence> soFar);
-    abstract String sketch();
-    protected String HOLE() { return "<hole>"; }
+    public abstract void updateSequences(List<Sequence> soFar);
+
+    @Override
+    public abstract boolean equals(Object o);
+
+    @Override
+    public abstract int hashCode();
 }
