@@ -2,6 +2,7 @@ package dom_driver;
 
 import dsl.DAPICall;
 import dsl.DSubTree;
+import org.eclipse.jdt.core.dom.Expression;
 import org.eclipse.jdt.core.dom.IMethodBinding;
 import org.eclipse.jdt.core.dom.MethodDeclaration;
 import org.eclipse.jdt.core.dom.MethodInvocation;
@@ -17,6 +18,12 @@ public class DOMMethodInvocation implements Handler {
     @Override
     public DSubTree handle() {
         DSubTree tree = new DSubTree();
+        // evaluate arguments first
+        for (Object o : invocation.arguments()) {
+            DSubTree Targ = new DOMExpression((Expression) o).handle();
+            tree.addNodes(Targ.getNodes());
+        }
+
         IMethodBinding binding = invocation.resolveMethodBinding();
         MethodDeclaration localConstructor = Utils.checkAndGetLocalMethod(binding);
         if (localConstructor != null) {
