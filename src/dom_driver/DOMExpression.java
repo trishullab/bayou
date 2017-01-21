@@ -19,6 +19,8 @@ public class DOMExpression implements Handler {
             return new DOMClassInstanceCreation((ClassInstanceCreation) expression).handle();
         if (expression instanceof InfixExpression)
             return new DOMInfixExpression((InfixExpression) expression).handle();
+        if (expression instanceof PrefixExpression)
+            return new DOMPrefixExpression((PrefixExpression) expression).handle();
         if (expression instanceof ConditionalExpression)
             return new DOMConditionalExpression((ConditionalExpression) expression).handle();
         if (expression instanceof VariableDeclarationExpression)

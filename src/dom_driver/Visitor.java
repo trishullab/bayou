@@ -9,6 +9,7 @@ import org.eclipse.jdt.core.dom.*;
 import java.io.FileNotFoundException;
 import java.io.PrintWriter;
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class Visitor extends ASTVisitor {
 
@@ -17,7 +18,7 @@ public class Visitor extends ASTVisitor {
     public final PrintWriter output;
     public final Gson gson;
 
-    public TypeDeclaration currClass;
+    public List<MethodDeclaration> allMethods;
 
     private static Visitor V;
 
@@ -47,7 +48,7 @@ public class Visitor extends ASTVisitor {
         else
             this.output = new PrintWriter(System.out);
 
-        currClass = null;
+        allMethods = new ArrayList<>();
         V = this;
     }
 
@@ -55,13 +56,17 @@ public class Visitor extends ASTVisitor {
     public boolean visit(TypeDeclaration clazz) {
         if (clazz.isInterface())
             return false;
-        currClass = clazz;
-        MethodDeclaration[] allMethods = clazz.getMethods();
-        MethodDeclaration[] constructors = Arrays.stream(allMethods).filter(m -> m.isConstructor()).toArray(MethodDeclaration[]::new);
-        MethodDeclaration[] publicMethods = Arrays.stream(allMethods).filter(m -> !m.isConstructor() && Modifier.isPublic(m.getModifiers())).toArray(MethodDeclaration[]::new);
+        List<TypeDeclaration> classes = new ArrayList<>();
+        classes.addAll(Arrays.asList(clazz.getTypes()));
+        classes.add(clazz);
+
+        for (TypeDeclaration cls : classes)
+            allMethods.addAll(Arrays.asList(cls.getMethods()));
+        List<MethodDeclaration> constructors = allMethods.stream().filter(m -> m.isConstructor()).collect(Collectors.toList());
+        List<MethodDeclaration> publicMethods = allMethods.stream().filter(m -> !m.isConstructor() && Modifier.isPublic(m.getModifiers())).collect(Collectors.toList());
 
         Set<DSubTree> asts = new HashSet<>();
-        if (constructors.length > 0)
+        if (! constructors.isEmpty())
             for (MethodDeclaration c : constructors)
                 for (MethodDeclaration m : publicMethods) {
                     DSubTree ast = new DOMMethodDeclaration(c).handle();

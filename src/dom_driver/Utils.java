@@ -19,7 +19,7 @@ public final class Utils {
 
     public static MethodDeclaration checkAndGetLocalMethod(IMethodBinding binding) {
         if (binding != null)
-            for (MethodDeclaration method : Visitor.V().currClass.getMethods())
+            for (MethodDeclaration method : Visitor.V().allMethods)
                 if (binding.isEqualTo(method.resolveBinding()))
                     return method;
         return null;
