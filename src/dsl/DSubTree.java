@@ -6,37 +6,37 @@ import java.util.List;
 public class DSubTree extends DASTNode {
 
     final String node = "DSubTree";
-    final List<DASTNode> nodes;
+    final List<DASTNode> _nodes;
 
     public DSubTree() {
-        nodes = new ArrayList<>();
+        _nodes = new ArrayList<>();
     }
 
-    public DSubTree(List<DASTNode> nodes) {
-        this.nodes = nodes;
+    public DSubTree(List<DASTNode> _nodes) {
+        this._nodes = _nodes;
     }
 
     public void addNode(DASTNode node) {
-        nodes.add(node);
+        _nodes.add(node);
     }
 
     public void addNodes(List<DASTNode> otherNodes) {
-        nodes.addAll(otherNodes);
+        _nodes.addAll(otherNodes);
     }
 
     public boolean isValid() {
-        return !nodes.isEmpty();
+        return !_nodes.isEmpty();
     }
 
     @Override
     public void updateSequences(List<Sequence> soFar) {
-        for (DASTNode node : nodes)
+        for (DASTNode node : _nodes)
             node.updateSequences(soFar);
     }
 
     public List<DAPICall> getNodesAsCalls() {
         List<DAPICall> calls = new ArrayList<>();
-        for (DASTNode node : nodes) {
+        for (DASTNode node : _nodes) {
             assert node instanceof DAPICall : "invalid branch condition";
             calls.add((DAPICall) node);
         }
@@ -44,7 +44,7 @@ public class DSubTree extends DASTNode {
     }
 
     public List<DASTNode> getNodes() {
-        return nodes;
+        return _nodes;
     }
 
     @Override
@@ -52,11 +52,11 @@ public class DSubTree extends DASTNode {
         if (o == null || ! (o instanceof DSubTree))
             return false;
         DSubTree tree = (DSubTree) o;
-        return nodes.equals(tree.getNodes());
+        return _nodes.equals(tree.getNodes());
     }
 
     @Override
     public int hashCode() {
-        return nodes.hashCode();
+        return _nodes.hashCode();
     }
 }

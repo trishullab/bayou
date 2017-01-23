@@ -11,20 +11,20 @@ import java.util.stream.Stream;
 public class DAPICall extends DASTNode {
 
     final String node = "DAPICall";
-    final String call;
+    final String _call;
     final transient IMethodBinding method;
 
     /* TODO: Add refinement types (predicates) here */
 
     public DAPICall(IMethodBinding method) {
         this.method = method;
-        this.call = getClassName() + "." + getSignature();
+        this._call = getClassName() + "." + getSignature();
     }
 
     @Override
     public void updateSequences(List<Sequence> soFar) {
         for (Sequence sequence : soFar)
-            sequence.addCall(call);
+            sequence.addCall(_call);
     }
 
     private String getClassName() {
@@ -39,24 +39,16 @@ public class DAPICall extends DASTNode {
         return method.getName() + "(" + String.join(",", types.collect(Collectors.toCollection(ArrayList::new))) + ")";
     }
 
-    public String getCall() {
-        return call;
-    }
-
-    public IMethodBinding getMethod() {
-        return method;
-    }
-
     @Override
     public boolean equals(Object o) {
         if (o == null || ! (o instanceof DAPICall))
             return false;
         DAPICall apiCall = (DAPICall) o;
-        return call.equals(apiCall.call);
+        return _call.equals(apiCall._call);
     }
 
     @Override
     public int hashCode() {
-        return call.hashCode();
+        return _call.hashCode();
     }
 }

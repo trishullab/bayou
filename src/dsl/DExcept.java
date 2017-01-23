@@ -6,34 +6,26 @@ import java.util.List;
 public class DExcept extends DASTNode {
 
     final String node = "DExcept";
-    public List<DASTNode> try_;
-    public List<DASTNode> except;
+    public List<DASTNode> _try;
+    public List<DASTNode> _catch;
 
-    public DExcept(List<DASTNode> try_, List<DASTNode> except) {
-        this.try_ = try_;
-        this.except = except;
+    public DExcept(List<DASTNode> _try, List<DASTNode> _catch) {
+        this._try = _try;
+        this._catch = _catch;
     }
 
     @Override
     public void updateSequences(List<Sequence> soFar) {
-        for (DASTNode node : try_)
+        for (DASTNode node : _try)
             node.updateSequences(soFar);
         List<Sequence> copy = new ArrayList<>();
         for (Sequence seq : soFar)
             copy.add(new Sequence(seq.calls));
-        for (DASTNode e : except)
+        for (DASTNode e : _catch)
             e.updateSequences(copy);
         for (Sequence seq : copy)
             if (! soFar.contains(seq))
                 soFar.add(seq);
-    }
-
-    public List<DASTNode> getTry_() {
-        return try_;
-    }
-
-    public List<DASTNode> getExcept() {
-        return except;
     }
 
     @Override
@@ -41,11 +33,11 @@ public class DExcept extends DASTNode {
         if (o == null || ! (o instanceof DExcept))
             return false;
         DExcept other = (DExcept) o;
-        return try_.equals(other.try_) && except.equals(other.except);
+        return _try.equals(other._try) && _catch.equals(other._catch);
     }
 
     @Override
     public int hashCode() {
-        return 7*try_.hashCode() + 17*except.hashCode();
+        return 7* _try.hashCode() + 17* _catch.hashCode();
     }
 }

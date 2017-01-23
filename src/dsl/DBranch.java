@@ -6,42 +6,30 @@ import java.util.List;
 public class DBranch extends DASTNode {
 
     final String node = "DBranch";
-    final List<DAPICall> cond;
-    final List<DASTNode> then;
-    final List<DASTNode> else_;
+    final List<DAPICall> _cond;
+    final List<DASTNode> _then;
+    final List<DASTNode> _else;
 
-    public DBranch(List<DAPICall> cond, List<DASTNode> then, List<DASTNode> else_) {
-        this.cond = cond;
-        this.then = then;
-        this.else_ = else_;
+    public DBranch(List<DAPICall> _cond, List<DASTNode> _then, List<DASTNode> _else) {
+        this._cond = _cond;
+        this._then = _then;
+        this._else = _else;
     }
 
     @Override
     public void updateSequences(List<Sequence> soFar) {
-        for (DAPICall call : cond)
+        for (DAPICall call : _cond)
             call.updateSequences(soFar);
         List<Sequence> copy = new ArrayList<>();
         for (Sequence seq : soFar)
             copy.add(new Sequence(seq.calls));
-        for (DASTNode t : then)
+        for (DASTNode t : _then)
             t.updateSequences(soFar);
-        for (DASTNode e : else_)
+        for (DASTNode e : _else)
             e.updateSequences(copy);
         for (Sequence seq : copy)
             if (! soFar.contains(seq))
                 soFar.add(seq);
-    }
-
-    public List<DAPICall> getCond() {
-        return cond;
-    }
-
-    public List<DASTNode> getThen() {
-        return then;
-    }
-
-    public List<DASTNode> getElse_() {
-        return else_;
     }
 
     @Override
@@ -49,11 +37,11 @@ public class DBranch extends DASTNode {
         if (o == null || ! (o instanceof DBranch))
             return false;
         DBranch branch = (DBranch) o;
-        return cond.equals(branch.cond) && then.equals(branch.then) && else_.equals(branch.else_);
+        return _cond.equals(branch._cond) && _then.equals(branch._then) && _else.equals(branch._else);
     }
 
     @Override
     public int hashCode() {
-        return 7*cond.hashCode() + 17*then.hashCode() + 31*else_.hashCode();
+        return 7* _cond.hashCode() + 17* _then.hashCode() + 31* _else.hashCode();
     }
 }
