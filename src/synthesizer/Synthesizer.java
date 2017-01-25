@@ -1,8 +1,8 @@
-package pprinter;
+package synthesizer;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import dom_driver.*;
+import dsl.*;
 import org.apache.commons.cli.*;
 
 import java.io.IOException;
@@ -10,15 +10,15 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.List;
 
-public class PrettyPrinter {
+public class Synthesizer {
 
     CommandLine cmdLine;
 
     class JSONInputWrapper {
-        List<DOMBlock> asts;
+        List<DSubTree> asts;
     }
 
-    public PrettyPrinter(String[] args) {
+    public Synthesizer(String[] args) {
         CommandLineParser parser = new DefaultParser();
         org.apache.commons.cli.Options clopts = new org.apache.commons.cli.Options();
 
@@ -28,7 +28,7 @@ public class PrettyPrinter {
             this.cmdLine = parser.parse(clopts, args);
         } catch (ParseException e) {
             HelpFormatter help = new HelpFormatter();
-            help.printHelp("pretty_print", clopts);
+            help.printHelp("synthesizer", clopts);
         }
     }
 
@@ -54,36 +54,22 @@ public class PrettyPrinter {
             return;
         }
 
-        /*
-        RuntimeTypeAdapterFactory<DOMStatement> stmtFactory = RuntimeTypeAdapterFactory.of(DOMStatement.class, "node")
-                .registerSubtype(DOMBlock.class)
-                .registerSubtype(DOMExpressionStatement.class)
-                .registerSubtype(DOMIfStatement.class)
-                .registerSubtype(DOMTryStatement.class)
-                .registerSubtype(DOMVariableDeclarationStatement.class)
-                .registerSubtype(DOMWhileStatement.class);
-
-        RuntimeTypeAdapterFactory<DOMExpression> exprFactory = RuntimeTypeAdapterFactory.of(DOMExpression.class, "node")
-                .registerSubtype(DOMName.class)
-                .registerSubtype(DOMNullLiteral.class)
-                .registerSubtype(DOMMethodInvocation.class)
-                .registerSubtype(DOMClassInstanceCreation.class)
-                .registerSubtype(DOMInfixExpression.class)
-                .registerSubtype(DOMAssignment.class)
-                .registerSubtype(DOMParenthesizedExpression.class);
-
+        RuntimeTypeAdapterFactory<DASTNode> nodeAdapter = RuntimeTypeAdapterFactory.of(DASTNode.class, "node")
+                .registerSubtype(DAPICall.class)
+                .registerSubtype(DBranch.class)
+                .registerSubtype(DExcept.class)
+                .registerSubtype(DLoop.class)
+                .registerSubtype(DSubTree.class);
         Gson gson = new GsonBuilder().serializeNulls()
-                .registerTypeAdapterFactory(stmtFactory)
-                .registerTypeAdapterFactory(exprFactory)
+                .registerTypeAdapterFactory(nodeAdapter)
                 .create();
 
         JSONInputWrapper js = gson.fromJson(s, JSONInputWrapper.class);
-        for (DOMBlock ast : js.asts)
-            System.out.println(ast.sketch() + "\n");
-            */
+        for (DSubTree ast : js.asts)
+            System.out.println(ast.getNodes().size());
     }
 
     public static void main(String args[]) {
-        new PrettyPrinter(args).run();
+        new Synthesizer(args).run();
     }
 }

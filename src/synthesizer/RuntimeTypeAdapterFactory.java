@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package pprinter;
+package synthesizer;
 
 import java.io.IOException;
 import java.util.LinkedHashMap;

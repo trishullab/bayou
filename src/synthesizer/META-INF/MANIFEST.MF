@@ -13,5 +13,5 @@ Class-Path: gson-2.6.3.jar commons-io-2.5.jar commons-cli-1.3.1.jar or
  16-2131.jar org.eclipse.equinox.preferences_3.6.0.v20160120-1756.jar 
  org.eclipse.core.runtime_3.12.0.v20160606-1342.jar commons-cli-1.3.1.
  jar
-Main-Class: pprinter.PrettyPrinter
+Main-Class: synthesizer.Synthesizer
 

@@ -52,46 +52,6 @@
     <exclude name="**/?*.aj"/>
   </patternset>
   
-  <!-- JDK definitions -->
-  
-  <property name="jdk.bin.1.8" value="${jdk.home.1.8}/bin"/>
-  <path id="jdk.classpath.1.8">
-    <fileset dir="${jdk.home.1.8}">
-      <include name="jre/lib/charsets.jar"/>
-      <include name="jre/lib/deploy.jar"/>
-      <include name="jre/lib/ext/cldrdata.jar"/>
-      <include name="jre/lib/ext/dnsns.jar"/>
-      <include name="jre/lib/ext/jaccess.jar"/>
-      <include name="jre/lib/ext/jfxrt.jar"/>
-      <include name="jre/lib/ext/localedata.jar"/>
-      <include name="jre/lib/ext/nashorn.jar"/>
-      <include name="jre/lib/ext/sunec.jar"/>
-      <include name="jre/lib/ext/sunjce_provider.jar"/>
-      <include name="jre/lib/ext/sunpkcs11.jar"/>
-      <include name="jre/lib/ext/zipfs.jar"/>
-      <include name="jre/lib/javaws.jar"/>
-      <include name="jre/lib/jce.jar"/>
-      <include name="jre/lib/jfr.jar"/>
-      <include name="jre/lib/jfxswt.jar"/>
-      <include name="jre/lib/jsse.jar"/>
-      <include name="jre/lib/management-agent.jar"/>
-      <include name="jre/lib/plugin.jar"/>
-      <include name="jre/lib/resources.jar"/>
-      <include name="jre/lib/rt.jar"/>
-      <include name="lib/ant-javafx.jar"/>
-      <include name="lib/dt.jar"/>
-      <include name="lib/javafx-mx.jar"/>
-      <include name="lib/jconsole.jar"/>
-      <include name="lib/packager.jar"/>
-      <include name="lib/sa-jdi.jar"/>
-      <include name="lib/tools.jar"/>
-    </fileset>
-  </path>
-  
-  <property name="project.jdk.home" value="${jdk.home.1.8}"/>
-  <property name="project.jdk.bin" value="${jdk.bin.1.8}"/>
-  <property name="project.jdk.classpath" value="jdk.classpath.1.8"/>
-  
   
   <!-- Project Libraries -->
   
@@ -115,9 +75,6 @@
   <dirname property="module.dsl.basedir" file="${ant.file}"/>
   
   
-  <property name="module.jdk.home.dsl" value="${project.jdk.home}"/>
-  <property name="module.jdk.bin.dsl" value="${project.jdk.bin}"/>
-  <property name="module.jdk.classpath.dsl" value="${project.jdk.classpath}"/>
   
   <property name="compiler.args.dsl" value="-encoding UTF-8 -source 8 -target 8 ${compiler.args}"/>
   
@@ -129,7 +86,6 @@
   </path>
   
   <path id="dsl.module.production.classpath">
-    <path refid="${module.jdk.classpath.dsl}"/>
     <path refid="library.lib.classpath"/>
     <fileset dir="${basedir}/lib">
       <patternset refid="library.patterns"/>
@@ -145,7 +101,6 @@
   </path>
   
   <path id="dsl.module.classpath">
-    <path refid="${module.jdk.classpath.dsl}"/>
     <pathelement location="${dsl.output.dir}"/>
     <path refid="library.lib.classpath"/>
     <fileset dir="${basedir}/lib">
@@ -182,7 +137,7 @@
   
   <target name="compile.module.dsl.production" description="Compile module dsl; production classes">
     <mkdir dir="${dsl.output.dir}"/>
-    <javac destdir="${dsl.output.dir}" debug="${compiler.debug}" nowarn="${compiler.generate.no.warnings}" memorymaximumsize="${compiler.max.memory}" fork="true" executable="${module.jdk.bin.dsl}/javac">
+    <javac destdir="${dsl.output.dir}" debug="${compiler.debug}" nowarn="${compiler.generate.no.warnings}" memorymaximumsize="${compiler.max.memory}" fork="true">
       <compilerarg line="${compiler.args.dsl}"/>
       <bootclasspath refid="dsl.module.bootclasspath"/>
       <classpath refid="dsl.module.production.classpath"/>
@@ -209,28 +164,28 @@
     <!-- Perform any build initialization in this target -->
   </target>
   
-  <target name="clean" depends="clean.module.dsl, clean.artifact.driver, clean.artifact.pprinter" description="cleanup all"/>
+  <target name="clean" depends="clean.module.dsl, clean.artifact.driver, clean.artifact.synthesizer" description="cleanup all"/>
   
   <target name="build.modules" depends="init, clean, compile.module.dsl" description="build all modules"/>
   
   <target name="init.artifacts">
     <property name="artifacts.temp.dir" value="${basedir}/__artifacts_temp"/>
     <property name="artifact.output.driver" value="${basedir}/out/artifacts/driver"/>
-    <property name="artifact.output.pprinter" value="${basedir}/out/artifacts/pprinter"/>
+    <property name="artifact.output.synthesizer" value="${basedir}/out/artifacts/synthesizer"/>
     <mkdir dir="${artifacts.temp.dir}"/>
     <property name="temp.jar.path.driver.jar" value="${artifacts.temp.dir}/driver.jar"/>
-    <property name="temp.jar.path.pprinter.jar" value="${artifacts.temp.dir}/pprinter.jar"/>
+    <property name="temp.jar.path.synthesizer.jar" value="${artifacts.temp.dir}/synthesizer.jar"/>
   </target>
   
   <target name="clean.artifact.driver" description="clean driver artifact output">
     <delete dir="${artifact.output.driver}"/>
   </target>
   
-  <target name="clean.artifact.pprinter" description="clean pprinter artifact output">
-    <delete dir="${artifact.output.pprinter}"/>
+  <target name="clean.artifact.synthesizer" description="clean synthesizer artifact output">
+    <delete dir="${artifact.output.synthesizer}"/>
   </target>
   
-  <target name="artifact.driver" depends="init.artifacts, compile.module.dsl, artifact.pprinter" description="Build &#39;driver&#39; artifact">
+  <target name="artifact.driver" depends="init.artifacts, compile.module.dsl, artifact.synthesizer" description="Build &#39;driver&#39; artifact">
     <mkdir dir="${artifact.output.driver}"/>
     <jar destfile="${temp.jar.path.driver.jar}" duplicate="preserve" filesetmanifest="merge">
       <zipfileset dir="${dsl.output.dir}"/>
@@ -257,40 +212,40 @@
     <copy file="${basedir}/lib/org.eclipse.core.contenttype_3.5.100.v20160418-1621.jar" tofile="${artifact.output.driver}/org.eclipse.core.contenttype_3.5.100.v20160418-1621.jar"/>
     <copy file="${basedir}/lib/org.eclipse.equinox.preferences_3.6.0.v20160120-1756.jar" tofile="${artifact.output.driver}/org.eclipse.equinox.preferences_3.6.0.v20160120-1756.jar"/>
     <copy todir="${artifact.output.driver}">
-      <fileset dir="${artifact.output.pprinter}"/>
+      <fileset dir="${artifact.output.synthesizer}"/>
     </copy>
   </target>
   
-  <target name="artifact.pprinter" depends="init.artifacts, compile.module.dsl" description="Build &#39;pprinter&#39; artifact">
-    <mkdir dir="${artifact.output.pprinter}"/>
-    <jar destfile="${temp.jar.path.pprinter.jar}" duplicate="preserve" filesetmanifest="merge">
-      <zipfileset file="${basedir}/src/pprinter/META-INF/MANIFEST.MF" prefix="META-INF"/>
+  <target name="artifact.synthesizer" depends="init.artifacts, compile.module.dsl" description="Build &#39;synthesizer&#39; artifact">
+    <mkdir dir="${artifact.output.synthesizer}"/>
+    <jar destfile="${temp.jar.path.synthesizer.jar}" duplicate="preserve" filesetmanifest="merge">
       <zipfileset dir="${dsl.output.dir}"/>
+      <zipfileset file="${basedir}/src/synthesizer/META-INF/MANIFEST.MF" prefix="META-INF"/>
     </jar>
-    <copy file="${temp.jar.path.pprinter.jar}" tofile="${artifact.output.pprinter}/pprinter.jar"/>
-    <copy file="${basedir}/lib/gson-2.6.3.jar" tofile="${artifact.output.pprinter}/gson-2.6.3.jar"/>
-    <copy file="${basedir}/lib/commons-io-2.5.jar" tofile="${artifact.output.pprinter}/commons-io-2.5.jar"/>
-    <copy file="${basedir}/lib/commons-cli-1.3.1.jar" tofile="${artifact.output.pprinter}/commons-cli-1.3.1.jar"/>
-    <copy file="${basedir}/lib/org.eclipse.osgi_3.11.0.v20160603-1336.jar" tofile="${artifact.output.pprinter}/org.eclipse.osgi_3.11.0.v20160603-1336.jar"/>
-    <copy file="${basedir}/lib/org.eclipse.core.jobs_3.8.0.v20160509-0411.jar" tofile="${artifact.output.pprinter}/org.eclipse.core.jobs_3.8.0.v20160509-0411.jar"/>
-    <copy file="${basedir}/lib/org.eclipse.jdt.core_3.12.0.v20160516-2131.jar" tofile="${artifact.output.pprinter}/org.eclipse.jdt.core_3.12.0.v20160516-2131.jar"/>
-    <copy file="${basedir}/lib/org.eclipse.core.runtime_3.12.0.v20160606-1342.jar" tofile="${artifact.output.pprinter}/org.eclipse.core.runtime_3.12.0.v20160606-1342.jar"/>
-    <copy file="${basedir}/lib/org.eclipse.equinox.common_3.8.0.v20160509-1230.jar" tofile="${artifact.output.pprinter}/org.eclipse.equinox.common_3.8.0.v20160509-1230.jar"/>
-    <copy file="${basedir}/lib/org.eclipse.core.resources_3.11.0.v20160503-1608.jar" tofile="${artifact.output.pprinter}/org.eclipse.core.resources_3.11.0.v20160503-1608.jar"/>
-    <copy file="${basedir}/lib/org.eclipse.core.contenttype_3.5.100.v20160418-1621.jar" tofile="${artifact.output.pprinter}/org.eclipse.core.contenttype_3.5.100.v20160418-1621.jar"/>
-    <copy file="${basedir}/lib/org.eclipse.equinox.preferences_3.6.0.v20160120-1756.jar" tofile="${artifact.output.pprinter}/org.eclipse.equinox.preferences_3.6.0.v20160120-1756.jar"/>
-    <copy file="${basedir}/lib/org.eclipse.core.jobs_3.8.0.v20160509-0411.jar" tofile="${artifact.output.pprinter}/org.eclipse.core.jobs_3.8.0.v20160509-0411.jar"/>
-    <copy file="${basedir}/lib/org.eclipse.core.resources_3.11.0.v20160503-1608.jar" tofile="${artifact.output.pprinter}/org.eclipse.core.resources_3.11.0.v20160503-1608.jar"/>
-    <copy file="${basedir}/lib/org.eclipse.osgi_3.11.0.v20160603-1336.jar" tofile="${artifact.output.pprinter}/org.eclipse.osgi_3.11.0.v20160603-1336.jar"/>
-    <copy file="${basedir}/lib/org.eclipse.core.contenttype_3.5.100.v20160418-1621.jar" tofile="${artifact.output.pprinter}/org.eclipse.core.contenttype_3.5.100.v20160418-1621.jar"/>
-    <copy file="${basedir}/lib/org.eclipse.equinox.common_3.8.0.v20160509-1230.jar" tofile="${artifact.output.pprinter}/org.eclipse.equinox.common_3.8.0.v20160509-1230.jar"/>
-    <copy file="${basedir}/lib/org.eclipse.jdt.core_3.12.0.v20160516-2131.jar" tofile="${artifact.output.pprinter}/org.eclipse.jdt.core_3.12.0.v20160516-2131.jar"/>
-    <copy file="${basedir}/lib/org.eclipse.equinox.preferences_3.6.0.v20160120-1756.jar" tofile="${artifact.output.pprinter}/org.eclipse.equinox.preferences_3.6.0.v20160120-1756.jar"/>
-    <copy file="${basedir}/lib/org.eclipse.core.runtime_3.12.0.v20160606-1342.jar" tofile="${artifact.output.pprinter}/org.eclipse.core.runtime_3.12.0.v20160606-1342.jar"/>
-    <copy file="${basedir}/lib/commons-cli-1.3.1.jar" tofile="${artifact.output.pprinter}/commons-cli-1.3.1.jar"/>
+    <copy file="${temp.jar.path.synthesizer.jar}" tofile="${artifact.output.synthesizer}/synthesizer.jar"/>
+    <copy file="${basedir}/lib/gson-2.6.3.jar" tofile="${artifact.output.synthesizer}/gson-2.6.3.jar"/>
+    <copy file="${basedir}/lib/commons-io-2.5.jar" tofile="${artifact.output.synthesizer}/commons-io-2.5.jar"/>
+    <copy file="${basedir}/lib/commons-cli-1.3.1.jar" tofile="${artifact.output.synthesizer}/commons-cli-1.3.1.jar"/>
+    <copy file="${basedir}/lib/org.eclipse.osgi_3.11.0.v20160603-1336.jar" tofile="${artifact.output.synthesizer}/org.eclipse.osgi_3.11.0.v20160603-1336.jar"/>
+    <copy file="${basedir}/lib/org.eclipse.core.jobs_3.8.0.v20160509-0411.jar" tofile="${artifact.output.synthesizer}/org.eclipse.core.jobs_3.8.0.v20160509-0411.jar"/>
+    <copy file="${basedir}/lib/org.eclipse.jdt.core_3.12.0.v20160516-2131.jar" tofile="${artifact.output.synthesizer}/org.eclipse.jdt.core_3.12.0.v20160516-2131.jar"/>
+    <copy file="${basedir}/lib/org.eclipse.core.runtime_3.12.0.v20160606-1342.jar" tofile="${artifact.output.synthesizer}/org.eclipse.core.runtime_3.12.0.v20160606-1342.jar"/>
+    <copy file="${basedir}/lib/org.eclipse.equinox.common_3.8.0.v20160509-1230.jar" tofile="${artifact.output.synthesizer}/org.eclipse.equinox.common_3.8.0.v20160509-1230.jar"/>
+    <copy file="${basedir}/lib/org.eclipse.core.resources_3.11.0.v20160503-1608.jar" tofile="${artifact.output.synthesizer}/org.eclipse.core.resources_3.11.0.v20160503-1608.jar"/>
+    <copy file="${basedir}/lib/org.eclipse.core.contenttype_3.5.100.v20160418-1621.jar" tofile="${artifact.output.synthesizer}/org.eclipse.core.contenttype_3.5.100.v20160418-1621.jar"/>
+    <copy file="${basedir}/lib/org.eclipse.equinox.preferences_3.6.0.v20160120-1756.jar" tofile="${artifact.output.synthesizer}/org.eclipse.equinox.preferences_3.6.0.v20160120-1756.jar"/>
+    <copy file="${basedir}/lib/org.eclipse.core.jobs_3.8.0.v20160509-0411.jar" tofile="${artifact.output.synthesizer}/org.eclipse.core.jobs_3.8.0.v20160509-0411.jar"/>
+    <copy file="${basedir}/lib/org.eclipse.core.resources_3.11.0.v20160503-1608.jar" tofile="${artifact.output.synthesizer}/org.eclipse.core.resources_3.11.0.v20160503-1608.jar"/>
+    <copy file="${basedir}/lib/org.eclipse.osgi_3.11.0.v20160603-1336.jar" tofile="${artifact.output.synthesizer}/org.eclipse.osgi_3.11.0.v20160603-1336.jar"/>
+    <copy file="${basedir}/lib/org.eclipse.core.contenttype_3.5.100.v20160418-1621.jar" tofile="${artifact.output.synthesizer}/org.eclipse.core.contenttype_3.5.100.v20160418-1621.jar"/>
+    <copy file="${basedir}/lib/org.eclipse.equinox.common_3.8.0.v20160509-1230.jar" tofile="${artifact.output.synthesizer}/org.eclipse.equinox.common_3.8.0.v20160509-1230.jar"/>
+    <copy file="${basedir}/lib/org.eclipse.jdt.core_3.12.0.v20160516-2131.jar" tofile="${artifact.output.synthesizer}/org.eclipse.jdt.core_3.12.0.v20160516-2131.jar"/>
+    <copy file="${basedir}/lib/org.eclipse.equinox.preferences_3.6.0.v20160120-1756.jar" tofile="${artifact.output.synthesizer}/org.eclipse.equinox.preferences_3.6.0.v20160120-1756.jar"/>
+    <copy file="${basedir}/lib/org.eclipse.core.runtime_3.12.0.v20160606-1342.jar" tofile="${artifact.output.synthesizer}/org.eclipse.core.runtime_3.12.0.v20160606-1342.jar"/>
+    <copy file="${basedir}/lib/commons-cli-1.3.1.jar" tofile="${artifact.output.synthesizer}/commons-cli-1.3.1.jar"/>
   </target>
   
-  <target name="build.all.artifacts" depends="artifact.driver, artifact.pprinter" description="Build all artifacts">
+  <target name="build.all.artifacts" depends="artifact.driver, artifact.synthesizer" description="Build all artifacts">
     
     <!-- Delete temporary files -->
     <delete dir="${artifacts.temp.dir}"/>
