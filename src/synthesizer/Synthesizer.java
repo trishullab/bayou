@@ -38,7 +38,14 @@ public class Synthesizer {
                 .hasArg()
                 .numberOfArgs(1)
                 .required()
-                .desc("input ASTs in JSON")
+                .desc("input Java program")
+                .build());
+        opts.addOption(Option.builder("i")
+                .longOpt("asts-file")
+                .hasArg()
+                .numberOfArgs(1)
+                .required()
+                .desc("file containing ASTs from NN (in JSON)")
                 .build());
     }
 
@@ -48,9 +55,9 @@ public class Synthesizer {
 
         String s;
         try {
-            s = new String(Files.readAllBytes(Paths.get(cmdLine.getOptionValue("f"))));
+            s = new String(Files.readAllBytes(Paths.get(cmdLine.getOptionValue("i"))));
         } catch (IOException e) {
-            System.out.println("File " + cmdLine.getOptionValue("f") + " not found");
+            System.out.println("File " + cmdLine.getOptionValue("i") + " not found");
             return;
         }
 
@@ -66,7 +73,7 @@ public class Synthesizer {
 
         JSONInputWrapper js = gson.fromJson(s, JSONInputWrapper.class);
         for (DSubTree ast : js.asts)
-            System.out.println(ast.getNodes().size());
+            System.out.println(ast + "\n\n");
     }
 
     public static void main(String args[]) {

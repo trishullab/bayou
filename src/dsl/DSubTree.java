@@ -2,6 +2,7 @@ package dsl;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class DSubTree extends DASTNode {
 
@@ -58,5 +59,11 @@ public class DSubTree extends DASTNode {
     @Override
     public int hashCode() {
         return _nodes.hashCode();
+    }
+
+    @Override
+    public String toString() {
+        List<String> _nodesStr = _nodes.stream().map(node -> node.toString()).collect(Collectors.toList());
+        return String.join("\n", _nodesStr);
     }
 }

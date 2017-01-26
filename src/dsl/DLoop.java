@@ -40,4 +40,9 @@ public class DLoop extends DASTNode {
     public int hashCode() {
         return 7* _cond.hashCode() + 17* _body.hashCode();
     }
+
+    @Override
+    public String toString() {
+        return "while (\n" + _cond + "\n) {\n" + _body + "\n}";
+    }
 }

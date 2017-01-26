@@ -44,4 +44,9 @@ public class DBranch extends DASTNode {
     public int hashCode() {
         return 7* _cond.hashCode() + 17* _then.hashCode() + 31* _else.hashCode();
     }
+
+    @Override
+    public String toString() {
+        return "if (\n" + _cond + "\n) then {\n" + _then + "\n} else {\n" + _else + "\n}";
+    }
 }

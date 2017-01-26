@@ -40,4 +40,9 @@ public class DExcept extends DASTNode {
     public int hashCode() {
         return 7* _try.hashCode() + 17* _catch.hashCode();
     }
+
+    @Override
+    public String toString() {
+        return "try {\n" + _try + "\n} catch {\n" + _catch + "\n}";
+    }
 }

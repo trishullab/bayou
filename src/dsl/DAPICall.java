@@ -51,4 +51,9 @@ public class DAPICall extends DASTNode {
     public int hashCode() {
         return _call.hashCode();
     }
+
+    @Override
+    public String toString() {
+        return _call;
+    }
 }
