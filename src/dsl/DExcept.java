@@ -1,7 +1,12 @@
 package dsl;
 
+import org.eclipse.jdt.core.dom.*;
+import synthesizer.Environment;
+
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class DExcept extends DASTNode {
 
@@ -44,5 +49,59 @@ public class DExcept extends DASTNode {
     @Override
     public String toString() {
         return "try {\n" + _try + "\n} catch {\n" + _catch + "\n}";
+    }
+
+
+
+    @Override
+    public TryStatement synthesize(Environment env) {
+        AST ast = env.ast();
+        TryStatement statement = ast.newTryStatement();
+
+        /* synthesize try block */
+        Block tryBlock = ast.newBlock();
+        List<Class> exceptionsThrown = new ArrayList<>();
+        for (DASTNode dNode : _try) {
+            ASTNode aNode = dNode.synthesize(env);
+            if (aNode instanceof Statement)
+                tryBlock.statements().add(aNode);
+            else
+                tryBlock.statements().add(ast.newExpressionStatement((Expression) aNode));
+
+            if (dNode instanceof DAPICall) {
+                DAPICall call = (DAPICall) dNode;
+                if (call.constructor != null)
+                    exceptionsThrown.addAll(Arrays.asList(call.constructor.getExceptionTypes()));
+                else
+                    exceptionsThrown.addAll(Arrays.asList(call.method.getExceptionTypes()));
+            }
+        }
+        statement.setBody(tryBlock);
+
+        /* synthesize catch clause body */
+        CatchClause catchClause = ast.newCatchClause();
+        Block catchBlock = ast.newBlock();
+        for (DASTNode dNode : _catch) {
+            ASTNode aNode = dNode.synthesize(env);
+            if (aNode instanceof Statement)
+                catchBlock.statements().add(aNode);
+            else
+                catchBlock.statements().add(ast.newExpressionStatement((Expression) aNode));
+        }
+        catchClause.setBody(catchBlock);
+
+        /* synthesize catch clause exception types */
+        SingleVariableDeclaration ex = ast.newSingleVariableDeclaration();
+        String exType = String.join("|", exceptionsThrown.stream().map(c -> c.getName()).collect(Collectors.toList()));
+        ex.setType(ast.newSimpleType(ast.newName(exType)));
+        ex.setName(ast.newSimpleName("_e"));
+        catchClause.setException(ex);
+        statement.catchClauses().add(catchClause);
+
+        /* record exceptions that were caught */
+        for (Class except : exceptionsThrown)
+            env.recordExceptionCaught(except);
+
+        return statement;
     }
 }

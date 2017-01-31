@@ -20,6 +20,7 @@
       <element id="file-copy" path="$PROJECT_DIR$/lib/org.eclipse.core.contenttype_3.5.100.v20160418-1621.jar" />
       <element id="file-copy" path="$PROJECT_DIR$/lib/org.eclipse.equinox.preferences_3.6.0.v20160120-1756.jar" />
       <element id="library" level="project" name="lib" />
+      <element id="file-copy" path="$PROJECT_DIR$/lib/org.eclipse.text_3.5.0.jar" />
     </root>
   </artifact>
 </component>

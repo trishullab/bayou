@@ -1,5 +1,8 @@
 package dsl;
 
+import org.eclipse.jdt.core.dom.*;
+import synthesizer.Environment;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -65,5 +68,23 @@ public class DSubTree extends DASTNode {
     public String toString() {
         List<String> _nodesStr = _nodes.stream().map(node -> node.toString()).collect(Collectors.toList());
         return String.join("\n", _nodesStr);
+    }
+
+
+
+    @Override
+    public Block synthesize(Environment env) {
+        AST ast = env.ast();
+        Block block = ast.newBlock();
+
+        for (DASTNode dNode : _nodes) {
+            ASTNode aNode = dNode.synthesize(env);
+            if (aNode instanceof Statement)
+                block.statements().add(aNode);
+            else
+                block.statements().add(ast.newExpressionStatement((Expression) aNode));
+        }
+
+        return block;
     }
 }

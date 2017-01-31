@@ -1,8 +1,10 @@
 package dsl;
 
+import synthesizer.Synthesizable;
+
 import java.util.List;
 
-public abstract class DASTNode {
+public abstract class DASTNode implements Synthesizable {
     public abstract void updateSequences(List<Sequence> soFar);
 
     @Override
