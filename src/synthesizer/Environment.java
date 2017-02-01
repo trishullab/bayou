@@ -8,9 +8,10 @@ public class Environment {
 
     List<Variable> scope; // unmutable
     List<Variable> mu_scope; // mutable
-    Map<String,Integer> counts;
+    Map<Variable,Integer> usageCounts;
+    Map<String,Integer> prettyNameCounts;
 
-    List<Class> imports;
+    Set<Class> imports;
 
     Map<Class,Integer> exceptions;
 
@@ -24,19 +25,31 @@ public class Environment {
         this.ast = ast;
         this.scope = Collections.unmodifiableList(scope);
         mu_scope = new ArrayList<>();
-        counts = new HashMap<>();
-        imports = new ArrayList<>();
+        usageCounts = new HashMap<>();
+        prettyNameCounts = new HashMap<>();
+        imports = new HashSet<>();
         exceptions = new HashMap<>();
+
+        for (Variable v : scope)
+            usageCounts.put(v, 1);
     }
 
-    public Variable searchOrAddVariable(Class type) {
-        /* check if variable already exists for this type */
+    private Variable search(Class type) {
+        int minUsageCount = Integer.MAX_VALUE;
+        Variable var = null;
         for (Variable v : scope)
-            if (type.isAssignableFrom(v.getType()))
-                return v;
+            if (type.isAssignableFrom(v.getType()) && usageCounts.get(v) <= minUsageCount)
+                var = v;
         for (Variable v : mu_scope)
-            if (type.isAssignableFrom(v.getType()))
-                return v;
+            if (type.isAssignableFrom(v.getType()) && usageCounts.get(v) <= minUsageCount)
+                var = v;
+        return var;
+    }
+
+    public Variable searchOrAddVariable(Class type, boolean search) {
+        Variable var;
+        if (search && (var = search(type)) != null)
+            return var;
 
         /* construct a nice name for the variable */
         String name = "";
@@ -46,16 +59,21 @@ public class Environment {
             for (Character c : type.getName().toCharArray())
                 if (Character.isUpperCase(c))
                     name += Character.toLowerCase(c);
-        if (counts.containsKey(name)) {
-            counts.put(name, counts.get(name)+1);
-            name += counts.get(name);
+        if (prettyNameCounts.containsKey(name)) {
+            prettyNameCounts.put(name, prettyNameCounts.get(name)+1);
+            name += prettyNameCounts.get(name);
         }
         else
-            counts.put(name, 0);
+            prettyNameCounts.put(name, 0);
 
         /* add variable to scope */
-        Variable var = new Variable(name, type);
+        var = new Variable(name, type);
+        usageCounts.put(var, 1);
         mu_scope.add(var);
+
+        /* add type to imports */
+        imports.add(type);
+
         return var;
     }
 

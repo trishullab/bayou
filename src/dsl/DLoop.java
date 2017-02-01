@@ -60,7 +60,8 @@ public class DLoop extends DASTNode {
         /* synthesize the condition */
         List<Expression> clauses = new ArrayList<>();
         for (DAPICall call : _cond) {
-            Assignment assignment = call.synthesize(env);
+            /* this cast is safe (unless NN has gone crazy) because a call that returns void cannot be in condition */
+            Assignment assignment = (Assignment) call.synthesize(env);
             if (call.method == null || (!call.method.getReturnType().equals(Boolean.class) &&
                     !call.method.getReturnType().equals(boolean.class))) {
                 ParenthesizedExpression pAssignment = ast.newParenthesizedExpression();
@@ -77,7 +78,7 @@ public class DLoop extends DASTNode {
         }
         switch (clauses.size()) {
             case 0:
-                Variable v = env.searchOrAddVariable(boolean.class);
+                Variable v = env.searchOrAddVariable(boolean.class, true);
                 SimpleName var = ast.newSimpleName(v.getName());
                 statement.setExpression(var);
                 break;

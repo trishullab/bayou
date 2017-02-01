@@ -3,16 +3,17 @@ package synthesizer;
 import dsl.DSubTree;
 import org.eclipse.jdt.core.dom.*;
 import org.eclipse.jdt.core.dom.rewrite.ASTRewrite;
+import org.eclipse.jdt.core.dom.rewrite.ListRewrite;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.Document;
-import org.eclipse.text.edits.TextEdit;
 
 import java.util.*;
 
 public class Visitor extends ASTVisitor {
 
-    final DSubTree ast;
+    final DSubTree dAST;
     final Document document;
+    final CompilationUnit cu;
     String synthesizedProgram;
 
     private static final Map<String,Class> primitiveToClass;
@@ -30,9 +31,10 @@ public class Visitor extends ASTVisitor {
         primitiveToClass = Collections.unmodifiableMap(map);
     }
 
-    public Visitor(DSubTree ast, Document document) {
-        this.ast = ast;
+    public Visitor(DSubTree dAST, Document document, CompilationUnit cu) {
+        this.dAST = dAST;
         this.document = document;
+        this.cu = cu;
     }
 
     @Override
@@ -61,12 +63,17 @@ public class Visitor extends ASTVisitor {
         }
 
         Environment env = new Environment(method.getAST(), scope);
-        ASTNode synthesizedBody = ast.synthesize(env);
-        ASTRewrite rewriter = ASTRewrite.create(method.getBody().getAST());
-        rewriter.replace(method.getBody(), synthesizedBody, null);
-        TextEdit edits = rewriter.rewriteAST(document, null);
+        Block body = dAST.synthesize(env);
+
         try {
-            edits.apply(document);
+            /* make rewrites to the local method body */
+            body = postprocessLocal(method.getAST(), env, body);
+            ASTRewrite rewriter = ASTRewrite.create(method.getAST());
+            rewriter.replace(method.getBody(), body, null);
+            rewriter.rewriteAST(document, null).apply(document);
+
+            /* make rewrites to the document */
+            postprocessGlobal(cu.getAST(), env, document);
         } catch (BadLocationException e) {
             System.err.println("Could not edit document for some reason.\n" + e.getMessage());
             System.exit(1);
@@ -75,5 +82,57 @@ public class Visitor extends ASTVisitor {
         synthesizedProgram = document.get();
 
         return false;
+    }
+
+    private Block postprocessLocal(AST ast, Environment env, Block body) {
+        /* add uncaught exeptions */
+        if (! env.exceptions.isEmpty()) {
+            TryStatement statement = ast.newTryStatement();
+            statement.setBody(body);
+
+            for (Class except : env.exceptions.keySet()) {
+                CatchClause catchClause = ast.newCatchClause();
+                SingleVariableDeclaration ex = ast.newSingleVariableDeclaration();
+                ex.setType(ast.newSimpleType(ast.newName(except.getSimpleName())));
+                ex.setName(ast.newSimpleName("_e"));
+                catchClause.setException(ex);
+                catchClause.setBody(ast.newBlock());
+                statement.catchClauses().add(catchClause);
+            }
+
+            body = ast.newBlock();
+            body.statements().add(statement);
+        }
+
+        /* add variable declarations */
+        for (Variable var : env.mu_scope) {
+            VariableDeclarationFragment varDeclFrag = ast.newVariableDeclarationFragment();
+            varDeclFrag.setName(ast.newSimpleName(var.name));
+            VariableDeclarationStatement varDeclStmt = ast.newVariableDeclarationStatement(varDeclFrag);
+            if (var.type.isPrimitive())
+                varDeclStmt.setType(ast.newPrimitiveType(PrimitiveType.toCode(var.type.getSimpleName())));
+            else
+                varDeclStmt.setType(ast.newSimpleType(ast.newSimpleName(var.type.getSimpleName())));
+            body.statements().add(0, varDeclStmt);
+        }
+
+        return body;
+    }
+
+    private void postprocessGlobal(AST ast, Environment env, Document document)
+            throws BadLocationException {
+        /* add imports */
+        ASTRewrite rewriter = ASTRewrite.create(ast);
+        ListRewrite lrw = rewriter.getListRewrite(cu, CompilationUnit.IMPORTS_PROPERTY);
+        List<Class> toImport = new ArrayList<>(env.imports);
+        toImport.addAll(env.exceptions.keySet()); // add all catch(...) types to imports
+        for (Class cls : toImport) {
+            if (cls.isPrimitive() || cls.getPackage().getName().equals("java.lang"))
+                continue;
+            ImportDeclaration impDecl = cu.getAST().newImportDeclaration();
+            impDecl.setName(cu.getAST().newName(cls.getName().split("\\.")));
+            lrw.insertLast(impDecl, null);
+        }
+        rewriter.rewriteAST(document, null).apply(document);
     }
 }

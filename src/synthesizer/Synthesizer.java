@@ -96,7 +96,7 @@ public class Synthesizer {
         classLoader = URLClassLoader.newInstance(urls);
 
         for (DSubTree ast : asts) {
-            Visitor visitor = new Visitor(ast, new Document(source));
+            Visitor visitor = new Visitor(ast, new Document(source), cu);
             cu.accept(visitor);
             System.out.println(visitor.synthesizedProgram);
         }

@@ -2,7 +2,6 @@ package dsl;
 
 import org.eclipse.jdt.core.dom.*;
 import synthesizer.Environment;
-import synthesizer.Synthesizer;
 import synthesizer.Variable;
 
 import java.lang.reflect.Constructor;
@@ -71,7 +70,7 @@ public class DAPICall extends DASTNode {
 
 
     @Override
-    public Assignment synthesize(Environment env) {
+    public ASTNode synthesize(Environment env) {
         Executable executable = getConstructorOrMethod();
         if (executable instanceof Constructor) {
             constructor = (Constructor) executable;
@@ -88,18 +87,18 @@ public class DAPICall extends DASTNode {
         ClassInstanceCreation creation = ast.newClassInstanceCreation();
 
         /* constructor type */
-        SimpleType t = ast.newSimpleType(ast.newName(constructor.getDeclaringClass().getName()));
+        SimpleType t = ast.newSimpleType(ast.newName(constructor.getDeclaringClass().getSimpleName()));
         creation.setType(t);
 
         /* constructor arguments */
         for (Class type : constructor.getParameterTypes()) {
-            Variable v = env.searchOrAddVariable(type);
+            Variable v = env.searchOrAddVariable(type, true);
             SimpleName arg = ast.newSimpleName(v.getName());
             creation.arguments().add(arg);
         }
 
         /* constructor return object */
-        Variable ret = env.searchOrAddVariable(constructor.getDeclaringClass());
+        Variable ret = env.searchOrAddVariable(constructor.getDeclaringClass(), false);
 
         /* the assignment */
         Assignment assignment = ast.newAssignment();
@@ -114,7 +113,7 @@ public class DAPICall extends DASTNode {
         return assignment;
     }
 
-    private Assignment synthesizeMethodInvocation(Environment env) {
+    private ASTNode synthesizeMethodInvocation(Environment env) {
         AST ast = env.ast();
         MethodInvocation invocation = ast.newMethodInvocation();
 
@@ -123,29 +122,32 @@ public class DAPICall extends DASTNode {
         invocation.setName(metName);
 
         /* object on which methodBinding is invoked */
-        Variable var = env.searchOrAddVariable(method.getDeclaringClass());
+        Variable var = env.searchOrAddVariable(method.getDeclaringClass(), true);
         SimpleName object = ast.newSimpleName(var.getName());
         invocation.setExpression(object);
 
         /* methodBinding arguments */
         for (Class type : method.getParameterTypes()) {
-            Variable v = env.searchOrAddVariable(type);
+            Variable v = env.searchOrAddVariable(type, true);
             SimpleName arg = ast.newSimpleName(v.getName());
             invocation.arguments().add(arg);
         }
 
+        /* update environment of exceptions */
+        for (Class thrown : method.getExceptionTypes())
+            env.recordExceptionThrown(thrown);
+
+        if (method.getReturnType().equals(void.class))
+            return invocation;
+
         /* methodBinding return value */
-        Variable ret = env.searchOrAddVariable(method.getReturnType());
+        Variable ret = env.searchOrAddVariable(method.getReturnType(), false);
 
         /* the assignment */
         Assignment assignment = ast.newAssignment();
         assignment.setLeftHandSide(ast.newSimpleName(ret.getName()));
         assignment.setRightHandSide(invocation);
         assignment.setOperator(Assignment.Operator.ASSIGN);
-
-        /* update environment of exceptions */
-        for (Class thrown : method.getExceptionTypes())
-            env.recordExceptionThrown(thrown);
 
         return assignment;
     }

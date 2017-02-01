@@ -79,28 +79,28 @@ public class DExcept extends DASTNode {
         statement.setBody(tryBlock);
 
         /* synthesize catch clause body */
-        CatchClause catchClause = ast.newCatchClause();
-        Block catchBlock = ast.newBlock();
-        for (DASTNode dNode : _catch) {
-            ASTNode aNode = dNode.synthesize(env);
-            if (aNode instanceof Statement)
-                catchBlock.statements().add(aNode);
-            else
-                catchBlock.statements().add(ast.newExpressionStatement((Expression) aNode));
-        }
-        catchClause.setBody(catchBlock);
+        for (Class except : exceptionsThrown) {
+            CatchClause catchClause = ast.newCatchClause();
+            Block catchBlock = ast.newBlock();
+            for (DASTNode dNode : _catch) {
+                ASTNode aNode = dNode.synthesize(env);
+                if (aNode instanceof Statement)
+                    catchBlock.statements().add(aNode);
+                else
+                    catchBlock.statements().add(ast.newExpressionStatement((Expression) aNode));
+            }
+            catchClause.setBody(catchBlock);
 
-        /* synthesize catch clause exception types */
-        SingleVariableDeclaration ex = ast.newSingleVariableDeclaration();
-        String exType = String.join("|", exceptionsThrown.stream().map(c -> c.getName()).collect(Collectors.toList()));
-        ex.setType(ast.newSimpleType(ast.newName(exType)));
-        ex.setName(ast.newSimpleName("_e"));
-        catchClause.setException(ex);
-        statement.catchClauses().add(catchClause);
+            /* synthesize catch clause exception types */
+            SingleVariableDeclaration ex = ast.newSingleVariableDeclaration();
+            ex.setType(ast.newSimpleType(ast.newName(except.getSimpleName())));
+            ex.setName(ast.newSimpleName("_e"));
+            catchClause.setException(ex);
+            statement.catchClauses().add(catchClause);
 
-        /* record exceptions that were caught */
-        for (Class except : exceptionsThrown)
+            /* record exceptions that were caught */
             env.recordExceptionCaught(except);
+        }
 
         return statement;
     }
