@@ -117,16 +117,16 @@ public class DAPICall extends DASTNode {
         AST ast = env.ast();
         MethodInvocation invocation = ast.newMethodInvocation();
 
-        /* methodBinding name */
+        /* method name */
         SimpleName metName = ast.newSimpleName(method.getName());
         invocation.setName(metName);
 
-        /* object on which methodBinding is invoked */
+        /* object on which method is invoked */
         Variable var = env.searchOrAddVariable(method.getDeclaringClass(), true);
         SimpleName object = ast.newSimpleName(var.getName());
         invocation.setExpression(object);
 
-        /* methodBinding arguments */
+        /* method arguments */
         for (Class type : method.getParameterTypes()) {
             Variable v = env.searchOrAddVariable(type, true);
             SimpleName arg = ast.newSimpleName(v.getName());
@@ -140,7 +140,7 @@ public class DAPICall extends DASTNode {
         if (method.getReturnType().equals(void.class))
             return invocation;
 
-        /* methodBinding return value */
+        /* method return value */
         Variable ret = env.searchOrAddVariable(method.getReturnType(), false);
 
         /* the assignment */
@@ -157,7 +157,7 @@ public class DAPICall extends DASTNode {
         String className = qualifiedName.substring(0, qualifiedName.lastIndexOf("."));
         Class cls = Environment.getClass(className);
 
-        /* find the methodBinding in the class */
+        /* find the method in the class */
         for (Method m : cls.getMethods()) {
             String name = null;
             for (String s : m.toString().split(" "))

@@ -48,8 +48,10 @@ public class Environment {
 
     public Variable searchOrAddVariable(Class type, boolean search) {
         Variable var;
-        if (search && (var = search(type)) != null)
+        if (search && (var = search(type)) != null) {
+            usageCounts.put(var, usageCounts.get(var) + 1);
             return var;
+        }
 
         /* construct a nice name for the variable */
         String name = "";

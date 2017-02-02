@@ -130,7 +130,8 @@ public class Visitor extends ASTVisitor {
             if (cls.isPrimitive() || cls.getPackage().getName().equals("java.lang"))
                 continue;
             ImportDeclaration impDecl = cu.getAST().newImportDeclaration();
-            impDecl.setName(cu.getAST().newName(cls.getName().split("\\.")));
+            String className = cls.getName().replaceAll("\\$", "\\.");
+            impDecl.setName(cu.getAST().newName(className.split("\\.")));
             lrw.insertLast(impDecl, null);
         }
         rewriter.rewriteAST(document, null).apply(document);
