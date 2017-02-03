@@ -92,17 +92,16 @@ public class DAPICall extends DASTNode {
 
         /* constructor arguments */
         for (Class type : constructor.getParameterTypes()) {
-            Variable v = env.searchOrAddVariable(type, true);
-            SimpleName arg = ast.newSimpleName(v.getName());
+            Expression arg = env.searchOrAddVariable(type, true);
             creation.arguments().add(arg);
         }
 
         /* constructor return object */
-        Variable ret = env.searchOrAddVariable(constructor.getDeclaringClass(), false);
+        Expression ret = env.searchOrAddVariable(constructor.getDeclaringClass(), false);
 
         /* the assignment */
         Assignment assignment = ast.newAssignment();
-        assignment.setLeftHandSide(ast.newSimpleName(ret.getName()));
+        assignment.setLeftHandSide(ret);
         assignment.setRightHandSide(creation);
         assignment.setOperator(Assignment.Operator.ASSIGN);
 
@@ -122,14 +121,12 @@ public class DAPICall extends DASTNode {
         invocation.setName(metName);
 
         /* object on which method is invoked */
-        Variable var = env.searchOrAddVariable(method.getDeclaringClass(), true);
-        SimpleName object = ast.newSimpleName(var.getName());
+        Expression object = env.searchOrAddVariable(method.getDeclaringClass(), true);
         invocation.setExpression(object);
 
         /* method arguments */
         for (Class type : method.getParameterTypes()) {
-            Variable v = env.searchOrAddVariable(type, true);
-            SimpleName arg = ast.newSimpleName(v.getName());
+            Expression arg = env.searchOrAddVariable(type, true);
             invocation.arguments().add(arg);
         }
 
@@ -141,11 +138,11 @@ public class DAPICall extends DASTNode {
             return invocation;
 
         /* method return value */
-        Variable ret = env.searchOrAddVariable(method.getReturnType(), false);
+        Expression ret = env.searchOrAddVariable(method.getReturnType(), false);
 
         /* the assignment */
         Assignment assignment = ast.newAssignment();
-        assignment.setLeftHandSide(ast.newSimpleName(ret.getName()));
+        assignment.setLeftHandSide(ret);
         assignment.setRightHandSide(invocation);
         assignment.setOperator(Assignment.Operator.ASSIGN);
 

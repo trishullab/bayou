@@ -3,15 +3,13 @@ package synthesizer;
 public class Variable {
 
     final String name;
-    Class type;
+    final Class type;
+    int refCount;
 
     Variable(String name, Class type) {
         this.name = name;
         this.type = type;
-    }
-
-    void setType(Class type) {
-        this.type = type;
+        refCount = 0;
     }
 
     public String getName() {
@@ -20,6 +18,10 @@ public class Variable {
 
     public Class getType() {
         return type;
+    }
+
+    public void addRefCount() {
+        refCount += 1;
     }
 
     @Override

@@ -1,6 +1,7 @@
 package synthesizer;
 
 import org.eclipse.jdt.core.dom.AST;
+import org.eclipse.jdt.core.dom.Expression;
 
 import java.util.*;
 
@@ -8,13 +9,10 @@ public class Environment {
 
     List<Variable> scope; // unmutable
     List<Variable> mu_scope; // mutable
-    Map<Variable,Integer> usageCounts;
     Map<String,Integer> prettyNameCounts;
 
     Set<Class> imports;
-
     Map<Class,Integer> exceptions;
-
     final AST ast;
 
     public AST ast() {
@@ -25,32 +23,20 @@ public class Environment {
         this.ast = ast;
         this.scope = Collections.unmodifiableList(scope);
         mu_scope = new ArrayList<>();
-        usageCounts = new HashMap<>();
         prettyNameCounts = new HashMap<>();
         imports = new HashSet<>();
         exceptions = new HashMap<>();
-
-        for (Variable v : scope)
-            usageCounts.put(v, 1);
     }
 
-    private Variable search(Class type) {
-        int minUsageCount = Integer.MAX_VALUE;
-        Variable var = null;
-        for (Variable v : scope)
-            if (type.isAssignableFrom(v.getType()) && usageCounts.get(v) <= minUsageCount)
-                var = v;
-        for (Variable v : mu_scope)
-            if (type.isAssignableFrom(v.getType()) && usageCounts.get(v) <= minUsageCount)
-                var = v;
-        return var;
+    public Expression addVariable(Class type) {
+        return searchOrAddVariable(type, false);
     }
 
-    public Variable searchOrAddVariable(Class type, boolean search) {
-        Variable var;
-        if (search && (var = search(type)) != null) {
-            usageCounts.put(var, usageCounts.get(var) + 1);
-            return var;
+    public Expression searchOrAddVariable(Class type, boolean search) {
+        Expression expr;
+        Enumerator enumerator = new Enumerator(ast, this);
+        if (search && (expr = enumerator.search(type)) != null) {
+            return expr;
         }
 
         /* construct a nice name for the variable */
@@ -69,14 +55,13 @@ public class Environment {
             prettyNameCounts.put(name, 0);
 
         /* add variable to scope */
-        var = new Variable(name, type);
-        usageCounts.put(var, 1);
+        Variable var = new Variable(name, type);
         mu_scope.add(var);
 
         /* add type to imports */
         imports.add(type);
 
-        return var;
+        return ast.newSimpleName(var.getName());
     }
 
     public void recordExceptionThrown(Class c) {

@@ -91,6 +91,8 @@ public class Visitor extends ASTVisitor {
             statement.setBody(body);
 
             for (Class except : env.exceptions.keySet()) {
+                if (env.exceptions.get(except) == 0)
+                    continue;
                 CatchClause catchClause = ast.newCatchClause();
                 SingleVariableDeclaration ex = ast.newSingleVariableDeclaration();
                 ex.setType(ast.newSimpleType(ast.newName(except.getSimpleName())));

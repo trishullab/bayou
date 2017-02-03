@@ -78,8 +78,7 @@ public class DLoop extends DASTNode {
         }
         switch (clauses.size()) {
             case 0:
-                Variable v = env.searchOrAddVariable(boolean.class, true);
-                SimpleName var = ast.newSimpleName(v.getName());
+                Expression var = env.searchOrAddVariable(boolean.class, true);
                 statement.setExpression(var);
                 break;
             case 1:
