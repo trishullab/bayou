@@ -11,6 +11,8 @@ public final class Utils {
     public static boolean isRelevantCall(IMethodBinding binding) {
         if (binding == null || binding.getDeclaringClass() == null)
             return false;
+        if (Visitor.V().options.API_CLASSES.isEmpty())
+            return true;
         String className = binding.getDeclaringClass().getQualifiedName();
         if (className.contains("<")) /* be agnostic to generic versions */
             className = className.substring(0, className.indexOf("<"));
