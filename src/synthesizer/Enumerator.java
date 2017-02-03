@@ -11,41 +11,62 @@ public class Enumerator {
 
     final AST ast;
     final Environment env;
-    static final int MAX_COMPOSE_LENGTH = 2; // a().b().c().d()...
-    static final int MAX_ARGUMENT_DEPTH = 1; // a(b(c(d(...))))
+    static final int MAX_COMPOSE_LENGTH = 3; // a().b().c().d()...
+    static final int MAX_ARGUMENT_DEPTH = 2; // a(b(c(d(...))))
+    static final int K = 3; // number of arguments is given K times more weight than length of composition in cost
 
-    class EnumeratorDataStructure {
-        final Class type;
-        final Expression expr;
-        final int composeLength;
+    class InvocationChain {
+        final Variable var;
+        final List<Method> methods;
 
-        EnumeratorDataStructure(Class type, Expression expr, int composeLength) {
-            this.type = type;
-            this.expr = expr;
-            this.composeLength = composeLength;
+        InvocationChain(Variable var) {
+            this.var = var;
+            methods = new ArrayList<>();
+        }
+
+        InvocationChain(InvocationChain chain) {
+            var = chain.var;
+            methods = new ArrayList<>(chain.methods);
+        }
+
+        void addMethod(Method m) {
+            methods.add(m);
+        }
+
+        void pop() {
+            methods.remove(methods.size()-1);
+        }
+
+        Class getCurrentType() {
+            return methods.isEmpty()? var.getType() : methods.get(methods.size()-1).getReturnType();
+        }
+
+        int structCost() {
+            int args = methods.stream().mapToInt(m -> m.getParameterTypes().length).sum();
+            int chainLength = methods.size();
+
+            return chainLength + K*args; // give some more weight to arguments because that involves further search
         }
 
         @Override
         public boolean equals(Object o) {
-            if (o == null || ! (o instanceof EnumeratorDataStructure))
+            if (o == null || ! (o instanceof InvocationChain))
                 return false;
-            return this.type.equals(((EnumeratorDataStructure) o).type);
+            return methods.equals(((InvocationChain) o).methods);
         }
 
         @Override
         public int hashCode() {
-            return type.hashCode();
+            return methods.hashCode();
         }
     }
 
-    private final Queue<EnumeratorDataStructure> queue;
-    private final List<Class> importsDuringSearch;
+    private final Set<Class> importsDuringSearch;
 
     public Enumerator(AST ast, Environment env) {
         this.ast = ast;
         this.env = env;
-        this.queue = new LinkedList<>();
-        this.importsDuringSearch = new ArrayList<>();
+        this.importsDuringSearch = new HashSet<>();
     }
 
     public Expression search(Class targetType) {
@@ -95,18 +116,120 @@ public class Enumerator {
             if (isFunctionalInterface(targetType))
                 return createAnonymousClass(targetType); /* but first, check if this is a functional interface */
 
-            List<Variable> scope = new ArrayList<>(env.scope);
-            scope.addAll(env.mu_scope);
-            for (Variable var : scope) {
-                SimpleName varExpr = ast.newSimpleName(var.getName());
-                EnumeratorDataStructure e = new EnumeratorDataStructure(var.getType(), varExpr, 0);
-                queue.add(e);
-            }
-            expr = enumerate(targetType, argDepth);
-            queue.clear();
+            expr = enumerate(targetType, argDepth, toSearch);
         }
 
         return expr;
+    }
+
+    private Expression enumerate(Class targetType, int argDepth, List<Variable> toSearch) {
+        Enumerator enumerator = new Enumerator(ast, env);
+
+        /* first, see if we can create a new object of target type directly */
+        List<Constructor> constructors = Arrays.asList(targetType.getConstructors());
+        sortConstructorsByCost(constructors);
+        for (Constructor constructor : constructors) {
+            if (! Modifier.isPublic(constructor.getModifiers()))
+                continue;
+            ClassInstanceCreation creation = ast.newClassInstanceCreation();
+            creation.setType(ast.newSimpleType(ast.newSimpleName(targetType.getSimpleName())));
+
+            int i;
+            enumerator.importsDuringSearch.clear();
+            for (i = 0; i < constructor.getParameterTypes().length; i++) {
+                Class argType = constructor.getParameterTypes()[i];
+                Expression arg = enumerator.search(argType, argDepth+1);
+                if (arg == null)
+                    break;
+                creation.arguments().add(arg);
+            }
+            if (i == constructor.getParameterCount()) {
+                importsDuringSearch.addAll(enumerator.importsDuringSearch);
+                importsDuringSearch.add(targetType);
+                return creation;
+            }
+        }
+
+        /* otherwise, start recursive search for expression of target type */
+        List<InvocationChain> chains = new ArrayList<>();
+        for (Variable var : toSearch)
+            chains.addAll(searchForChains(targetType, var));
+        sortChainsByCost(chains);
+
+        int i, j;
+        for (InvocationChain chain : chains) {
+            /* for each chain, see if we can synthesize all arguments in all methods in the chain */
+            MethodInvocation invocation = ast.newMethodInvocation();
+            Expression expr = ast.newSimpleName(chain.var.getName());
+            enumerator.importsDuringSearch.clear();
+            for (i = 0; i < chain.methods.size(); i++) {
+                Method m = chain.methods.get(i);
+                invocation.setExpression(expr);
+                invocation.setName(ast.newSimpleName(m.getName()));
+
+                for (j = 0; j < m.getParameterTypes().length; j++) {
+                    Class argType  = m.getParameterTypes()[j];
+                    Expression arg = enumerator.search(argType, argDepth+1);
+                    if (arg == null)
+                        break;
+                    invocation.arguments().add(arg);
+                }
+                if (j != m.getParameterCount())
+                    break;
+                expr = invocation;
+                invocation = ast.newMethodInvocation();
+            }
+            if (i == chain.methods.size()) {
+                importsDuringSearch.addAll(enumerator.importsDuringSearch);
+                return expr;
+            }
+        }
+
+        return null;
+    }
+
+    /* returns a list of method call chains that all produce the target type
+     * TODO : use a memoizer to prune even more of the search space */
+    private List<InvocationChain> searchForChains(Class targetType, Variable var) {
+        List<InvocationChain> chains = new ArrayList<>();
+        searchForChains(targetType, new InvocationChain(var), chains, 0);
+        return chains;
+    }
+
+    private void searchForChains(Class targetType, InvocationChain chain, List<InvocationChain> chains, int composeLength) {
+        Class currType = chain.getCurrentType();
+        if (composeLength >= MAX_COMPOSE_LENGTH || currType.isPrimitive())
+            return;
+        List<Method> methods = Arrays.asList(currType.getMethods());
+        sortMethodsByCost(methods);
+        for (Method m : methods) {
+            if (! Modifier.isPublic(m.getModifiers()))
+                continue;
+            chain.addMethod(m);
+            if (targetType.isAssignableFrom(chain.getCurrentType()))
+                chains.add(new InvocationChain(chain));
+            else
+                searchForChains(targetType, chain, chains, composeLength+1);
+            chain.pop();
+        }
+    }
+
+    private void sortConstructorsByCost(List<Constructor> constructors) {
+        Collections.shuffle(constructors);
+        constructors.sort(Comparator.comparingInt(c -> c.getParameterTypes().length));
+    }
+
+    private void sortMethodsByCost(List<Method> methods) {
+        Collections.shuffle(methods);
+        methods.sort(Comparator.comparingInt(c -> c.getParameterTypes().length));
+    }
+
+    private void sortVariablesByCost(List<Variable> variables) {
+        variables.sort(Comparator.comparingInt(v -> v.refCount));
+    }
+
+    private void sortChainsByCost(List<InvocationChain> chains) {
+        chains.sort(Comparator.comparingInt(chain -> chain.structCost()));
     }
 
     private boolean isFunctionalInterface(Class cls) {
@@ -124,80 +247,4 @@ public class Enumerator {
         return creation;
     }
 
-    private Expression enumerate(Class targetType, int argDepth) {
-        Enumerator enumerator = new Enumerator(ast, env);
-
-        /* first, see if we can create a new object of targetType directly */
-        List<Constructor> constructors = Arrays.asList(targetType.getConstructors());
-        sortConstructorsByCost(constructors);
-        for (Constructor constructor : constructors) {
-            if (! Modifier.isPublic(constructor.getModifiers()))
-                continue;
-            ClassInstanceCreation creation = ast.newClassInstanceCreation();
-            creation.setType(ast.newSimpleType(ast.newSimpleName(targetType.getSimpleName())));
-            boolean allArgsAdded = true;
-
-            for (Class argType : constructor.getParameterTypes()) {
-                Expression arg = enumerator.search(argType, argDepth+1);
-                if (arg == null) {
-                    allArgsAdded = false;
-                    break;
-                }
-                creation.arguments().add(arg);
-            }
-            if (allArgsAdded)
-                return creation;
-        }
-
-        /* otherwise, start breadth-first recursive search for targetType from methods of types in queue */
-        while (! queue.isEmpty()) {
-            EnumeratorDataStructure e = queue.poll();
-            List<Method> methods = Arrays.asList(e.type.getMethods());
-            sortMethodsByCost(methods);
-
-            for (Method method : methods) {
-                if (! Modifier.isPublic(method.getModifiers()))
-                    continue;
-                Class returnType = method.getReturnType();
-
-                MethodInvocation invocation = ast.newMethodInvocation();
-                invocation.setName(ast.newSimpleName(method.getName()));
-                Expression expr = (Expression) ASTNode.copySubtree(ast, e.expr); // cannot reuse the same node in AST
-                invocation.setExpression(expr);
-
-                boolean allArgsAdded = true;
-                for (Class argType : method.getParameterTypes()) {
-                    Expression arg = enumerator.search(argType, argDepth+1);
-                    if (arg == null) {
-                        allArgsAdded = false;
-                        break;
-                    }
-                    invocation.arguments().add(arg);
-                }
-
-                if (allArgsAdded) {
-                    if (returnType.equals(targetType))
-                        return invocation;
-                    else if (e.composeLength < MAX_COMPOSE_LENGTH)
-                        queue.add(new EnumeratorDataStructure(returnType, invocation, e.composeLength + 1));
-                }
-            }
-        }
-
-        return null;
-    }
-
-    private void sortConstructorsByCost(List<Constructor> constructors) {
-        Collections.shuffle(constructors);
-        constructors.sort(Comparator.comparingInt(c -> c.getParameterTypes().length));
-    }
-
-    private void sortMethodsByCost(List<Method> methods) {
-        Collections.shuffle(methods);
-        methods.sort(Comparator.comparingInt(c -> c.getParameterTypes().length));
-    }
-
-    private void sortVariablesByCost(List<Variable> variables) {
-        variables.sort(Comparator.comparingInt(v -> v.refCount));
-    }
 }
