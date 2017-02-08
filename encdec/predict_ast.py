@@ -37,10 +37,10 @@ def main():
                 err += 1
 
     if args.output_file is None:
-        print(json.dumps(asts, indent=2))
+        print(json.dumps({ 'asts': asts }, indent=2))
     else:
         with open(args.output_file, 'w') as f:
-            json.dump(asts, fp=f, indent=2)
+            json.dump({ 'asts': asts }, fp=f, indent=2)
     print('Number of errors: {}'.format(err))
 
 class Predictor(object):
