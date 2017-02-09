@@ -1,4 +1,5 @@
 import tensorflow as tf
+import numpy as np
 
 import argparse
 import os
@@ -15,21 +16,31 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--save_dir', type=str, default='save',
                        help='model directory to laod from')
-    parser.add_argument('input_file', type=str, nargs=1,
+    parser.add_argument('--seqs_file', type=str, default=None,
                        help='input file containing set of sequences (in JSON)')
+    parser.add_argument('--random', action='store_true',
+                       help='print random ASTs by sampling from Normal(0,1) (ignores sequences)')
     parser.add_argument('--output_file', type=str, default=None,
                        help='file to print AST (in JSON) to')
     parser.add_argument('--n', type=int, default=1,
                        help='number of ASTs to sample/synthesize')
 
     args = parser.parse_args()
+    if args.seqs_file is None and not args.random:
+        parser.error('At least one of --seqs_file or --random is required')
     with tf.Session() as sess:
         predictor = Predictor(args, sess)
         c, err = 0, 0
         asts = []
         while c < args.n:
+            print('generated {} ASTs ({} errors)'.format(c, err), end='\r')
             try:
-                ast, p_ast = predictor.generate_ast()
+                if args.random:
+                    psi = np.random.normal(size=[1, predictor.model.args.latent_size])
+                    ast, p_ast = predictor.generate_ast(psi=psi)
+                    ast['psi_sample'] = list(psi[0])
+                else:
+                    ast, p_ast = predictor.generate_ast()
                 ast['p_ast'] = p_ast
                 asts.append(ast)
                 c += 1
@@ -47,8 +58,11 @@ class Predictor(object):
 
     def __init__(self, args, sess):
         # parse the input sequences
-        with open(args.input_file[0]) as f:
-            self.seqs = json.load(f)
+        if args.random:
+            self.seqs = []
+        else:
+            with open(args.seqs_file) as f:
+                self.seqs = json.load(f)
         self.sess = sess
 
         # load the saved vocabularies
@@ -65,13 +79,13 @@ class Predictor(object):
         assert ckpt and ckpt.model_checkpoint_path, 'Malformed model files'
         saver.restore(self.sess, ckpt.model_checkpoint_path)
 
-    def generate_until_STOP(self, in_nodes, in_edges, check_call=False):
+    def gen_until_STOP(self, in_nodes, in_edges, check_call=False, psi=None):
         ast = []
         p_ast = 1. # probability of generating this AST
         nodes, edges = in_nodes[:], in_edges[:]
         while True:
             dist = self.model.infer(self.sess, self.seqs, nodes, edges, self.input_vocab,
-                                    self.target_vocab)
+                                    self.target_vocab, psi)
             idx = weighted_pick(dist)
             p_ast *= dist[idx]
             prediction = self.target_chars[idx]
@@ -88,7 +102,7 @@ class Predictor(object):
             edges += [SIBLING_EDGE]
         return ast, p_ast, nodes, edges
 
-    def generate_ast(self, in_nodes=['DSubTree'], in_edges=[CHILD_EDGE]):
+    def generate_ast(self, in_nodes=['DSubTree'], in_edges=[CHILD_EDGE], psi=None):
         ast = collections.OrderedDict()
         node = in_nodes[-1]
 
@@ -102,9 +116,9 @@ class Predictor(object):
         nodes, edges = in_nodes[:], in_edges[:]
 
         if node == 'DBranch':
-            ast_cond, pC, nodes, edges = self.generate_until_STOP(nodes, edges, check_call=True)
-            ast_then, p1, nodes, edges = self.generate_until_STOP(nodes, edges)
-            ast_else, p2, nodes, edges = self.generate_until_STOP(nodes, edges)
+            ast_cond, pC, nodes, edges = self.gen_until_STOP(nodes, edges, check_call=True, psi=psi)
+            ast_then, p1, nodes, edges = self.gen_until_STOP(nodes, edges, psi=psi)
+            ast_else, p2, nodes, edges = self.gen_until_STOP(nodes, edges, psi=psi)
             ast['_cond'] = ast_cond
             ast['_then'] = ast_then
             ast['_else'] = ast_else
@@ -112,23 +126,23 @@ class Predictor(object):
             return ast, float(p_ast)
 
         if node == 'DExcept':
-            ast_try, p1, nodes, edges = self.generate_until_STOP(nodes, edges)
-            ast_catch, p2, nodes, edges = self.generate_until_STOP(nodes, edges)
+            ast_try, p1, nodes, edges = self.gen_until_STOP(nodes, edges, psi=psi)
+            ast_catch, p2, nodes, edges = self.gen_until_STOP(nodes, edges, psi=psi)
             ast['_try'] = ast_try
             ast['_catch'] = ast_catch
             p_ast = p1 * p2
             return ast, float(p_ast)
 
         if node == 'DLoop':
-            ast_cond, pC, nodes, edges = self.generate_until_STOP(nodes, edges, check_call=True)
-            ast_body, p1, nodes, edges = self.generate_until_STOP(nodes, edges)
+            ast_cond, pC, nodes, edges = self.gen_until_STOP(nodes, edges, check_call=True, psi=psi)
+            ast_body, p1, nodes, edges = self.gen_until_STOP(nodes, edges, psi=psi)
             ast['_cond'] = ast_cond
             ast['_body'] = ast_body
             p_ast = pC * p1
             return ast, float(p_ast)
 
         if node == 'DSubTree':
-            ast_nodes, p_ast, _, _ = self.generate_until_STOP(nodes, edges)
+            ast_nodes, p_ast, _, _ = self.gen_until_STOP(nodes, edges, psi=psi)
             ast['_nodes'] = ast_nodes
             return ast, float(p_ast)
         
