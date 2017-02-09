@@ -24,6 +24,8 @@ def main():
                        help='size of RNN hidden state')
     parser.add_argument('--batch_size', type=int, default=50,
                        help='minibatch size')
+    parser.add_argument('--max_seqs', type=int, default=32,
+                       help='maximum number of sequences (including subsets) from a program')
     parser.add_argument('--max_seq_length', type=int, default=10,
                        help='maximum RNN sequence length')
     parser.add_argument('--max_ast_depth', type=int, default=20,
@@ -54,7 +56,8 @@ def train(args):
     with open(os.path.join(args.save_dir, 'chars_vocab.pkl'), 'wb') as f:
         pickle.dump((data_loader.input_chars, data_loader.input_vocab,
                        data_loader. target_chars, data_loader.target_vocab), f)
-        
+    print(args)
+
     model = Model(args)
 
     with tf.Session() as sess:
@@ -75,11 +78,12 @@ def train(args):
                 x, l, n, e, y = data_loader.next_batch()
                 init_state_mean = model.encoder.cell_mean_init.eval()
                 init_state_stdv = model.encoder.cell_stdv_init.eval()
-                feed = { model.encoder.seq: x,
-                         model.encoder.seq_length: l,
-                         model.targets: y,
+                feed = { model.targets: y,
                          model.encoder.cell_mean_init: init_state_mean,
                          model.encoder.cell_stdv_init: init_state_stdv }
+                for j in range(args.max_seqs):
+                    feed[model.encoder.seq[j].name] = x[j]
+                    feed[model.encoder.seq_length[j].name] = l[j]
                 for j in range(args.max_ast_depth):
                     feed[model.decoder.nodes[j].name] = n[j]
                     feed[model.decoder.edges[j].name] = e[j]

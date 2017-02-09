@@ -11,6 +11,11 @@ class Model():
             args.batch_size = 1
             args.max_ast_depth = 1
 
+        if args.cell == 'lstm':
+            args.cell_fn = tf.nn.rnn_cell.BasicLSTMCell(args.rnn_size, state_is_tuple=False)
+        else:
+            args.cell_fn = tf.nn.rnn_cell.BasicRNNCell(args.rnn_size)
+
         # setup the encoder
         self.encoder = VariationalEncoder(args)
 
@@ -19,13 +24,13 @@ class Model():
         self.psi = self.encoder.psi_mean + (self.encoder.psi_stdv * samples)
 
         # setup the decoder with psi as the initial state
-        expansion_w = tf.get_variable('expansion_w', [args.latent_size, args.rnn_size])
-        expansion_b = tf.get_variable('expansion_b', [args.rnn_size])
+        expansion_w = tf.get_variable('expansion_w', [args.latent_size, args.cell_fn.state_size])
+        expansion_b = tf.get_variable('expansion_b', [args.cell_fn.state_size])
         self.initial_state = tf.matmul(self.psi, expansion_w) + expansion_b
         self.decoder = VariationalDecoder(args, initial_state=self.initial_state, infer=infer)
 
         # get the decoder outputs
-        output = tf.reshape(tf.concat(1, self.decoder.outputs), [-1, args.rnn_size])
+        output = tf.reshape(tf.concat(1, self.decoder.outputs), [-1, args.cell_fn.output_size])
         logits = tf.matmul(output, self.decoder.projection_w) + self.decoder.projection_b
         self.probs = tf.nn.softmax(logits)
 
@@ -45,20 +50,27 @@ class Model():
         if not infer:
             print('Model parameters: {}'.format(np.sum(var_params)))
 
-    def probability(self, sess, seq, nodes, edges, input_vocab, target_vocab):
+    def infer(self, sess, seqs, nodes, edges, input_vocab, target_vocab):
 
         # apply the dict on inputs (batch_size is 1 during inference)
-        x = np.zeros((1, self.args.max_seq_length, 1), dtype=np.int32)
-        x[0, :len(seq), 0] = list(map(input_vocab.get, seq))
-        l = np.array([len(seq)], dtype=np.int32)
+        x = np.zeros((1, self.args.max_seqs, self.args.max_seq_length, 1), dtype=np.int32)
+        l = np.zeros((1, self.args.max_seqs), dtype=np.int32)
+        for i, seq in enumerate(sorted(seqs)):
+            x[0, i, :len(seq), 0] = list(map(input_vocab.get, seq))
+            l[0, i] = len(seq)
+
+        # reshape into list of tensors
+        x = [x[:, i, :, :] for i in range(self.args.max_seqs)]
+        l = [l[:, i] for i in range(self.args.max_seqs)]
 
         # setup initial states and feed
         init_state_mean = self.encoder.cell_mean_init.eval()
         init_state_stdv = self.encoder.cell_stdv_init.eval()
-        feed = { self.encoder.seq: x,
-                 self.encoder.seq_length: l,
-                 self.encoder.cell_mean_init: init_state_mean,
+        feed = { self.encoder.cell_mean_init: init_state_mean,
                  self.encoder.cell_stdv_init: init_state_stdv }
+        for i in range(self.args.max_seqs):
+            feed[self.encoder.seq[i].name] = x[i]
+            feed[self.encoder.seq_length[i].name] = l[i]
 
         # run the encoder and get psi
         [state] = sess.run([self.initial_state], feed)
