@@ -12,6 +12,8 @@ from model import Model
 from utils import weighted_pick
 from data_reader import CHILD_EDGE, SIBLING_EDGE
 
+MAX_GEN_UNTIL_STOP = 20
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--save_dir', type=str, default='save',
@@ -20,6 +22,8 @@ def main():
                        help='input file containing set of sequences (in JSON)')
     parser.add_argument('--random', action='store_true',
                        help='print random ASTs by sampling from Normal(0,1) (ignores sequences)')
+    parser.add_argument('--plot2d', action='store_true',
+                       help='(requires --random) plots the (2d) sampled psi values in scatterplot')
     parser.add_argument('--output_file', type=str, default=None,
                        help='file to print AST (in JSON) to')
     parser.add_argument('--n', type=int, default=1,
@@ -28,6 +32,8 @@ def main():
     args = parser.parse_args()
     if args.seqs_file is None and not args.random:
         parser.error('At least one of --seqs_file or --random is required')
+    if args.plot2d and not args.random:
+        parser.error('--plot2d requires --random (otherwise there is only one psi to plot)')
     with tf.Session() as sess:
         predictor = Predictor(args, sess)
         c, err = 0, 0
@@ -46,6 +52,11 @@ def main():
                 c += 1
             except AssertionError:
                 err += 1
+    if args.plot2d:
+        if predictor.model.args.latent_size == 2:
+            plot2d(asts)
+        else:
+            print('Latent space is not 2-dimensional.. cannot plot')
 
     if args.output_file is None:
         print(json.dumps({ 'asts': asts }, indent=2))
@@ -83,7 +94,9 @@ class Predictor(object):
         ast = []
         p_ast = 1. # probability of generating this AST
         nodes, edges = in_nodes[:], in_edges[:]
+        num = 0
         while True:
+            assert num < MAX_GEN_UNTIL_STOP # exception caught in main
             dist = self.model.infer(self.sess, self.seqs, nodes, edges, self.input_vocab,
                                     self.target_vocab, psi)
             idx = weighted_pick(dist)
@@ -100,6 +113,7 @@ class Predictor(object):
             ast.append(js)
             p_ast *= p
             edges += [SIBLING_EDGE]
+            num += 1
         return ast, p_ast, nodes, edges
 
     def generate_ast(self, in_nodes=['DSubTree'], in_edges=[CHILD_EDGE], psi=None):
@@ -145,6 +159,40 @@ class Predictor(object):
             ast_nodes, p_ast, _, _ = self.gen_until_STOP(nodes, edges, psi=psi)
             ast['_nodes'] = ast_nodes
             return ast, float(p_ast)
+
+def find_api(nodes):
+    for node in nodes:
+        if node['node'] == 'DAPICall':
+            call = node['_call'].split('.')
+            api = '.'.join(call[:3])
+            return api
+    return None
+
+def plot2d(asts):
+    import matplotlib.pyplot as plt
+    import matplotlib.cm as cm
+    dic = {}
+    for ast in asts:
+        sample = ast['psi_sample']
+        api = find_api(ast['_nodes'])
+        if api is None:
+            continue
+        if api not in dic:
+            dic[api] = []
+        dic[api].append(sample)
+
+    apis = dic.keys()
+    colors = cm.rainbow(np.linspace(0, 1, len(dic)))
+    plotpoints = []
+    for api, color in zip(apis, colors):
+        x = list(map(lambda s: s[0], dic[api]))
+        y = list(map(lambda s: s[1], dic[api]))
+        plotpoints.append(plt.scatter(x, y, color=color))
+
+    plt.legend(plotpoints, apis, scatterpoints=1, loc='lower left', ncol=3, fontsize=8)
+    plt.axhline(0, color='black')
+    plt.axvline(0, color='black')
+    plt.show()
         
 if __name__ == '__main__':
     main()
