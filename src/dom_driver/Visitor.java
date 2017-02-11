@@ -87,7 +87,8 @@ public class Visitor extends ASTVisitor {
             ast.updateSequences(sequences);
 
             List<Sequence> uniqSequences = new ArrayList<>(new HashSet<>(sequences));
-            printJson(ast, uniqSequences);
+            if (okToPrintAST(uniqSequences))
+                printJson(ast, uniqSequences);
         }
         return false;
     }
@@ -100,5 +101,12 @@ public class Visitor extends ASTVisitor {
         output.write(gson.toJson(out));
         output.flush();
         first = false;
+    }
+
+    private boolean okToPrintAST(List<Sequence> sequences) {
+        int n = sequences.size();
+        if (n == 0 || n > 10 || (n == 1 && sequences.get(0).getCalls().size() <= 1))
+            return false;
+        return true;
     }
 }
