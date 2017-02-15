@@ -19,7 +19,7 @@ public class DOMWhileStatement implements Handler {
         DSubTree cond = new DOMExpression(statement.getExpression()).handle();
         DSubTree body = new DOMStatement(statement.getBody()).handle();
 
-        boolean loop = cond.isValid() && body.isValid();
+        boolean loop = cond.isValid();
 
         if (loop)
             tree.addNode(new DLoop(cond.getNodesAsCalls(), body.getNodes()));

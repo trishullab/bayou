@@ -28,7 +28,7 @@ public class DOMForStatement implements Handler {
             body.addNodes(update.getNodes()); // updaters are part of body
         }
 
-        boolean loop = cond.isValid() && body.isValid();
+        boolean loop = cond.isValid();
 
         if (loop)
             tree.addNode(new DLoop(cond.getNodesAsCalls(), body.getNodes()));
