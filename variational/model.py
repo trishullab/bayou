@@ -50,33 +50,32 @@ class Model():
         if not infer:
             print('Model parameters: {}'.format(np.sum(var_params)))
 
-    def infer(self, sess, seqs, nodes, edges, input_vocab, target_vocab, psi=None):
+    def infer_psi(self, sess, seqs, input_vocab):
+        # apply the dict on inputs (batch_size is 1 during inference)
+        x = np.zeros((1, self.args.max_seqs, self.args.max_seq_length, 1), dtype=np.int32)
+        l = np.zeros((1, self.args.max_seqs), dtype=np.int32)
+        for i, seq in enumerate(sorted(seqs)):
+            x[0, i, :len(seq), 0] = list(map(input_vocab.get, seq))
+            l[0, i] = len(seq)
 
-        if psi is None:
-            # apply the dict on inputs (batch_size is 1 during inference)
-            x = np.zeros((1, self.args.max_seqs, self.args.max_seq_length, 1), dtype=np.int32)
-            l = np.zeros((1, self.args.max_seqs), dtype=np.int32)
-            for i, seq in enumerate(sorted(seqs)):
-                x[0, i, :len(seq), 0] = list(map(input_vocab.get, seq))
-                l[0, i] = len(seq)
+        # reshape into list of tensors
+        x = [x[:, i, :, :] for i in range(self.args.max_seqs)]
+        l = [l[:, i] for i in range(self.args.max_seqs)]
 
-            # reshape into list of tensors
-            x = [x[:, i, :, :] for i in range(self.args.max_seqs)]
-            l = [l[:, i] for i in range(self.args.max_seqs)]
+        # setup initial states and feed
+        init_state_mean = self.encoder.cell_mean_init.eval()
+        init_state_stdv = self.encoder.cell_stdv_init.eval()
+        feed = { self.encoder.cell_mean_init: init_state_mean,
+                 self.encoder.cell_stdv_init: init_state_stdv }
+        for i in range(self.args.max_seqs):
+            feed[self.encoder.seq[i].name] = x[i]
+            feed[self.encoder.seq_length[i].name] = l[i]
+        psi = sess.run(self.psi, feed)
+        return psi
 
-            # setup initial states and feed
-            init_state_mean = self.encoder.cell_mean_init.eval()
-            init_state_stdv = self.encoder.cell_stdv_init.eval()
-            feed = { self.encoder.cell_mean_init: init_state_mean,
-                     self.encoder.cell_stdv_init: init_state_stdv }
-            for i in range(self.args.max_seqs):
-                feed[self.encoder.seq[i].name] = x[i]
-                feed[self.encoder.seq_length[i].name] = l[i]
-        else:
-            feed = { self.psi: psi }
-
+    def infer_ast(self, sess, psi, nodes, edges, target_vocab):
         # run the encoder (or use the given psi) and get decoder's start state
-        state = sess.run(self.initial_state, feed)
+        state = sess.run(self.initial_state, { self.psi: psi })
 
         # run the decoder for every time step
         for node, edge in zip(nodes, edges):
