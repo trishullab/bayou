@@ -3,7 +3,7 @@ import pickle
 import itertools
 import numpy as np
 
-from data_reader import read_data, CHILD_EDGE
+from variational.data_reader import read_data, CHILD_EDGE
 
 CLASS0 = 'CLASS0'
 

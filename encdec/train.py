@@ -7,8 +7,8 @@ import time
 import os
 import pickle
 
-from utils import DataLoader
-from model import Model
+from encdec.utils import DataLoader
+from encdec.model import Model
 
 def main():
     parser = argparse.ArgumentParser()

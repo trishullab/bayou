@@ -8,9 +8,9 @@ import json
 import pickle
 import collections
 
-from model import Model
-from utils import weighted_pick
-from data_reader import sub_sequences, CHILD_EDGE, SIBLING_EDGE
+from variational.model import Model
+from variational.utils import weighted_pick
+from variational.data_reader import sub_sequences, CHILD_EDGE, SIBLING_EDGE
 
 MAX_GEN_UNTIL_STOP = 20
 

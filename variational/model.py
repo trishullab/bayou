@@ -1,8 +1,8 @@
 import tensorflow as tf
 import numpy as np
 
-from variational import VariationalEncoder, VariationalDecoder
-from data_reader import CHILD_EDGE, SIBLING_EDGE
+from variational.architecture import VariationalEncoder, VariationalDecoder
+from variational.data_reader import CHILD_EDGE, SIBLING_EDGE
 
 class Model():
     def __init__(self, args, infer=False):

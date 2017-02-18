@@ -1,8 +1,8 @@
 import tensorflow as tf
 import numpy as np
 
-from encdec import Encoder, Decoder
-from data_reader import CHILD_EDGE, SIBLING_EDGE
+from encdec.architecture import Encoder, Decoder
+from encdec.data_reader import CHILD_EDGE, SIBLING_EDGE
 
 class Model():
     def __init__(self, args, infer=False):
