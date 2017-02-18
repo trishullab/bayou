@@ -54,48 +54,22 @@ def get_seqs(js):
 def print_data(filename):
     [print(path) for path in read_data(filename)]
 
-def select_samples(powerset, args):
-    def is_contained(seq1, seq2): # True if seq1 is a sub-sequence (starting from index 0) of seq2
-        if len(seq1) > len(seq2):
-            return False
-        for i, call in enumerate(seq1):
-            if not seq2[i] == call:
-                return False
-        return True
-    def set_is_ok(_s):
-        s = list(_s)
-        if len(s) > args.max_seqs:
-            return False
-        for i, seq in enumerate(s):
-            if len(seq) > args.max_seq_length:
-                return False
-            for j, seq2 in enumerate(s):
-                if not i == j and is_contained(seq, seq2):
-                    return False
-        return True
-    samples = filter(set_is_ok, powerset)
-    return list(samples)
-
-def blowup_and_sample(seqs, args):
+def sub_sequences(seqs, args):
     sub_seqs = []
     for seq in seqs:
         cuts = [seq[:i] for i in range(1, len(seq)+1)]
         for s in cuts:
+            assert len(s) <= args.max_seq_length
             if s not in sub_seqs:
                 sub_seqs += [s]
-    if len(sub_seqs) > 15: # to prevent memory hog in powerset calculation below
-        assert False
-    powerset = list(itertools.chain.from_iterable(itertools.combinations(sub_seqs, r) for r in
-                    range(1, len(sub_seqs) + 1)))
-    samples = select_samples(powerset, args)
-    return samples
+    assert len(sub_seqs) <= args.max_seqs
+    return sub_seqs
 
 def read_data(filename, args):
     with open(filename) as f:
         js = json.loads(f.read())
     inputs, targets = [], []
     ignored, done = 0, 0
-    count_sets_of_seqs = 0
 
     for program in js['programs']:
         if 'ast' not in program:
@@ -106,19 +80,16 @@ def read_data(filename, args):
             path.insert(0, ('DSubTree', CHILD_EDGE))
         try:
             assert all([len(path) <= args.max_ast_depth for path in ast_paths])
-            samples = blowup_and_sample(seqs, args)
-            count_sets_of_seqs += len(samples)
-            for subset in samples:
-                for path in ast_paths:
-                    inputs.append(sorted(subset))
-                    targets.append(path)
+            seqs = sub_sequences(seqs, args)
+            for path in ast_paths:
+                inputs.append(seqs)
+                targets.append(path)
         except AssertionError:
             ignored += 1
         done += 1
         print('{:8d} programs done'.format(done), end='\r')
 
     print('\n{:8d} programs ignored'.format(ignored))
-    print('{:8d} (seqs, AST) pairs total'.format(count_sets_of_seqs))
     return inputs, targets
 
 if __name__ == '__main__':

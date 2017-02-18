@@ -24,11 +24,14 @@ class VariationalEncoder(object):
                                             initial_state=self.cell_mean_init,
                                             dtype=tf.float32)
                     means.append(mean)
+            means = tf.pack(means)
+            sum_of_means = tf.reduce_sum(means, axis=0)
+            num_non_zero_means = tf.count_nonzero(means, axis=0, dtype=tf.float32)
+            mean_means = tf.div(sum_of_means, num_non_zero_means)
             latent_w_mean = tf.get_variable('latent_w_mean', [self.cell_mean.state_size,
                                                                 args.latent_size])
             latent_b_mean = tf.get_variable('latent_b_mean', [args.latent_size])
-            self.psi_mean = tf.matmul(tf.reduce_mean(tf.pack(means), axis=0), latent_w_mean) \
-                            + latent_b_mean
+            self.psi_mean = tf.matmul(mean_means, latent_w_mean) + latent_b_mean
 
         with tf.variable_scope('variational_encoder_stdv'):
             # standard deviation encoder
@@ -46,11 +49,14 @@ class VariationalEncoder(object):
                                             initial_state=self.cell_stdv_init,
                                             dtype=tf.float32)
                     stdvs.append(stdv)
+            stdvs = tf.pack(stdvs)
+            sum_of_stdvs = tf.reduce_sum(stdvs, axis=0)
+            num_non_zero_stdvs = tf.count_nonzero(stdvs, axis=0, dtype=tf.float32)
+            mean_stdvs = tf.div(sum_of_stdvs, num_non_zero_stdvs)
             latent_w_stdv = tf.get_variable('latent_w_stdv', [self.cell_stdv.state_size,
                                                                 args.latent_size])
             latent_b_stdv = tf.get_variable('latent_b_stdv', [args.latent_size])
-            self.psi_stdv = tf.matmul(tf.reduce_mean(tf.pack(stdvs), axis=0), latent_w_stdv) \
-                            + latent_b_stdv
+            self.psi_stdv = tf.matmul(mean_stdvs, latent_w_stdv) + latent_b_stdv
 
 class VariationalDecoder(object):
     def __init__(self, args, initial_state, infer=False):

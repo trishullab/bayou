@@ -10,7 +10,7 @@ import collections
 
 from model import Model
 from utils import weighted_pick
-from data_reader import CHILD_EDGE, SIBLING_EDGE
+from data_reader import sub_sequences, CHILD_EDGE, SIBLING_EDGE
 
 MAX_GEN_UNTIL_STOP = 20
 
@@ -46,6 +46,7 @@ def main():
                 else:
                     with open(args.seqs_file) as f:
                         seqs = json.load(f)
+                    seqs = sub_sequences(seqs, predictor.model.args)
                     psi = predictor.psi_from_seqs(seqs)
                 ast, p_ast = predictor.generate_ast(psi)
                 if args.plot2d:
