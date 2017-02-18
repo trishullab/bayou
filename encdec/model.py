@@ -10,13 +10,16 @@ class Model():
         if infer:
             args.batch_size = 1
             args.max_ast_depth = 1
+        if args.cell == 'lstm':
+            args.encoder_rnn_size = int(args.encoder_rnn_size/2)
+            args.decoder_rnn_size = int(args.decoder_rnn_size/2)
 
         # setup the encoder-decoder network
         self.encoder = Encoder(args)
         self.decoder = Decoder(args, initial_state=self.encoder.encoding, infer=infer)
 
         # get the decoder outputs
-        output = tf.reshape(tf.concat(1, self.decoder.outputs), [-1, args.rnn_size])
+        output = tf.reshape(tf.concat(1, self.decoder.outputs), [-1, args.decoder_rnn_size])
         logits = tf.matmul(output, self.decoder.projection_w) + self.decoder.projection_b
         self.probs = tf.nn.softmax(logits)
 

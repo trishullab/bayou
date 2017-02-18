@@ -18,11 +18,13 @@ def main():
                        help='directory to store checkpointed models')
     parser.add_argument('--cell', type=str, default='rnn', choices=['rnn', 'lstm'],
                        help='type of RNN cell')
-    parser.add_argument('--rnn_size', type=int, default=128,
-                       help='size of RNN hidden state')
+    parser.add_argument('--encoder_rnn_size', type=int, default=8,
+                       help='size of encoder RNN hidden state')
+    parser.add_argument('--decoder_rnn_size', type=int, default=128,
+                       help='size of decoder RNN hidden state')
     parser.add_argument('--batch_size', type=int, default=50,
                        help='minibatch size')
-    parser.add_argument('--max_seqs', type=int, default=32,
+    parser.add_argument('--max_seqs', type=int, default=16,
                        help='maximum number of sequences (including subsets) from a program')
     parser.add_argument('--max_seq_length', type=int, default=10,
                        help='maximum RNN sequence length')
@@ -37,6 +39,8 @@ def main():
     parser.add_argument('--init_from', type=str, default=None,
                        help='continue training from previously checkpointed model saved here')
     args = parser.parse_args()
+    if not args.encoder_rnn_size * args.max_seqs == args.decoder_rnn_size:
+        parser.error('encoder_rnn_size * max_seqs must be decoder_rnn_size (concatenated state)')
     train(args)
 
 

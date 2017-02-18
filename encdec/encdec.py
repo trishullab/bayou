@@ -3,9 +3,9 @@ import tensorflow as tf
 class Encoder(object):
     def __init__(self, args):
         if args.cell == 'lstm':
-            cell = tf.nn.rnn_cell.BasicLSTMCell(args.rnn_size, state_is_tuple=False)
+            cell = tf.nn.rnn_cell.BasicLSTMCell(args.encoder_rnn_size, state_is_tuple=False)
         else:
-            cell = tf.nn.rnn_cell.BasicRNNCell(args.rnn_size)
+            cell = tf.nn.rnn_cell.BasicRNNCell(args.encoder_rnn_size)
 
         self.seq = [tf.placeholder(tf.int32, [args.batch_size, args.max_seq_length, 1], 
                         name='seq{0}'.format(i)) for i in range(args.max_seqs)]
@@ -16,7 +16,7 @@ class Encoder(object):
             # dynamic RNN
             self.cell = tf.nn.rnn_cell.EmbeddingWrapper(cell, 
                                     embedding_classes=args.input_vocab_size,
-                                    embedding_size=args.rnn_size)
+                                    embedding_size=args.encoder_rnn_size)
             self.cell_init = self.cell.zero_state(args.batch_size, tf.float32)
             encodings = []
             for i, (seq, seq_length) in enumerate(zip(self.seq, self.seq_length)):
@@ -27,17 +27,15 @@ class Encoder(object):
                                         initial_state=self.cell_init,
                                         dtype=tf.float32)
                 encodings.append(encoding_seq)
-            self.encoding = tf.reduce_mean(tf.pack(encodings), axis=0)
+            self.encoding = tf.reshape(tf.pack(encodings, axis=1), [args.batch_size,
+                                args.decoder_rnn_size * (2 if args.cell == 'lstm' else 1)])
 
 class Decoder(object):
     def __init__(self, args, initial_state, infer=False):
-        # to handle different types of edges (CHILD_EDGE, SIBLING_EDGE)
         if args.cell == 'lstm':
-            cell1 = tf.nn.rnn_cell.BasicLSTMCell(args.rnn_size, state_is_tuple=False)
-            cell2 = tf.nn.rnn_cell.BasicLSTMCell(args.rnn_size, state_is_tuple=False)
+            cell = tf.nn.rnn_cell.BasicLSTMCell(args.decoder_rnn_size, state_is_tuple=False)
         else:
-            cell1 = tf.nn.rnn_cell.BasicRNNCell(args.rnn_size)
-            cell2 = tf.nn.rnn_cell.BasicRNNCell(args.rnn_size)
+            cell = tf.nn.rnn_cell.BasicRNNCell(args.decoder_rnn_size)
 
         # placeholders
         self.initial_state = initial_state
@@ -47,12 +45,14 @@ class Decoder(object):
                             for i in range(args.max_ast_depth)]
 
         # projection matrices for output
-        self.projection_w = tf.get_variable('projection_w', [args.rnn_size, args.target_vocab_size])
+        self.projection_w = tf.get_variable('projection_w', [args.decoder_rnn_size,
+                                                                    args.target_vocab_size])
         self.projection_b = tf.get_variable('projection_b', [args.target_vocab_size])
 
         # setup embedding
         with tf.variable_scope('decoder'):
-            embedding = tf.get_variable('embedding', [args.target_vocab_size, args.rnn_size])
+            embedding = tf.get_variable('embedding', [args.target_vocab_size,
+                                                                args.decoder_rnn_size])
             loop_function = tf.nn.seq2seq._extract_argmax_and_embed(embedding, 
                                     (self.projection_w, self.projection_b)) if infer else None
             emb_inp = (tf.nn.embedding_lookup(embedding, i) for i in self.nodes)
@@ -70,9 +70,9 @@ class Decoder(object):
                     if i > 0:
                         tf.get_variable_scope().reuse_variables()
                     with tf.variable_scope('cell1'): # handles CHILD_EDGE
-                        output1, state1 = cell1(inp, self.state)
+                        output1, state1 = cell(inp, self.state)
                     with tf.variable_scope('cell2'): # handles SIBLING_EDGE
-                        output2, state2 = cell2(inp, self.state)
+                        output2, state2 = cell(inp, self.state)
                     output = tf.where(self.edges[i], output1, output2)
                     self.state = tf.where(self.edges[i], state1, state2)
                     self.outputs.append(output)
