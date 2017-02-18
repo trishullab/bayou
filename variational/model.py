@@ -10,11 +10,9 @@ class Model():
         if infer:
             args.batch_size = 1
             args.max_ast_depth = 1
-
         if args.cell == 'lstm':
-            args.cell_fn = tf.nn.rnn_cell.BasicLSTMCell(args.rnn_size, state_is_tuple=False)
-        else:
-            args.cell_fn = tf.nn.rnn_cell.BasicRNNCell(args.rnn_size)
+            args.encoder_rnn_size = int(args.encoder_rnn_size/2)
+            args.decoder_rnn_size = int(args.decoder_rnn_size/2)
 
         # setup the encoder
         self.encoder = VariationalEncoder(args)
@@ -24,13 +22,15 @@ class Model():
         self.psi = self.encoder.psi_mean + (self.encoder.psi_stdv * samples)
 
         # setup the decoder with psi as the initial state
-        expansion_w = tf.get_variable('expansion_w', [args.latent_size, args.cell_fn.state_size])
-        expansion_b = tf.get_variable('expansion_b', [args.cell_fn.state_size])
+        expansion_w = tf.get_variable('expansion_w', [args.latent_size, args.decoder_rnn_size
+                                                            * (2 if args.cell == 'lstm' else 1)])
+        expansion_b = tf.get_variable('expansion_b', [args.decoder_rnn_size
+                                                            * (2 if args.cell == 'lstm' else 1)])
         self.initial_state = tf.matmul(self.psi, expansion_w) + expansion_b
         self.decoder = VariationalDecoder(args, initial_state=self.initial_state, infer=infer)
 
         # get the decoder outputs
-        output = tf.reshape(tf.concat(1, self.decoder.outputs), [-1, args.cell_fn.output_size])
+        output = tf.reshape(tf.concat(1, self.decoder.outputs), [-1, self.decoder.cell.output_size])
         logits = tf.matmul(output, self.decoder.projection_w) + self.decoder.projection_b
         self.probs = tf.nn.softmax(logits)
 

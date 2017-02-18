@@ -3,6 +3,11 @@ import tensorflow as tf
 class VariationalEncoder(object):
     def __init__(self, args):
 
+        if args.cell == 'lstm':
+            cell = tf.nn.rnn_cell.BasicLSTMCell(args.encoder_rnn_size, state_is_tuple=False)
+        else:
+            cell = tf.nn.rnn_cell.BasicRNNCell(args.encoder_rnn_size)
+
         self.seq = [tf.placeholder(tf.int32, [args.batch_size, args.max_seq_length, 1], 
                         name='seq{0}'.format(i)) for i in range(args.max_seqs)]
         self.seq_length = [tf.placeholder(tf.int32, [args.batch_size],
@@ -10,9 +15,9 @@ class VariationalEncoder(object):
 
         with tf.variable_scope('variational_encoder_mean'):
             # mean encoder
-            self.cell_mean = tf.nn.rnn_cell.EmbeddingWrapper(args.cell_fn,
+            self.cell_mean = tf.nn.rnn_cell.EmbeddingWrapper(cell,
                                     embedding_classes=args.input_vocab_size,
-                                    embedding_size=args.rnn_size)
+                                    embedding_size=args.encoder_rnn_size)
             self.cell_mean_init = self.cell_mean.zero_state(args.batch_size, tf.float32)
             means = []
             with tf.variable_scope('mean_rnn'):
@@ -35,9 +40,9 @@ class VariationalEncoder(object):
 
         with tf.variable_scope('variational_encoder_stdv'):
             # standard deviation encoder
-            self.cell_stdv = tf.nn.rnn_cell.EmbeddingWrapper(args.cell_fn,
+            self.cell_stdv = tf.nn.rnn_cell.EmbeddingWrapper(cell,
                                         embedding_classes=args.input_vocab_size,
-                                        embedding_size=args.rnn_size)
+                                        embedding_size=args.encoder_rnn_size)
             self.cell_stdv_init = self.cell_stdv.zero_state(args.batch_size, tf.float32)
             stdvs = []
             with tf.variable_scope('stdv_rnn'):
@@ -61,6 +66,11 @@ class VariationalEncoder(object):
 class VariationalDecoder(object):
     def __init__(self, args, initial_state, infer=False):
 
+        if args.cell == 'lstm':
+            self.cell = tf.nn.rnn_cell.BasicLSTMCell(args.decoder_rnn_size, state_is_tuple=False)
+        else:
+            self.cell = tf.nn.rnn_cell.BasicRNNCell(args.decoder_rnn_size)
+
         # placeholders
         self.initial_state = initial_state
         self.nodes = [tf.placeholder(tf.int32, [args.batch_size], name='node{0}'.format(i))
@@ -69,13 +79,14 @@ class VariationalDecoder(object):
                             for i in range(args.max_ast_depth)]
 
         # projection matrices for output
-        self.projection_w = tf.get_variable('projection_w', [args.cell_fn.output_size,
+        self.projection_w = tf.get_variable('projection_w', [self.cell.output_size,
                                                                 args.target_vocab_size])
         self.projection_b = tf.get_variable('projection_b', [args.target_vocab_size])
 
         # setup embedding
         with tf.variable_scope('variational_decoder'):
-            embedding = tf.get_variable('embedding', [args.target_vocab_size, args.rnn_size])
+            embedding = tf.get_variable('embedding', [args.target_vocab_size,
+                                                                args.decoder_rnn_size])
             loop_function = tf.nn.seq2seq._extract_argmax_and_embed(embedding, 
                                     (self.projection_w, self.projection_b)) if infer else None
             emb_inp = (tf.nn.embedding_lookup(embedding, i) for i in self.nodes)
@@ -93,9 +104,9 @@ class VariationalDecoder(object):
                     if i > 0:
                         tf.get_variable_scope().reuse_variables()
                     with tf.variable_scope('cell1'): # handles CHILD_EDGE
-                        output1, state1 = args.cell_fn(inp, self.state)
+                        output1, state1 = self.cell(inp, self.state)
                     with tf.variable_scope('cell2'): # handles SIBLING_EDGE
-                        output2, state2 = args.cell_fn(inp, self.state)
+                        output2, state2 = self.cell(inp, self.state)
                     output = tf.where(self.edges[i], output1, output2)
                     self.state = tf.where(self.edges[i], state1, state2)
                     self.outputs.append(output)

@@ -35,7 +35,7 @@ def main():
     if args.plot2d and not args.random:
         parser.error('--plot2d requires --random (otherwise there is only one psi to plot)')
     with tf.Session() as sess:
-        predictor = Predictor(args.save_dir, sess)
+        predictor = VariationalPredictor(args.save_dir, sess)
         c, err = 0, 0
         asts = []
         while c < args.n:
@@ -69,7 +69,7 @@ def main():
             json.dump({ 'asts': asts }, fp=f, indent=2)
     print('Number of errors: {}'.format(err))
 
-class Predictor(object):
+class VariationalPredictor(object):
 
     def __init__(self, save_dir, sess):
         self.sess = sess

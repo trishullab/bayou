@@ -112,7 +112,8 @@ def check_compat(args, data_loader):
     # open old config and check if models are compatible
     with open(os.path.join(args.init_from, 'config.pkl'), 'rb') as f:
         saved_model_args = pickle.load(f)
-    need_be_same = ['cell', 'rnn_size' , 'max_seq_length', 'max_ast_depth']
+    need_be_same = ['cell', 'encoder_rnn_size', 'decoder_rnn_size', 'max_seqs', 'max_seq_length',
+                        'max_ast_depth']
     for checkme in need_be_same:
         assert vars(saved_model_args)[checkme] == vars(args)[checkme], \
                     'Command line argument and saved model disagree on "%s" '%checkme
