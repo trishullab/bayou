@@ -3,3 +3,5 @@ data
 *.swp
 save
 __pycache__
+experiments/predict_asts/*.txt
+experiments/predict_asts/*.json
