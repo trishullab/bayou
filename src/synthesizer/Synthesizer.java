@@ -100,6 +100,7 @@ public class Synthesizer {
             try {
                 cu.accept(visitor);
                 System.out.println(visitor.synthesizedProgram);
+                System.out.println("/* --- End of program --- */\n\n");
             } catch (Exception e) { }
         }
     }

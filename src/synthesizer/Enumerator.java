@@ -129,6 +129,8 @@ public class Enumerator {
         List<Constructor> constructors = Arrays.asList(targetType.getConstructors());
         sortConstructorsByCost(constructors);
         for (Constructor constructor : constructors) {
+            if (Modifier.isAbstract(targetType.getModifiers()))
+                break;
             if (! Modifier.isPublic(constructor.getModifiers()))
                 continue;
             ClassInstanceCreation creation = ast.newClassInstanceCreation();
