@@ -20,15 +20,18 @@ public class DLoop extends DASTNode {
     }
 
     @Override
-    public void updateSequences(List<Sequence> soFar) {
+    public void updateSequences(List<Sequence> soFar, int max) throws TooManySequencesException {
+        if (soFar.size() >= max)
+            throw new TooManySequencesException();
         for (DAPICall call : _cond)
-            call.updateSequences(soFar);
+            call.updateSequences(soFar, max);
 
-        for (int i = 0; i < Visitor.V().options.NUM_UNROLLS; i++) {
+        int num_unrolls = Visitor.V() == null? 1: Visitor.V().options.NUM_UNROLLS;
+        for (int i = 0; i < num_unrolls; i++) {
             for (DASTNode node : _body)
-                node.updateSequences(soFar);
+                node.updateSequences(soFar, max);
             for (DAPICall call : _cond)
-                call.updateSequences(soFar);
+                call.updateSequences(soFar, max);
         }
     }
 

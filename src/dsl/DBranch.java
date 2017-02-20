@@ -21,16 +21,18 @@ public class DBranch extends DASTNode {
     }
 
     @Override
-    public void updateSequences(List<Sequence> soFar) {
+    public void updateSequences(List<Sequence> soFar, int max) throws TooManySequencesException {
+        if (soFar.size() >= max)
+            throw new TooManySequencesException();
         for (DAPICall call : _cond)
-            call.updateSequences(soFar);
+            call.updateSequences(soFar, max);
         List<Sequence> copy = new ArrayList<>();
         for (Sequence seq : soFar)
             copy.add(new Sequence(seq.calls));
         for (DASTNode t : _then)
-            t.updateSequences(soFar);
+            t.updateSequences(soFar, max);
         for (DASTNode e : _else)
-            e.updateSequences(copy);
+            e.updateSequences(copy, max);
         for (Sequence seq : copy)
             if (! soFar.contains(seq))
                 soFar.add(seq);

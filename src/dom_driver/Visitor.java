@@ -2,6 +2,7 @@ package dom_driver;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import dsl.DASTNode;
 import dsl.DSubTree;
 import dsl.Sequence;
 import org.eclipse.jdt.core.dom.*;
@@ -84,11 +85,14 @@ public class Visitor extends ASTVisitor {
         for (DSubTree ast : asts) {
             List<Sequence> sequences = new ArrayList<>();
             sequences.add(new Sequence());
-            ast.updateSequences(sequences);
-
-            List<Sequence> uniqSequences = new ArrayList<>(new HashSet<>(sequences));
-            if (okToPrintAST(uniqSequences))
-                printJson(ast, uniqSequences);
+            try {
+                ast.updateSequences(sequences, options.MAX_SEQS);
+                List<Sequence> uniqSequences = new ArrayList<>(new HashSet<>(sequences));
+                if (okToPrintAST(uniqSequences))
+                    printJson(ast, uniqSequences);
+            } catch (DASTNode.TooManySequencesException e) {
+                System.err.println("Too many sequences from AST");
+            }
         }
         return false;
     }
@@ -105,7 +109,7 @@ public class Visitor extends ASTVisitor {
 
     private boolean okToPrintAST(List<Sequence> sequences) {
         int n = sequences.size();
-        if (n == 0 || n > 10 || (n == 1 && sequences.get(0).getCalls().size() <= 1))
+        if (n == 0 || (n == 1 && sequences.get(0).getCalls().size() <= 1))
             return false;
         return true;
     }

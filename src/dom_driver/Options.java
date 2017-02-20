@@ -45,6 +45,7 @@ public class Options {
     public final Map<String, Float> KNOWN_CONSTANTS_NUMBER;
     public final Map<String, String> KNOWN_CONSTANTS_STRING;
     public final int NUM_UNROLLS;
+    public final int MAX_SEQS;
 
     public Options(String[] args) throws ParseException, IOException {
         this.cmdLine = readCommandLine(args);
@@ -88,6 +89,12 @@ public class Options {
             this.NUM_UNROLLS = this.config.getAsJsonPrimitive("num-unrolls").getAsInt();
         else
             this.NUM_UNROLLS = 1;
+
+        // MAX_SEQS
+        if (this.config.has("max-seqs"))
+            this.MAX_SEQS = this.config.getAsJsonPrimitive("max-seqs").getAsInt();
+        else
+            this.MAX_SEQS = 10;
     }
 
     private CommandLine readCommandLine(String[] args) throws ParseException {

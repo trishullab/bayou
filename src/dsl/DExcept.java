@@ -2,6 +2,7 @@ package dsl;
 
 import org.eclipse.jdt.core.dom.*;
 import synthesizer.Environment;
+import synthesizer.Variable;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -20,14 +21,16 @@ public class DExcept extends DASTNode {
     }
 
     @Override
-    public void updateSequences(List<Sequence> soFar) {
+    public void updateSequences(List<Sequence> soFar, int max)  throws TooManySequencesException {
+        if (soFar.size() >= max)
+            throw new TooManySequencesException();
         for (DASTNode node : _try)
-            node.updateSequences(soFar);
+            node.updateSequences(soFar, max);
         List<Sequence> copy = new ArrayList<>();
         for (Sequence seq : soFar)
             copy.add(new Sequence(seq.calls));
         for (DASTNode e : _catch)
-            e.updateSequences(copy);
+            e.updateSequences(copy, max);
         for (Sequence seq : copy)
             if (! soFar.contains(seq))
                 soFar.add(seq);
@@ -81,6 +84,15 @@ public class DExcept extends DASTNode {
         /* synthesize catch clause body */
         for (Class except : exceptionsThrown) {
             CatchClause catchClause = ast.newCatchClause();
+
+            /* synthesize catch clause exception types */
+            SingleVariableDeclaration ex = ast.newSingleVariableDeclaration();
+            ex.setType(ast.newSimpleType(ast.newName(except.getSimpleName())));
+            ex.setName(ast.newSimpleName("_e"));
+            catchClause.setException(ex);
+            statement.catchClauses().add(catchClause);
+            Variable exceptionVar = env.addScopedVariable("_e", except);
+
             Block catchBlock = ast.newBlock();
             for (DASTNode dNode : _catch) {
                 ASTNode aNode = dNode.synthesize(env);
@@ -90,13 +102,7 @@ public class DExcept extends DASTNode {
                     catchBlock.statements().add(ast.newExpressionStatement((Expression) aNode));
             }
             catchClause.setBody(catchBlock);
-
-            /* synthesize catch clause exception types */
-            SingleVariableDeclaration ex = ast.newSingleVariableDeclaration();
-            ex.setType(ast.newSimpleType(ast.newName(except.getSimpleName())));
-            ex.setName(ast.newSimpleName("_e"));
-            catchClause.setException(ex);
-            statement.catchClauses().add(catchClause);
+            env.removeScopedVariable(exceptionVar);
 
             /* record exceptions that were caught */
             env.recordExceptionCaught(except);

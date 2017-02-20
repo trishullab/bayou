@@ -5,7 +5,8 @@ import synthesizer.Synthesizable;
 import java.util.List;
 
 public abstract class DASTNode implements Synthesizable {
-    public abstract void updateSequences(List<Sequence> soFar);
+    public class TooManySequencesException extends Exception { }
+    public abstract void updateSequences(List<Sequence> soFar, int max) throws TooManySequencesException;
 
     @Override
     public abstract boolean equals(Object o);

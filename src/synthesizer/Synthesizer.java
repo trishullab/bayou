@@ -97,8 +97,10 @@ public class Synthesizer {
 
         for (DSubTree ast : asts) {
             Visitor visitor = new Visitor(ast, new Document(source), cu);
-            cu.accept(visitor);
-            System.out.println(visitor.synthesizedProgram);
+            try {
+                cu.accept(visitor);
+                System.out.println(visitor.synthesizedProgram);
+            } catch (Exception e) { }
         }
     }
 

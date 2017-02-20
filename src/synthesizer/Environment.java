@@ -64,6 +64,16 @@ public class Environment {
         return ast.newSimpleName(var.getName());
     }
 
+    public Variable addScopedVariable(String name, Class type) {
+        Variable var = new Variable(name, type);
+        mu_scope.add(var);
+        return var;
+    }
+
+    public void removeScopedVariable(Variable v) {
+        mu_scope.remove(v);
+    }
+
     public void recordExceptionThrown(Class c) {
         if (!exceptions.containsKey(c))
             exceptions.put(c, 0);

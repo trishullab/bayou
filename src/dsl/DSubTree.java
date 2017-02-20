@@ -33,9 +33,11 @@ public class DSubTree extends DASTNode {
     }
 
     @Override
-    public void updateSequences(List<Sequence> soFar) {
+    public void updateSequences(List<Sequence> soFar, int max) throws TooManySequencesException {
+        if (soFar.size() >= max)
+            throw new TooManySequencesException();
         for (DASTNode node : _nodes)
-            node.updateSequences(soFar);
+            node.updateSequences(soFar, max);
     }
 
     public List<DAPICall> getNodesAsCalls() {

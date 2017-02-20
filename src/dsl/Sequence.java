@@ -22,6 +22,16 @@ public class Sequence {
         calls.add(apiCall);
     }
 
+    /* check if this is a subsequence of "seq" from index 0 */
+    public boolean isSubsequenceOf(Sequence seq) {
+        if (calls.size() > seq.calls.size())
+            return false;
+        for (int i = 0; i < calls.size(); i++)
+            if (! calls.get(i).equals(seq.calls.get(i)))
+                return false;
+        return true;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (o == null || ! (o instanceof Sequence))

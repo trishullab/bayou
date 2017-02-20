@@ -32,7 +32,9 @@ public class DAPICall extends DASTNode {
     }
 
     @Override
-    public void updateSequences(List<Sequence> soFar) {
+    public void updateSequences(List<Sequence> soFar, int max) throws TooManySequencesException {
+        if (soFar.size() >= max)
+            throw new TooManySequencesException();
         for (Sequence sequence : soFar)
             sequence.addCall(_call);
     }
