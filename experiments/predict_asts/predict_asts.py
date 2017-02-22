@@ -2,6 +2,7 @@ import tensorflow as tf
 import argparse
 import json
 import time
+import math
 import random
 
 from encdec.predict_ast import Predictor
@@ -18,13 +19,15 @@ def main():
                        help='the type of model')
     parser.add_argument('--n', type=int, default=1,
                        help='number of ASTs to generate for each set of sequences')
-    parser.add_argument('--infer_seqs', type=str, choices=['all', 'half', 'one'], default='all',
-                       help='number of sequences to provide for inference')
+    parser.add_argument('--infer_seqs', type=float, default=1.,
+                       help='percentage of sequences (range (0,1]) to provide for inference')
     parser.add_argument('--seed', type=int, default=1234,
                        help='seed to use for random')
     parser.add_argument('--output_file', type=str, default=None,
                        help='output file to print predicted ASTs')
     args = parser.parse_args()
+    if args.infer_seqs <= 0. or args.infer_seqs > 1.:
+        parser.error('infer_seqs must be in range (0,1]')
     random.seed(args.seed)
     print(args)
 
@@ -74,15 +77,9 @@ def gather_data(input_file, saved_args, infer_seqs):
             sub_seqs = sub_sequences(seqs_program, saved_args)
         except AssertionError:
             continue
-        if infer_seqs == 'all': # shuffle if all
-            random.shuffle(sub_seqs)
-            seqs_to_append = sub_seqs
-        if infer_seqs == 'half':
-            seqs_to_append = sub_seqs[int(len(sub_seqs)/2):]
-        if infer_seqs == 'one':
-            seqs_to_append = [sub_seqs[-1]]
-        given_seqs.append(seqs_to_append)
-        unseen_seqs.append([seq for seq in sub_seqs if seq not in seqs_to_append])
+        selected_seqs = sub_seqs[-math.ceil(len(sub_seqs)*infer_seqs):]
+        given_seqs.append(selected_seqs)
+        unseen_seqs.append([seq for seq in sub_seqs if seq not in given_seqs[-1]])
         asts.append(program['ast'])
     return zip(given_seqs, unseen_seqs, asts)
 
