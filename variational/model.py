@@ -1,4 +1,5 @@
 import tensorflow as tf
+from tensorflow.contrib import legacy_seq2seq
 import numpy as np
 
 from variational.architecture import VariationalEncoder, VariationalDecoder
@@ -30,7 +31,7 @@ class Model():
         self.decoder = VariationalDecoder(args, initial_state=self.initial_state, infer=infer)
 
         # get the decoder outputs
-        output = tf.reshape(tf.concat(1, self.decoder.outputs), [-1, self.decoder.cell.output_size])
+        output = tf.reshape(tf.concat(self.decoder.outputs, 1), [-1, self.decoder.cell.output_size])
         logits = tf.matmul(output, self.decoder.projection_w) + self.decoder.projection_b
         self.probs = tf.nn.softmax(logits)
 
@@ -39,7 +40,7 @@ class Model():
         self.latent_loss = 0.5 * tf.reduce_sum(tf.square(self.encoder.psi_mean)
                                     + tf.square(self.encoder.psi_stdv)
                                     - tf.log(tf.square(self.encoder.psi_stdv)) - 1, 1)
-        self.generation_loss = tf.nn.seq2seq.sequence_loss([logits],
+        self.generation_loss = legacy_seq2seq.sequence_loss([logits],
                                     [tf.reshape(self.targets, [-1])],
                                     [tf.ones([args.batch_size * args.max_ast_depth])])
         self.cost = tf.reduce_mean(self.generation_loss + self.latent_loss/args.weight_loss)

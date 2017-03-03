@@ -1,12 +1,14 @@
 import tensorflow as tf
+from tensorflow.contrib import rnn
+from tensorflow.contrib import legacy_seq2seq
 
 class VariationalEncoder(object):
     def __init__(self, args):
 
         if args.cell == 'lstm':
-            cell = tf.nn.rnn_cell.BasicLSTMCell(args.encoder_rnn_size, state_is_tuple=False)
+            cell = rnn.BasicLSTMCell(args.encoder_rnn_size, state_is_tuple=False)
         else:
-            cell = tf.nn.rnn_cell.BasicRNNCell(args.encoder_rnn_size)
+            cell = rnn.BasicRNNCell(args.encoder_rnn_size)
 
         self.seq = [tf.placeholder(tf.int32, [args.batch_size, args.max_seq_length, 1], 
                         name='seq{0}'.format(i)) for i in range(args.max_seqs)]
@@ -15,7 +17,7 @@ class VariationalEncoder(object):
 
         with tf.variable_scope('variational_encoder_mean'):
             # mean encoder
-            self.cell_mean = tf.nn.rnn_cell.EmbeddingWrapper(cell,
+            self.cell_mean = rnn.EmbeddingWrapper(cell,
                                     embedding_classes=args.input_vocab_size,
                                     embedding_size=args.encoder_rnn_size)
             self.cell_mean_init = self.cell_mean.zero_state(args.batch_size, tf.float32)
@@ -29,10 +31,10 @@ class VariationalEncoder(object):
                                             initial_state=self.cell_mean_init,
                                             dtype=tf.float32)
                     means.append(mean)
-            means = tf.pack(means)
+            means = tf.stack(means)
             sum_of_means = tf.reduce_sum(means, axis=0)
             num_non_zero_means = tf.count_nonzero(means, axis=0, dtype=tf.float32)
-            mean_means = tf.div(sum_of_means, num_non_zero_means)
+            mean_means = tf.divide(sum_of_means, num_non_zero_means)
             latent_w_mean = tf.get_variable('latent_w_mean', [self.cell_mean.state_size,
                                                                 args.latent_size])
             latent_b_mean = tf.get_variable('latent_b_mean', [args.latent_size])
@@ -40,7 +42,7 @@ class VariationalEncoder(object):
 
         with tf.variable_scope('variational_encoder_stdv'):
             # standard deviation encoder
-            self.cell_stdv = tf.nn.rnn_cell.EmbeddingWrapper(cell,
+            self.cell_stdv = rnn.EmbeddingWrapper(cell,
                                         embedding_classes=args.input_vocab_size,
                                         embedding_size=args.encoder_rnn_size)
             self.cell_stdv_init = self.cell_stdv.zero_state(args.batch_size, tf.float32)
@@ -54,10 +56,10 @@ class VariationalEncoder(object):
                                             initial_state=self.cell_stdv_init,
                                             dtype=tf.float32)
                     stdvs.append(stdv)
-            stdvs = tf.pack(stdvs)
+            stdvs = tf.stack(stdvs)
             sum_of_stdvs = tf.reduce_sum(stdvs, axis=0)
             num_non_zero_stdvs = tf.count_nonzero(stdvs, axis=0, dtype=tf.float32)
-            mean_stdvs = tf.div(sum_of_stdvs, num_non_zero_stdvs)
+            mean_stdvs = tf.divide(sum_of_stdvs, num_non_zero_stdvs)
             latent_w_stdv = tf.get_variable('latent_w_stdv', [self.cell_stdv.state_size,
                                                                 args.latent_size])
             latent_b_stdv = tf.get_variable('latent_b_stdv', [args.latent_size])
@@ -67,9 +69,9 @@ class VariationalDecoder(object):
     def __init__(self, args, initial_state, infer=False):
 
         if args.cell == 'lstm':
-            self.cell = tf.nn.rnn_cell.BasicLSTMCell(args.decoder_rnn_size, state_is_tuple=False)
+            self.cell = rnn.BasicLSTMCell(args.decoder_rnn_size, state_is_tuple=False)
         else:
-            self.cell = tf.nn.rnn_cell.BasicRNNCell(args.decoder_rnn_size)
+            self.cell = rnn.BasicRNNCell(args.decoder_rnn_size)
 
         # placeholders
         self.initial_state = initial_state
@@ -87,8 +89,12 @@ class VariationalDecoder(object):
         with tf.variable_scope('variational_decoder'):
             embedding = tf.get_variable('embedding', [args.target_vocab_size,
                                                                 args.decoder_rnn_size])
-            loop_function = tf.nn.seq2seq._extract_argmax_and_embed(embedding, 
-                                    (self.projection_w, self.projection_b)) if infer else None
+            def loop_fn(prev, _):
+                prev = tf.nn.xw_plus_b(prev, self.projection_w, self.projection_b)
+                prev_symbol = tf.argmax(prev, 1)
+                return tf.nn.embedding_lookup(embedding, prev_symbol)
+
+            loop_function = loop_fn if infer else None
             emb_inp = (tf.nn.embedding_lookup(embedding, i) for i in self.nodes)
 
             # the decoder (modified from tensorflow's seq2seq library to fit tree LSTMs)
