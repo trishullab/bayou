@@ -5,7 +5,9 @@ import synthesizer.Environment;
 import synthesizer.Variable;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 public class DBranch extends DASTNode {
 
@@ -36,6 +38,57 @@ public class DBranch extends DASTNode {
         for (Sequence seq : copy)
             if (! soFar.contains(seq))
                 soFar.add(seq);
+    }
+
+    @Override
+    public int numStatements() {
+        int num = _cond.size();
+        for (DASTNode t : _then)
+            num += t.numStatements();
+        for (DASTNode e : _else)
+            num += e.numStatements();
+        return num;
+    }
+
+    @Override
+    public int numLoops() {
+        int num = 0;
+        for (DASTNode t : _then)
+            num += t.numLoops();
+        for (DASTNode e : _else)
+            num += e.numLoops();
+        return num;
+    }
+
+    @Override
+    public int numBranches() {
+        int num = 1; // this branch
+        for (DASTNode t : _then)
+            num += t.numBranches();
+        for (DASTNode e : _else)
+            num += e.numBranches();
+        return num;
+    }
+
+    @Override
+    public int numExcepts() {
+        int num = 0;
+        for (DASTNode t : _then)
+            num += t.numExcepts();
+        for (DASTNode e : _else)
+            num += e.numExcepts();
+        return num;
+    }
+
+    @Override
+    public Set<DAPICall> bagOfAPICalls() {
+        Set<DAPICall> bag = new HashSet<>();
+        bag.addAll(_cond);
+        for (DASTNode t : _then)
+            bag.addAll(t.bagOfAPICalls());
+        for (DASTNode e : _else)
+            bag.addAll(e.bagOfAPICalls());
+        return bag;
     }
 
     @Override

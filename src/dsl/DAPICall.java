@@ -7,9 +7,7 @@ import synthesizer.Variable;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Executable;
 import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -49,6 +47,33 @@ public class DAPICall extends DASTNode {
     private String getSignature() {
         Stream<String> types = Arrays.stream(methodBinding.getParameterTypes()).map(t -> t.getQualifiedName());
         return methodBinding.getName() + "(" + String.join(",", types.collect(Collectors.toCollection(ArrayList::new))) + ")";
+    }
+
+    @Override
+    public int numStatements() {
+        return 1;
+    }
+
+    @Override
+    public int numLoops() {
+        return 0;
+    }
+
+    @Override
+    public int numBranches() {
+        return 0;
+    }
+
+    @Override
+    public int numExcepts() {
+        return 0;
+    }
+
+    @Override
+    public Set<DAPICall> bagOfAPICalls() {
+        Set<DAPICall> bag = new HashSet<>();
+        bag.add(this);
+        return bag;
     }
 
     @Override

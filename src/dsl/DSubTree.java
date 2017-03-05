@@ -4,7 +4,9 @@ import org.eclipse.jdt.core.dom.*;
 import synthesizer.Environment;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 public class DSubTree extends DASTNode {
@@ -51,6 +53,46 @@ public class DSubTree extends DASTNode {
 
     public List<DASTNode> getNodes() {
         return _nodes;
+    }
+
+    @Override
+    public int numStatements() {
+        int num = 0;
+        for (DASTNode node : _nodes)
+            num += node.numStatements();
+        return num;
+    }
+
+    @Override
+    public int numLoops() {
+        int num = 0;
+        for (DASTNode node : _nodes)
+            num += node.numLoops();
+        return num;
+    }
+
+    @Override
+    public int numBranches() {
+        int num = 0;
+        for (DASTNode node : _nodes)
+            num += node.numBranches();
+        return num;
+    }
+
+    @Override
+    public int numExcepts() {
+        int num = 0;
+        for (DASTNode node : _nodes)
+            num += node.numExcepts();
+        return num;
+    }
+
+    @Override
+    public Set<DAPICall> bagOfAPICalls() {
+        Set<DAPICall> bag = new HashSet<>();
+        for (DASTNode node : _nodes)
+            bag.addAll(node.bagOfAPICalls());
+        return bag;
     }
 
     @Override

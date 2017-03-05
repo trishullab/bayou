@@ -6,7 +6,9 @@ import synthesizer.Environment;
 import synthesizer.Variable;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 public class DLoop extends DASTNode {
 
@@ -33,6 +35,47 @@ public class DLoop extends DASTNode {
             for (DAPICall call : _cond)
                 call.updateSequences(soFar, max);
         }
+    }
+
+    @Override
+    public int numStatements() {
+        int num = _cond.size();
+        for (DASTNode b : _body)
+            num += b.numStatements();
+        return num;
+    }
+
+    @Override
+    public int numLoops() {
+        int num = 1; // this loop
+        for (DASTNode b : _body)
+            num += b.numLoops();
+        return num;
+    }
+
+    @Override
+    public int numBranches() {
+        int num = 0;
+        for (DASTNode b : _body)
+            num += b.numBranches();
+        return num;
+    }
+
+    @Override
+    public int numExcepts() {
+        int num = 0;
+        for (DASTNode b : _body)
+            num += b.numExcepts();
+        return num;
+    }
+
+    @Override
+    public Set<DAPICall> bagOfAPICalls() {
+        Set<DAPICall> bag = new HashSet<>();
+        bag.addAll(_cond);
+        for (DASTNode b : _body)
+            bag.addAll(b.bagOfAPICalls());
+        return bag;
     }
 
     @Override

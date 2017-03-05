@@ -4,9 +4,7 @@ import org.eclipse.jdt.core.dom.*;
 import synthesizer.Environment;
 import synthesizer.Variable;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class DExcept extends DASTNode {
@@ -34,6 +32,54 @@ public class DExcept extends DASTNode {
         for (Sequence seq : copy)
             if (! soFar.contains(seq))
                 soFar.add(seq);
+    }
+
+    @Override
+    public int numStatements() {
+        int num = _try.size();
+        for (DASTNode c : _catch)
+            num += c.numStatements();
+        return num;
+    }
+
+    @Override
+    public int numLoops() {
+        int num = 0;
+        for (DASTNode t : _try)
+            num += t.numLoops();
+        for (DASTNode c : _catch)
+            num += c.numLoops();
+        return num;
+    }
+
+    @Override
+    public int numBranches() {
+        int num = 0;
+        for (DASTNode t : _try)
+            num += t.numBranches();
+        for (DASTNode c : _catch)
+            num += c.numBranches();
+        return num;
+    }
+
+    @Override
+    public int numExcepts() {
+        int num = 1; // this except
+        for (DASTNode t : _try)
+            num += t.numExcepts();
+        for (DASTNode c : _catch)
+            num += c.numExcepts();
+        return num;
+    }
+
+    @Override
+    public Set<DAPICall> bagOfAPICalls() {
+        Set<DAPICall> bag = new HashSet<>();
+        for (DASTNode t : _try)
+            bag.addAll(t.bagOfAPICalls());
+        for (DASTNode c : _catch)
+            bag.addAll(c.bagOfAPICalls());
+        return bag;
     }
 
     @Override
