@@ -15,5 +15,10 @@ cd /path/to/bayou/pl
 ant
 ```
 
+If you are working with the Android SDK (as opposed to Java),
+```
+export CLASSPATH=/path/to/android.jar
+```
+
 ## Usage
 (Coming up)
