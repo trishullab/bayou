@@ -1,7 +1,7 @@
 pl/.idea
 pl/*.iml
 pl/out
-ml/*.pyc
-ml/trained
+*.pyc
+ml/variational/save/*
 ml/__pycache__
-data
+data/*
