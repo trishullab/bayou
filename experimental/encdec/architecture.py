@@ -1,11 +1,13 @@
 import tensorflow as tf
+from tensorflow.contrib import rnn
+from tensorflow.contrib import legacy_seq2seq
 
 class Encoder(object):
     def __init__(self, args):
         if args.cell == 'lstm':
-            cell = tf.nn.rnn_cell.BasicLSTMCell(args.encoder_rnn_size, state_is_tuple=False)
+            cell = rnn.BasicLSTMCell(args.encoder_rnn_size, state_is_tuple=False)
         else:
-            cell = tf.nn.rnn_cell.BasicRNNCell(args.encoder_rnn_size)
+            cell = rnn.BasicRNNCell(args.encoder_rnn_size)
 
         self.seq = [tf.placeholder(tf.int32, [args.batch_size, args.max_seq_length, 1], 
                         name='seq{0}'.format(i)) for i in range(args.max_seqs)]
@@ -14,7 +16,7 @@ class Encoder(object):
 
         with tf.variable_scope('encoder'):
             # dynamic RNN
-            self.cell = tf.nn.rnn_cell.EmbeddingWrapper(cell, 
+            self.cell = rnn.EmbeddingWrapper(cell, 
                                     embedding_classes=args.input_vocab_size,
                                     embedding_size=args.encoder_rnn_size)
             self.cell_init = self.cell.zero_state(args.batch_size, tf.float32)
@@ -27,15 +29,15 @@ class Encoder(object):
                                         initial_state=self.cell_init,
                                         dtype=tf.float32)
                 encodings.append(encoding_seq)
-            self.encoding = tf.reshape(tf.pack(encodings, axis=1), [args.batch_size,
+            self.encoding = tf.reshape(tf.stack(encodings, axis=1), [args.batch_size,
                                 args.decoder_rnn_size * (2 if args.cell == 'lstm' else 1)])
 
 class Decoder(object):
     def __init__(self, args, initial_state, infer=False):
         if args.cell == 'lstm':
-            cell = tf.nn.rnn_cell.BasicLSTMCell(args.decoder_rnn_size, state_is_tuple=False)
+            cell = rnn.BasicLSTMCell(args.decoder_rnn_size, state_is_tuple=False)
         else:
-            cell = tf.nn.rnn_cell.BasicRNNCell(args.decoder_rnn_size)
+            cell = rnn.BasicRNNCell(args.decoder_rnn_size)
 
         # placeholders
         self.initial_state = initial_state
@@ -53,8 +55,12 @@ class Decoder(object):
         with tf.variable_scope('decoder'):
             embedding = tf.get_variable('embedding', [args.target_vocab_size,
                                                                 args.decoder_rnn_size])
-            loop_function = tf.nn.seq2seq._extract_argmax_and_embed(embedding, 
-                                    (self.projection_w, self.projection_b)) if infer else None
+            def loop_fn(prev, _):
+                prev = tf.nn.xw_plus_b(prev, self.projection_w, self.projection_b)
+                prev_symbol = tf.argmax(prev, 1)
+                return tf.nn.embedding_lookup(embedding, prev_symbol)
+
+            loop_function = loop_fn if infer else None
             emb_inp = (tf.nn.embedding_lookup(embedding, i) for i in self.nodes)
 
             # the decoder (modified from tensorflow's seq2seq library to fit tree LSTMs)

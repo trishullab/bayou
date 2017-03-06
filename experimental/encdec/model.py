@@ -1,4 +1,5 @@
 import tensorflow as tf
+from tensorflow.contrib import legacy_seq2seq
 import numpy as np
 
 from encdec.architecture import Encoder, Decoder
@@ -19,13 +20,13 @@ class Model():
         self.decoder = Decoder(args, initial_state=self.encoder.encoding, infer=infer)
 
         # get the decoder outputs
-        output = tf.reshape(tf.concat(1, self.decoder.outputs), [-1, args.decoder_rnn_size])
+        output = tf.reshape(tf.concat(self.decoder.outputs, 1), [-1, args.decoder_rnn_size])
         logits = tf.matmul(output, self.decoder.projection_w) + self.decoder.projection_b
         self.probs = tf.nn.softmax(logits)
 
         # define loss
         self.targets = tf.placeholder(tf.int32, [args.batch_size, args.max_ast_depth])
-        self.cost = tf.nn.seq2seq.sequence_loss([logits],
+        self.cost = legacy_seq2seq.sequence_loss([logits],
                                     [tf.reshape(self.targets, [-1])],
                                     [tf.ones([args.batch_size * args.max_ast_depth])])
         self.train_op = tf.train.AdamOptimizer(args.learning_rate).minimize(self.cost)
