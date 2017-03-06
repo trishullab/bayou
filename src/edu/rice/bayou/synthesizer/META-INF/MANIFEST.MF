@@ -1,0 +1,18 @@
+Manifest-Version: 1.0
+Class-Path: gson-2.6.3.jar commons-io-2.5.jar commons-cli-1.3.1.jar or
+ g.eclipse.text_3.5.0.jar org.eclipse.osgi_3.11.0.v20160603-1336.jar o
+ rg.eclipse.core.jobs_3.8.0.v20160509-0411.jar org.eclipse.jdt.core_3.
+ 12.0.v20160516-2131.jar org.eclipse.core.runtime_3.12.0.v20160606-134
+ 2.jar org.eclipse.equinox.common_3.8.0.v20160509-1230.jar org.eclipse
+ .core.resources_3.11.0.v20160503-1608.jar org.eclipse.core.contenttyp
+ e_3.5.100.v20160418-1621.jar org.eclipse.equinox.preferences_3.6.0.v2
+ 0160120-1756.jar org.eclipse.equinox.common_3.8.0.v20160509-1230.jar 
+ commons-io-2.5.jar org.eclipse.core.runtime_3.12.0.v20160606-1342.jar
+  gson-2.6.3.jar org.eclipse.core.jobs_3.8.0.v20160509-0411.jar org.ec
+ lipse.text_3.5.0.jar org.eclipse.core.contenttype_3.5.100.v20160418-1
+ 621.jar org.eclipse.core.resources_3.11.0.v20160503-1608.jar org.ecli
+ pse.equinox.preferences_3.6.0.v20160120-1756.jar org.eclipse.jdt.core
+ _3.12.0.v20160516-2131.jar org.eclipse.osgi_3.11.0.v20160603-1336.jar
+  commons-cli-1.3.1.jar
+Main-Class: edu.rice.bayou.synthesizer.Synthesizer
+

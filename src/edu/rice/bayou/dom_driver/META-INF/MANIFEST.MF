@@ -1,0 +1,18 @@
+Manifest-Version: 1.0
+Class-Path: org.eclipse.equinox.common_3.8.0.v20160509-1230.jar common
+ s-io-2.5.jar org.eclipse.core.runtime_3.12.0.v20160606-1342.jar gson-
+ 2.6.3.jar org.eclipse.core.jobs_3.8.0.v20160509-0411.jar org.eclipse.
+ text_3.5.0.jar org.eclipse.core.contenttype_3.5.100.v20160418-1621.ja
+ r org.eclipse.core.resources_3.11.0.v20160503-1608.jar org.eclipse.eq
+ uinox.preferences_3.6.0.v20160120-1756.jar org.eclipse.jdt.core_3.12.
+ 0.v20160516-2131.jar org.eclipse.osgi_3.11.0.v20160603-1336.jar commo
+ ns-cli-1.3.1.jar gson-2.6.3.jar commons-io-2.5.jar commons-cli-1.3.1.
+ jar org.eclipse.text_3.5.0.jar org.eclipse.osgi_3.11.0.v20160603-1336
+ .jar org.eclipse.core.jobs_3.8.0.v20160509-0411.jar org.eclipse.jdt.c
+ ore_3.12.0.v20160516-2131.jar org.eclipse.core.runtime_3.12.0.v201606
+ 06-1342.jar org.eclipse.equinox.common_3.8.0.v20160509-1230.jar org.e
+ clipse.core.resources_3.11.0.v20160503-1608.jar org.eclipse.core.cont
+ enttype_3.5.100.v20160418-1621.jar org.eclipse.equinox.preferences_3.
+ 6.0.v20160120-1756.jar
+Main-Class: edu.rice.bayou.dom_driver.Driver
+
