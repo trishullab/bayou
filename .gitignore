@@ -1,3 +1,7 @@
-.idea
-*.iml
-out
+pl/.idea
+pl/*.iml
+pl/out
+ml/*.pyc
+ml/trained
+ml/__pycache__
+data
