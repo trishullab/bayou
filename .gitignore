@@ -1,7 +1,0 @@
-pl/.idea
-pl/*.iml
-pl/out
-*.pyc
-ml/variational/save/*
-ml/__pycache__
-data/*
