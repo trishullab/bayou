@@ -1,0 +1,36 @@
+{
+  "file": "27f.java",
+  "ast": {
+    "node": "DSubTree",
+    "_nodes": [
+      {
+        "node": "DExcept",
+        "_try": [
+          {
+            "node": "DAPICall",
+            "_call": "android.bluetooth.BluetoothSocket.connect()"
+          }
+        ],
+        "_catch": [
+          {
+            "node": "DAPICall",
+            "_call": "android.bluetooth.BluetoothSocket.close()"
+          }
+        ]
+      }
+    ]
+  },
+  "sequences": [
+    {
+      "calls": [
+        "android.bluetooth.BluetoothSocket.connect()",
+        "android.bluetooth.BluetoothSocket.close()"
+      ]
+    },
+    {
+      "calls": [
+        "android.bluetooth.BluetoothSocket.connect()"
+      ]
+    }
+  ]
+}

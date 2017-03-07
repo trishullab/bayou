@@ -1,0 +1,24 @@
+{
+  "file": "2f.java",
+  "ast": {
+    "node": "DSubTree",
+    "_nodes": [
+      {
+        "node": "DAPICall",
+        "_call": "java.io.FileReader.FileReader(java.io.File)"
+      },
+      {
+        "node": "DAPICall",
+        "_call": "java.io.BufferedReader.BufferedReader(java.io.Reader)"
+      }
+    ]
+  },
+  "sequences": [
+    {
+      "calls": [
+        "java.io.FileReader.FileReader(java.io.File)",
+        "java.io.BufferedReader.BufferedReader(java.io.Reader)"
+      ]
+    }
+  ]
+}

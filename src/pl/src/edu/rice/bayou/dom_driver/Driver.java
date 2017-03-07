@@ -38,11 +38,12 @@ public class Driver {
     private CompilationUnit createCompilationUnit() throws IOException {
         ASTParser parser = ASTParser.newParser(AST.JLS8);
         File input = new File(options.cmdLine.getOptionValue("input-file"));
+        String classpath = System.getenv("CLASSPATH");
 
         parser.setSource(FileUtils.readFileToString(input, "utf-8").toCharArray());
         parser.setKind(ASTParser.K_COMPILATION_UNIT);
         parser.setUnitName("Program.java");
-        parser.setEnvironment(new String[] { System.getenv("CLASSPATH") },
+        parser.setEnvironment(new String[] { classpath != null? classpath : "" },
                 new String[] { "" }, new String[] { "UTF-8" }, true);
         parser.setResolveBindings(true);
 

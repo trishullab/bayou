@@ -1,0 +1,9 @@
+{
+    "api-classes": [
+        "java.io.BufferedReader",
+        "java.io.InputStreamReader",
+        "java.io.FileReader",
+        "java.io.File"
+    ],
+    "num-unrolls": 1
+}

@@ -1,0 +1,49 @@
+{
+  "file": "19f.java",
+  "ast": {
+    "node": "DSubTree",
+    "_nodes": [
+      {
+        "node": "DAPICall",
+        "_call": "java.io.FileReader.FileReader(java.io.File)"
+      },
+      {
+        "node": "DAPICall",
+        "_call": "java.io.BufferedReader.BufferedReader(java.io.Reader)"
+      },
+      {
+        "node": "DBranch",
+        "_cond": [
+          {
+            "node": "DAPICall",
+            "_call": "java.io.BufferedReader.ready()"
+          }
+        ],
+        "_then": [
+          {
+            "node": "DAPICall",
+            "_call": "java.io.BufferedReader.readLine()"
+          }
+        ],
+        "_else": []
+      }
+    ]
+  },
+  "sequences": [
+    {
+      "calls": [
+        "java.io.FileReader.FileReader(java.io.File)",
+        "java.io.BufferedReader.BufferedReader(java.io.Reader)",
+        "java.io.BufferedReader.ready()"
+      ]
+    },
+    {
+      "calls": [
+        "java.io.FileReader.FileReader(java.io.File)",
+        "java.io.BufferedReader.BufferedReader(java.io.Reader)",
+        "java.io.BufferedReader.ready()",
+        "java.io.BufferedReader.readLine()"
+      ]
+    }
+  ]
+}

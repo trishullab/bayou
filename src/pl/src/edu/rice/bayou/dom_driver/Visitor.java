@@ -67,7 +67,7 @@ public class Visitor extends ASTVisitor {
         List<MethodDeclaration> publicMethods = allMethods.stream().filter(m -> !m.isConstructor() && Modifier.isPublic(m.getModifiers())).collect(Collectors.toList());
 
         Set<DSubTree> asts = new HashSet<>();
-        if (! constructors.isEmpty())
+        if (!constructors.isEmpty() && !publicMethods.isEmpty()) {
             for (MethodDeclaration c : constructors)
                 for (MethodDeclaration m : publicMethods) {
                     DSubTree ast = new DOMMethodDeclaration(c).handle();
@@ -75,12 +75,19 @@ public class Visitor extends ASTVisitor {
                     if (ast.isValid())
                         asts.add(ast);
                 }
-        else // no constructors, methods executed typically through Android callbacks
+        } else if (!constructors.isEmpty()) { // no public methods, only constructor
+            for (MethodDeclaration c : constructors) {
+                DSubTree ast = new DOMMethodDeclaration(c).handle();
+                if (ast.isValid())
+                    asts.add(ast);
+            }
+        } else if (!publicMethods.isEmpty()) { // no constructors, methods executed typically through Android callbacks
             for (MethodDeclaration m : publicMethods) {
                 DSubTree ast = new DOMMethodDeclaration(m).handle();
                 if (ast.isValid())
                     asts.add(ast);
             }
+        }
 
         for (DSubTree ast : asts) {
             List<Sequence> sequences = new ArrayList<>();

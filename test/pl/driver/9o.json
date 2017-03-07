@@ -1,0 +1,47 @@
+{
+  "file": "9f.java",
+  "ast": {
+    "node": "DSubTree",
+    "_nodes": [
+      {
+        "node": "DAPICall",
+        "_call": "java.io.FileReader.FileReader(java.io.File)"
+      },
+      {
+        "node": "DAPICall",
+        "_call": "java.io.BufferedReader.BufferedReader(java.io.Reader)"
+      },
+      {
+        "node": "DLoop",
+        "_cond": [
+          {
+            "node": "DAPICall",
+            "_call": "java.io.BufferedReader.readLine()"
+          }
+        ],
+        "_body": [
+          {
+            "node": "DAPICall",
+            "_call": "java.io.BufferedReader.ready()"
+          }
+        ]
+      },
+      {
+        "node": "DAPICall",
+        "_call": "java.io.BufferedReader.close()"
+      }
+    ]
+  },
+  "sequences": [
+    {
+      "calls": [
+        "java.io.FileReader.FileReader(java.io.File)",
+        "java.io.BufferedReader.BufferedReader(java.io.Reader)",
+        "java.io.BufferedReader.readLine()",
+        "java.io.BufferedReader.ready()",
+        "java.io.BufferedReader.readLine()",
+        "java.io.BufferedReader.close()"
+      ]
+    }
+  ]
+}

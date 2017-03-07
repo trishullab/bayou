@@ -1,0 +1,52 @@
+{
+  "file": "13f.java",
+  "ast": {
+    "node": "DSubTree",
+    "_nodes": [
+      {
+        "node": "DAPICall",
+        "_call": "java.io.FileReader.FileReader(java.io.File)"
+      },
+      {
+        "node": "DAPICall",
+        "_call": "java.io.BufferedReader.BufferedReader(java.io.Reader)"
+      },
+      {
+        "node": "DAPICall",
+        "_call": "java.io.BufferedReader.readLine()"
+      },
+      {
+        "node": "DLoop",
+        "_cond": [
+          {
+            "node": "DAPICall",
+            "_call": "java.io.BufferedReader.ready()"
+          }
+        ],
+        "_body": [
+          {
+            "node": "DAPICall",
+            "_call": "java.io.BufferedReader.readLine()"
+          }
+        ]
+      },
+      {
+        "node": "DAPICall",
+        "_call": "java.io.BufferedReader.close()"
+      }
+    ]
+  },
+  "sequences": [
+    {
+      "calls": [
+        "java.io.FileReader.FileReader(java.io.File)",
+        "java.io.BufferedReader.BufferedReader(java.io.Reader)",
+        "java.io.BufferedReader.readLine()",
+        "java.io.BufferedReader.ready()",
+        "java.io.BufferedReader.readLine()",
+        "java.io.BufferedReader.ready()",
+        "java.io.BufferedReader.close()"
+      ]
+    }
+  ]
+}
