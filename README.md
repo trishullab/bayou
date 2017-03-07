@@ -10,12 +10,12 @@ Bayou is a data-driven program synthesis system for Java that uses learned Bayes
 
 ## Setup
 ```
-export PYTHONPATH=/path/to/bayou/ml
-cd /path/to/bayou/pl
+export PYTHONPATH=/path/to/bayou/src/ml
+cd /path/to/bayou/src/pl
 ant
 ```
 
-If you are working with the Android SDK (as opposed to Java),
+If you are working with the Android SDK,
 ```
 export CLASSPATH=/path/to/android.jar
 ```
