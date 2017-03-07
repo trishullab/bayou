@@ -55,9 +55,27 @@
   
   <!-- Project Libraries -->
   
+  <path id="library.driver.classpath">
+    <pathelement location="${basedir}/out/artifacts/driver/commons-cli-1.3.1.jar"/>
+    <pathelement location="${basedir}/out/artifacts/driver/commons-io-2.5.jar"/>
+    <pathelement location="${basedir}/out/artifacts/driver/commons-lang3-3.5.jar"/>
+    <pathelement location="${basedir}/out/artifacts/driver/driver.jar"/>
+    <pathelement location="${basedir}/out/artifacts/driver/gson-2.6.3.jar"/>
+    <pathelement location="${basedir}/out/artifacts/driver/org.eclipse.core.contenttype_3.5.100.v20160418-1621.jar"/>
+    <pathelement location="${basedir}/out/artifacts/driver/org.eclipse.core.jobs_3.8.0.v20160509-0411.jar"/>
+    <pathelement location="${basedir}/out/artifacts/driver/org.eclipse.core.resources_3.11.0.v20160503-1608.jar"/>
+    <pathelement location="${basedir}/out/artifacts/driver/org.eclipse.core.runtime_3.12.0.v20160606-1342.jar"/>
+    <pathelement location="${basedir}/out/artifacts/driver/org.eclipse.equinox.common_3.8.0.v20160509-1230.jar"/>
+    <pathelement location="${basedir}/out/artifacts/driver/org.eclipse.equinox.preferences_3.6.0.v20160120-1756.jar"/>
+    <pathelement location="${basedir}/out/artifacts/driver/org.eclipse.jdt.core_3.12.0.v20160516-2131.jar"/>
+    <pathelement location="${basedir}/out/artifacts/driver/org.eclipse.osgi_3.11.0.v20160603-1336.jar"/>
+    <pathelement location="${basedir}/out/artifacts/driver/org.eclipse.text_3.5.0.jar"/>
+  </path>
+  
   <path id="library.lib.classpath">
     <pathelement location="${basedir}/lib/commons-cli-1.3.1.jar"/>
     <pathelement location="${basedir}/lib/commons-io-2.5.jar"/>
+    <pathelement location="${basedir}/lib/commons-lang3-3.5.jar"/>
     <pathelement location="${basedir}/lib/gson-2.6.3.jar"/>
     <pathelement location="${basedir}/lib/org.eclipse.core.contenttype_3.5.100.v20160418-1621.jar"/>
     <pathelement location="${basedir}/lib/org.eclipse.core.jobs_3.8.0.v20160509-0411.jar"/>
@@ -68,6 +86,40 @@
     <pathelement location="${basedir}/lib/org.eclipse.jdt.core_3.12.0.v20160516-2131.jar"/>
     <pathelement location="${basedir}/lib/org.eclipse.osgi_3.11.0.v20160603-1336.jar"/>
     <pathelement location="${basedir}/lib/org.eclipse.text_3.5.0.jar"/>
+  </path>
+  
+  <path id="library.predict_asts.classpath">
+    <pathelement location="${basedir}/out/artifacts/experiments/predict_asts/commons-cli-1.3.1.jar"/>
+    <pathelement location="${basedir}/out/artifacts/experiments/predict_asts/commons-io-2.5.jar"/>
+    <pathelement location="${basedir}/out/artifacts/experiments/predict_asts/commons-lang3-3.5.jar"/>
+    <pathelement location="${basedir}/out/artifacts/experiments/predict_asts/gson-2.6.3.jar"/>
+    <pathelement location="${basedir}/out/artifacts/experiments/predict_asts/org.eclipse.core.contenttype_3.5.100.v20160418-1621.jar"/>
+    <pathelement location="${basedir}/out/artifacts/experiments/predict_asts/org.eclipse.core.jobs_3.8.0.v20160509-0411.jar"/>
+    <pathelement location="${basedir}/out/artifacts/experiments/predict_asts/org.eclipse.core.resources_3.11.0.v20160503-1608.jar"/>
+    <pathelement location="${basedir}/out/artifacts/experiments/predict_asts/org.eclipse.core.runtime_3.12.0.v20160606-1342.jar"/>
+    <pathelement location="${basedir}/out/artifacts/experiments/predict_asts/org.eclipse.equinox.common_3.8.0.v20160509-1230.jar"/>
+    <pathelement location="${basedir}/out/artifacts/experiments/predict_asts/org.eclipse.equinox.preferences_3.6.0.v20160120-1756.jar"/>
+    <pathelement location="${basedir}/out/artifacts/experiments/predict_asts/org.eclipse.jdt.core_3.12.0.v20160516-2131.jar"/>
+    <pathelement location="${basedir}/out/artifacts/experiments/predict_asts/org.eclipse.osgi_3.11.0.v20160603-1336.jar"/>
+    <pathelement location="${basedir}/out/artifacts/experiments/predict_asts/org.eclipse.text_3.5.0.jar"/>
+    <pathelement location="${basedir}/out/artifacts/experiments/predict_asts/predict_asts.jar"/>
+  </path>
+  
+  <path id="library.synthesizer.classpath">
+    <pathelement location="${basedir}/out/artifacts/synthesizer/commons-cli-1.3.1.jar"/>
+    <pathelement location="${basedir}/out/artifacts/synthesizer/commons-io-2.5.jar"/>
+    <pathelement location="${basedir}/out/artifacts/synthesizer/commons-lang3-3.5.jar"/>
+    <pathelement location="${basedir}/out/artifacts/synthesizer/gson-2.6.3.jar"/>
+    <pathelement location="${basedir}/out/artifacts/synthesizer/org.eclipse.core.contenttype_3.5.100.v20160418-1621.jar"/>
+    <pathelement location="${basedir}/out/artifacts/synthesizer/org.eclipse.core.jobs_3.8.0.v20160509-0411.jar"/>
+    <pathelement location="${basedir}/out/artifacts/synthesizer/org.eclipse.core.resources_3.11.0.v20160503-1608.jar"/>
+    <pathelement location="${basedir}/out/artifacts/synthesizer/org.eclipse.core.runtime_3.12.0.v20160606-1342.jar"/>
+    <pathelement location="${basedir}/out/artifacts/synthesizer/org.eclipse.equinox.common_3.8.0.v20160509-1230.jar"/>
+    <pathelement location="${basedir}/out/artifacts/synthesizer/org.eclipse.equinox.preferences_3.6.0.v20160120-1756.jar"/>
+    <pathelement location="${basedir}/out/artifacts/synthesizer/org.eclipse.jdt.core_3.12.0.v20160516-2131.jar"/>
+    <pathelement location="${basedir}/out/artifacts/synthesizer/org.eclipse.osgi_3.11.0.v20160603-1336.jar"/>
+    <pathelement location="${basedir}/out/artifacts/synthesizer/org.eclipse.text_3.5.0.jar"/>
+    <pathelement location="${basedir}/out/artifacts/synthesizer/synthesizer.jar"/>
   </path>
   
   <!-- Modules -->
@@ -89,35 +141,35 @@
   </path>
   
   <path id="pl.module.production.classpath">
+    <path refid="library.driver.classpath"/>
+    <path refid="library.predict_asts.classpath"/>
     <path refid="library.lib.classpath"/>
-    <fileset dir="${basedir}/lib">
-      <patternset refid="library.patterns"/>
-    </fileset>
+    <path refid="library.synthesizer.classpath"/>
   </path>
   
   <path id="pl.runtime.production.module.classpath">
     <pathelement location="${pl.output.dir}"/>
+    <path refid="library.driver.classpath"/>
+    <path refid="library.predict_asts.classpath"/>
     <path refid="library.lib.classpath"/>
-    <fileset dir="${basedir}/lib">
-      <patternset refid="library.patterns"/>
-    </fileset>
+    <path refid="library.synthesizer.classpath"/>
   </path>
   
   <path id="pl.module.classpath">
     <pathelement location="${pl.output.dir}"/>
+    <path refid="library.driver.classpath"/>
+    <path refid="library.predict_asts.classpath"/>
     <path refid="library.lib.classpath"/>
-    <fileset dir="${basedir}/lib">
-      <patternset refid="library.patterns"/>
-    </fileset>
+    <path refid="library.synthesizer.classpath"/>
   </path>
   
   <path id="pl.runtime.module.classpath">
     <pathelement location="${pl.testoutput.dir}"/>
     <pathelement location="${pl.output.dir}"/>
+    <path refid="library.driver.classpath"/>
+    <path refid="library.predict_asts.classpath"/>
     <path refid="library.lib.classpath"/>
-    <fileset dir="${basedir}/lib">
-      <patternset refid="library.patterns"/>
-    </fileset>
+    <path refid="library.synthesizer.classpath"/>
   </path>
   
   
@@ -201,30 +253,19 @@
       <zipfileset dir="${pl.output.dir}"/>
     </jar>
     <copy file="${temp.jar.path.driver.jar}" tofile="${artifact.output.driver}/driver.jar"/>
-    <copy file="${basedir}/lib/org.eclipse.equinox.common_3.8.0.v20160509-1230.jar" tofile="${artifact.output.driver}/org.eclipse.equinox.common_3.8.0.v20160509-1230.jar"/>
-    <copy file="${basedir}/lib/commons-io-2.5.jar" tofile="${artifact.output.driver}/commons-io-2.5.jar"/>
-    <copy file="${basedir}/lib/org.eclipse.core.runtime_3.12.0.v20160606-1342.jar" tofile="${artifact.output.driver}/org.eclipse.core.runtime_3.12.0.v20160606-1342.jar"/>
     <copy file="${basedir}/lib/gson-2.6.3.jar" tofile="${artifact.output.driver}/gson-2.6.3.jar"/>
     <copy file="${basedir}/lib/org.eclipse.core.jobs_3.8.0.v20160509-0411.jar" tofile="${artifact.output.driver}/org.eclipse.core.jobs_3.8.0.v20160509-0411.jar"/>
-    <copy file="${basedir}/lib/org.eclipse.text_3.5.0.jar" tofile="${artifact.output.driver}/org.eclipse.text_3.5.0.jar"/>
-    <copy file="${basedir}/lib/org.eclipse.core.contenttype_3.5.100.v20160418-1621.jar" tofile="${artifact.output.driver}/org.eclipse.core.contenttype_3.5.100.v20160418-1621.jar"/>
-    <copy file="${basedir}/lib/org.eclipse.core.resources_3.11.0.v20160503-1608.jar" tofile="${artifact.output.driver}/org.eclipse.core.resources_3.11.0.v20160503-1608.jar"/>
-    <copy file="${basedir}/lib/org.eclipse.equinox.preferences_3.6.0.v20160120-1756.jar" tofile="${artifact.output.driver}/org.eclipse.equinox.preferences_3.6.0.v20160120-1756.jar"/>
-    <copy file="${basedir}/lib/org.eclipse.jdt.core_3.12.0.v20160516-2131.jar" tofile="${artifact.output.driver}/org.eclipse.jdt.core_3.12.0.v20160516-2131.jar"/>
-    <copy file="${basedir}/lib/org.eclipse.osgi_3.11.0.v20160603-1336.jar" tofile="${artifact.output.driver}/org.eclipse.osgi_3.11.0.v20160603-1336.jar"/>
-    <copy file="${basedir}/lib/commons-cli-1.3.1.jar" tofile="${artifact.output.driver}/commons-cli-1.3.1.jar"/>
-    <copy file="${basedir}/lib/gson-2.6.3.jar" tofile="${artifact.output.driver}/gson-2.6.3.jar"/>
-    <copy file="${basedir}/lib/commons-io-2.5.jar" tofile="${artifact.output.driver}/commons-io-2.5.jar"/>
-    <copy file="${basedir}/lib/commons-cli-1.3.1.jar" tofile="${artifact.output.driver}/commons-cli-1.3.1.jar"/>
-    <copy file="${basedir}/lib/org.eclipse.text_3.5.0.jar" tofile="${artifact.output.driver}/org.eclipse.text_3.5.0.jar"/>
-    <copy file="${basedir}/lib/org.eclipse.osgi_3.11.0.v20160603-1336.jar" tofile="${artifact.output.driver}/org.eclipse.osgi_3.11.0.v20160603-1336.jar"/>
-    <copy file="${basedir}/lib/org.eclipse.core.jobs_3.8.0.v20160509-0411.jar" tofile="${artifact.output.driver}/org.eclipse.core.jobs_3.8.0.v20160509-0411.jar"/>
-    <copy file="${basedir}/lib/org.eclipse.jdt.core_3.12.0.v20160516-2131.jar" tofile="${artifact.output.driver}/org.eclipse.jdt.core_3.12.0.v20160516-2131.jar"/>
-    <copy file="${basedir}/lib/org.eclipse.core.runtime_3.12.0.v20160606-1342.jar" tofile="${artifact.output.driver}/org.eclipse.core.runtime_3.12.0.v20160606-1342.jar"/>
     <copy file="${basedir}/lib/org.eclipse.equinox.common_3.8.0.v20160509-1230.jar" tofile="${artifact.output.driver}/org.eclipse.equinox.common_3.8.0.v20160509-1230.jar"/>
-    <copy file="${basedir}/lib/org.eclipse.core.resources_3.11.0.v20160503-1608.jar" tofile="${artifact.output.driver}/org.eclipse.core.resources_3.11.0.v20160503-1608.jar"/>
+    <copy file="${basedir}/lib/commons-cli-1.3.1.jar" tofile="${artifact.output.driver}/commons-cli-1.3.1.jar"/>
     <copy file="${basedir}/lib/org.eclipse.core.contenttype_3.5.100.v20160418-1621.jar" tofile="${artifact.output.driver}/org.eclipse.core.contenttype_3.5.100.v20160418-1621.jar"/>
+    <copy file="${basedir}/lib/commons-io-2.5.jar" tofile="${artifact.output.driver}/commons-io-2.5.jar"/>
     <copy file="${basedir}/lib/org.eclipse.equinox.preferences_3.6.0.v20160120-1756.jar" tofile="${artifact.output.driver}/org.eclipse.equinox.preferences_3.6.0.v20160120-1756.jar"/>
+    <copy file="${basedir}/lib/org.eclipse.core.resources_3.11.0.v20160503-1608.jar" tofile="${artifact.output.driver}/org.eclipse.core.resources_3.11.0.v20160503-1608.jar"/>
+    <copy file="${basedir}/lib/org.eclipse.core.runtime_3.12.0.v20160606-1342.jar" tofile="${artifact.output.driver}/org.eclipse.core.runtime_3.12.0.v20160606-1342.jar"/>
+    <copy file="${basedir}/lib/org.eclipse.text_3.5.0.jar" tofile="${artifact.output.driver}/org.eclipse.text_3.5.0.jar"/>
+    <copy file="${basedir}/lib/org.eclipse.jdt.core_3.12.0.v20160516-2131.jar" tofile="${artifact.output.driver}/org.eclipse.jdt.core_3.12.0.v20160516-2131.jar"/>
+    <copy file="${basedir}/lib/org.eclipse.osgi_3.11.0.v20160603-1336.jar" tofile="${artifact.output.driver}/org.eclipse.osgi_3.11.0.v20160603-1336.jar"/>
+    <copy file="${basedir}/lib/commons-lang3-3.5.jar" tofile="${artifact.output.driver}/commons-lang3-3.5.jar"/>
   </target>
   
   <target name="artifact.predict_asts" depends="init.artifacts, compile.module.pl" description="Build &#39;predict_asts&#39; artifact">
@@ -235,29 +276,18 @@
     </jar>
     <copy file="${temp.jar.path.predict_asts.jar}" tofile="${artifact.output.predict_asts}/predict_asts.jar"/>
     <copy file="${basedir}/lib/gson-2.6.3.jar" tofile="${artifact.output.predict_asts}/gson-2.6.3.jar"/>
-    <copy file="${basedir}/lib/commons-io-2.5.jar" tofile="${artifact.output.predict_asts}/commons-io-2.5.jar"/>
+    <copy file="${basedir}/lib/org.eclipse.core.jobs_3.8.0.v20160509-0411.jar" tofile="${artifact.output.predict_asts}/org.eclipse.core.jobs_3.8.0.v20160509-0411.jar"/>
+    <copy file="${basedir}/lib/org.eclipse.equinox.common_3.8.0.v20160509-1230.jar" tofile="${artifact.output.predict_asts}/org.eclipse.equinox.common_3.8.0.v20160509-1230.jar"/>
     <copy file="${basedir}/lib/commons-cli-1.3.1.jar" tofile="${artifact.output.predict_asts}/commons-cli-1.3.1.jar"/>
-    <copy file="${basedir}/lib/org.eclipse.text_3.5.0.jar" tofile="${artifact.output.predict_asts}/org.eclipse.text_3.5.0.jar"/>
-    <copy file="${basedir}/lib/org.eclipse.osgi_3.11.0.v20160603-1336.jar" tofile="${artifact.output.predict_asts}/org.eclipse.osgi_3.11.0.v20160603-1336.jar"/>
-    <copy file="${basedir}/lib/org.eclipse.core.jobs_3.8.0.v20160509-0411.jar" tofile="${artifact.output.predict_asts}/org.eclipse.core.jobs_3.8.0.v20160509-0411.jar"/>
-    <copy file="${basedir}/lib/org.eclipse.jdt.core_3.12.0.v20160516-2131.jar" tofile="${artifact.output.predict_asts}/org.eclipse.jdt.core_3.12.0.v20160516-2131.jar"/>
-    <copy file="${basedir}/lib/org.eclipse.core.runtime_3.12.0.v20160606-1342.jar" tofile="${artifact.output.predict_asts}/org.eclipse.core.runtime_3.12.0.v20160606-1342.jar"/>
-    <copy file="${basedir}/lib/org.eclipse.equinox.common_3.8.0.v20160509-1230.jar" tofile="${artifact.output.predict_asts}/org.eclipse.equinox.common_3.8.0.v20160509-1230.jar"/>
-    <copy file="${basedir}/lib/org.eclipse.core.resources_3.11.0.v20160503-1608.jar" tofile="${artifact.output.predict_asts}/org.eclipse.core.resources_3.11.0.v20160503-1608.jar"/>
     <copy file="${basedir}/lib/org.eclipse.core.contenttype_3.5.100.v20160418-1621.jar" tofile="${artifact.output.predict_asts}/org.eclipse.core.contenttype_3.5.100.v20160418-1621.jar"/>
-    <copy file="${basedir}/lib/org.eclipse.equinox.preferences_3.6.0.v20160120-1756.jar" tofile="${artifact.output.predict_asts}/org.eclipse.equinox.preferences_3.6.0.v20160120-1756.jar"/>
-    <copy file="${basedir}/lib/org.eclipse.equinox.common_3.8.0.v20160509-1230.jar" tofile="${artifact.output.predict_asts}/org.eclipse.equinox.common_3.8.0.v20160509-1230.jar"/>
     <copy file="${basedir}/lib/commons-io-2.5.jar" tofile="${artifact.output.predict_asts}/commons-io-2.5.jar"/>
-    <copy file="${basedir}/lib/org.eclipse.core.runtime_3.12.0.v20160606-1342.jar" tofile="${artifact.output.predict_asts}/org.eclipse.core.runtime_3.12.0.v20160606-1342.jar"/>
-    <copy file="${basedir}/lib/gson-2.6.3.jar" tofile="${artifact.output.predict_asts}/gson-2.6.3.jar"/>
-    <copy file="${basedir}/lib/org.eclipse.core.jobs_3.8.0.v20160509-0411.jar" tofile="${artifact.output.predict_asts}/org.eclipse.core.jobs_3.8.0.v20160509-0411.jar"/>
-    <copy file="${basedir}/lib/org.eclipse.text_3.5.0.jar" tofile="${artifact.output.predict_asts}/org.eclipse.text_3.5.0.jar"/>
-    <copy file="${basedir}/lib/org.eclipse.core.contenttype_3.5.100.v20160418-1621.jar" tofile="${artifact.output.predict_asts}/org.eclipse.core.contenttype_3.5.100.v20160418-1621.jar"/>
-    <copy file="${basedir}/lib/org.eclipse.core.resources_3.11.0.v20160503-1608.jar" tofile="${artifact.output.predict_asts}/org.eclipse.core.resources_3.11.0.v20160503-1608.jar"/>
     <copy file="${basedir}/lib/org.eclipse.equinox.preferences_3.6.0.v20160120-1756.jar" tofile="${artifact.output.predict_asts}/org.eclipse.equinox.preferences_3.6.0.v20160120-1756.jar"/>
+    <copy file="${basedir}/lib/org.eclipse.core.resources_3.11.0.v20160503-1608.jar" tofile="${artifact.output.predict_asts}/org.eclipse.core.resources_3.11.0.v20160503-1608.jar"/>
+    <copy file="${basedir}/lib/org.eclipse.core.runtime_3.12.0.v20160606-1342.jar" tofile="${artifact.output.predict_asts}/org.eclipse.core.runtime_3.12.0.v20160606-1342.jar"/>
+    <copy file="${basedir}/lib/org.eclipse.text_3.5.0.jar" tofile="${artifact.output.predict_asts}/org.eclipse.text_3.5.0.jar"/>
     <copy file="${basedir}/lib/org.eclipse.jdt.core_3.12.0.v20160516-2131.jar" tofile="${artifact.output.predict_asts}/org.eclipse.jdt.core_3.12.0.v20160516-2131.jar"/>
     <copy file="${basedir}/lib/org.eclipse.osgi_3.11.0.v20160603-1336.jar" tofile="${artifact.output.predict_asts}/org.eclipse.osgi_3.11.0.v20160603-1336.jar"/>
-    <copy file="${basedir}/lib/commons-cli-1.3.1.jar" tofile="${artifact.output.predict_asts}/commons-cli-1.3.1.jar"/>
+    <copy file="${basedir}/lib/commons-lang3-3.5.jar" tofile="${artifact.output.predict_asts}/commons-lang3-3.5.jar"/>
   </target>
   
   <target name="artifact.synthesizer" depends="init.artifacts, compile.module.pl" description="Build &#39;synthesizer&#39; artifact">
@@ -268,29 +298,18 @@
     </jar>
     <copy file="${temp.jar.path.synthesizer.jar}" tofile="${artifact.output.synthesizer}/synthesizer.jar"/>
     <copy file="${basedir}/lib/gson-2.6.3.jar" tofile="${artifact.output.synthesizer}/gson-2.6.3.jar"/>
-    <copy file="${basedir}/lib/commons-io-2.5.jar" tofile="${artifact.output.synthesizer}/commons-io-2.5.jar"/>
+    <copy file="${basedir}/lib/org.eclipse.core.jobs_3.8.0.v20160509-0411.jar" tofile="${artifact.output.synthesizer}/org.eclipse.core.jobs_3.8.0.v20160509-0411.jar"/>
+    <copy file="${basedir}/lib/org.eclipse.equinox.common_3.8.0.v20160509-1230.jar" tofile="${artifact.output.synthesizer}/org.eclipse.equinox.common_3.8.0.v20160509-1230.jar"/>
     <copy file="${basedir}/lib/commons-cli-1.3.1.jar" tofile="${artifact.output.synthesizer}/commons-cli-1.3.1.jar"/>
-    <copy file="${basedir}/lib/org.eclipse.text_3.5.0.jar" tofile="${artifact.output.synthesizer}/org.eclipse.text_3.5.0.jar"/>
-    <copy file="${basedir}/lib/org.eclipse.osgi_3.11.0.v20160603-1336.jar" tofile="${artifact.output.synthesizer}/org.eclipse.osgi_3.11.0.v20160603-1336.jar"/>
-    <copy file="${basedir}/lib/org.eclipse.core.jobs_3.8.0.v20160509-0411.jar" tofile="${artifact.output.synthesizer}/org.eclipse.core.jobs_3.8.0.v20160509-0411.jar"/>
-    <copy file="${basedir}/lib/org.eclipse.jdt.core_3.12.0.v20160516-2131.jar" tofile="${artifact.output.synthesizer}/org.eclipse.jdt.core_3.12.0.v20160516-2131.jar"/>
-    <copy file="${basedir}/lib/org.eclipse.core.runtime_3.12.0.v20160606-1342.jar" tofile="${artifact.output.synthesizer}/org.eclipse.core.runtime_3.12.0.v20160606-1342.jar"/>
-    <copy file="${basedir}/lib/org.eclipse.equinox.common_3.8.0.v20160509-1230.jar" tofile="${artifact.output.synthesizer}/org.eclipse.equinox.common_3.8.0.v20160509-1230.jar"/>
-    <copy file="${basedir}/lib/org.eclipse.core.resources_3.11.0.v20160503-1608.jar" tofile="${artifact.output.synthesizer}/org.eclipse.core.resources_3.11.0.v20160503-1608.jar"/>
     <copy file="${basedir}/lib/org.eclipse.core.contenttype_3.5.100.v20160418-1621.jar" tofile="${artifact.output.synthesizer}/org.eclipse.core.contenttype_3.5.100.v20160418-1621.jar"/>
-    <copy file="${basedir}/lib/org.eclipse.equinox.preferences_3.6.0.v20160120-1756.jar" tofile="${artifact.output.synthesizer}/org.eclipse.equinox.preferences_3.6.0.v20160120-1756.jar"/>
-    <copy file="${basedir}/lib/org.eclipse.equinox.common_3.8.0.v20160509-1230.jar" tofile="${artifact.output.synthesizer}/org.eclipse.equinox.common_3.8.0.v20160509-1230.jar"/>
     <copy file="${basedir}/lib/commons-io-2.5.jar" tofile="${artifact.output.synthesizer}/commons-io-2.5.jar"/>
-    <copy file="${basedir}/lib/org.eclipse.core.runtime_3.12.0.v20160606-1342.jar" tofile="${artifact.output.synthesizer}/org.eclipse.core.runtime_3.12.0.v20160606-1342.jar"/>
-    <copy file="${basedir}/lib/gson-2.6.3.jar" tofile="${artifact.output.synthesizer}/gson-2.6.3.jar"/>
-    <copy file="${basedir}/lib/org.eclipse.core.jobs_3.8.0.v20160509-0411.jar" tofile="${artifact.output.synthesizer}/org.eclipse.core.jobs_3.8.0.v20160509-0411.jar"/>
-    <copy file="${basedir}/lib/org.eclipse.text_3.5.0.jar" tofile="${artifact.output.synthesizer}/org.eclipse.text_3.5.0.jar"/>
-    <copy file="${basedir}/lib/org.eclipse.core.contenttype_3.5.100.v20160418-1621.jar" tofile="${artifact.output.synthesizer}/org.eclipse.core.contenttype_3.5.100.v20160418-1621.jar"/>
-    <copy file="${basedir}/lib/org.eclipse.core.resources_3.11.0.v20160503-1608.jar" tofile="${artifact.output.synthesizer}/org.eclipse.core.resources_3.11.0.v20160503-1608.jar"/>
     <copy file="${basedir}/lib/org.eclipse.equinox.preferences_3.6.0.v20160120-1756.jar" tofile="${artifact.output.synthesizer}/org.eclipse.equinox.preferences_3.6.0.v20160120-1756.jar"/>
+    <copy file="${basedir}/lib/org.eclipse.core.resources_3.11.0.v20160503-1608.jar" tofile="${artifact.output.synthesizer}/org.eclipse.core.resources_3.11.0.v20160503-1608.jar"/>
+    <copy file="${basedir}/lib/org.eclipse.core.runtime_3.12.0.v20160606-1342.jar" tofile="${artifact.output.synthesizer}/org.eclipse.core.runtime_3.12.0.v20160606-1342.jar"/>
+    <copy file="${basedir}/lib/org.eclipse.text_3.5.0.jar" tofile="${artifact.output.synthesizer}/org.eclipse.text_3.5.0.jar"/>
     <copy file="${basedir}/lib/org.eclipse.jdt.core_3.12.0.v20160516-2131.jar" tofile="${artifact.output.synthesizer}/org.eclipse.jdt.core_3.12.0.v20160516-2131.jar"/>
     <copy file="${basedir}/lib/org.eclipse.osgi_3.11.0.v20160603-1336.jar" tofile="${artifact.output.synthesizer}/org.eclipse.osgi_3.11.0.v20160603-1336.jar"/>
-    <copy file="${basedir}/lib/commons-cli-1.3.1.jar" tofile="${artifact.output.synthesizer}/commons-cli-1.3.1.jar"/>
+    <copy file="${basedir}/lib/commons-lang3-3.5.jar" tofile="${artifact.output.synthesizer}/commons-lang3-3.5.jar"/>
   </target>
   
   <target name="build.all.artifacts" depends="artifact.driver, artifact.predict_asts, artifact.synthesizer" description="Build all artifacts">

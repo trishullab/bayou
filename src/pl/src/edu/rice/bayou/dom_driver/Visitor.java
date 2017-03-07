@@ -31,11 +31,13 @@ public class Visitor extends ASTVisitor {
         String file;
         DSubTree ast;
         List<Sequence> sequences;
+        Set<String> keywords;
 
-        public JSONOutputWrapper(String file, DSubTree ast, List<Sequence> sequences) {
+        public JSONOutputWrapper(String file, DSubTree ast, List<Sequence> sequences, Set<String> keywords) {
             this.file = file;
             this.ast = ast;
             this.sequences = sequences;
+            this.keywords = keywords;
         }
     }
 
@@ -91,12 +93,13 @@ public class Visitor extends ASTVisitor {
 
         for (DSubTree ast : asts) {
             List<Sequence> sequences = new ArrayList<>();
+            Set<String> keywords = ast.keywords();
             sequences.add(new Sequence());
             try {
                 ast.updateSequences(sequences, options.MAX_SEQS);
                 List<Sequence> uniqSequences = new ArrayList<>(new HashSet<>(sequences));
                 if (okToPrintAST(uniqSequences))
-                    printJson(ast, uniqSequences);
+                    printJson(ast, uniqSequences, keywords);
             } catch (DASTNode.TooManySequencesException e) {
                 System.err.println("Too many sequences from AST");
             }
@@ -105,9 +108,9 @@ public class Visitor extends ASTVisitor {
     }
 
     boolean first = true;
-    private void printJson(DSubTree ast, List<Sequence> sequences) {
+    private void printJson(DSubTree ast, List<Sequence> sequences, Set<String> keywords) {
         String file = options.cmdLine.getOptionValue("input-file");
-        JSONOutputWrapper out = new JSONOutputWrapper(file, ast, sequences);
+        JSONOutputWrapper out = new JSONOutputWrapper(file, ast, sequences, keywords);
         output.write(first? "" : ",\n");
         output.write(gson.toJson(out));
         output.flush();

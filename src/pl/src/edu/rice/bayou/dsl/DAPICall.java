@@ -1,5 +1,6 @@
 package edu.rice.bayou.dsl;
 
+import org.apache.commons.lang3.StringUtils;
 import org.eclipse.jdt.core.dom.*;
 import edu.rice.bayou.synthesizer.Environment;
 
@@ -34,6 +35,15 @@ public class DAPICall extends DASTNode {
             throw new TooManySequencesException();
         for (Sequence sequence : soFar)
             sequence.addCall(_call);
+    }
+
+    @Override
+    public Set<String> keywords() {
+        String s = methodBinding.getDeclaringClass().getName() + " " + methodBinding.getName();
+        Set<String> kw = new HashSet<>(Arrays.asList(StringUtils.splitByCharacterTypeCamelCase(s)));
+        kw.remove(" ");
+        kw = kw.stream().map(k -> k.toLowerCase()).collect(Collectors.toSet());
+        return kw;
     }
 
     private String getClassName() {
