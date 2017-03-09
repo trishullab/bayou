@@ -6,72 +6,132 @@ class VariationalEncoder(object):
     def __init__(self, args):
 
         if args.cell == 'lstm':
-            cell = rnn.BasicLSTMCell(args.encoder_rnn_size, state_is_tuple=False)
+            seqs_cell = rnn.BasicLSTMCell(args.seqs_rnn_units, state_is_tuple=False)
+            kw_cell = rnn.BasicLSTMCell(args.kw_ffnn_units, state_is_tuple=False)
         else:
-            cell = rnn.BasicRNNCell(args.encoder_rnn_size)
+            seqs_cell = rnn.BasicRNNCell(args.seqs_rnn_units)
+            kw_cell = rnn.BasicRNNCell(args.kw_ffnn_units)
 
-        self.seq = [tf.placeholder(tf.int32, [args.batch_size, args.max_seq_length, 1], 
-                        name='seq{0}'.format(i)) for i in range(args.max_seqs)]
-        self.seq_length = [tf.placeholder(tf.int32, [args.batch_size],
-                            name='seq_length{0}'.format(i)) for i in range(args.max_seqs)]
+        def length(seq):
+            elems = tf.sign(tf.reduce_max(seq, axis=2))
+            return tf.reduce_sum(elems, axis=1)
 
+        self.seqs = [tf.placeholder(tf.int32, [args.batch_size, args.max_seq_length, 1], 
+                            name='seqs{0}'.format(i)) for i in range(args.max_seqs)]
+        self.keywords = [tf.placeholder(tf.int32, [args.batch_size, 1, 1], # "RNN" with 1 length
+                            name='keywords{0}'.format(i)) for i in range(args.max_keywords)]
+
+        seq_length = [length(seq) for seq in self.seqs]
+        kws_length = [length(kw) for kw in self.keywords]
+        zero = tf.constant(0, dtype=tf.int32)
+        exists_seq_kw = [tf.not_equal(seq_len, zero) for seq_len in seq_length] + \
+                        [tf.not_equal(kw_len, zero) for kw_len in kws_length]
+        num_seqs_kws = tf.count_nonzero(tf.stack(exists_seq_kw), axis=0, dtype=tf.float32)
+        num_seqs_kws = tf.tile(tf.reshape(num_seqs_kws, [-1, 1]), [1, args.latent_size])
+        all_zeros = tf.zeros([args.batch_size, args.latent_size], dtype=tf.float32)
+
+        # mean encoder
         with tf.variable_scope('variational_encoder_mean'):
-            # mean encoder
-            self.cell_mean = rnn.EmbeddingWrapper(cell,
-                                    embedding_classes=args.input_vocab_size,
-                                    embedding_size=args.encoder_rnn_size)
-            self.cell_mean_init = self.cell_mean.zero_state(args.batch_size, tf.float32)
-            means = []
-            with tf.variable_scope('mean_rnn'):
-                for i, (seq, seq_length) in enumerate(zip(self.seq, self.seq_length)):
-                    if i > 0:
-                        tf.get_variable_scope().reuse_variables()
-                    _, mean = tf.nn.dynamic_rnn(self.cell_mean, seq,
-                                            sequence_length=seq_length,
-                                            initial_state=self.cell_mean_init,
-                                            dtype=tf.float32)
-                    means.append(mean)
-            means = tf.stack(means)
-            sum_of_means = tf.reduce_sum(means, axis=0)
-            num_non_zero_means = tf.count_nonzero(means, axis=0, dtype=tf.float32)
-            mean_means = tf.divide(sum_of_means, num_non_zero_means)
-            latent_w_mean = tf.get_variable('latent_w_mean', [self.cell_mean.state_size,
-                                                                args.latent_size])
-            latent_b_mean = tf.get_variable('latent_b_mean', [args.latent_size])
-            self.psi_mean = tf.matmul(mean_means, latent_w_mean) + latent_b_mean
+            latent_encodings = []
 
-        with tf.variable_scope('variational_encoder_stdv'):
-            # standard deviation encoder
-            self.cell_stdv = rnn.EmbeddingWrapper(cell,
-                                        embedding_classes=args.input_vocab_size,
-                                        embedding_size=args.encoder_rnn_size)
-            self.cell_stdv_init = self.cell_stdv.zero_state(args.batch_size, tf.float32)
-            stdvs = []
-            with tf.variable_scope('stdv_rnn'):
-                for i, (seq, seq_length) in enumerate(zip(self.seq, self.seq_length)):
+            # RNN for sequences
+            with tf.variable_scope('seqs_rnn'):
+                seqs_cell_mean = rnn.EmbeddingWrapper(seqs_cell,
+                                    embedding_classes=args.input_vocab_seqs_size,
+                                    embedding_size=args.seqs_rnn_units)
+                self.seqs_cell_mean_init = seqs_cell_mean.zero_state(args.batch_size, tf.float32)
+                w_mean_seqs = tf.get_variable('w_mean_seqs', [seqs_cell_mean.state_size,
+                                                                args.latent_size])
+                b_mean_seqs = tf.get_variable('b_mean_seqs', [args.latent_size])
+                for i, seq in enumerate(self.seqs):
                     if i > 0:
                         tf.get_variable_scope().reuse_variables()
-                    _, stdv = tf.nn.dynamic_rnn(self.cell_stdv, seq,
-                                            sequence_length=seq_length,
-                                            initial_state=self.cell_stdv_init,
+                    _, encoding = tf.nn.dynamic_rnn(seqs_cell_mean, seq,
+                                            sequence_length=seq_length[i],
+                                            initial_state=self.seqs_cell_mean_init,
                                             dtype=tf.float32)
-                    stdvs.append(stdv)
-            stdvs = tf.stack(stdvs)
-            sum_of_stdvs = tf.reduce_sum(stdvs, axis=0)
-            num_non_zero_stdvs = tf.count_nonzero(stdvs, axis=0, dtype=tf.float32)
-            mean_stdvs = tf.divide(sum_of_stdvs, num_non_zero_stdvs)
-            latent_w_stdv = tf.get_variable('latent_w_stdv', [self.cell_stdv.state_size,
+                    latent_encoding = tf.nn.xw_plus_b(encoding, w_mean_seqs, b_mean_seqs)
+                    latent_encodings.append(latent_encoding)
+
+            # FFNN for keywords
+            with tf.variable_scope('kw_ffnn'):
+                kw_cell_mean = rnn.EmbeddingWrapper(kw_cell,
+                                    embedding_classes=args.input_vocab_kws_size,
+                                    embedding_size=args.kw_ffnn_units)
+                self.kw_cell_mean_init = kw_cell_mean.zero_state(args.batch_size, tf.float32)
+                w_mean_kw = tf.get_variable('w_mean_kw', [kw_cell_mean.state_size,
                                                                 args.latent_size])
-            latent_b_stdv = tf.get_variable('latent_b_stdv', [args.latent_size])
-            self.psi_stdv = tf.matmul(mean_stdvs, latent_w_stdv) + latent_b_stdv
+                b_mean_kw = tf.get_variable('b_mean_kw', [args.latent_size])
+                for i, kw in enumerate(self.keywords):
+                    if i > 0:
+                        tf.get_variable_scope().reuse_variables()
+                    _, encoding = tf.nn.dynamic_rnn(kw_cell_mean, kw,
+                                            sequence_length=kws_length[i],
+                                            initial_state=self.kw_cell_mean_init,
+                                            dtype=tf.float32)
+                    latent_encoding = tf.nn.xw_plus_b(encoding, w_mean_kw, b_mean_kw)
+                    latent_encodings.append(latent_encoding)
+
+            latent_encodings = [tf.where(exists, encoding, all_zeros) for exists, encoding in
+                                    zip(exists_seq_kw, latent_encodings)]
+            sum_latent_encodings = tf.reduce_sum(tf.stack(latent_encodings), axis=0)
+            self.psi_mean = tf.divide(sum_latent_encodings, num_seqs_kws)
+
+        # stdv encoder
+        with tf.variable_scope('variational_encoder_stdv'):
+            latent_encodings = []
+
+            # RNN for sequences
+            with tf.variable_scope('seqs_rnn'):
+                seqs_cell_stdv = rnn.EmbeddingWrapper(seqs_cell,
+                                    embedding_classes=args.input_vocab_seqs_size,
+                                    embedding_size=args.seqs_rnn_units)
+                self.seqs_cell_stdv_init = seqs_cell_stdv.zero_state(args.batch_size, tf.float32)
+                w_stdv_seqs = tf.get_variable('w_stdv_seqs', [seqs_cell_stdv.state_size,
+                                                                args.latent_size])
+                b_stdv_seqs = tf.get_variable('b_stdv_seqs', [args.latent_size])
+                for i, seq in enumerate(self.seqs):
+                    if i > 0:
+                        tf.get_variable_scope().reuse_variables()
+                    _, encoding = tf.nn.dynamic_rnn(seqs_cell_stdv, seq,
+                                            sequence_length=seq_length[i],
+                                            initial_state=self.seqs_cell_stdv_init,
+                                            dtype=tf.float32)
+                    latent_encoding = tf.nn.xw_plus_b(encoding, w_stdv_seqs, b_stdv_seqs)
+                    latent_encodings.append(latent_encoding)
+
+            # FFNN for keywords
+            with tf.variable_scope('kw_ffnn'):
+                kw_cell_stdv = rnn.EmbeddingWrapper(kw_cell,
+                                    embedding_classes=args.input_vocab_kws_size,
+                                    embedding_size=args.kw_ffnn_units)
+                self.kw_cell_stdv_init = kw_cell_stdv.zero_state(args.batch_size, tf.float32)
+                w_stdv_kw = tf.get_variable('w_stdv_kw', [kw_cell_stdv.state_size,
+                                                                args.latent_size])
+                b_stdv_kw = tf.get_variable('b_stdv_kw', [args.latent_size])
+                for i, kw in enumerate(self.keywords):
+                    if i > 0:
+                        tf.get_variable_scope().reuse_variables()
+                    _, encoding = tf.nn.dynamic_rnn(kw_cell_stdv, kw,
+                                            sequence_length=kws_length[i],
+                                            initial_state=self.kw_cell_stdv_init,
+                                            dtype=tf.float32)
+                    latent_encoding = tf.nn.xw_plus_b(encoding, w_stdv_kw, b_stdv_kw)
+                    latent_encodings.append(latent_encoding)
+
+            latent_encodings = [tf.where(exists, encoding, all_zeros) for exists, encoding in
+                                    zip(exists_seq_kw, latent_encodings)]
+            sum_latent_encodings = tf.reduce_sum(tf.stack(latent_encodings), axis=0)
+            self.psi_stdv = tf.divide(sum_latent_encodings, num_seqs_kws)
+
 
 class VariationalDecoder(object):
     def __init__(self, args, initial_state, infer=False):
 
         if args.cell == 'lstm':
-            self.cell = rnn.BasicLSTMCell(args.decoder_rnn_size, state_is_tuple=False)
+            self.cell = rnn.BasicLSTMCell(args.decoder_rnn_units, state_is_tuple=False)
         else:
-            self.cell = rnn.BasicRNNCell(args.decoder_rnn_size)
+            self.cell = rnn.BasicRNNCell(args.decoder_rnn_units)
 
         # placeholders
         self.initial_state = initial_state
@@ -88,7 +148,7 @@ class VariationalDecoder(object):
         # setup embedding
         with tf.variable_scope('variational_decoder'):
             embedding = tf.get_variable('embedding', [args.target_vocab_size,
-                                                                args.decoder_rnn_size])
+                                                                args.decoder_rnn_units])
             def loop_fn(prev, _):
                 prev = tf.nn.xw_plus_b(prev, self.projection_w, self.projection_b)
                 prev_symbol = tf.argmax(prev, 1)

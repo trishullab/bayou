@@ -15,26 +15,7 @@ from variational.data_reader import sub_sequences, CHILD_EDGE, SIBLING_EDGE
 
 MAX_GEN_UNTIL_STOP = 20
 
-def main():
-    parser = argparse.ArgumentParser()
-    parser.add_argument('--save_dir', type=str, default='save',
-                       help='model directory to laod from')
-    parser.add_argument('--seqs_file', type=str, default=None,
-                       help='input file containing set of sequences (in JSON)')
-    parser.add_argument('--random', action='store_true',
-                       help='print random ASTs by sampling from Normal(0,1) (ignores sequences)')
-    parser.add_argument('--plot2d', action='store_true',
-                       help='(requires --random) plots the (2d) sampled psi values in scatterplot')
-    parser.add_argument('--output_file', type=str, default=None,
-                       help='file to print AST (in JSON) to')
-    parser.add_argument('--n', type=int, default=1,
-                       help='number of ASTs to sample/synthesize')
-
-    args = parser.parse_args()
-    if args.seqs_file is None and not args.random:
-        parser.error('At least one of --seqs_file or --random is required')
-    if args.plot2d and not args.random:
-        parser.error('--plot2d requires --random (otherwise there is only one psi to plot)')
+def predict_asts(args):
     with tf.Session() as sess:
         predictor = VariationalPredictor(args.save_dir, sess)
         c, err = 0, 0
@@ -45,10 +26,16 @@ def main():
                 if args.random:
                     psi = predictor.psi_random()
                 else:
-                    with open(args.seqs_file) as f:
-                        seqs = json.load(f)
-                    seqs = sub_sequences(seqs, predictor.model.args)
-                    psi = predictor.psi_from_seqs(seqs)
+                    seqs, kws = [], []
+                    if args.seqs_file is not None:
+                        with open(args.seqs_file) as f:
+                            seqs = json.load(f)
+                        seqs = sub_sequences(seqs, predictor.model.args)
+                    if args.keywords_file is not None:
+                        with open(args.keywords_file) as f:
+                            kws = json.load(f)
+                            kws = [k for k in kws if k in predictor.input_vocab_kws]
+                    psi = predictor.psi_from_evidence(seqs, kws)
                 ast, p_ast = predictor.generate_ast(psi)
                 if args.plot2d:
                     ast['psi'] = list(psi[0])
@@ -79,7 +66,8 @@ class VariationalPredictor(object):
         with open(os.path.join(save_dir, 'config.pkl'), 'rb') as f:
             saved_args = pickle.load(f)
         with open(os.path.join(save_dir, 'chars_vocab.pkl'), 'rb') as f:
-            _, self.input_vocab, self.target_chars, self.target_vocab = pickle.load(f)
+            _, self.input_vocab_seqs, _, self.input_vocab_kws, \
+                    self.target_chars, self.target_vocab = pickle.load(f)
         self.model = Model(saved_args, True)
 
         # restore the saved model
@@ -92,8 +80,8 @@ class VariationalPredictor(object):
     def psi_random(self):
         return np.random.normal(size=[1, self.model.args.latent_size])
 
-    def psi_from_seqs(self, seqs):
-        return self.model.infer_psi(self.sess, seqs, self.input_vocab)
+    def psi_from_evidence(self, seqs, kws):
+        return self.model.infer_psi(self.sess, seqs, kws, self.input_vocab_seqs, self.input_vocab_kws)
 
     def gen_until_STOP(self, psi, in_nodes, in_edges, check_call=False):
         ast = []
@@ -199,4 +187,25 @@ def plot2d(asts):
     plt.show()
         
 if __name__ == '__main__':
-    main()
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--save_dir', type=str, default='save',
+                       help='model directory to laod from')
+    parser.add_argument('--seqs_file', type=str, default=None,
+                       help='input file containing set of sequences (in JSON)')
+    parser.add_argument('--keywords_file', type=str, default=None,
+                       help='input file containing keywords')
+    parser.add_argument('--random', action='store_true',
+                       help='print random ASTs by sampling from Normal(0,1) (ignores sequences)')
+    parser.add_argument('--plot2d', action='store_true',
+                       help='(requires --random) plots the (2d) sampled psi values in scatterplot')
+    parser.add_argument('--output_file', type=str, default=None,
+                       help='file to print AST (in JSON) to')
+    parser.add_argument('--n', type=int, default=1,
+                       help='number of ASTs to sample/synthesize')
+
+    args = parser.parse_args()
+    if args.seqs_file is None and args.keywords_file is None and not args.random:
+        parser.error('At least one of --seqs_file or --keywords_file or --random is required')
+    if args.plot2d and not args.random:
+        parser.error('--plot2d requires --random (otherwise there is only one psi to plot)')
+    predict_asts(args)

@@ -69,7 +69,7 @@ def sub_sequences(seqs, args):
 def read_data(filename, args):
     with open(filename) as f:
         js = json.loads(f.read())
-    inputs, targets = [], []
+    input_seqs, input_keywords, targets = [], [], []
     ignored, done = 0, 0
 
     for program in js['programs']:
@@ -82,8 +82,11 @@ def read_data(filename, args):
         try:
             assert all([len(path) <= args.max_ast_depth for path in ast_paths])
             seqs = sub_sequences(seqs, args)
+            keywords = program['keywords']
+            assert len(keywords) <= args.max_keywords
             for path in ast_paths:
-                inputs.append(seqs)
+                input_seqs.append(seqs)
+                input_keywords.append(keywords)
                 targets.append(path)
         except AssertionError:
             ignored += 1
@@ -91,7 +94,7 @@ def read_data(filename, args):
         print('{:8d} programs done'.format(done), end='\r')
 
     print('\n{:8d} programs ignored'.format(ignored))
-    return inputs, targets
+    return input_seqs, input_keywords, targets
 
 if __name__ == '__main__':
     print_data(sys.argv[1])

@@ -12,8 +12,9 @@ class Model():
             args.batch_size = 1
             args.max_ast_depth = 1
         if args.cell == 'lstm':
-            args.encoder_rnn_size = int(args.encoder_rnn_size/2)
-            args.decoder_rnn_size = int(args.decoder_rnn_size/2)
+            args.seqs_rnn_units = int(args.seqs_rnn_units/2)
+            args.kw_ffnn_units = int(args.kw_ffnn_units/2)
+            args.decoder_rnn_units = int(args.decoder_rnn_units/2)
 
         # setup the encoder
         self.encoder = VariationalEncoder(args)
@@ -23,11 +24,11 @@ class Model():
         self.psi = self.encoder.psi_mean + (self.encoder.psi_stdv * samples)
 
         # setup the decoder with psi as the initial state
-        expansion_w = tf.get_variable('expansion_w', [args.latent_size, args.decoder_rnn_size
+        expansion_w = tf.get_variable('expansion_w', [args.latent_size, args.decoder_rnn_units
                                                             * (2 if args.cell == 'lstm' else 1)])
-        expansion_b = tf.get_variable('expansion_b', [args.decoder_rnn_size
+        expansion_b = tf.get_variable('expansion_b', [args.decoder_rnn_units
                                                             * (2 if args.cell == 'lstm' else 1)])
-        self.initial_state = tf.matmul(self.psi, expansion_w) + expansion_b
+        self.initial_state = tf.nn.xw_plus_b(self.psi, expansion_w, expansion_b)
         self.decoder = VariationalDecoder(args, initial_state=self.initial_state, infer=infer)
 
         # get the decoder outputs
@@ -51,26 +52,29 @@ class Model():
         if not infer:
             print('Model parameters: {}'.format(np.sum(var_params)))
 
-    def infer_psi(self, sess, seqs, input_vocab):
+    def infer_psi(self, sess, seqs, kws, input_vocab_seqs, input_vocab_kws):
         # apply the dict on inputs (batch_size is 1 during inference)
         x = np.zeros((1, self.args.max_seqs, self.args.max_seq_length, 1), dtype=np.int32)
-        l = np.zeros((1, self.args.max_seqs), dtype=np.int32)
-        for i, seq in enumerate(sorted(seqs)):
-            x[0, i, :len(seq), 0] = list(map(input_vocab.get, seq))
-            l[0, i] = len(seq)
+        k = np.zeros((1, self.args.max_keywords, 1, 1), dtype=np.int32)
+        for i, seq in enumerate(seqs):
+            x[0, i, :len(seq), 0] = list(map(input_vocab_seqs.get, seq))
+        k[0, :len(kws), 0, 0] = list(map(input_vocab_kws.get, kws))
 
         # reshape into list of tensors
         x = [x[:, i, :, :] for i in range(self.args.max_seqs)]
-        l = [l[:, i] for i in range(self.args.max_seqs)]
+        k = [k[:, i, :, :] for i in range(self.args.max_keywords)]
 
         # setup initial states and feed
-        init_state_mean = self.encoder.cell_mean_init.eval()
-        init_state_stdv = self.encoder.cell_stdv_init.eval()
-        feed = { self.encoder.cell_mean_init: init_state_mean,
-                 self.encoder.cell_stdv_init: init_state_stdv }
+        feed = {
+                self.encoder.seqs_cell_mean_init: self.encoder.seqs_cell_mean_init.eval(),
+                self.encoder.kw_cell_mean_init: self.encoder.kw_cell_mean_init.eval(),
+                self.encoder.seqs_cell_stdv_init: self.encoder.seqs_cell_stdv_init.eval(),
+                self.encoder.kw_cell_stdv_init: self.encoder.kw_cell_stdv_init.eval()
+               }
         for i in range(self.args.max_seqs):
-            feed[self.encoder.seq[i].name] = x[i]
-            feed[self.encoder.seq_length[i].name] = l[i]
+            feed[self.encoder.seqs[i].name] = x[i]
+        for i in range(self.args.max_keywords):
+            feed[self.encoder.keywords[i].name] = k[i]
         psi = sess.run(self.psi, feed)
         return psi
 
