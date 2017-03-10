@@ -10,7 +10,7 @@ import pickle
 import collections
 
 from variational.model import Model
-from variational.utils import weighted_pick
+from variational.utils import weighted_pick, get_keywords
 from variational.data_reader import sub_sequences, CHILD_EDGE, SIBLING_EDGE
 
 MAX_GEN_UNTIL_STOP = 20
@@ -33,7 +33,7 @@ def predict_asts(args):
                         seqs = sub_sequences(seqs, predictor.model.args)
                     if args.keywords_file is not None:
                         with open(args.keywords_file) as f:
-                            kws = json.load(f)
+                            kws = list(set(json.load(f) + get_keywords(seqs)))
                             kws = [k for k in kws if k in predictor.input_vocab_kws]
                     psi = predictor.psi_from_evidence(seqs, kws)
                 ast, p_ast = predictor.generate_ast(psi)

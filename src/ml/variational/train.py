@@ -133,6 +133,8 @@ if __name__ == '__main__':
                        help='maximum RNN sequence length')
     parser.add_argument('--max_keywords', type=int, default=16,
                        help='maximum number of keywords for a program')
+    parser.add_argument('--kw_weight', type=int, default=10,
+                       help='weight given to signal from keywords as opposed to sequences')
     parser.add_argument('--max_ast_depth', type=int, default=20,
                        help='maximum depth of AST')
     parser.add_argument('--weight_loss', type=int, default=1000,

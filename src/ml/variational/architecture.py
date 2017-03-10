@@ -26,6 +26,7 @@ class VariationalEncoder(object):
         zero = tf.constant(0, dtype=tf.int32)
         exists_seq_kw = [tf.not_equal(seq_len, zero) for seq_len in seq_length] + \
                         [tf.not_equal(kw_len, zero) for kw_len in kws_length]
+        exists_seq_kw += exists_seq_kw[-args.max_keywords:] * args.kw_weight
         num_seqs_kws = tf.count_nonzero(tf.stack(exists_seq_kw), axis=0, dtype=tf.float32)
         num_seqs_kws = tf.tile(tf.reshape(num_seqs_kws, [-1, 1]), [1, args.latent_size])
         all_zeros = tf.zeros([args.batch_size, args.latent_size], dtype=tf.float32)
@@ -71,7 +72,9 @@ class VariationalEncoder(object):
                                             dtype=tf.float32)
                     latent_encoding = tf.nn.xw_plus_b(encoding, w_mean_kw, b_mean_kw)
                     latent_encodings.append(latent_encoding)
+                latent_encodings += latent_encodings[-args.max_keywords:] * args.kw_weight
 
+            assert len(latent_encodings) == len(exists_seq_kw)
             latent_encodings = [tf.where(exists, encoding, all_zeros) for exists, encoding in
                                     zip(exists_seq_kw, latent_encodings)]
             sum_latent_encodings = tf.reduce_sum(tf.stack(latent_encodings), axis=0)
@@ -118,7 +121,9 @@ class VariationalEncoder(object):
                                             dtype=tf.float32)
                     latent_encoding = tf.nn.xw_plus_b(encoding, w_stdv_kw, b_stdv_kw)
                     latent_encodings.append(latent_encoding)
+                latent_encodings += latent_encodings[-args.max_keywords:] * args.kw_weight
 
+            assert len(latent_encodings) == len(exists_seq_kw)
             latent_encodings = [tf.where(exists, encoding, all_zeros) for exists, encoding in
                                     zip(exists_seq_kw, latent_encodings)]
             sum_latent_encodings = tf.reduce_sum(tf.stack(latent_encodings), axis=0)

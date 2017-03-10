@@ -1,4 +1,5 @@
 import os
+import re
 import pickle
 import itertools
 import numpy as np
@@ -11,6 +12,22 @@ def weighted_pick(weights):
     t = np.cumsum(weights)
     s = np.sum(weights)
     return int(np.searchsorted(t, np.random.rand(1)*s))
+
+def get_keywords(seqs):
+
+    def split_camel(s):
+        s1 = re.sub('(.)([A-Z][a-z]+)', r'\1#\2', s) # LC followed by UC
+        s1 = re.sub('([a-z0-9])([A-Z])', r'\1#\2', s1) # UC followed by LC
+        return s1.split('#')
+
+    def get_name(call):
+        q = call.split('(')[0].split('.')
+        cls, name = q[-2], q[-1]
+        return cls + '#' + name
+
+    calls = set([get_name(call) for sequence in seqs for call in sequence])
+    keywords = list(itertools.chain.from_iterable([split_camel(call) for call in calls]))
+    return list(set([kw.lower() for kw in keywords if not kw == '']))
 
 class DataLoader():
     def __init__(self, input_file, args):
