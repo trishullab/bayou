@@ -38,27 +38,20 @@ for f in os.listdir('../test/pl/driver'):
                       '-f', os.path.join(testdir, f),
                       '-c', os.path.join(testdir, c)],
                   stdout=subprocess.PIPE, check=True)
-    except subprocess.CalledProcessError:
-        printFAIL(content)
-        continue
-    output = process.stdout.decode('utf-8')
-    o = os.path.join(testdir, f[:-6] + 'o.json')
-    if os.path.getsize(o) == 0: # empty output expected
-        if not output == '':
-            printFAIL(content)
-            continue
+        output = process.stdout.decode('utf-8')
+        o = os.path.join(testdir, f[:-6] + 'o.json')
+        if os.path.getsize(o) == 0: # empty output expected
+            assert output == ''
 
-    # compare ASTs in JSON
-    js = json.loads('{"programs": [' + output + ']}')
-    with open(o) as fp:
-        jso = json.loads('{"programs": [' + fp.read() + ']}')
-    try:
+        # compare ASTs in JSON
+        js = json.loads('{"programs": [' + output + ']}')
+        with open(o) as fp:
+            jso = json.loads('{"programs": [' + fp.read() + ']}')
         assert len(jso['programs']) == len(js['programs'])
-        assert all([expected['ast'] == out['ast'] for expected, out in
-                                     zip(jso['programs'], js['programs'])])
-    except AssertionError:
+        assert all([expected['ast'] == out['ast'] \
+                for expected, out in zip(jso['programs'], js['programs'])])
+        printOK(content)
+    except (subprocess.CalledProcessError, AssertionError) as _:
         printFAIL(content)
-        continue
-    printOK(content)
 
 print('{}/{} tests passed, {} failed'.format(passed, passed+failed, failed))
