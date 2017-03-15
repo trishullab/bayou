@@ -2,8 +2,8 @@ import tensorflow as tf
 from tensorflow.contrib import legacy_seq2seq
 import numpy as np
 
-from encdec.architecture import Encoder, Decoder
-from encdec.data_reader import CHILD_EDGE, SIBLING_EDGE
+from experimental.encdec.architecture import Encoder, Decoder
+from experimental.encdec.data_reader import CHILD_EDGE, SIBLING_EDGE
 
 class Model():
     def __init__(self, args, infer=False):

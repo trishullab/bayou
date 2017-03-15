@@ -8,9 +8,9 @@ import pickle
 import random
 import collections
 
-from encdec.model import Model
-from encdec.utils import weighted_pick
-from encdec.data_reader import sub_sequences, CHILD_EDGE, SIBLING_EDGE
+from experimental.encdec.model import Model
+from experimental.encdec.utils import weighted_pick
+from experimental.encdec.data_reader import sub_sequences, CHILD_EDGE, SIBLING_EDGE
 
 MAX_GEN_UNTIL_STOP = 20
 
