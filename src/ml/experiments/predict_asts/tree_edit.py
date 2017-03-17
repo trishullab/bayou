@@ -17,7 +17,7 @@ def editdist(args):
     with open(args.corpus) as f:
         corpus = json.load(f)
     for i, program in enumerate(js['programs']):
-        program['corpus_dist'] = closest_dist(program['ast'], corpus)
+        program['corpus_dist'] = int(closest_dist(program['ast'], corpus))
         print('Done with {} programs'.format(i))
     with open(args.output_file, 'w') as f:
         json.dump(js, f, indent=2)
