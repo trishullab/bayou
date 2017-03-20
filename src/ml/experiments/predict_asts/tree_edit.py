@@ -3,7 +3,6 @@ import sys
 import zss
 import re
 import json
-import numpy
 import argparse
 import editdistance
 
@@ -28,7 +27,7 @@ def closest_dist(ast, corpus):
                 get_label=ZSS.get_label,
                 label_dist=ZSS.label_dist_string) \
                     for program in corpus['programs']]
-    return numpy.min(dists)
+    return min(dists)
 
 class ZSS(object):
     @staticmethod
