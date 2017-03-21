@@ -66,10 +66,10 @@ class Model():
 
         # setup initial states and feed
         feed = {
-                self.encoder.seqs_cell_mean_init: self.encoder.seqs_cell_mean_init.eval(),
-                self.encoder.kw_cell_mean_init: self.encoder.kw_cell_mean_init.eval(),
-                self.encoder.seqs_cell_stdv_init: self.encoder.seqs_cell_stdv_init.eval(),
-                self.encoder.kw_cell_stdv_init: self.encoder.kw_cell_stdv_init.eval()
+                self.encoder.seqs_cell_mean_init: self.encoder.seqs_cell_mean_init.eval(session=sess),
+                self.encoder.kw_cell_mean_init: self.encoder.kw_cell_mean_init.eval(session=sess),
+                self.encoder.seqs_cell_stdv_init: self.encoder.seqs_cell_stdv_init.eval(session=sess),
+                self.encoder.kw_cell_stdv_init: self.encoder.kw_cell_stdv_init.eval(session=sess)
                }
         for i in range(self.args.max_seqs):
             feed[self.encoder.seqs[i].name] = x[i]
