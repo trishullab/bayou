@@ -19,6 +19,10 @@ public class DOMStatement implements Handler {
             return new DOMExpressionStatement((ExpressionStatement) statement).handle();
         if (statement instanceof IfStatement)
             return new DOMIfStatement((IfStatement) statement).handle();
+        if (statement instanceof SwitchStatement)
+            return new DOMSwitchStatement((SwitchStatement) statement).handle();
+        if (statement instanceof SwitchCase)
+            return new DOMSwitchCase((SwitchCase) statement).handle();
         if (statement instanceof DoStatement)
             return new DOMDoStatement((DoStatement) statement).handle();
         if (statement instanceof ForStatement)
