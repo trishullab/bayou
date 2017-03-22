@@ -39,7 +39,7 @@ public class Visitor extends ASTVisitor {
 
     @Override
     public boolean visit(MethodDeclaration method) {
-        if (! method.getName().getIdentifier().equals("__datasyn_fill"))
+        if (! method.getName().getIdentifier().equals("__bayou_fill"))
             return false;
 
         List<Variable> scope = new ArrayList<>();
