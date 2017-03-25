@@ -6,6 +6,7 @@ import os
 import json
 import threading
 import time
+import traceback
 
 from variational.predict_ast import VariationalPredictor
 from variational.data_reader import sub_sequences
@@ -15,7 +16,7 @@ def start_server(args):
     assert not os.path.exists(args.pipe), \
         'I think server is already running! If not, delete pipe: {}'.format(args.pipe)
     os.mkfifo(args.pipe)
-    with tf.Session() as sess, open(args.log, 'w') as logfile:
+    with tf.Session() as sess, open(args.log, 'a') as logfile:
         predictor = VariationalPredictor(args.save_dir, sess)
         log('Server started and listening to: {}'.format(args.pipe), logfile)
         req = 0
@@ -30,26 +31,39 @@ def start_server(args):
             os.remove(args.pipe)
 
 def serve(content, predictor):
-    contents = content.split('\n')[:-1]
-    outpipe = contents[0]
-    keywords = contents[1].split()
-    sequences = []
-    if len(contents) > 2:
-        sequences = sub_sequences(json.loads('\n'.join(contents[2:])), predictor.model.args)
-    keywords = list(set(keywords + get_keywords(sequences)))
-    keywords = [k for k in keywords if k in predictor.input_vocab_kws]
-
-    psi = predictor.psi_from_evidence(sequences, keywords)
-    asts = []
-    for i in range(10):
+    try:
+        outpipe = content.split('#')[0]
+    except:
+        return
+    with open(outpipe, 'w') as out:
         try:
-            ast, p = predictor.generate_ast(psi)
-            ast['p_ast'] = p
-            asts.append(ast)
+            js = json.loads(content.split('#')[1])
+            assert 'nl-terms' in js or 'sequences' in js
+            keywords, sequences = [], []
+            if 'nl-terms' in js:
+                keywords = js['nl-terms'].split()
+            if 'sequences' in js:
+                sequences = sub_sequences(js['sequences'], predictor.model.args)
+            keywords = list(set(keywords + get_keywords(sequences)))
+            keywords = [k for k in keywords if k in predictor.input_vocab_kws]
+
+            psi = predictor.psi_from_evidence(sequences, keywords)
+            asts = []
+            for i in range(10):
+                try:
+                    ast, p = predictor.generate_ast(psi)
+                    ast['p_ast'] = p
+                    asts.append(ast)
+                except AssertionError:
+                    continue
+            json.dump({ 'asts': asts }, out, indent=2)
+        except json.decoder.JSONDecodeError:
+            out.write('ERROR: Malformed input. Please check if nl-terms (only characters) and sequences are valid JSON.')
         except AssertionError:
-            continue
-    with open(outpipe, 'w') as f:
-        json.dump({ 'asts': asts }, f, indent=2)
+            out.write('ERROR: Provide at least one form of evidence: "nl-terms" or "sequences".')
+        except Exception as e:
+            out.write('ERROR: Unexpected error occurred during inference. Please try again.\n')
+            traceback.print_exc(file=out)
 
 def log(p, logfile):
     t = time.asctime()
