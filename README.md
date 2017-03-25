@@ -1,7 +1,7 @@
 # Bayou
 Bayou is a data-driven program synthesis system for Java that uses learned Bayesian specifications for efficient synthesis.
 
-(Coming up: link to arXiv paper on Bayou)
+[arXiv](https://arxiv.org/abs/1703.05698) paper on Bayou.
 
 ## Requirements
 - JDK 1.8
