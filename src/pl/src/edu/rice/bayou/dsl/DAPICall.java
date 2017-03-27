@@ -86,6 +86,14 @@ public class DAPICall extends DASTNode {
     }
 
     @Override
+    public Set<Class> exceptionsThrown() {
+        if (constructor != null)
+            return new HashSet<>(Arrays.asList(constructor.getExceptionTypes()));
+        else
+            return new HashSet<>(Arrays.asList(method.getExceptionTypes()));
+    }
+
+    @Override
     public boolean equals(Object o) {
         if (o == null || ! (o instanceof DAPICall))
             return false;
@@ -141,10 +149,6 @@ public class DAPICall extends DASTNode {
         assignment.setRightHandSide(creation);
         assignment.setOperator(Assignment.Operator.ASSIGN);
 
-        /* update environment of exceptions */
-        for (Class thrown : constructor.getExceptionTypes())
-            env.recordExceptionThrown(thrown);
-
         return assignment;
     }
 
@@ -165,10 +169,6 @@ public class DAPICall extends DASTNode {
             Expression arg = env.searchOrAddVariable(type, true);
             invocation.arguments().add(arg);
         }
-
-        /* update environment of exceptions */
-        for (Class thrown : method.getExceptionTypes())
-            env.recordExceptionThrown(thrown);
 
         if (method.getReturnType().equals(void.class))
             return invocation;

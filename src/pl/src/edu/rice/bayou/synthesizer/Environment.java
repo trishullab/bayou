@@ -12,7 +12,6 @@ public class Environment {
     Map<String,Integer> prettyNameCounts;
 
     Set<Class> imports;
-    Map<Class,Integer> exceptions;
     final AST ast;
 
     public AST ast() {
@@ -25,7 +24,6 @@ public class Environment {
         mu_scope = new ArrayList<>();
         prettyNameCounts = new HashMap<>();
         imports = new HashSet<>();
-        exceptions = new HashMap<>();
     }
 
     public Expression addVariable(Class type) {
@@ -72,16 +70,6 @@ public class Environment {
 
     public void removeScopedVariable(Variable v) {
         mu_scope.remove(v);
-    }
-
-    public void recordExceptionThrown(Class c) {
-        if (!exceptions.containsKey(c))
-            exceptions.put(c, 0);
-        exceptions.put(c, exceptions.get(c)+1);
-    }
-
-    public void recordExceptionCaught(Class c) {
-        exceptions.put(c, exceptions.get(c)-1);
     }
 
     public static Class getClass(String name) {

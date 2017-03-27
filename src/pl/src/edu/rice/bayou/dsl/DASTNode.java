@@ -18,6 +18,8 @@ public abstract class DASTNode implements Synthesizable {
 
     public abstract Set<DAPICall> bagOfAPICalls();
 
+    public abstract Set<Class> exceptionsThrown();
+
     @Override
     public abstract boolean equals(Object o);
 

@@ -92,6 +92,15 @@ public class DExcept extends DASTNode {
     }
 
     @Override
+    public Set<Class> exceptionsThrown() {
+        Set<Class> ex = new HashSet<>();
+        // no try: whatever thrown in try would have been caught in catch
+        for (DASTNode c : _catch)
+            ex.addAll(c.exceptionsThrown());
+        return ex;
+    }
+
+    @Override
     public boolean equals(Object o) {
         if (o == null || ! (o instanceof DExcept))
             return false;
@@ -118,7 +127,7 @@ public class DExcept extends DASTNode {
 
         /* synthesize try block */
         Block tryBlock = ast.newBlock();
-        List<Class> exceptionsThrown = new ArrayList<>();
+        Set<Class> exceptionsThrown = new HashSet<>();
         for (DASTNode dNode : _try) {
             ASTNode aNode = dNode.synthesize(env);
             if (aNode instanceof Statement)
@@ -126,18 +135,14 @@ public class DExcept extends DASTNode {
             else
                 tryBlock.statements().add(ast.newExpressionStatement((Expression) aNode));
 
-            if (dNode instanceof DAPICall) {
-                DAPICall call = (DAPICall) dNode;
-                if (call.constructor != null)
-                    exceptionsThrown.addAll(Arrays.asList(call.constructor.getExceptionTypes()));
-                else
-                    exceptionsThrown.addAll(Arrays.asList(call.method.getExceptionTypes()));
-            }
+            exceptionsThrown.addAll(dNode.exceptionsThrown());
         }
         statement.setBody(tryBlock);
+        List<Class> exceptionsThrown_ = new ArrayList<>(exceptionsThrown);
+        exceptionsThrown_.sort((Class e1, Class e2) -> e1.isAssignableFrom(e2)? 1: -1);
 
         /* synthesize catch clause body */
-        for (Class except : exceptionsThrown) {
+        for (Class except : exceptionsThrown_) {
             CatchClause catchClause = ast.newCatchClause();
 
             /* synthesize catch clause exception types */
@@ -158,9 +163,6 @@ public class DExcept extends DASTNode {
             }
             catchClause.setBody(catchBlock);
             env.removeScopedVariable(exceptionVar);
-
-            /* record exceptions that were caught */
-            env.recordExceptionCaught(except);
         }
 
         return statement;

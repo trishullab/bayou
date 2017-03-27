@@ -103,6 +103,18 @@ public class DBranch extends DASTNode {
     }
 
     @Override
+    public Set<Class> exceptionsThrown() {
+        Set<Class> ex = new HashSet<>();
+        for (DAPICall c : _cond)
+            ex.addAll(c.exceptionsThrown());
+        for (DASTNode t : _then)
+            ex.addAll(t.exceptionsThrown());
+        for (DASTNode e : _else)
+            ex.addAll(e.exceptionsThrown());
+        return ex;
+    }
+
+    @Override
     public boolean equals(Object o) {
         if (o == null || ! (o instanceof DBranch))
             return false;

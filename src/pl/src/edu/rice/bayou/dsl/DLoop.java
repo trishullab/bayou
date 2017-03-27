@@ -88,6 +88,16 @@ public class DLoop extends DASTNode {
     }
 
     @Override
+    public Set<Class> exceptionsThrown() {
+        Set<Class> ex = new HashSet<>();
+        for (DAPICall c : _cond)
+            ex.addAll(c.exceptionsThrown());
+        for (DASTNode b : _body)
+            ex.addAll(b.exceptionsThrown());
+        return ex;
+    }
+
+    @Override
     public boolean equals(Object o) {
         if (o == null || ! (o instanceof DLoop))
             return false;
