@@ -24,6 +24,9 @@ def start_server(args):
             while True:
                 with open(args.pipe) as pipe:
                     content = pipe.read()
+                    if content.rstrip('\n') == 'kill':
+                        log('Received kill command', logfile)
+                        break
                     threading.Thread(target=serve, args=(content, predictor)).start()
                     req += 1
                     log('Served request {}\n{}'.format(req, content), logfile)
