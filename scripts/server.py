@@ -38,10 +38,10 @@ def serve(content, predictor):
     with open(outpipe, 'w') as out:
         try:
             js = json.loads(content.split('#')[1])
-            assert 'nl-terms' in js or 'sequences' in js
+            assert 'keywords' in js or 'sequences' in js
             keywords, sequences = [], []
-            if 'nl-terms' in js:
-                keywords = js['nl-terms'].split()
+            if 'keywords' in js:
+                keywords = js['keywords'].split()
             if 'sequences' in js:
                 sequences = sub_sequences(js['sequences'], predictor.model.args)
             keywords = list(set(keywords + get_keywords(sequences)))
@@ -58,9 +58,9 @@ def serve(content, predictor):
                     continue
             json.dump({ 'asts': asts }, out, indent=2)
         except json.decoder.JSONDecodeError:
-            out.write('ERROR: Malformed input. Please check if nl-terms (only characters) and sequences are valid JSON.')
+            out.write('ERROR: Malformed input. Please check if keywords (only characters) and sequences are valid JSON.')
         except AssertionError:
-            out.write('ERROR: Provide at least one form of evidence: "nl-terms" or "sequences".')
+            out.write('ERROR: Provide at least one form of evidence: "keywords" or "sequences".')
         except Exception as e:
             out.write('ERROR: Unexpected error occurred during inference. Please try again.\n')
             traceback.print_exc(file=out)
