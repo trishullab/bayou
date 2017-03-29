@@ -15,11 +15,11 @@ public class EvidenceExtractor extends ASTVisitor {
     CommandLine cmdLine;
 
     class JSONOutputWrapper {
-        Set<String> keywords;
+        String keywords;
         List<List<String>> sequences;
 
         public JSONOutputWrapper() {
-            this.keywords = new HashSet<>();
+            this.keywords = "";
             this.sequences = new ArrayList<>();
         }
     }
@@ -103,8 +103,7 @@ public class EvidenceExtractor extends ASTVisitor {
 
                 if (type.equals("keywords")) {
                     String val = ((StringLiteral) value.getValue()).getLiteralValue();
-                    List<String> keywords = Arrays.asList(val.split(" "));
-                    output.keywords.addAll(keywords);
+                    output.keywords += " " + val;
                 }
                 else if (type.equals("sequence")) {
                     List<String> sequence = new ArrayList<>();
