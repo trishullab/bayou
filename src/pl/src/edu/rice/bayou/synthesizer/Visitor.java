@@ -70,6 +70,20 @@ public class Visitor extends ASTVisitor {
             body = postprocessLocal(method.getAST(), env, body);
             ASTRewrite rewriter = ASTRewrite.create(method.getAST());
             rewriter.replace(method.getBody(), body, null);
+
+            /* remove the evidence annotations */
+            List<IExtendedModifier> modifiers = method.modifiers();
+            for (IExtendedModifier m : modifiers) {
+                if (!m.isAnnotation() || !((Annotation) m).isNormalAnnotation())
+                    continue;
+                NormalAnnotation annotation = (NormalAnnotation) m;
+                IAnnotationBinding aBinding = annotation.resolveAnnotationBinding();
+                ITypeBinding binding;
+                if (aBinding == null || (binding = aBinding.getAnnotationType()) == null)
+                    continue;
+                if (binding.getQualifiedName().equals("edu.rice.bayou.annotations.Evidence"))
+                    rewriter.remove(annotation, null);
+            }
             rewriter.rewriteAST(document, null).apply(document);
 
             /* make rewrites to the document */

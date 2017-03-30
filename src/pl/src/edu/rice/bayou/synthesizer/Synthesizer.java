@@ -16,6 +16,8 @@ import java.net.URL;
 import java.net.URLClassLoader;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class Synthesizer {
@@ -93,7 +95,10 @@ public class Synthesizer {
         CompilationUnit cu = (CompilationUnit) parser.createAST(null);
         List<DSubTree> asts = getASTsFromNN();
 
-        URL[] urls = { new URL("jar:file:" + System.getenv("CLASSPATH") + "!/") };
+        List<URL> urlList = new ArrayList<>();
+        for (String cp : classpath.split(":"))
+            urlList.add(new URL("jar:file:" + cp + "!/"));
+        URL[] urls = urlList.toArray(new URL[0]);
         classLoader = URLClassLoader.newInstance(urls);
 
         for (DSubTree ast : asts) {
