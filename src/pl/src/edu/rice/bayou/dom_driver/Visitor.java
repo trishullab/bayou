@@ -5,6 +5,8 @@ import com.google.gson.GsonBuilder;
 import edu.rice.bayou.dsl.DASTNode;
 import edu.rice.bayou.dsl.DSubTree;
 import edu.rice.bayou.dsl.Sequence;
+import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.apache.commons.lang3.tuple.Pair;
 import org.eclipse.jdt.core.dom.*;
 
 import java.io.FileNotFoundException;
@@ -32,12 +34,14 @@ public class Visitor extends ASTVisitor {
         DSubTree ast;
         List<Sequence> sequences;
         Set<String> keywords;
+        String javadoc;
 
-        public JSONOutputWrapper(String file, DSubTree ast, List<Sequence> sequences, Set<String> keywords) {
+        public JSONOutputWrapper(String file, DSubTree ast, List<Sequence> sequences, Set<String> keywords, String javadoc) {
             this.file = file;
             this.ast = ast;
             this.sequences = sequences;
             this.keywords = keywords;
+            this.javadoc = javadoc;
         }
     }
 
@@ -68,38 +72,41 @@ public class Visitor extends ASTVisitor {
         List<MethodDeclaration> constructors = allMethods.stream().filter(m -> m.isConstructor()).collect(Collectors.toList());
         List<MethodDeclaration> publicMethods = allMethods.stream().filter(m -> !m.isConstructor() && Modifier.isPublic(m.getModifiers())).collect(Collectors.toList());
 
-        Set<DSubTree> asts = new HashSet<>();
+        Set<Pair<DSubTree, String>> astsWithJavadoc = new HashSet<>();
         if (!constructors.isEmpty() && !publicMethods.isEmpty()) {
             for (MethodDeclaration c : constructors)
                 for (MethodDeclaration m : publicMethods) {
                     DSubTree ast = new DOMMethodDeclaration(c).handle();
                     ast.addNodes(new DOMMethodDeclaration(m).handle().getNodes());
-                    if (ast.isValid())
-                        asts.add(ast);
+                    String javadoc = Utils.getJavadoc(m);
+                    if (ast.isValid() && !(options.JAVADOC_ONLY && javadoc == null))
+                        astsWithJavadoc.add(new ImmutablePair<>(ast, javadoc));
                 }
         } else if (!constructors.isEmpty()) { // no public methods, only constructor
             for (MethodDeclaration c : constructors) {
                 DSubTree ast = new DOMMethodDeclaration(c).handle();
-                if (ast.isValid())
-                    asts.add(ast);
+                String javadoc = Utils.getJavadoc(c);
+                if (ast.isValid() && !(options.JAVADOC_ONLY && javadoc == null))
+                    astsWithJavadoc.add(new ImmutablePair<>(ast, javadoc));
             }
         } else if (!publicMethods.isEmpty()) { // no constructors, methods executed typically through Android callbacks
             for (MethodDeclaration m : publicMethods) {
                 DSubTree ast = new DOMMethodDeclaration(m).handle();
-                if (ast.isValid())
-                    asts.add(ast);
+                String javadoc = Utils.getJavadoc(m);
+                if (ast.isValid() && !(options.JAVADOC_ONLY && javadoc == null))
+                    astsWithJavadoc.add(new ImmutablePair<>(ast, javadoc));
             }
         }
 
-        for (DSubTree ast : asts) {
+        for (Pair<DSubTree,String> astDoc : astsWithJavadoc) {
             List<Sequence> sequences = new ArrayList<>();
-            Set<String> keywords = ast.keywords();
+            Set<String> keywords = astDoc.getLeft().keywords();
             sequences.add(new Sequence());
             try {
-                ast.updateSequences(sequences, options.MAX_SEQS);
+                astDoc.getLeft().updateSequences(sequences, options.MAX_SEQS);
                 List<Sequence> uniqSequences = new ArrayList<>(new HashSet<>(sequences));
                 if (okToPrintAST(uniqSequences))
-                    printJson(ast, uniqSequences, keywords);
+                    printJson(astDoc.getLeft(), uniqSequences, keywords, astDoc.getRight());
             } catch (DASTNode.TooManySequencesException e) {
                 System.err.println("Too many sequences from AST");
             }
@@ -108,9 +115,9 @@ public class Visitor extends ASTVisitor {
     }
 
     boolean first = true;
-    private void printJson(DSubTree ast, List<Sequence> sequences, Set<String> keywords) {
+    private void printJson(DSubTree ast, List<Sequence> sequences, Set<String> keywords, String javadoc) {
         String file = options.cmdLine.getOptionValue("input-file");
-        JSONOutputWrapper out = new JSONOutputWrapper(file, ast, sequences, keywords);
+        JSONOutputWrapper out = new JSONOutputWrapper(file, ast, sequences, keywords, javadoc);
         output.write(first? "" : ",\n");
         output.write(gson.toJson(out));
         output.flush();
