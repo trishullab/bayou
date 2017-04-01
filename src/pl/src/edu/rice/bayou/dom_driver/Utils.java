@@ -16,14 +16,22 @@ public final class Utils {
     }
 
     public static boolean isRelevantCall(IMethodBinding binding) {
-        if (binding == null || binding.getDeclaringClass() == null)
+        ITypeBinding cls;
+        if (binding == null || (cls = binding.getDeclaringClass()) == null)
             return false;
-        if (Visitor.V().options.API_CLASSES.isEmpty())
+        IPackageBinding pack = cls.getPackage();
+        String[] packs = pack.getNameComponents();
+        if (Visitor.V().options.API_MODULES.contains(packs[0]))
             return true;
-        String className = binding.getDeclaringClass().getQualifiedName();
+        if (Visitor.V().options.API_PACKAGES.contains(pack.getName()))
+            return true;
+        String className = cls.getQualifiedName();
         if (className.contains("<")) /* be agnostic to generic versions */
             className = className.substring(0, className.indexOf("<"));
-        return Visitor.V().options.API_CLASSES.contains(className);
+        if (Visitor.V().options.API_CLASSES.contains(className))
+            return true;
+
+        return false;
     }
 
     public static MethodDeclaration checkAndGetLocalMethod(IMethodBinding binding) {

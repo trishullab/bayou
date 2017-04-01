@@ -41,6 +41,8 @@ public class Options {
     JsonObject config;
 
     public final List<String> API_CLASSES;
+    public final List<String> API_PACKAGES;
+    public final List<String> API_MODULES;
     public final Map<String, Boolean> KNOWN_CONSTANTS_BOOLEAN;
     public final Map<String, Float> KNOWN_CONSTANTS_NUMBER;
     public final Map<String, String> KNOWN_CONSTANTS_STRING;
@@ -53,10 +55,25 @@ public class Options {
         this.config = readConfigFile(cmdLine.getOptionValue("config-file"));
 
         // API_CLASSES
-        List<String> classes = new ArrayList<String>();
-        for (JsonElement e : this.config.getAsJsonArray("api-classes"))
-            classes.add(e.getAsString());
+        List<String> classes = new ArrayList<>();
+        if (this.config.has("api-classes"))
+            for (JsonElement e : this.config.getAsJsonArray("api-classes"))
+                classes.add(e.getAsString());
         this.API_CLASSES = Collections.unmodifiableList(classes);
+
+        // API_PACKAGES
+        List<String> packages = new ArrayList<>();
+        if (this.config.has("api-packages"))
+            for (JsonElement e : this.config.getAsJsonArray("api-packages"))
+                packages.add(e.getAsString());
+        this.API_PACKAGES = Collections.unmodifiableList(packages);
+
+        // API_MODULES
+        List<String> modules = new ArrayList<>();
+        if (this.config.has("api-modules"))
+            for (JsonElement e : this.config.getAsJsonArray("api-modules"))
+                modules.add(e.getAsString());
+        this.API_MODULES = Collections.unmodifiableList(modules);
 
         // KNOWN_CONSTANTS_BOOLEAN
         Map<String, Boolean> kb = new HashMap<>();
