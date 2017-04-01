@@ -76,24 +76,30 @@ public class Visitor extends ASTVisitor {
         if (!constructors.isEmpty() && !publicMethods.isEmpty()) {
             for (MethodDeclaration c : constructors)
                 for (MethodDeclaration m : publicMethods) {
+                    String javadoc = Utils.getJavadoc(m);
+                    if (options.JAVADOC_ONLY && javadoc == null)
+                        continue;
                     DSubTree ast = new DOMMethodDeclaration(c).handle();
                     ast.addNodes(new DOMMethodDeclaration(m).handle().getNodes());
-                    String javadoc = Utils.getJavadoc(m);
-                    if (ast.isValid() && !(options.JAVADOC_ONLY && javadoc == null))
+                    if (ast.isValid())
                         astsWithJavadoc.add(new ImmutablePair<>(ast, javadoc));
                 }
         } else if (!constructors.isEmpty()) { // no public methods, only constructor
             for (MethodDeclaration c : constructors) {
-                DSubTree ast = new DOMMethodDeclaration(c).handle();
                 String javadoc = Utils.getJavadoc(c);
-                if (ast.isValid() && !(options.JAVADOC_ONLY && javadoc == null))
+                if (options.JAVADOC_ONLY && javadoc == null)
+                    continue;
+                DSubTree ast = new DOMMethodDeclaration(c).handle();
+                if (ast.isValid())
                     astsWithJavadoc.add(new ImmutablePair<>(ast, javadoc));
             }
         } else if (!publicMethods.isEmpty()) { // no constructors, methods executed typically through Android callbacks
             for (MethodDeclaration m : publicMethods) {
-                DSubTree ast = new DOMMethodDeclaration(m).handle();
                 String javadoc = Utils.getJavadoc(m);
-                if (ast.isValid() && !(options.JAVADOC_ONLY && javadoc == null))
+                if (options.JAVADOC_ONLY && javadoc == null)
+                    continue;
+                DSubTree ast = new DOMMethodDeclaration(m).handle();
+                if (ast.isValid())
                     astsWithJavadoc.add(new ImmutablePair<>(ast, javadoc));
             }
         }
