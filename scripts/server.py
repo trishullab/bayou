@@ -50,10 +50,10 @@ def serve(content, predictor):
             keywords = list(set(keywords + get_keywords(sequences)))
             keywords = [k for k in keywords if k in predictor.input_vocab_kws]
 
-            psi = predictor.psi_from_evidence(sequences, keywords)
             asts = []
             for i in range(10):
                 try:
+                    psi = predictor.psi_from_evidence(sequences, keywords)
                     ast, p = predictor.generate_ast(psi)
                     ast['p_ast'] = p
                     asts.append(ast)
