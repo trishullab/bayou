@@ -25,7 +25,15 @@
         "java.io.BufferedReader.readLine()"
       ]
     }
-  ]
+  ],
+  "keywords": [
+    "file",
+    "read",
+    "reader",
+    "line",
+    "buffered"
+  ],
+  "javadoc": null
 },
 {
   "file": "6f.java",
@@ -54,5 +62,12 @@
         "java.io.BufferedReader.close()"
       ]
     }
-  ]
+  ],
+  "keywords": [
+    "file",
+    "reader",
+    "buffered",
+    "close"
+  ],
+  "javadoc": null
 }

@@ -1,5 +1,5 @@
 {
-  "file": "/home/hsa5/salento/bayou/test/pl/driver/30f.java",
+  "file": "30f.java",
   "ast": {
     "node": "DSubTree",
     "_nodes": [
@@ -83,5 +83,15 @@
         "java.io.BufferedReader.close()"
       ]
     }
-  ]
+  ],
+  "keywords": [
+    "file",
+    "read",
+    "reader",
+    "line",
+    "buffered",
+    "reset",
+    "close"
+  ],
+  "javadoc": null
 }

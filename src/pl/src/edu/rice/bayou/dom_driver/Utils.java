@@ -42,14 +42,19 @@ public final class Utils {
         return null;
     }
 
-    public static String getJavadoc(MethodDeclaration method) {
+    public static String getJavadoc(MethodDeclaration method, String javadocType) {
         try {
             Javadoc doc = method.getJavadoc();
             List<IDocElement> fragments = ((TagElement) doc.tags().get(0)).fragments();
             String str = String.join(" ", fragments.stream().map(f -> getJavadocText(f)).collect(Collectors.toList()));
-            Pattern p = Pattern.compile("(.*?)\\.\\W.*");
-            Matcher m = p.matcher(str);
-            return sanitizeJavadoc(m.matches()? m.group(1): str);
+            if (javadocType.equals("summary")) {
+                Pattern p = Pattern.compile("(.*?)\\.\\W.*");
+                Matcher m = p.matcher(str);
+                return sanitizeJavadoc(m.matches() ? m.group(1) : str);
+            } else if (javadocType.equals("full")) {
+                return str;
+            }
+            return null;
         } catch (Exception e) {
             return null;
         }

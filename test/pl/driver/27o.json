@@ -32,5 +32,12 @@
         "android.bluetooth.BluetoothSocket.connect()"
       ]
     }
-  ]
+  ],
+  "keywords": [
+    "bluetooth",
+    "socket",
+    "close",
+    "connect"
+  ],
+  "javadoc": null
 }

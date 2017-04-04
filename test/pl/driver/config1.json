@@ -5,5 +5,6 @@
         "java.io.FileReader",
         "java.io.File"
     ],
-    "num-unrolls": 1
+    "num-unrolls": 1,
+    "javadoc-type": "full"
 }

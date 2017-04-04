@@ -48,7 +48,7 @@ public class Options {
     public final Map<String, String> KNOWN_CONSTANTS_STRING;
     public final int NUM_UNROLLS;
     public final int MAX_SEQS;
-    public final boolean JAVADOC_ONLY;
+    public final String JAVADOC_TYPE;
 
     public Options(String[] args) throws ParseException, IOException {
         this.cmdLine = readCommandLine(args);
@@ -115,10 +115,15 @@ public class Options {
             this.MAX_SEQS = 10;
 
         // Javadoc only
-        if (this.config.has("javadoc-only"))
-            this.JAVADOC_ONLY = this.config.getAsJsonPrimitive("javadoc-only").getAsBoolean();
+        if (this.config.has("javadoc-type")) {
+            this.JAVADOC_TYPE = this.config.getAsJsonPrimitive("javadoc-type").getAsString();
+            if (! (this.JAVADOC_TYPE.equals("full") || this.JAVADOC_TYPE.equals("summary"))) {
+                System.err.println("javadoc-type must be \"full\" or \"summary\"");
+                System.exit(1);
+            }
+        }
         else
-            this.JAVADOC_ONLY = false;
+            this.JAVADOC_TYPE = "summary";
     }
 
     private CommandLine readCommandLine(String[] args) throws ParseException {

@@ -66,5 +66,15 @@
         "java.io.BufferedReader.readLine()"
       ]
     }
-  ]
+  ],
+  "keywords": [
+    "file",
+    "read",
+    "reader",
+    "ready",
+    "line",
+    "buffered",
+    "close"
+  ],
+  "javadoc": null
 }

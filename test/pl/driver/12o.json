@@ -30,5 +30,13 @@
         "java.io.BufferedReader.close()"
       ]
     }
-  ]
+  ],
+  "keywords": [
+    "file",
+    "reader",
+    "ready",
+    "buffered",
+    "close"
+  ],
+  "javadoc": null
 }

@@ -76,9 +76,7 @@ public class Visitor extends ASTVisitor {
         if (!constructors.isEmpty() && !publicMethods.isEmpty()) {
             for (MethodDeclaration c : constructors)
                 for (MethodDeclaration m : publicMethods) {
-                    String javadoc = Utils.getJavadoc(m);
-                    if (options.JAVADOC_ONLY && javadoc == null)
-                        continue;
+                    String javadoc = Utils.getJavadoc(m, options.JAVADOC_TYPE);
                     DSubTree ast = new DOMMethodDeclaration(c).handle();
                     ast.addNodes(new DOMMethodDeclaration(m).handle().getNodes());
                     if (ast.isValid())
@@ -86,18 +84,14 @@ public class Visitor extends ASTVisitor {
                 }
         } else if (!constructors.isEmpty()) { // no public methods, only constructor
             for (MethodDeclaration c : constructors) {
-                String javadoc = Utils.getJavadoc(c);
-                if (options.JAVADOC_ONLY && javadoc == null)
-                    continue;
+                String javadoc = Utils.getJavadoc(c, options.JAVADOC_TYPE);
                 DSubTree ast = new DOMMethodDeclaration(c).handle();
                 if (ast.isValid())
                     astsWithJavadoc.add(new ImmutablePair<>(ast, javadoc));
             }
         } else if (!publicMethods.isEmpty()) { // no constructors, methods executed typically through Android callbacks
             for (MethodDeclaration m : publicMethods) {
-                String javadoc = Utils.getJavadoc(m);
-                if (options.JAVADOC_ONLY && javadoc == null)
-                    continue;
+                String javadoc = Utils.getJavadoc(m, options.JAVADOC_TYPE);
                 DSubTree ast = new DOMMethodDeclaration(m).handle();
                 if (ast.isValid())
                     astsWithJavadoc.add(new ImmutablePair<>(ast, javadoc));

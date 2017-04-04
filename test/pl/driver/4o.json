@@ -20,5 +20,11 @@
         "java.io.BufferedReader.BufferedReader(java.io.Reader)"
       ]
     }
-  ]
+  ],
+  "keywords": [
+    "file",
+    "reader",
+    "buffered"
+  ],
+  "javadoc": null
 }

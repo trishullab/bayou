@@ -43,13 +43,16 @@ for f in os.listdir('../test/pl/driver'):
         if os.path.getsize(o) == 0: # empty output expected
             assert output == ''
 
-        # compare ASTs in JSON
+        # compare ASTs and evidences in JSON
         js = json.loads('{"programs": [' + output + ']}')
         with open(o) as fp:
             jso = json.loads('{"programs": [' + fp.read() + ']}')
         assert len(jso['programs']) == len(js['programs'])
-        assert all([expected['ast'] == out['ast'] \
-                for expected, out in zip(jso['programs'], js['programs'])])
+        for expected, out in zip(jso['programs'], js['programs']):
+            assert all([expected['ast'] == out['ast']])
+            assert len(expected['sequences']) == len(out['sequences'])
+            assert all([set(expected['keywords']) == set(out['keywords'])])
+            assert all([expected['javadoc'] == out['javadoc']])
         printOK(content)
     except (subprocess.CalledProcessError, AssertionError) as _:
         printFAIL(content)
