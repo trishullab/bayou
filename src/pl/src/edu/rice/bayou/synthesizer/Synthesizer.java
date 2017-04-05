@@ -84,12 +84,13 @@ public class Synthesizer {
         ASTParser parser = ASTParser.newParser(AST.JLS8);
         File input = new File(cmdLine.getOptionValue("input-file"));
         String classpath = System.getenv("CLASSPATH");
+        classpath = classpath == null? "" : classpath;
 
         String source = FileUtils.readFileToString(input, "utf-8");
         parser.setSource(source.toCharArray());
         parser.setKind(ASTParser.K_COMPILATION_UNIT);
         parser.setUnitName("Program.java");
-        parser.setEnvironment(new String[] { classpath != null? classpath : "" },
+        parser.setEnvironment(new String[] { classpath },
                 new String[] { "" }, new String[] { "UTF-8" }, true);
         parser.setResolveBindings(true);
         CompilationUnit cu = (CompilationUnit) parser.createAST(null);
