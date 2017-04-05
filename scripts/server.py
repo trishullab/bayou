@@ -17,6 +17,8 @@ def start_server(args):
         'I think server is already running! If not, delete pipe: {}'.format(args.pipe)
     os.mkfifo(args.pipe)
     with tf.Session() as sess, open(args.log, 'a') as logfile:
+        print('\n\n\nCreated pipe: {}. MAKE SURE USERS HAVE WRITE ACCESS TO IT\n\n'\
+                .format(args.pipe))
         predictor = VariationalPredictor(args.save_dir, sess)
         log('Server started and listening to: {}'.format(args.pipe), logfile)
         req = 0
