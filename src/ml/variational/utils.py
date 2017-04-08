@@ -2,11 +2,24 @@ import os
 import re
 import pickle
 import itertools
+import argparse
+
 import numpy as np
+import tensorflow as tf
 
-from variational.data_reader import read_data, CHILD_EDGE
+CONFIG_GENERAL = ['cell', 'latent_size', 'batch_size', 'weight_loss', 'num_epochs', \
+                 'learning_rate', 'print_step']
+CONFIG_ENCODER = ['name', 'max_num', 'max_length', 'rnn_units', 'tile']
+CONFIG_DECODER = ['rnn_units', 'max_ast_depth']
+CONFIG_CHARS_VOCAB = ['chars', 'vocab', 'vocab_size']
 
-CLASS0 = 'CLASS0'
+C0 = 'CLASS0'
+CHILD_EDGE = 'V'
+SIBLING_EDGE = 'H'
+
+def length(tensor):
+    elems = tf.sign(tf.reduce_max(tensor, axis=2))
+    return tf.reduce_sum(elems, axis=1)
 
 def weighted_pick(weights):
     t = np.cumsum(weights)
@@ -29,85 +42,43 @@ def get_keywords(seqs):
     keywords = list(itertools.chain.from_iterable([split_camel(call) for call in calls]))
     return list(set([kw.lower() for kw in keywords if not kw == '']))
 
-class DataLoader():
-    def __init__(self, input_file, args):
-        self.args = args
+def sub_sequences(seqs):
+    sub_seqs = []
+    for seq in seqs:
+        cuts = [seq[:i] for i in range(1, len(seq)+1)]
+        for s in cuts:
+            if s not in sub_seqs:
+                sub_seqs += [s]
+    return sub_seqs
 
-        # read the raw inputs and targets
-        print("reading text file")
-        raw_inputs_seqs, raw_inputs_kws, raw_targets = read_data(input_file, args)
-        assert len(raw_inputs_seqs) == len(raw_targets) and \
-               len(raw_inputs_kws) == len(raw_targets), 'Inputs and targets do not align'
+from variational.evidence import Evidence
 
-        # setup input and target chars/vocab, using class 0 for padding
-        if args.init_from is None:
-            self.input_chars_seqs = [CLASS0] + list(set([w for p in raw_inputs_seqs for s in p for w in s]))
-            self.input_vocab_seqs = dict(zip(self.input_chars_seqs, range(len(self.input_chars_seqs))))
+# convert JSON to config
+def read_config(js, chars_vocab):
+    config = argparse.Namespace()
 
-            self.input_chars_kws = [CLASS0] + list(set([w for p in raw_inputs_kws for w in p]))
-            self.input_vocab_kws = dict(zip(self.input_chars_kws, range(len(self.input_chars_kws))))
+    for attr in CONFIG_GENERAL:
+        config.__setattr__(attr, js[attr])
+    
+    config.evidence = Evidence.read_config(js['evidence'], chars_vocab)
 
-            self.target_chars = [CLASS0] + list(set([node for path in raw_targets for (node, _) in path]))
-            self.target_vocab = dict(zip(self.target_chars, range(len(self.target_chars))))
-        else:
-            with open(os.path.join(args.init_from, 'chars_vocab.pkl'), 'rb') as f:
-                self.input_chars_seqs, self.input_vocab_seqs, self.input_chars_kws, self.input_vocab_kws, \
-                        self.target_chars, self.target_vocab = pickle.load(f)
+    attrs = CONFIG_DECODER + (CONFIG_CHARS_VOCAB if chars_vocab else [])
+    config.decoder = argparse.Namespace()
+    for attr in attrs:
+        config.decoder.__setattr__(attr, js['decoder'][attr])
 
-        args.input_vocab_seqs_size = len(self.input_vocab_seqs)
-        args.input_vocab_kws_size = len(self.input_vocab_kws)
-        args.target_vocab_size = len(self.target_vocab)
+    return config
 
-        # align with number of batches
-        args.num_batches = int(len(raw_inputs_seqs) / args.batch_size)
-        assert args.num_batches > 0, 'Not enough data'
-        sz = args.num_batches * args.batch_size
-        raw_inputs_seqs = raw_inputs_seqs[:sz]
-        raw_inputs_kws = raw_inputs_kws[:sz]
-        raw_targets = raw_targets[:sz]
+# convert config to JSON
+def dump_config(config):
+    js = {}
 
-        # apply the dict on inputs and targets
-        self.input_seqs = np.zeros((sz, args.max_seqs, args.max_seq_length, 1), dtype=np.int32)
-        for i, set_of_seqs in enumerate(raw_inputs_seqs):
-            assert len(set_of_seqs) <= args.max_seqs, 'Too many sequences, increase max_seqs'
-            for j, seq in enumerate(set_of_seqs):
-                assert len(seq) <= args.max_seq_length, 'Sequence too long, increase max_seq_length'
-                self.input_seqs[i, j, :len(seq), 0] = list(map(self.input_vocab_seqs.get, seq))
+    for attr in CONFIG_GENERAL:
+        js[attr] = config.__getattribute__(attr)
 
-        self.input_kws = np.zeros((sz, args.max_keywords, 1, 1), dtype=np.int32)
-        for i, kws in enumerate(raw_inputs_kws):
-            assert len(kws) <= args.max_keywords, 'Too many keywords, increase max_keywords'
-            self.input_kws[i, :len(kws), 0, 0] = list(map(self.input_vocab_kws.get, kws))
+    js['evidence'] = [ev.dump_config() for ev in config.evidence]
 
-        self.nodes = np.zeros((sz, args.max_ast_depth), dtype=np.int32)
-        self.edges = np.zeros((sz, args.max_ast_depth), dtype=np.bool)
-        self.targets = np.zeros((sz, args.max_ast_depth), dtype=np.int32)
-        for i, path in enumerate(raw_targets):
-            assert len(path) <= args.max_ast_depth, 'Path too long, increase max_ast_depth'
-            self.nodes[i, :len(path)] = list(map(self.target_vocab.get, [p[0] for p in path]))
-            self.edges[i, :len(path)] = [p[1] == CHILD_EDGE for p in path]
-            self.targets[i, :len(path)-1] = self.nodes[i, 1:len(path)] # shifted left by one
+    attrs = CONFIG_DECODER + CONFIG_CHARS_VOCAB
+    js['decoder'] = { attr: config.decoder.__getattribute__(attr) for attr in attrs }
 
-        # split into batches
-        self.input_seqs = np.split(self.input_seqs, args.num_batches, axis=0)
-        self.input_kws = np.split(self.input_kws, args.num_batches, axis=0)
-        self.nodes = np.split(self.nodes, args.num_batches, axis=0)
-        self.edges = np.split(self.edges, args.num_batches, axis=0)
-        self.targets = np.split(self.targets, args.num_batches, axis=0)
-
-        # reset batches
-        self.reset_batches()
-
-    def next_batch(self):
-        x, k, n, e, y = next(self.batches)
-
-        # reshape the batch into required format
-        rx = [x[:, i, :, :] for i in range(self.args.max_seqs)]
-        rk = [k[:, i, :, :] for i in range(self.args.max_keywords)]
-        rn = np.transpose(n)
-        re = np.transpose(e)
-
-        return rx, rk, rn, re, y
-
-    def reset_batches(self):
-        self.batches = zip(self.input_seqs, self.input_kws, self.nodes, self.edges, self.targets)
+    return js

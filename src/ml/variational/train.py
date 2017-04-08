@@ -5,57 +5,89 @@ import tensorflow as tf
 import argparse
 import time
 import os
-import pickle
+import json
+import textwrap
 
-from variational.utils import DataLoader
+from variational.data_reader import Reader
 from variational.model import Model
+from variational.evidence import Evidence
+from variational.utils import read_config, dump_config
 
-def train(args):
-    data_loader = DataLoader(args.input_file[0], args)
+HELP = """\
+Config options should be given as a JSON file (see config.json for example):
+{                                |
+    "cell": "lstm",              | The type of RNN cell. Choices: lstm, rnn
+    "latent_size": 10,           | Latent dimensionality
+    "batch_size": 50,            | Minibatch size
+    "num_epochs": 100,           | Number of training epochs
+    "weight_loss": 1000,         | Weight given to generation loss as opposed to latent loss
+    "learning_rate": 0.02,       | Learning rate
+    "print_step": 1,             | Print training output every given steps
+    "evidence": [                | Provide each evidence type in this list
+        {                        |
+            "name": "sequences", | Name of evidence ("sequences")
+            "max_num": 20,       | Maximum number of sequences in each data point
+            "max_length": 10,    | Maximum length of each sequence
+            "rnn_units": 10,     | Size of the encoder hidden state
+            "tile": 1            | Repeat the encoding n times (to boost its signal)
+        },                       |  
+        {                        | 
+            "name": "keywords",  | Name of evidence ("keywords")                      
+            "max_num": 20,       | Maximum number of keywords in each data point
+            "max_length": 1,     | Keywords do not have a 2nd dimension (length)
+            "rnn_units": 10,     | Size of the encoder hidden state
+            "tile": 10           | Repeat the encoding n times (to boost its signal)
+        }                        | 
+    ],                           |
+    "decoder": {                 | Provide parameters for the decoder here
+        "rnn_units": 100,        | Size of the decoder hidden state
+        "max_ast_depth": 20      | Maximum depth of the AST (length of the longest path)
+    }                            |
+}                                |
+"""
+
+def train(clargs):
+    config_file = clargs.config if args.continue_from is None \
+                                else os.path.join(clargs.continue_from, 'config.json')
+    with open(config_file) as f:
+        config = read_config(json.load(f), clargs.continue_from)
+    assert config.cell == 'lstm' or config.cell == 'rnn', 'Invalid cell in config'
+    reader = Reader(clargs, config)
     
-    # check compatibility if training is continued from previously saved model
-    if args.init_from is not None:
-        ckpt = check_compat(args, data_loader)
-        
-    with open(os.path.join(args.save_dir, 'config.pkl'), 'wb') as f:
-        pickle.dump(args, f)
-    with open(os.path.join(args.save_dir, 'chars_vocab.pkl'), 'wb') as f:
-        pickle.dump((data_loader.input_chars_seqs, data_loader.input_vocab_seqs,
-                       data_loader.input_chars_kws, data_loader.input_vocab_kws,
-                       data_loader.target_chars, data_loader.target_vocab), f)
-    print(args)
+    jsconfig = dump_config(config)
+    print(clargs)
+    print(json.dumps(jsconfig, indent=2))
+    with open(os.path.join(clargs.save, 'config.json'), 'w') as f:
+        json.dump(jsconfig, fp=f, indent=2)
 
-    model = Model(args)
+    model = Model(config)
 
     with tf.Session() as sess:
         tf.global_variables_initializer().run()
         saver = tf.train.Saver(tf.global_variables())
 
         # restore model
-        if args.init_from is not None:
+        if clargs.continue_from is not None:
+            ckpt = tf.train.get_checkpoint_state(clargs.continue_from)
             saver.restore(sess, ckpt.model_checkpoint_path)
 
         # training
-        for i in range(args.num_epochs):
-            data_loader.reset_batches()
-            for b in range(args.num_batches):
+        for i in range(config.num_epochs):
+            reader.reset_batches()
+            for b in range(config.num_batches):
                 start = time.time()
 
                 # setup the feed dict
-                x, k, n, e, y = data_loader.next_batch()
-                feed = { model.targets: y,
-                         model.encoder.seqs_cell_mean_init:  model.encoder.seqs_cell_mean_init.eval(),
-                         model.encoder.kw_cell_mean_init: model.encoder.kw_cell_mean_init.eval(),
-                         model.encoder.seqs_cell_stdv_init: model.encoder.seqs_cell_stdv_init.eval(),
-                         model.encoder.kw_cell_stdv_init: model.encoder.kw_cell_stdv_init.eval()
-                       }
-                for j in range(args.max_seqs):
-                    feed[model.encoder.seqs[j].name] = x[j]
-                for j in range(args.max_keywords):
-                    feed[model.encoder.keywords[j].name] = k[j]
-                for j in range(args.max_ast_depth):
+                ev_data, n, e, y = reader.next_batch()
+                feed = { model.targets: y }
+                for j, ev in enumerate(config.evidence):
+                    for k in range(ev.max_num):
+                        feed[model.encoder.inputs[j][k].name] = ev_data[j][k]
+                for j in range(config.decoder.max_ast_depth):
                     feed[model.decoder.nodes[j].name] = n[j]
                     feed[model.decoder.edges[j].name] = e[j]
+                for cell_init in model.encoder.init:
+                    feed[cell_init] = cell_init.eval(session=sess)
 
                 # run the optimizer
                 cost, latent, generation, mean, stdv, _ = sess.run([model.cost,
@@ -65,87 +97,30 @@ def train(args):
                                                                 model.encoder.psi_stdv,
                                                                 model.train_op], feed)
                 end = time.time()
-                step = i * args.num_batches + b
-                if step % args.print_every == 0:
+                step = i * config.num_batches + b
+                if step % config.print_step == 0:
                     print('{}/{} (epoch {}), latent: {:.3f}, generation: {:.3f}, cost: {:.3f}, '\
                             'mean: {:.3f}, stdv: {:.3f}, time: {:.3f}'.format(step,
-                            args.num_epochs * args.num_batches, i, np.mean(latent), generation,
+                            config.num_epochs * config.num_batches, i, np.mean(latent), generation,
                             np.mean(cost), np.mean(mean), np.mean(stdv), end - start))
-            checkpoint_path = os.path.join(args.save_dir, 'model.ckpt')
+            checkpoint_path = os.path.join(clargs.save, 'model.ckpt')
             saver.save(sess, checkpoint_path)
-            print('model saved to {}'.format(checkpoint_path))
-
-
-def check_compat(args, data_loader):
-    # check if all necessary files exist 
-    assert os.path.isdir(args.init_from),' %s must be a a path' % args.init_from
-    assert os.path.isfile(os.path.join(args.init_from, 'config.pkl')), \
-                'config.pkl file does not exist in path %s' % args.init_from
-    assert os.path.isfile(os.path.join(args.init_from, 'chars_vocab.pkl')), \
-                'chars_vocab.pkl.pkl file does not exist in path %s' % args.init_from
-    ckpt = tf.train.get_checkpoint_state(args.init_from)
-    assert ckpt,'No checkpoint found'
-    assert ckpt.model_checkpoint_path,'No model path found in checkpoint'
-
-    # open old config and check if models are compatible
-    with open(os.path.join(args.init_from, 'config.pkl'), 'rb') as f:
-        saved_model_args = pickle.load(f)
-    need_be_same = ['cell', 'seqs_rnn_units', 'kw_ffnn_units', 'decoder_rnn_units', 'latent_size', 'max_seqs', 
-                        'max_seq_length', 'max_keywords', 'max_ast_depth']
-    for checkme in need_be_same:
-        assert vars(saved_model_args)[checkme] == vars(args)[checkme], \
-                    'Command line argument and saved model disagree on "%s" '%checkme
-    
-    # open saved vocab/dict and check if vocabs/dicts are compatible
-    with open(os.path.join(args.init_from, 'chars_vocab.pkl'), 'rb') as f:
-        input_chars_seqs, input_vocab_seqs, input_chars_kws, input_vocab_kws, \
-                target_chars, target_vocab = pickle.load(f)
-    assert input_chars_seqs == data_loader.input_chars_seqs and \
-           input_vocab_seqs == data_loader.input_vocab_seqs and \
-           input_chars_kws == data_loader.input_chars_kws and \
-           input_vocab_kws == data_loader.input_vocab_kws and \
-           target_chars == data_loader.target_chars and \
-           target_vocab == data_loader.target_vocab, \
-           'Data and saved model disagree on character vocabulary!'
-    return ckpt
+            print('Model checkpointed: {}'.format(checkpoint_path))
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser()
+    parser = argparse.ArgumentParser(formatter_class=argparse.RawDescriptionHelpFormatter,
+            description=textwrap.dedent(HELP))
     parser.add_argument('input_file', type=str, nargs=1,
                        help='input data file')
-    parser.add_argument('--save_dir', type=str, default='save',
-                       help='directory to store checkpointed models')
-    parser.add_argument('--cell', type=str, default='rnn', choices=['rnn', 'lstm'],
-                       help='type of RNN cell')
-    parser.add_argument('--latent_size', type=int, default=8,
-                       help='dimensionality of latent space')
-    parser.add_argument('--seqs_rnn_units', type=int, default=8,
-                       help='size of encoder RNN (sequencces) hidden state')
-    parser.add_argument('--kw_ffnn_units', type=int, default=8,
-                       help='size of encoder feed forward NN (keywords) hidden state')
-    parser.add_argument('--decoder_rnn_units', type=int, default=128,
-                       help='size of decoder RNN hidden state')
-    parser.add_argument('--batch_size', type=int, default=50,
-                       help='minibatch size')
-    parser.add_argument('--max_seqs', type=int, default=16,
-                       help='maximum number of sequences (including subsets) from a program')
-    parser.add_argument('--max_seq_length', type=int, default=10,
-                       help='maximum RNN sequence length')
-    parser.add_argument('--max_keywords', type=int, default=16,
-                       help='maximum number of keywords for a program')
-    parser.add_argument('--kw_weight', type=int, default=10,
-                       help='weight given to signal from keywords as opposed to sequences')
-    parser.add_argument('--max_ast_depth', type=int, default=20,
-                       help='maximum depth of AST')
-    parser.add_argument('--weight_loss', type=int, default=1000,
-                       help='weight given to generation loss as opposed to latent loss')
-    parser.add_argument('--num_epochs', type=int, default=50,
-                       help='number of epochs')
-    parser.add_argument('--learning_rate', type=float, default=0.002,
-                       help='learning rate')
-    parser.add_argument('--print_every', type=int, default=1,
-                       help='print training output every n steps')
-    parser.add_argument('--init_from', type=str, default=None,
-                       help='continue training from previously checkpointed model saved here')
+    parser.add_argument('--save', type=str, default='save',
+                       help='checkpoint model during training here')
+    parser.add_argument('--config', type=str, default=None,
+                       help='config file (see description above for help)')
+    parser.add_argument('--continue_from', type=str, default=None,
+                       help='ignore config options and continue training model checkpointed here')
     args = parser.parse_args()
+    if args.config and args.continue_from:
+        parser.error('Do not provide --config if you are continuing from checkpointed model')
+    if not args.config and not args.continue_from:
+        parser.error('Provide at least one option: --config or --continue_from')
     train(args)

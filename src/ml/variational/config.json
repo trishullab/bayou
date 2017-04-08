@@ -1,0 +1,29 @@
+{
+    "cell": "lstm",
+    "latent_size": 10,
+    "batch_size": 50,
+    "num_epochs": 100,
+    "weight_loss": 1000,
+    "learning_rate": 0.02,
+    "print_step": 1,
+    "evidence": [
+        {
+            "name": "sequences",
+            "max_num": 20,
+            "max_length": 10,
+            "rnn_units": 10,
+            "tile": 1
+        },
+        {
+            "name": "keywords",
+            "max_num": 15,
+            "max_length": 1,
+            "rnn_units": 10,
+            "tile": 10
+        }
+    ],
+    "decoder": {
+        "rnn_units": 100,
+        "max_ast_depth": 20
+    }
+}
