@@ -122,8 +122,8 @@ class Reader():
 
     def next_batch(self):
         batch = next(self.batches)
-        ev_data = batch[:len(self.config.evidence)]
-        n, e, y = batch[len(self.config.evidence):]
+        n, e, y = batch[:3]
+        ev_data = batch[3:]
 
         # reshape the batch into required format
         rev = [ev.reshape(data) for ev, data in zip(self.config.evidence, ev_data)]
@@ -133,7 +133,7 @@ class Reader():
         return rev, rn, re, y
 
     def reset_batches(self):
-        self.batches = iter(zip(*self.inputs, self.nodes, self.edges, self.targets))
+        self.batches = iter(zip(self.nodes, self.edges, self.targets, *self.inputs))
 
 if __name__ == '__main__':
     print_data(sys.argv[1])
