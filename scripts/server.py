@@ -8,7 +8,7 @@ import threading
 import time
 import traceback
 
-from bayou.infer import VariationalPredictor
+from bayou.infer import BayesianPredictor
 
 def start_server(clargs):
     assert not os.path.exists(clargs.pipe), \
@@ -17,7 +17,7 @@ def start_server(clargs):
     with tf.Session() as sess, open(clargs.log, 'a') as logfile:
         print('\n\n\nCreated pipe: {}. MAKE SURE USERS HAVE WRITE ACCESS TO IT\n\n'\
                 .format(clargs.pipe))
-        predictor = VariationalPredictor(clargs.save, sess)
+        predictor = BayesianPredictor(clargs.save, sess)
         log('Server started and listening to: {}'.format(clargs.pipe), logfile)
         req = 0
         try:

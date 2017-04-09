@@ -4,9 +4,7 @@ import numpy as np
 
 import argparse
 import os
-import sys
 import json
-import pickle
 import collections
 
 from bayou.model import Model
@@ -17,7 +15,7 @@ MAX_GEN_UNTIL_STOP = 20
 
 def infer(clargs):
     with tf.Session() as sess:
-        predictor = VariationalPredictor(clargs.save, sess)
+        predictor = BayesianPredictor(clargs.save, sess)
         err = 0
         asts = []
         if clargs.evidence_file:
@@ -57,7 +55,7 @@ def infer(clargs):
             json.dump({ 'asts': asts }, fp=f, indent=2)
     print('Number of errors: {}'.format(err))
 
-class VariationalPredictor(object):
+class BayesianPredictor(object):
 
     def __init__(self, save, sess):
         self.sess = sess

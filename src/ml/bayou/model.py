@@ -2,7 +2,7 @@ import tensorflow as tf
 from tensorflow.contrib import legacy_seq2seq
 import numpy as np
 
-from bayou.architecture import VariationalEncoder, VariationalDecoder
+from bayou.architecture import BayesianEncoder, BayesianDecoder
 from bayou.data_reader import CHILD_EDGE, SIBLING_EDGE
 
 class Model():
@@ -18,7 +18,7 @@ class Model():
             config.decoder.rnn_units = int(config.decoder.rnn_units / 2)
 
         # setup the encoder
-        self.encoder = VariationalEncoder(config)
+        self.encoder = BayesianEncoder(config)
 
         # sample from Normal(0,1) and reparameterize
         samples = tf.random_normal([config.batch_size, config.latent_size], 0., 1., tf.float32)
@@ -30,7 +30,7 @@ class Model():
         lift_b = tf.get_variable('lift_b', [config.decoder.rnn_units
                                                             * (2 if config.cell == 'lstm' else 1)])
         self.initial_state = tf.nn.xw_plus_b(self.psi, lift_w, lift_b)
-        self.decoder = VariationalDecoder(config, initial_state=self.initial_state, infer=infer)
+        self.decoder = BayesianDecoder(config, initial_state=self.initial_state, infer=infer)
 
         # get the decoder outputs
         output = tf.reshape(tf.concat(self.decoder.outputs, 1), [-1, self.decoder.cell.output_size])

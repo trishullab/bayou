@@ -1,8 +1,5 @@
 from __future__ import print_function
-import os
-import sys
 import json
-import itertools
 import numpy as np
 
 from bayou.utils import C0, CHILD_EDGE, SIBLING_EDGE
@@ -134,6 +131,3 @@ class Reader():
 
     def reset_batches(self):
         self.batches = iter(zip(self.nodes, self.edges, self.targets, *self.inputs))
-
-if __name__ == '__main__':
-    print_data(sys.argv[1])

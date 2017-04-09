@@ -1,10 +1,9 @@
-from itertools import chain
-
 import tensorflow as tf
 from tensorflow.contrib import rnn
 from tensorflow.contrib import legacy_seq2seq
+from itertools import chain
 
-class VariationalEncoder(object):
+class BayesianEncoder(object):
     def __init__(self, config):
 
         self.inputs = [ev.placeholder(config) for ev in config.evidence]
@@ -31,7 +30,7 @@ class VariationalEncoder(object):
         self.psi_mean, self.psi_stdv = psi
 
 
-class VariationalDecoder(object):
+class BayesianDecoder(object):
     def __init__(self, config, initial_state, infer=False):
 
         if config.cell == 'lstm':
