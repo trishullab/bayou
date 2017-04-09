@@ -10,78 +10,74 @@ import pickle
 import collections
 
 from variational.model import Model
-from variational.utils import weighted_pick, get_keywords
-from variational.data_reader import sub_sequences, CHILD_EDGE, SIBLING_EDGE
+from variational.utils import CHILD_EDGE, SIBLING_EDGE
+from variational.utils import read_config
 
 MAX_GEN_UNTIL_STOP = 20
 
-def predict_asts(args):
+def predict_asts(clargs):
     with tf.Session() as sess:
-        predictor = VariationalPredictor(args.save_dir, sess)
-        c, err = 0, 0
+        predictor = VariationalPredictor(clargs.save, sess)
+        err = 0
         asts = []
-        while c < args.n:
-            print('generated {} ASTs ({} errors)'.format(c, err), end='\r')
+        if clargs.evidence_file:
+            with open(clargs.evidence_file) as f:
+                js = json.load(f)
             try:
-                if args.random:
+                inputs = [ev.reshape(ev.wrangle([ev.read_data(js, infer=True)])) for ev in
+                            predictor.model.config.evidence]
+            except AssertionError:
+                print('Given evidence does not follow saved model config')
+                return
+        for c in range(clargs.n):
+            print('Generated {} ASTs ({} errors)'.format(c, err), end='\r')
+            try:
+                if clargs.random:
                     psi = predictor.psi_random()
                 else:
-                    seqs, kws = [], []
-                    if args.seqs_file is not None:
-                        with open(args.seqs_file) as f:
-                            seqs = json.load(f)
-                        seqs = sub_sequences(seqs, predictor.model.args)
-                    if args.keywords_file is not None:
-                        with open(args.keywords_file) as f:
-                            kws = list(set(json.load(f) + get_keywords(seqs)))
-                            kws = [k for k in kws if k in predictor.input_vocab_kws]
-                    psi = predictor.psi_from_evidence(seqs, kws)
+                    psi = predictor.psi_from_evidence(inputs)
                 ast, p_ast = predictor.generate_ast(psi)
-                if args.plot2d:
+                if clargs.plot2d:
                     ast['psi'] = list(psi[0])
                 ast['p_ast'] = p_ast
                 asts.append(ast)
                 c += 1
             except AssertionError:
                 err += 1
-    if args.plot2d:
-        if predictor.model.args.latent_size == 2:
+    if clargs.plot2d:
+        if predictor.model.config.latent_size == 2:
             plot2d(asts)
         else:
             print('Latent space is not 2-dimensional.. cannot plot')
 
-    if args.output_file is None:
+    if clargs.output_file is None:
         print(json.dumps({ 'asts': asts }, indent=2))
     else:
-        with open(args.output_file, 'w') as f:
+        with open(clargs.output_file, 'w') as f:
             json.dump({ 'asts': asts }, fp=f, indent=2)
     print('Number of errors: {}'.format(err))
 
 class VariationalPredictor(object):
 
-    def __init__(self, save_dir, sess):
+    def __init__(self, save, sess):
         self.sess = sess
 
-        # load the saved vocabularies
-        with open(os.path.join(save_dir, 'config.pkl'), 'rb') as f:
-            saved_args = pickle.load(f)
-        with open(os.path.join(save_dir, 'chars_vocab.pkl'), 'rb') as f:
-            _, self.input_vocab_seqs, _, self.input_vocab_kws, \
-                    self.target_chars, self.target_vocab = pickle.load(f)
-        self.model = Model(saved_args, True)
+        # load the saved config
+        with open(os.path.join(save, 'config.json')) as f:
+            config = read_config(json.load(f), True)
+        self.model = Model(config, True)
 
         # restore the saved model
         tf.global_variables_initializer().run()
         saver = tf.train.Saver(tf.global_variables())
-        ckpt = tf.train.get_checkpoint_state(save_dir)
-        assert ckpt and ckpt.model_checkpoint_path, 'Malformed model files'
+        ckpt = tf.train.get_checkpoint_state(save)
         saver.restore(self.sess, ckpt.model_checkpoint_path)
 
     def psi_random(self):
-        return np.random.normal(size=[1, self.model.args.latent_size])
+        return np.random.normal(size=[1, self.model.config.latent_size])
 
-    def psi_from_evidence(self, seqs, kws):
-        return self.model.infer_psi(self.sess, seqs, kws, self.input_vocab_seqs, self.input_vocab_kws)
+    def psi_from_evidence(self, evidences):
+        return self.model.infer_psi(self.sess, evidences, feed_only=True)
 
     def gen_until_STOP(self, psi, in_nodes, in_edges, check_call=False):
         ast = []
@@ -90,10 +86,10 @@ class VariationalPredictor(object):
         num = 0
         while True:
             assert num < MAX_GEN_UNTIL_STOP # exception caught in main
-            dist = self.model.infer_ast(self.sess, psi, nodes, edges, self.target_vocab)
-            idx = weighted_pick(dist)
+            dist = self.model.infer_ast(self.sess, psi, nodes, edges)
+            idx = np.random.choice(range(len(dist)), p=dist)
             p_ast *= dist[idx]
-            prediction = self.target_chars[idx]
+            prediction = self.model.config.decoder.chars[idx]
             nodes += [prediction]
             if check_call: # exception caught in main
                 assert prediction not in [ 'DBranch', 'DExcept', 'DLoop', 'DSubTree' ]
@@ -188,24 +184,22 @@ def plot2d(asts):
         
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('--save_dir', type=str, default='save',
-                       help='model directory to laod from')
-    parser.add_argument('--seqs_file', type=str, default=None,
-                       help='input file containing set of sequences (in JSON)')
-    parser.add_argument('--keywords_file', type=str, default=None,
-                       help='input file containing keywords')
+    parser.add_argument('--save', type=str, default='save',
+                       help='directory to laod model from')
+    parser.add_argument('--evidence_file', type=str, default=None,
+                       help='input file containing evidences (in JSON)')
     parser.add_argument('--random', action='store_true',
-                       help='print random ASTs by sampling from Normal(0,1) (ignores sequences)')
+                       help='print random ASTs by sampling from Normal(0,1) (ignores evidences)')
     parser.add_argument('--plot2d', action='store_true',
-                       help='(requires --random) plots the (2d) sampled psi values in scatterplot')
+                       help='plots the (2d) sampled psi values in scatterplot (requires --random)')
     parser.add_argument('--output_file', type=str, default=None,
                        help='file to print AST (in JSON) to')
     parser.add_argument('--n', type=int, default=1,
                        help='number of ASTs to sample/synthesize')
 
-    args = parser.parse_args()
-    if args.seqs_file is None and args.keywords_file is None and not args.random:
-        parser.error('At least one of --seqs_file or --keywords_file or --random is required')
-    if args.plot2d and not args.random:
+    clargs = parser.parse_args()
+    if not clargs.evidence_file and not clargs.random:
+        parser.error('Provide at least one option: --evidence_file or --random')
+    if clargs.plot2d and not clargs.random:
         parser.error('--plot2d requires --random (otherwise there is only one psi to plot)')
-    predict_asts(args)
+    predict_asts(clargs)

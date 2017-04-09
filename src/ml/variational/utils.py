@@ -1,10 +1,4 @@
-import os
-import re
-import pickle
-import itertools
 import argparse
-
-import numpy as np
 import tensorflow as tf
 
 CONFIG_GENERAL = ['cell', 'latent_size', 'batch_size', 'weight_loss', 'num_epochs', \
@@ -20,36 +14,6 @@ SIBLING_EDGE = 'H'
 def length(tensor):
     elems = tf.sign(tf.reduce_max(tensor, axis=2))
     return tf.reduce_sum(elems, axis=1)
-
-def weighted_pick(weights):
-    t = np.cumsum(weights)
-    s = np.sum(weights)
-    return int(np.searchsorted(t, np.random.rand(1)*s))
-
-def get_keywords(seqs):
-
-    def split_camel(s):
-        s1 = re.sub('(.)([A-Z][a-z]+)', r'\1#\2', s) # LC followed by UC
-        s1 = re.sub('([a-z0-9])([A-Z])', r'\1#\2', s1) # UC followed by LC
-        return s1.split('#')
-
-    def get_name(call):
-        q = call.split('(')[0].split('.')
-        cls, name = q[-2], q[-1]
-        return cls + '#' + name
-
-    calls = set([get_name(call) for sequence in seqs for call in sequence])
-    keywords = list(itertools.chain.from_iterable([split_camel(call) for call in calls]))
-    return list(set([kw.lower() for kw in keywords if not kw == '']))
-
-def sub_sequences(seqs):
-    sub_seqs = []
-    for seq in seqs:
-        cuts = [seq[:i] for i in range(1, len(seq)+1)]
-        for s in cuts:
-            if s not in sub_seqs:
-                sub_seqs += [s]
-    return sub_seqs
 
 from variational.evidence import Evidence
 

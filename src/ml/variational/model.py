@@ -53,40 +53,32 @@ class Model():
         if not infer:
             print('Model parameters: {}'.format(np.sum(var_params)))
 
-    def infer_psi(self, sess, seqs, kws, input_vocab_seqs, input_vocab_kws):
-        # apply the dict on inputs (batch_size is 1 during inference)
-        x = np.zeros((1, self.config.max_seqs, self.config.max_seq_length, 1), dtype=np.int32)
-        k = np.zeros((1, self.config.max_keywords, 1, 1), dtype=np.int32)
-        for i, seq in enumerate(seqs):
-            x[0, i, :len(seq), 0] = list(map(input_vocab_seqs.get, seq))
-        k[0, :len(kws), 0, 0] = list(map(input_vocab_kws.get, kws))
-
-        # reshape into list of tensors
-        x = [x[:, i, :, :] for i in range(self.config.max_seqs)]
-        k = [k[:, i, :, :] for i in range(self.config.max_keywords)]
+    def infer_psi(self, sess, evidences, feed_only=False):
+        if feed_only:
+            inputs = evidences
+        else:
+            # read, wrangle (with batch_size 1) and reshape the data
+            inputs = [ev.reshape(ev.wrangle([ev.read_data(evidences)])) for ev in
+                        self.config.evidence]
 
         # setup initial states and feed
-        feed = {
-                self.encoder.seqs_cell_mean_init: self.encoder.seqs_cell_mean_init.eval(session=sess),
-                self.encoder.kw_cell_mean_init: self.encoder.kw_cell_mean_init.eval(session=sess),
-                self.encoder.seqs_cell_stdv_init: self.encoder.seqs_cell_stdv_init.eval(session=sess),
-                self.encoder.kw_cell_stdv_init: self.encoder.kw_cell_stdv_init.eval(session=sess)
-               }
-        for i in range(self.config.max_seqs):
-            feed[self.encoder.seqs[i].name] = x[i]
-        for i in range(self.config.max_keywords):
-            feed[self.encoder.keywords[i].name] = k[i]
+        feed = {}
+        for j, ev in enumerate(self.config.evidence):
+            for k in range(ev.max_num):
+                feed[self.encoder.inputs[j][k].name] = inputs[j][k]
+        for cell_init in self.encoder.init:
+            feed[cell_init] = cell_init.eval(session=sess)
         psi = sess.run(self.psi, feed)
         return psi
 
-    def infer_ast(self, sess, psi, nodes, edges, target_vocab):
+    def infer_ast(self, sess, psi, nodes, edges):
         # run the encoder (or use the given psi) and get decoder's start state
         state = sess.run(self.initial_state, { self.psi: psi })
 
         # run the decoder for every time step
         for node, edge in zip(nodes, edges):
             assert edge == CHILD_EDGE or edge == SIBLING_EDGE, 'invalid edge: {}'.format(edge)
-            n = np.array([target_vocab[node]], dtype=np.int32)
+            n = np.array([self.config.decoder.vocab[node]], dtype=np.int32)
             e = np.array([edge == CHILD_EDGE], dtype=np.bool)
 
             feed = { self.decoder.initial_state: state,

@@ -2,6 +2,7 @@ package edu.rice.bayou.annotations;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import edu.rice.bayou.dsl.Sequence;
 import org.apache.commons.cli.*;
 import org.apache.commons.io.FileUtils;
 import org.eclipse.jdt.core.dom.*;
@@ -16,7 +17,7 @@ public class EvidenceExtractor extends ASTVisitor {
 
     class JSONOutputWrapper {
         String keywords;
-        List<List<String>> sequences;
+        List<Sequence> sequences;
 
         public JSONOutputWrapper() {
             this.keywords = "";
@@ -106,11 +107,11 @@ public class EvidenceExtractor extends ASTVisitor {
                     output.keywords += " " + val;
                 }
                 else if (type.equals("sequence")) {
-                    List<String> sequence = new ArrayList<>();
+                    Sequence sequence = new Sequence();
                     List<Expression> calls = ((ArrayInitializer) value.getValue()).expressions();
                     for (Expression e : calls) {
                         String call = ((StringLiteral) e).getLiteralValue();
-                        sequence.add(call);
+                        sequence.addCall(call);
                     }
                     output.sequences.add(sequence);
                 }

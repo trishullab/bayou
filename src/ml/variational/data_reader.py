@@ -34,7 +34,7 @@ class Reader():
         raw_targets = raw_targets[:sz]
 
         # wrangle the evidences and targets into numpy arrays
-        self.inputs = [ev.wrangle(data, sz) for ev, data in zip(config.evidence, raw_evidences)]
+        self.inputs = [ev.wrangle(data) for ev, data in zip(config.evidence, raw_evidences)]
         self.nodes = np.zeros((sz, config.decoder.max_ast_depth), dtype=np.int32)
         self.edges = np.zeros((sz, config.decoder.max_ast_depth), dtype=np.bool)
         self.targets = np.zeros((sz, config.decoder.max_ast_depth), dtype=np.int32)

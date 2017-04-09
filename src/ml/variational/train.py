@@ -47,7 +47,7 @@ Config options should be given as a JSON file (see config.json for example):
 """
 
 def train(clargs):
-    config_file = clargs.config if args.continue_from is None \
+    config_file = clargs.config if clargs.continue_from is None \
                                 else os.path.join(clargs.continue_from, 'config.json')
     with open(config_file) as f:
         config = read_config(json.load(f), clargs.continue_from)
@@ -103,9 +103,9 @@ def train(clargs):
                             'mean: {:.3f}, stdv: {:.3f}, time: {:.3f}'.format(step,
                             config.num_epochs * config.num_batches, i, np.mean(latent), generation,
                             np.mean(cost), np.mean(mean), np.mean(stdv), end - start))
-            checkpoint_path = os.path.join(clargs.save, 'model.ckpt')
-            saver.save(sess, checkpoint_path)
-            print('Model checkpointed: {}'.format(checkpoint_path))
+            checkpoint_dir = os.path.join(clargs.save, 'model.ckpt')
+            saver.save(sess, checkpoint_dir)
+            print('Model checkpointed: {}'.format(checkpoint_dir))
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(formatter_class=argparse.RawDescriptionHelpFormatter,
@@ -118,9 +118,9 @@ if __name__ == '__main__':
                        help='config file (see description above for help)')
     parser.add_argument('--continue_from', type=str, default=None,
                        help='ignore config options and continue training model checkpointed here')
-    args = parser.parse_args()
-    if args.config and args.continue_from:
+    clargs = parser.parse_args()
+    if clargs.config and clargs.continue_from:
         parser.error('Do not provide --config if you are continuing from checkpointed model')
-    if not args.config and not args.continue_from:
+    if not clargs.config and not clargs.continue_from:
         parser.error('Provide at least one option: --config or --continue_from')
-    train(args)
+    train(clargs)

@@ -1,9 +1,11 @@
 import tensorflow as tf
 from tensorflow.contrib import rnn
+from itertools import chain
 import numpy as np
+import re
 
 from variational.utils import CONFIG_ENCODER, CONFIG_CHARS_VOCAB, C0
-from variational.utils import length, sub_sequences
+from variational.utils import length
 
 class Evidence(object):
 
@@ -32,13 +34,13 @@ class Evidence(object):
             evidences.append(e)
         return evidences
 
-    def read_data(self, program):
+    def read_data(self, program, infer=False):
         raise NotImplementedError('read_data() has not been implemented')
 
     def set_vocab_chars(self, data):
         raise NotImplementedError('set_vocab_chars() has not been implemented')
 
-    def wrangle(self, data, sz):
+    def wrangle(self, data):
         raise NotImplementedError('wrangle() has not been implemented')
 
     def placeholder(self, config):
@@ -81,8 +83,8 @@ class Evidence(object):
 
 class Sequences(Evidence):
 
-    def read_data(self, program):
-        sequences = sub_sequences([sequence['calls'] for sequence in program['sequences']])
+    def read_data(self, program, infer=False):
+        sequences = self.sub_sequences([sequence['calls'] for sequence in program['sequences']])
         assert len(sequences) <= self.max_num
         assert all([len(sequence) <= self.max_length for sequence in sequences])
         return sequences
@@ -92,17 +94,31 @@ class Sequences(Evidence):
         self.vocab = dict(zip(self.chars, range(len(self.chars))))
         self.vocab_size = len(self.vocab)
 
-    def wrangle(self, data, sz):
-        sequences = np.zeros((sz, self.max_num, self.max_length, 1), dtype=np.int32)
+    def wrangle(self, data):
+        sequences = np.zeros((len(data), self.max_num, self.max_length, 1), dtype=np.int32)
         for i, set_of_seqs in enumerate(data):
             for j, seq in enumerate(set_of_seqs):
                 sequences[i, j, :len(seq), 0] = list(map(self.vocab.get, seq))
         return sequences
 
+    def sub_sequences(self, sequences):
+        ret = []
+        for sequence in sequences:
+            cuts = [sequence[:i] for i in range(1, len(sequence)+1)]
+            for s in cuts:
+                if s not in ret:
+                    ret.append(s)
+        return ret
+
 class Keywords(Evidence):
 
-    def read_data(self, program):
+    def read_data(self, program, infer=False):
         keywords = program['keywords']
+        if infer:
+            if type(keywords) is str:
+                keywords = keywords.split()
+            keywords += self.keywords_from_sequences(program['sequences'])
+            keywords = list(set([k for k in keywords if k in self.vocab]))
         assert len(keywords) <= self.max_num
         return keywords
 
@@ -111,8 +127,25 @@ class Keywords(Evidence):
         self.vocab = dict(zip(self.chars, range(len(self.chars))))
         self.vocab_size = len(self.vocab)
 
-    def wrangle(self, data, sz):
-        keywords = np.zeros((sz, self.max_num, 1, 1), dtype=np.int32)
+    def wrangle(self, data):
+        keywords = np.zeros((len(data), self.max_num, 1, 1), dtype=np.int32)
         for i, kws in enumerate(data):
             keywords[i, :len(kws), 0, 0] = list(map(self.vocab.get, kws))
         return keywords
+
+    def keywords_from_sequences(self, sequences):
+
+        def split_camel(s):
+            s1 = re.sub('(.)([A-Z][a-z]+)', r'\1#\2', s) # LC followed by UC
+            s1 = re.sub('([a-z0-9])([A-Z])', r'\1#\2', s1) # UC followed by LC
+            return s1.split('#')
+
+        def get_name(call):
+            q = call.split('(')[0].split('.')
+            cls, name = q[-2], q[-1]
+            return cls + '#' + name
+
+        calls = set([get_name(call) for sequence in sequences for call in sequence['calls']])
+        keywords = list(chain.from_iterable([split_camel(call) for call in calls]))
+        return list(set([kw.lower() for kw in keywords if not kw == '']))
+
