@@ -8,10 +8,10 @@ import os
 import json
 import textwrap
 
-from variational.data_reader import Reader
-from variational.model import Model
-from variational.evidence import Evidence
-from variational.utils import read_config, dump_config
+from bayou.data_reader import Reader
+from bayou.model import Model
+from bayou.evidence import Evidence
+from bayou.utils import read_config, dump_config
 
 HELP = """\
 Config options should be given as a JSON file (see config.json for example):

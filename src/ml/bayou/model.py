@@ -2,8 +2,8 @@ import tensorflow as tf
 from tensorflow.contrib import legacy_seq2seq
 import numpy as np
 
-from variational.architecture import VariationalEncoder, VariationalDecoder
-from variational.data_reader import CHILD_EDGE, SIBLING_EDGE
+from bayou.architecture import VariationalEncoder, VariationalDecoder
+from bayou.data_reader import CHILD_EDGE, SIBLING_EDGE
 
 class Model():
     def __init__(self, config, infer=False):

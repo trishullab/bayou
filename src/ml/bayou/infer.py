@@ -9,9 +9,9 @@ import json
 import pickle
 import collections
 
-from variational.model import Model
-from variational.utils import CHILD_EDGE, SIBLING_EDGE
-from variational.utils import read_config
+from bayou.model import Model
+from bayou.utils import CHILD_EDGE, SIBLING_EDGE
+from bayou.utils import read_config
 
 MAX_GEN_UNTIL_STOP = 20
 

@@ -5,7 +5,7 @@ import json
 import itertools
 import numpy as np
 
-from variational.utils import C0, CHILD_EDGE, SIBLING_EDGE
+from bayou.utils import C0, CHILD_EDGE, SIBLING_EDGE
 
 class Reader():
     def __init__(self, clargs, config):
