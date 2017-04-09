@@ -8,7 +8,7 @@ import threading
 import time
 import traceback
 
-from variational.predict_ast import VariationalPredictor
+from variational.infer import VariationalPredictor
 
 def start_server(clargs):
     assert not os.path.exists(clargs.pipe), \

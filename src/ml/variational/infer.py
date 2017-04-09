@@ -15,7 +15,7 @@ from variational.utils import read_config
 
 MAX_GEN_UNTIL_STOP = 20
 
-def predict_asts(clargs):
+def infer(clargs):
     with tf.Session() as sess:
         predictor = VariationalPredictor(clargs.save, sess)
         err = 0
@@ -202,4 +202,4 @@ if __name__ == '__main__':
         parser.error('Provide at least one option: --evidence_file or --random')
     if clargs.plot2d and not clargs.random:
         parser.error('--plot2d requires --random (otherwise there is only one psi to plot)')
-    predict_asts(clargs)
+    infer(clargs)
