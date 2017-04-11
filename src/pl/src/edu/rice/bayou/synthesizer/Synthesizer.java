@@ -102,12 +102,17 @@ public class Synthesizer {
         URL[] urls = urlList.toArray(new URL[0]);
         classLoader = URLClassLoader.newInstance(urls);
 
+        List<String> programs = new ArrayList<>();
         for (DSubTree ast : asts) {
             Visitor visitor = new Visitor(ast, new Document(source), cu);
             try {
                 cu.accept(visitor);
-                System.out.println(visitor.synthesizedProgram);
-                System.out.println("/* --- End of program --- */\n\n");
+                String program = visitor.synthesizedProgram.replaceAll("\\s", "");
+                if (! programs.contains(program)) {
+                    programs.add(program);
+                    System.out.println(visitor.synthesizedProgram);
+                    System.out.println("/* --- End of program --- */\n\n");
+                }
             } catch (Exception e) { }
         }
     }
