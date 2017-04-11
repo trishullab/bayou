@@ -28,6 +28,8 @@ class Evidence(object):
                 e = Sequences()
             elif name == 'keywords':
                 e = Keywords()
+            elif name == 'javadoc':
+                e = Javadoc()
             else:
                 raise TypeError('Invalid evidence name: {}'.format(name))
             e.init_config(evidence, chars_vocab)
@@ -148,4 +150,25 @@ class Keywords(Evidence):
         calls = set([get_name(call) for sequence in sequences for call in sequence['calls']])
         keywords = list(chain.from_iterable([split_camel(call) for call in calls]))
         return list(set([kw.lower() for kw in keywords if not kw == '']))
+
+class Javadoc(Evidence):
+
+    def read_data(self, program, infer=False):
+        javadoc = program['javadoc']
+        if not javadoc:
+            javadoc = '_UNK_'
+        javadoc = javadoc.split()
+        assert len(javadoc) <= self.max_length
+        return javadoc
+
+    def set_vocab_chars(self, data):
+        self.chars = [C0] + list(set([w for point in data for w in point]))
+        self.vocab = dict(zip(self.chars, range(len(self.chars))))
+        self.vocab_size = len(self.vocab)
+
+    def wrangle(self, data):
+        javadoc = np.zeros((len(data), 1, self.max_length, 1), dtype=np.int32)
+        for i, jd in enumerate(data):
+            javadoc[i, 0, :len(jd), 0] = list(map(self.vocab.get, jd))
+        return javadoc
 

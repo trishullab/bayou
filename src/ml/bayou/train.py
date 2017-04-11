@@ -36,7 +36,14 @@ Config options should be given as a JSON file (see config.json for example):
             "max_num": 20,       | Maximum number of keywords in each data point
             "max_length": 1,     | Keywords do not have a 2nd dimension (length)
             "rnn_units": 10,     | Size of the encoder hidden state
-            "tile": 10           | Repeat the encoding n times (to boost its signal)
+            "tile": 100          | Repeat the encoding n times (to boost its signal)
+        },                       | 
+        {                        | 
+            "name": "javadoc",   | Name of evidence ("javadoc")                      
+            "max_num": 1,        | Javadoc does not have first dimension (num)
+            "max_length": 32,    | Maximum number of words in Javadoc
+            "rnn_units": 10,     | Size of the encoder hidden state
+            "tile": 100          | Repeat the encoding n times (to boost its signal)
         }                        | 
     ],                           |
     "decoder": {                 | Provide parameters for the decoder here

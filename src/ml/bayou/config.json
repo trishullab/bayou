@@ -20,6 +20,13 @@
             "max_length": 1,
             "rnn_units": 10,
             "tile": 100
+        },
+        {
+            "name": "javadoc",
+            "max_num": 1,
+            "max_length": 32,
+            "rnn_units": 10,
+            "tile": 100
         }
     ],
     "decoder": {
