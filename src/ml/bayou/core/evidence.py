@@ -4,8 +4,8 @@ from itertools import chain
 import numpy as np
 import re
 
-from bayou.utils import CONFIG_ENCODER, CONFIG_CHARS_VOCAB, C0
-from bayou.utils import length
+from bayou.core.utils import CONFIG_ENCODER, CONFIG_CHARS_VOCAB, C0
+from bayou.core.utils import length
 
 class Evidence(object):
 

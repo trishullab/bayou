@@ -7,9 +7,9 @@ import os
 import json
 import collections
 
-from bayou.model import Model
-from bayou.utils import CHILD_EDGE, SIBLING_EDGE
-from bayou.utils import read_config
+from bayou.core.model import Model
+from bayou.core.utils import CHILD_EDGE, SIBLING_EDGE
+from bayou.core.utils import read_config
 
 MAX_GEN_UNTIL_STOP = 20
 

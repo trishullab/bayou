@@ -15,7 +15,7 @@ def length(tensor):
     elems = tf.sign(tf.reduce_max(tensor, axis=2))
     return tf.reduce_sum(elems, axis=1)
 
-from bayou.evidence import Evidence
+from bayou.core.evidence import Evidence
 
 # convert JSON to config
 def read_config(js, chars_vocab):

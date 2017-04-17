@@ -2,7 +2,7 @@ from __future__ import print_function
 import json
 import numpy as np
 
-from bayou.utils import C0, CHILD_EDGE, SIBLING_EDGE
+from bayou.core.utils import C0, CHILD_EDGE, SIBLING_EDGE
 
 class Reader():
     def __init__(self, clargs, config):
