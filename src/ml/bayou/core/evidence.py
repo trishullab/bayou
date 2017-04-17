@@ -45,6 +45,9 @@ class Evidence(object):
     def wrangle(self, data):
         raise NotImplementedError('wrangle() has not been implemented')
 
+    def sample_stdv(self):
+        return tf.get_variable('sample_stdv', [])
+
     def placeholder(self, config):
         return [tf.placeholder(tf.int32, [config.batch_size, self.max_length, 1], 
                             name='{}{}'.format(self.name, i)) for i in range(self.max_num)]

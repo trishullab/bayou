@@ -19,10 +19,7 @@ class Model():
 
         # setup the encoder
         self.encoder = BayesianEncoder(config)
-
-        # sample from Normal(0,1) and reparameterize
-        samples = tf.random_normal([config.batch_size, config.latent_size], 0., 1., tf.float32)
-        self.psi = self.encoder.psi_mean + (self.encoder.psi_stdv * samples)
+        self.psi = self.encoder.psi_mean + self.encoder.psi_stdv # sampling done in encoder
 
         # setup the decoder with psi as the initial state
         lift_w = tf.get_variable('lift_w', [config.latent_size, config.decoder.rnn_units
