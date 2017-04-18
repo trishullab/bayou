@@ -45,9 +45,6 @@ class Evidence(object):
     def wrangle(self, data):
         raise NotImplementedError('wrangle() has not been implemented')
 
-    def sample_stdv(self):
-        return tf.get_variable('sample_stdv', [])
-
     def placeholder(self, config):
         return [tf.placeholder(tf.int32, [config.batch_size, self.max_length, 1], 
                             name='{}{}'.format(self.name, i)) for i in range(self.max_num)]
@@ -61,7 +58,7 @@ class Evidence(object):
         exists = [tf.not_equal(l, zero) for l in lengths] * self.tile
         return exists
 
-    def encode(self, inputs, config):
+    def encode(self, inputs, config, sample=False):
         cell = rnn.BasicLSTMCell(self.rnn_units, state_is_tuple=False) if config.cell == 'lstm' \
                else rnn.BasicRNNCell(self.rnn_units)
 
@@ -74,6 +71,9 @@ class Evidence(object):
             w = tf.get_variable('w', [cell.state_size, config.latent_size])
             b = tf.get_variable('b', [config.latent_size])
 
+            if sample:
+                stdv = tf.get_variable('sample_stdv', [])
+
             for i, inp in enumerate(inputs):
                 if i > 0:
                     tf.get_variable_scope().reuse_variables()
@@ -81,7 +81,12 @@ class Evidence(object):
                                         sequence_length=length(inp),
                                         initial_state=self.cell_init,
                                         dtype=tf.float32)
-                encodings.append(tf.nn.xw_plus_b(encoding, w, b))
+                latent_encoding = tf.nn.xw_plus_b(encoding, w, b)
+                if sample:
+                    normal_sample = tf.random_normal([config.batch_size, config.latent_size],
+                                        mean=0., stddev=stdv, dtype=tf.float32)
+                    latent_encoding = latent_encoding * normal_sample
+                encodings.append(latent_encoding)
 
         encodings = encodings * self.tile
         return encodings

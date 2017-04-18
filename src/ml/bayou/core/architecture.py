@@ -7,33 +7,28 @@ class BayesianEncoder(object):
     def __init__(self, config):
 
         self.inputs = [ev.placeholder(config) for ev in config.evidence]
+
+        exists = [ev.exists_tiled(i) for ev, i in zip(config.evidence, self.inputs)]
+        exists = list(chain.from_iterable(exists))
         all_zeros = tf.zeros([config.batch_size, config.latent_size], dtype=tf.float32)
+        num_nonzero = tf.count_nonzero(tf.stack(exists), axis=0, dtype=tf.float32)
+        num_nonzero = tf.tile(tf.reshape(num_nonzero, [-1, 1]), [1, config.latent_size])
 
-        psi_mean, psi_stdv = [], []
+        psi = []
         self.init = []
-        for ev, inp in zip(config.evidence, self.inputs):
-            with tf.variable_scope(ev.name):
-                exists = ev.exists_tiled(inp)
-                num_nonzero = tf.count_nonzero(tf.stack(exists), axis=0, dtype=tf.float32)
-                num_nonzero = tf.tile(tf.reshape(num_nonzero, [-1, 1]), [1, config.latent_size])
-                psi_encodings = []
-                for scope in ['mean', 'stdv']:
-                    with tf.variable_scope(scope):
-                        encodings = ev.encode(inp, config)
-                        assert len(exists) == len(encodings)
-                        nonzero_encodings = [tf.where(exist, encoding, all_zeros) 
-                                                for exist, encoding in zip(exists, encodings)]
-                        sum_encodings = tf.reduce_sum(tf.stack(nonzero_encodings), axis=0)
-                        psi_encodings.append(tf.divide(sum_encodings, num_nonzero))
-                        self.init.append(ev.cell_init)
-                samples = tf.random_normal([config.batch_size, config.latent_size], mean=0.,
-                                        stddev=ev.sample_stdv(), dtype=tf.float32)
-                mean, stdv = psi_encodings
-                psi_mean.append(mean)
-                psi_stdv.append(stdv * samples)
+        for scope in ['mean', 'stdv']:
+            with tf.variable_scope(scope):
+                encodings = [ev.encode(i, config, sample=scope=='stdv') for ev, i in
+                                        zip(config.evidence, self.inputs)]
+                encodings = list(chain.from_iterable(encodings))
+                assert len(exists) == len(encodings)
+                nonzero_encodings = [tf.where(exist, encoding, all_zeros) for exist, encoding in
+                                        zip(exists, encodings)]
+                sum_encodings = tf.reduce_sum(tf.stack(nonzero_encodings), axis=0)
+                psi.append(tf.divide(sum_encodings, num_nonzero))
+                self.init += [ev.cell_init for ev in config.evidence]
 
-        self.psi_mean = tf.reduce_mean(tf.stack(psi_mean), axis=0)
-        self.psi_stdv = tf.reduce_mean(tf.stack(psi_stdv), axis=0)
+        self.psi_mean, self.psi_stdv = psi
 
 
 class BayesianDecoder(object):
