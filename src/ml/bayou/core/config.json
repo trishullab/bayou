@@ -1,36 +1,36 @@
 {
     "cell": "lstm",
-    "latent_size": 10,
+    "latent_size": 8,
     "batch_size": 50,
-    "num_epochs": 100,
+    "num_epochs": 500,
     "weight_loss": 1000,
     "learning_rate": 0.002,
     "print_step": 1,
     "evidence": [
         {
             "name": "sequences",
-            "max_num": 20,
+            "max_num": 16,
             "max_length": 10,
-            "rnn_units": 10,
+            "rnn_units": 8,
             "tile": 1
         },
         {
             "name": "keywords",
-            "max_num": 15,
+            "max_num": 16,
             "max_length": 1,
-            "rnn_units": 10,
-            "tile": 100
+            "rnn_units": 8,
+            "tile": 200
         },
         {
             "name": "javadoc",
             "max_num": 1,
             "max_length": 32,
-            "rnn_units": 10,
+            "rnn_units": 8,
             "tile": 100
         }
     ],
     "decoder": {
-        "rnn_units": 100,
+        "rnn_units": 128,
         "max_ast_depth": 20
     }
 }
