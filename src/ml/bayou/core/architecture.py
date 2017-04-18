@@ -18,7 +18,8 @@ class BayesianEncoder(object):
         self.init = []
         for scope in ['mean', 'stdv']:
             with tf.variable_scope(scope):
-                encodings = [ev.encode(i, config) for ev, i in zip(config.evidence, self.inputs)]
+                encodings = [ev.encode(i, config, sample=scope=='stdv') for ev, i in
+                                        zip(config.evidence, self.inputs)]
                 encodings = list(chain.from_iterable(encodings))
                 assert len(exists) == len(encodings)
                 nonzero_encodings = [tf.where(exist, encoding, all_zeros) for exist, encoding in
