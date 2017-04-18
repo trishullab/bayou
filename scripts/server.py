@@ -8,7 +8,7 @@ import threading
 import time
 import traceback
 
-from bayou.infer import BayesianPredictor
+from bayou.core.infer import BayesianPredictor
 
 def start_server(clargs):
     assert not os.path.exists(clargs.pipe), \
