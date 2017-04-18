@@ -31,7 +31,7 @@ class Evidence(object):
             elif name == 'javadoc':
                 e = Javadoc()
             elif name == 'types':
-                e = Javadoc()
+                e = Types()
             else:
                 raise TypeError('Invalid evidence name: {}'.format(name))
             e.init_config(evidence, chars_vocab)
