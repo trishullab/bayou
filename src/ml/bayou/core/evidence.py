@@ -115,12 +115,14 @@ class Sequences(Evidence):
 class Keywords(Evidence):
 
     def read_data(self, program, infer=False):
-        keywords = program['keywords']
+        keywords = program['keywords'] if 'keywords' in program else []
+        if type(keywords) is str:
+            keywords = keywords.split()
+        keywords += self.keywords_from_sequences(program['sequences'])
         if infer:
-            if type(keywords) is str:
-                keywords = keywords.split()
-            keywords += self.keywords_from_sequences(program['sequences'])
             keywords = list(set([k for k in keywords if k in self.vocab]))
+        else:
+            keywords = list(set(keywords))
         assert len(keywords) <= self.max_num
         return keywords
 
@@ -138,8 +140,8 @@ class Keywords(Evidence):
     def keywords_from_sequences(self, sequences):
 
         def split_camel(s):
-            s1 = re.sub('(.)([A-Z][a-z]+)', r'\1#\2', s) # LC followed by UC
-            s1 = re.sub('([a-z0-9])([A-Z])', r'\1#\2', s1) # UC followed by LC
+            s1 = re.sub('(.)([A-Z][a-z]+)', r'\1#\2', s) # UC followed by LC
+            s1 = re.sub('([a-z0-9])([A-Z])', r'\1#\2', s1) # LC followed by UC
             return s1.split('#')
 
         def get_name(call):
@@ -154,7 +156,7 @@ class Keywords(Evidence):
 class Javadoc(Evidence):
 
     def read_data(self, program, infer=False):
-        javadoc = program['javadoc']
+        javadoc = program['javadoc'] if 'javadoc' in program else None
         if not javadoc:
             javadoc = '_UNK_'
         javadoc = javadoc.split()
