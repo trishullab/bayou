@@ -17,37 +17,44 @@ HELP = """\
 Config options should be given as a JSON file (see config.json for example):
 {                                |
     "cell": "lstm",              | The type of RNN cell. Choices: lstm, rnn
-    "latent_size": 10,           | Latent dimensionality
+    "latent_size": 8,            | Latent dimensionality
     "batch_size": 50,            | Minibatch size
-    "num_epochs": 100,           | Number of training epochs
+    "num_epochs": 500,           | Number of training epochs
     "weight_loss": 1000,         | Weight given to generation loss as opposed to latent loss
     "learning_rate": 0.02,       | Learning rate
     "print_step": 1,             | Print training output every given steps
     "evidence": [                | Provide each evidence type in this list
         {                        |
             "name": "sequences", | Name of evidence ("sequences")
-            "max_num": 20,       | Maximum number of sequences in each data point
+            "max_num": 16,       | Maximum number of sequences in each data point
             "max_length": 10,    | Maximum length of each sequence
-            "rnn_units": 10,     | Size of the encoder hidden state
+            "rnn_units": 8,      | Size of the encoder hidden state
             "tile": 1            | Repeat the encoding n times (to boost its signal)
-        },                       |  
-        {                        | 
-            "name": "keywords",  | Name of evidence ("keywords")                      
-            "max_num": 20,       | Maximum number of keywords in each data point
+        },                       |
+        {                        |
+            "name": "keywords",  | Name of evidence ("keywords")
+            "max_num": 16,       | Maximum number of keywords in each data point
             "max_length": 1,     | Keywords do not have a 2nd dimension (length)
-            "rnn_units": 10,     | Size of the encoder hidden state
-            "tile": 100          | Repeat the encoding n times (to boost its signal)
-        },                       | 
-        {                        | 
-            "name": "javadoc",   | Name of evidence ("javadoc")                      
+            "rnn_units": 8,      | Size of the encoder hidden state
+            "tile": 200          | Repeat the encoding n times (to boost its signal)
+        },                       |
+        {                        |
+            "name": "javadoc",   | Name of evidence ("javadoc")
             "max_num": 1,        | Javadoc does not have first dimension (num)
             "max_length": 32,    | Maximum number of words in Javadoc
-            "rnn_units": 10,     | Size of the encoder hidden state
+            "rnn_units": 8,      | Size of the encoder hidden state
             "tile": 100          | Repeat the encoding n times (to boost its signal)
-        }                        | 
+        },                       |
+        {                        |
+            "name": "types",     | Name of evidence ("types")
+            "max_num": 16,       | Maximum number of types used in each data point
+            "max_length": 1,     | Types do not have a 2nd dimension (length)
+            "rnn_units": 8,      | Size of the encoder hidden state
+            "tile": 200          | Repeat the encoding n times (to boost its signal)
+        }                        |
     ],                           |
     "decoder": {                 | Provide parameters for the decoder here
-        "rnn_units": 100,        | Size of the decoder hidden state
+        "rnn_units": 128,        | Size of the decoder hidden state
         "max_ast_depth": 20      | Maximum depth of the AST (length of the longest path)
     }                            |
 }                                |

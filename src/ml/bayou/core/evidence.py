@@ -30,6 +30,8 @@ class Evidence(object):
                 e = Keywords()
             elif name == 'javadoc':
                 e = Javadoc()
+            elif name == 'types':
+                e = Types()
             else:
                 raise TypeError('Invalid evidence name: {}'.format(name))
             e.init_config(evidence, chars_vocab)
@@ -181,4 +183,46 @@ class Javadoc(Evidence):
         for i, jd in enumerate(data):
             javadoc[i, 0, :len(jd), 0] = list(map(self.vocab.get, jd))
         return javadoc
+
+class Types(Evidence):
+
+    def read_data(self, program, infer=False):
+        types = program['types'] if 'types' in program else []
+        types += self.types_from_sequences(program['sequences'])
+        if infer:
+            types = list(set([t for t in types if t in self.vocab]))
+        else:
+            types = list(set(types))
+        assert len(types) <= self.max_num
+        return types
+
+    def set_vocab_chars(self, data):
+        self.chars = [C0] + list(set([t for point in data for t in point]))
+        self.vocab = dict(zip(self.chars, range(len(self.chars))))
+        self.vocab_size = len(self.vocab)
+
+    def wrangle(self, data):
+        types = np.zeros((len(data), self.max_num, 1, 1), dtype=np.int32)
+        for i, t in enumerate(data):
+            types[i, :len(t), 0, 0] = list(map(self.vocab.get, t))
+        return types
+
+    def types_from_sequences(self, sequences):
+
+        def remove_generics(s):
+            s = s.split('#')
+            return [re.sub('\<.*', r'', c) for c in s]
+
+        def get_class(call):
+            qUC = reversed([q for q in call.split('(')[0].split('.') if q[0].isupper()])
+            inner = next(qUC)
+            try:
+                outer = next(qUC)
+            except StopIteration:
+                outer = ''
+            return outer + '#' + inner
+
+        calls = set([get_class(call) for sequence in sequences for call in sequence['calls']])
+        types = list(chain.from_iterable([remove_generics(call) for call in calls]))
+        return list(set([t for t in types if not t == '']))
 
