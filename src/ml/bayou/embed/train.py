@@ -11,6 +11,7 @@ import time
 
 from bayou.embed.utils import read_config, dump_config
 from bayou.core.evidence import Keywords
+from bayou.core.utils import C0, UNK
 
 HELP = """\
 Config options should be given as a JSON file (see config.json for example):
@@ -103,7 +104,8 @@ def train(clargs):
         data = get_data_javadoc(js)
 
     chars = collections.Counter(chain.from_iterable(data))
-    chars['CLASS0'] = 1
+    chars[C0] = 1
+    chars[UNK] = 1
     config.chars = sorted(chars.keys(), key=lambda c: -chars[c])
     config.vocab = dict(zip(config.chars, range(len(config.chars))))
     config.vocab_size = len(config.vocab)

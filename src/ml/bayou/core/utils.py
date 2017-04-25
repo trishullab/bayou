@@ -3,11 +3,12 @@ import tensorflow as tf
 
 CONFIG_GENERAL = ['cell', 'latent_size', 'batch_size', 'weight_loss', 'num_epochs', \
                  'learning_rate', 'print_step']
-CONFIG_ENCODER = ['name', 'max_num', 'max_length', 'rnn_units', 'tile']
+CONFIG_ENCODER = ['name', 'max_num', 'max_length', 'rnn_units', 'tile', 'pretrained_embed']
 CONFIG_DECODER = ['rnn_units', 'max_ast_depth']
 CONFIG_CHARS_VOCAB = ['chars', 'vocab', 'vocab_size']
 
 C0 = 'CLASS0'
+UNK = '_UNK_'
 CHILD_EDGE = 'V'
 SIBLING_EDGE = 'H'
 
@@ -18,15 +19,15 @@ def length(tensor):
 import bayou.core.evidence
 
 # convert JSON to config
-def read_config(js, chars_vocab):
+def read_config(js, clargs):
     config = argparse.Namespace()
 
     for attr in CONFIG_GENERAL:
         config.__setattr__(attr, js[attr])
     
-    config.evidence = bayou.core.evidence.Evidence.read_config(js['evidence'], chars_vocab)
+    config.evidence = bayou.core.evidence.Evidence.read_config(js['evidence'], clargs)
 
-    attrs = CONFIG_DECODER + (CONFIG_CHARS_VOCAB if chars_vocab else [])
+    attrs = CONFIG_DECODER + (CONFIG_CHARS_VOCAB if clargs.continue_from else [])
     config.decoder = argparse.Namespace()
     for attr in attrs:
         config.decoder.__setattr__(attr, js['decoder'][attr])

@@ -15,56 +15,60 @@ from bayou.core.utils import read_config, dump_config
 
 HELP = """\
 Config options should be given as a JSON file (see config.json for example):
-{                                |
-    "cell": "lstm",              | The type of RNN cell. Choices: lstm, rnn
-    "latent_size": 8,            | Latent dimensionality
-    "batch_size": 50,            | Minibatch size
-    "num_epochs": 500,           | Number of training epochs
-    "weight_loss": 1000,         | Weight given to generation loss as opposed to latent loss
-    "learning_rate": 0.02,       | Learning rate
-    "print_step": 1,             | Print training output every given steps
-    "evidence": [                | Provide each evidence type in this list
-        {                        |
-            "name": "sequences", | Name of evidence ("sequences")
-            "max_num": 16,       | Maximum number of sequences in each data point
-            "max_length": 10,    | Maximum length of each sequence
-            "rnn_units": 8,      | Size of the encoder hidden state
-            "tile": 1            | Repeat the encoding n times (to boost its signal)
-        },                       |
-        {                        |
-            "name": "keywords",  | Name of evidence ("keywords")
-            "max_num": 16,       | Maximum number of keywords in each data point
-            "max_length": 1,     | Keywords do not have a 2nd dimension (length)
-            "rnn_units": 8,      | Size of the encoder hidden state
-            "tile": 200          | Repeat the encoding n times (to boost its signal)
-        },                       |
-        {                        |
-            "name": "javadoc",   | Name of evidence ("javadoc")
-            "max_num": 1,        | Javadoc does not have first dimension (num)
-            "max_length": 32,    | Maximum number of words in Javadoc
-            "rnn_units": 8,      | Size of the encoder hidden state
-            "tile": 100          | Repeat the encoding n times (to boost its signal)
-        },                       |
-        {                        |
-            "name": "types",     | Name of evidence ("types")
-            "max_num": 16,       | Maximum number of types used in each data point
-            "max_length": 1,     | Types do not have a 2nd dimension (length)
-            "rnn_units": 8,      | Size of the encoder hidden state
-            "tile": 200          | Repeat the encoding n times (to boost its signal)
-        }                        |
-    ],                           |
-    "decoder": {                 | Provide parameters for the decoder here
-        "rnn_units": 128,        | Size of the decoder hidden state
-        "max_ast_depth": 20      | Maximum depth of the AST (length of the longest path)
-    }                            |
-}                                |
+{                                         |
+    "cell": "lstm",                       | The type of RNN cell. Choices: lstm, rnn
+    "latent_size": 8,                     | Latent dimensionality
+    "batch_size": 50,                     | Minibatch size
+    "num_epochs": 500,                    | Number of training epochs
+    "weight_loss": 1000,                  | Weight given to generation loss as opposed to latent loss
+    "learning_rate": 0.02,                | Learning rate
+    "print_step": 1,                      | Print training output every given steps
+    "evidence": [                         | Provide each evidence type in this list
+        {                                 |
+            "name": "sequences",          | Name of evidence ("sequences")
+            "max_num": 16,                | Maximum number of sequences in each data point
+            "max_length": 10,             | Maximum length of each sequence
+            "rnn_units": 8,               | Size of the encoder hidden state
+            "tile": 1,                    | Repeat the encoding n times (to boost its signal)
+            "pretrained_embed": false     | No pretrained_embed embeddings for sequences
+        },                                |
+        {                                 |
+            "name": "keywords",           | Name of evidence ("keywords")
+            "max_num": 16,                | Maximum number of keywords in each data point
+            "max_length": 1,              | Keywords do not have a 2nd dimension (length)
+            "rnn_units": 8,               | Size of the encoder hidden state
+            "tile": 200,                  | Repeat the encoding n times (to boost its signal)
+            "pretrained_embed": false     | No pretrained_embed embeddings for keywords
+        },                                |
+        {                                 |
+            "name": "javadoc",            | Name of evidence ("javadoc")
+            "max_num": 1,                 | Javadoc does not have first dimension (num)
+            "max_length": 32,             | Maximum number of words in Javadoc
+            "rnn_units": 8,               | Size of the encoder hidden state
+            "tile": 100,                  | Repeat the encoding n times (to boost its signal)
+            "pretrained_embed": true      | Load pretrained_embed embeddings from --save/"javadoc"
+        },                                |
+        {                                 |
+            "name": "types",              | Name of evidence ("types")
+            "max_num": 16,                | Maximum number of types used in each data point
+            "max_length": 1,              | Types do not have a 2nd dimension (length)
+            "rnn_units": 8,               | Size of the encoder hidden state
+            "tile": 200,                  | Repeat the encoding n times (to boost its signal)
+            "pretrained_embed": false     | No pretrained_embed embeddings for types
+        }                                 |
+    ],                                    |
+    "decoder": {                          | Provide parameters for the decoder here
+        "rnn_units": 128,                 | Size of the decoder hidden state
+        "max_ast_depth": 20               | Maximum depth of the AST (length of the longest path)
+    }                                     |
+}                                         |
 """
 
 def train(clargs):
     config_file = clargs.config if clargs.continue_from is None \
                                 else os.path.join(clargs.continue_from, 'config.json')
     with open(config_file) as f:
-        config = read_config(json.load(f), clargs.continue_from)
+        config = read_config(json.load(f), clargs)
     assert config.cell == 'lstm' or config.cell == 'rnn', 'Invalid cell in config'
     reader = Reader(clargs, config)
     
@@ -84,6 +88,10 @@ def train(clargs):
         if clargs.continue_from is not None:
             ckpt = tf.train.get_checkpoint_state(clargs.continue_from)
             saver.restore(sess, ckpt.model_checkpoint_path)
+
+        # load pre-trained embeddings (if any) for each evidence
+        for evconfig in config.evidence:
+            evconfig.load_pretrained_embeddings(sess, clargs.save)
 
         # training
         for i in range(config.num_epochs):

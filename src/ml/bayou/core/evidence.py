@@ -2,15 +2,19 @@ import tensorflow as tf
 from tensorflow.contrib import rnn
 from itertools import chain
 import numpy as np
+import os
+import json
 import re
 
-from bayou.core.utils import CONFIG_ENCODER, CONFIG_CHARS_VOCAB, C0
+from bayou.core.utils import CONFIG_ENCODER, CONFIG_CHARS_VOCAB, C0, UNK
 from bayou.core.utils import length
+from bayou.core.cells import PretrainedEmbeddingWrapper
 
 class Evidence(object):
 
-    def init_config(self, evidence, chars_vocab):
-        attrs = CONFIG_ENCODER + (CONFIG_CHARS_VOCAB if chars_vocab else [])
+    def init_config(self, evidence, clargs):
+        attrs = CONFIG_ENCODER + (CONFIG_CHARS_VOCAB if clargs.continue_from else [])
+        self.clargs = clargs
         for attr in attrs:
             self.__setattr__(attr, evidence[attr])
 
@@ -20,7 +24,7 @@ class Evidence(object):
         return js
 
     @staticmethod
-    def read_config(js, chars_vocab):
+    def read_config(js, clargs):
         evidences = []
         for evidence in js:
             name = evidence['name']
@@ -34,7 +38,7 @@ class Evidence(object):
                 e = Types()
             else:
                 raise TypeError('Invalid evidence name: {}'.format(name))
-            e.init_config(evidence, chars_vocab)
+            e.init_config(evidence, clargs)
             evidences.append(e)
         return evidences
 
@@ -60,15 +64,22 @@ class Evidence(object):
         exists = [tf.not_equal(l, zero) for l in lengths] * self.tile
         return exists
 
+    def load_pretrained_embeddings(self, sess, save_dir):
+        if self.pretrained_embed:
+            self.pretrained_embeddings.load_from(sess, save_dir)
+
     def encode(self, inputs, config, sample=False):
         cell = rnn.BasicLSTMCell(self.rnn_units, state_is_tuple=False) if config.cell == 'lstm' \
                else rnn.BasicRNNCell(self.rnn_units)
 
         encodings = []
         with tf.variable_scope(self.name):
-            cell = rnn.EmbeddingWrapper(cell,
-                                embedding_classes=self.vocab_size,
-                                embedding_size=self.rnn_units)
+            if self.pretrained_embed:
+                cell = self.pretrained_embeddings = PretrainedEmbeddingWrapper(cell, self)
+            else:
+                cell = rnn.EmbeddingWrapper(cell,
+                                    embedding_classes=self.vocab_size,
+                                    embedding_size=self.rnn_units)
             self.cell_init = cell.zero_state(config.batch_size, tf.float32)
             w = tf.get_variable('w', [cell.state_size, config.latent_size])
             b = tf.get_variable('b', [config.latent_size])
@@ -171,13 +182,23 @@ class Javadoc(Evidence):
     def read_data(self, program, infer=False):
         javadoc = program['javadoc'] if 'javadoc' in program else None
         if not javadoc:
-            javadoc = '_UNK_'
+            javadoc = UNK
+        try: # do not consider non-ASCII javadoc
+            javadoc.encode('ascii')
+        except UnicodeEncodeError:
+            javadoc = UNK
         javadoc = javadoc.split()
         assert len(javadoc) <= self.max_length
         return javadoc
 
     def set_vocab_chars(self, data):
-        self.chars = [C0] + list(set([w for point in data for w in point]))
+        if self.pretrained_embed:
+            save_dir = os.path.join(self.clargs.save, 'embed_' + self.name)
+            with open(os.path.join(save_dir, 'config.json')) as f:
+                js = json.load(f)
+            self.chars = js['chars']
+        else:
+            self.chars = [C0] + list(set([w for point in data for w in point]))
         self.vocab = dict(zip(self.chars, range(len(self.chars))))
         self.vocab_size = len(self.vocab)
 

@@ -12,11 +12,6 @@ class Model():
             config.batch_size = 1
             config.decoder.max_ast_depth = 1
 
-        if config.cell == 'lstm':
-            for ev in config.evidence:
-                ev.rnn_units = int(ev.rnn_units / 2)
-            config.decoder.rnn_units = int(config.decoder.rnn_units / 2)
-
         # setup the encoder
         self.encoder = BayesianEncoder(config)
         self.psi = self.encoder.psi_mean + self.encoder.psi_stdv # sampling done in encoder

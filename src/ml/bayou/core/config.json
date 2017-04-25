@@ -12,28 +12,32 @@
             "max_num": 16,
             "max_length": 10,
             "rnn_units": 8,
-            "tile": 1
+            "tile": 1,
+            "pretrained_embed": false
         },
         {
             "name": "keywords",
             "max_num": 16,
             "max_length": 1,
             "rnn_units": 8,
-            "tile": 200
+            "tile": 200,
+            "pretrained_embed": false
         },
         {
             "name": "javadoc",
             "max_num": 1,
             "max_length": 32,
             "rnn_units": 8,
-            "tile": 100
+            "tile": 100,
+            "pretrained_embed": true
         },
         {
             "name": "types",
             "max_num": 16,
             "max_length": 1,
             "rnn_units": 8,
-            "tile": 200
+            "tile": 200,
+            "pretrained_embed": false
         }
     ],
     "decoder": {
