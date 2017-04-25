@@ -128,7 +128,7 @@ class Keywords(Evidence):
         keywords = program['keywords'] if 'keywords' in program else []
         if type(keywords) is str:
             keywords = keywords.split()
-        keywords += self.keywords_from_sequences(program['sequences'])
+        keywords += Keywords.keywords_from_sequences(program['sequences'])
         if infer:
             keywords = list(set([k for k in keywords if k in self.vocab]))
         else:
@@ -147,20 +147,23 @@ class Keywords(Evidence):
             keywords[i, :len(kws), 0, 0] = list(map(self.vocab.get, kws))
         return keywords
 
-    def keywords_from_sequences(self, sequences):
+    @staticmethod
+    def split_camel(s):
+        s1 = re.sub('(.)([A-Z][a-z]+)', r'\1#\2', s) # UC followed by LC
+        s1 = re.sub('([a-z0-9])([A-Z])', r'\1#\2', s1) # LC followed by UC
+        return s1.split('#')
 
-        def split_camel(s):
-            s1 = re.sub('(.)([A-Z][a-z]+)', r'\1#\2', s) # UC followed by LC
-            s1 = re.sub('([a-z0-9])([A-Z])', r'\1#\2', s1) # LC followed by UC
-            return s1.split('#')
+    @staticmethod
+    def get_name(call):
+        q = call.split('(')[0].split('.')
+        cls, name = q[-2], q[-1]
+        return cls + '#' + name
 
-        def get_name(call):
-            q = call.split('(')[0].split('.')
-            cls, name = q[-2], q[-1]
-            return cls + '#' + name
-
-        calls = set([get_name(call) for sequence in sequences for call in sequence['calls']])
-        keywords = list(chain.from_iterable([split_camel(call) for call in calls]))
+    @staticmethod
+    def keywords_from_sequences(sequences):
+        calls = set([Keywords.get_name(call) for sequence in sequences \
+                for call in sequence['calls']])
+        keywords = list(chain.from_iterable([Keywords.split_camel(call) for call in calls]))
         return list(set([kw.lower() for kw in keywords if not kw == '']))
 
 class Javadoc(Evidence):

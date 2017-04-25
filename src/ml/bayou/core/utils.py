@@ -15,7 +15,7 @@ def length(tensor):
     elems = tf.sign(tf.reduce_max(tensor, axis=2))
     return tf.reduce_sum(elems, axis=1)
 
-from bayou.core.evidence import Evidence
+import bayou.core.evidence
 
 # convert JSON to config
 def read_config(js, chars_vocab):
@@ -24,7 +24,7 @@ def read_config(js, chars_vocab):
     for attr in CONFIG_GENERAL:
         config.__setattr__(attr, js[attr])
     
-    config.evidence = Evidence.read_config(js['evidence'], chars_vocab)
+    config.evidence = bayou.core.evidence.Evidence.read_config(js['evidence'], chars_vocab)
 
     attrs = CONFIG_DECODER + (CONFIG_CHARS_VOCAB if chars_vocab else [])
     config.decoder = argparse.Namespace()
