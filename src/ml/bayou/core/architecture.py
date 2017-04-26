@@ -35,9 +35,11 @@ class BayesianDecoder(object):
     def __init__(self, config, initial_state, infer=False):
 
         if config.cell == 'lstm':
-            self.cell = rnn.BasicLSTMCell(config.decoder.rnn_units, state_is_tuple=False)
+            self.cell1 = rnn.BasicLSTMCell(config.decoder.rnn_units, state_is_tuple=False)
+            self.cell2 = rnn.BasicLSTMCell(config.decoder.rnn_units, state_is_tuple=False)
         else:
-            self.cell = rnn.BasicRNNCell(config.decoder.rnn_units)
+            self.cell1 = rnn.BasicRNNCell(config.decoder.rnn_units)
+            self.cell2 = rnn.BasicRNNCell(config.decoder.rnn_units)
 
         # placeholders
         self.initial_state = initial_state
@@ -47,7 +49,7 @@ class BayesianDecoder(object):
                             for i in range(config.decoder.max_ast_depth)]
 
         # projection matrices for output
-        self.projection_w = tf.get_variable('projection_w', [self.cell.output_size,
+        self.projection_w = tf.get_variable('projection_w', [self.cell1.output_size,
                                                                 config.decoder.vocab_size])
         self.projection_b = tf.get_variable('projection_b', [config.decoder.vocab_size])
 
@@ -75,9 +77,9 @@ class BayesianDecoder(object):
                     if i > 0:
                         tf.get_variable_scope().reuse_variables()
                     with tf.variable_scope('cell1'): # handles CHILD_EDGE
-                        output1, state1 = self.cell(inp, self.state)
+                        output1, state1 = self.cell1(inp, self.state)
                     with tf.variable_scope('cell2'): # handles SIBLING_EDGE
-                        output2, state2 = self.cell(inp, self.state)
+                        output2, state2 = self.cell2(inp, self.state)
                     output = tf.where(self.edges[i], output1, output2)
                     self.state = tf.where(self.edges[i], state1, state2)
                     self.outputs.append(output)

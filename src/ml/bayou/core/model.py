@@ -25,7 +25,7 @@ class Model():
         self.decoder = BayesianDecoder(config, initial_state=self.initial_state, infer=infer)
 
         # get the decoder outputs
-        output = tf.reshape(tf.concat(self.decoder.outputs, 1), [-1, self.decoder.cell.output_size])
+        output = tf.reshape(tf.concat(self.decoder.outputs, 1), [-1,self.decoder.cell1.output_size])
         logits = tf.matmul(output, self.decoder.projection_w) + self.decoder.projection_b
         self.probs = tf.nn.softmax(logits)
 
