@@ -62,7 +62,7 @@ class BayesianPredictor(object):
 
         # load the saved config
         with open(os.path.join(save, 'config.json')) as f:
-            config = read_config(json.load(f), True)
+            config = read_config(json.load(f), chars_vocab=True, save_dir=save)
         self.model = Model(config, True)
 
         # restore the saved model
@@ -70,6 +70,10 @@ class BayesianPredictor(object):
         saver = tf.train.Saver(tf.global_variables())
         ckpt = tf.train.get_checkpoint_state(save)
         saver.restore(self.sess, ckpt.model_checkpoint_path)
+
+        # load pre-trained embeddings (if any) for each evidence
+        for evconfig in config.evidence:
+            evconfig.load_pretrained_embeddings(self.sess, save)
 
     def psi_random(self):
         return np.random.normal(size=[1, self.model.config.latent_size])

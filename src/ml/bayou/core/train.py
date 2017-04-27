@@ -68,7 +68,8 @@ def train(clargs):
     config_file = clargs.config if clargs.continue_from is None \
                                 else os.path.join(clargs.continue_from, 'config.json')
     with open(config_file) as f:
-        config = read_config(json.load(f), clargs)
+        config = read_config(json.load(f), chars_vocab=clargs.continue_from is not None,
+                                save_dir=clargs.save)
     assert config.cell == 'lstm' or config.cell == 'rnn', 'Invalid cell in config'
     reader = Reader(clargs, config)
     

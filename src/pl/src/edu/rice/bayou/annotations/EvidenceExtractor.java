@@ -18,10 +18,14 @@ public class EvidenceExtractor extends ASTVisitor {
     class JSONOutputWrapper {
         String keywords;
         List<Sequence> sequences;
+        String javadoc;
+        List<String> types;
 
         public JSONOutputWrapper() {
             this.keywords = "";
             this.sequences = new ArrayList<>();
+            this.javadoc = "";
+            this.types = new ArrayList<>();
         }
     }
 
@@ -114,6 +118,17 @@ public class EvidenceExtractor extends ASTVisitor {
                         sequence.addCall(call);
                     }
                     output.sequences.add(sequence);
+                }
+                else if (type.equals("nl")) {
+                    String val = ((StringLiteral) value.getValue()).getLiteralValue();
+                    output.javadoc = val;
+                }
+                else if (type.equals("types")) {
+                    List<Expression> types = ((ArrayInitializer) value.getValue()).expressions();
+                    for (Expression e : types) {
+                        String t = ((StringLiteral) e).getLiteralValue();
+                        output.types.add(t);
+                    }
                 }
                 else throw new RuntimeException();
             }

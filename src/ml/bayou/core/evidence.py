@@ -12,9 +12,9 @@ from bayou.core.cells import PretrainedEmbeddingWrapper
 
 class Evidence(object):
 
-    def init_config(self, evidence, clargs):
-        attrs = CONFIG_ENCODER + (CONFIG_CHARS_VOCAB if clargs.continue_from else [])
-        self.clargs = clargs
+    def init_config(self, evidence, chars_vocab, save_dir):
+        attrs = CONFIG_ENCODER + (CONFIG_CHARS_VOCAB if chars_vocab else [])
+        self.save_dir = save_dir
         for attr in attrs:
             self.__setattr__(attr, evidence[attr])
 
@@ -24,7 +24,7 @@ class Evidence(object):
         return js
 
     @staticmethod
-    def read_config(js, clargs):
+    def read_config(js, chars_vocab, save_dir):
         evidences = []
         for evidence in js:
             name = evidence['name']
@@ -38,7 +38,7 @@ class Evidence(object):
                 e = Types()
             else:
                 raise TypeError('Invalid evidence name: {}'.format(name))
-            e.init_config(evidence, clargs)
+            e.init_config(evidence, chars_vocab, save_dir)
             evidences.append(e)
         return evidences
 
@@ -193,7 +193,7 @@ class Javadoc(Evidence):
 
     def set_vocab_chars(self, data):
         if self.pretrained_embed:
-            save_dir = os.path.join(self.clargs.save, 'embed_' + self.name)
+            save_dir = os.path.join(self.save_dir, 'embed_' + self.name)
             with open(os.path.join(save_dir, 'config.json')) as f:
                 js = json.load(f)
             self.chars = js['chars']

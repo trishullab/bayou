@@ -19,15 +19,15 @@ def length(tensor):
 import bayou.core.evidence
 
 # convert JSON to config
-def read_config(js, clargs):
+def read_config(js, chars_vocab, save_dir):
     config = argparse.Namespace()
 
     for attr in CONFIG_GENERAL:
         config.__setattr__(attr, js[attr])
     
-    config.evidence = bayou.core.evidence.Evidence.read_config(js['evidence'], clargs)
+    config.evidence = bayou.core.evidence.Evidence.read_config(js['evidence'], chars_vocab, save_dir)
 
-    attrs = CONFIG_DECODER + (CONFIG_CHARS_VOCAB if clargs.continue_from else [])
+    attrs = CONFIG_DECODER + (CONFIG_CHARS_VOCAB if chars_vocab else [])
     config.decoder = argparse.Namespace()
     for attr in attrs:
         config.decoder.__setattr__(attr, js['decoder'][attr])
