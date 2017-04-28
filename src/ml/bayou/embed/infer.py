@@ -27,9 +27,9 @@ def infer(clargs):
     tsne = TSNE(perplexity=30, n_components=2, init='pca', n_iter=5000)
     two_d_embeddings = tsne.fit_transform(final_embedding[:clargs.num_points, :])
     words = [config.chars[i] for i in range(clargs.num_points)]
-    plot(two_d_embeddings, words)
+    plot(two_d_embeddings, words, clargs.out)
 
-def plot(embeddings, labels):
+def plot(embeddings, labels, out):
     assert embeddings.shape[0] >= len(labels), 'More labels than embeddings'
     pylab.figure(figsize=(15,15))
     for i, label in enumerate(labels):
@@ -37,7 +37,8 @@ def plot(embeddings, labels):
         pylab.scatter(x, y)
         pylab.annotate(label, xy=(x, y), xytext=(5, 2), textcoords='offset points',
                      ha='right', va='bottom')
-    pylab.show()
+    pylab.savefig(out)
+    print('Saved plot to {}'.format(out))
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
@@ -45,5 +46,7 @@ if __name__ == '__main__':
                        help='directory to load model from')
     parser.add_argument('--num_points', type=int, default=500,
                        help='number of top-k words to plot')
+    parser.add_argument('--out', type=str, default='plot.png',
+                       help='output .png file to save plot to')
     clargs = parser.parse_args()
     infer(clargs)
