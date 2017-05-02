@@ -90,4 +90,8 @@ public class Environment {
         }
         return cls;
     }
+
+    public void addImport(Class c) {
+        imports.add(c);
+    }
 }

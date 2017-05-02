@@ -2,6 +2,7 @@ package edu.rice.bayou.annotations;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import edu.rice.bayou.dsl.Sequence;
 import org.apache.commons.cli.*;
 import org.apache.commons.io.FileUtils;
 import org.eclipse.jdt.core.dom.*;
@@ -16,11 +17,15 @@ public class EvidenceExtractor extends ASTVisitor {
 
     class JSONOutputWrapper {
         String keywords;
-        List<List<String>> sequences;
+        List<Sequence> sequences;
+        String javadoc;
+        List<String> types;
 
         public JSONOutputWrapper() {
             this.keywords = "";
             this.sequences = new ArrayList<>();
+            this.javadoc = "";
+            this.types = new ArrayList<>();
         }
     }
 
@@ -106,13 +111,24 @@ public class EvidenceExtractor extends ASTVisitor {
                     output.keywords += " " + val;
                 }
                 else if (type.equals("sequence")) {
-                    List<String> sequence = new ArrayList<>();
+                    Sequence sequence = new Sequence();
                     List<Expression> calls = ((ArrayInitializer) value.getValue()).expressions();
                     for (Expression e : calls) {
                         String call = ((StringLiteral) e).getLiteralValue();
-                        sequence.add(call);
+                        sequence.addCall(call);
                     }
                     output.sequences.add(sequence);
+                }
+                else if (type.equals("nl")) {
+                    String val = ((StringLiteral) value.getValue()).getLiteralValue();
+                    output.javadoc = val;
+                }
+                else if (type.equals("types")) {
+                    List<Expression> types = ((ArrayInitializer) value.getValue()).expressions();
+                    for (Expression e : types) {
+                        String t = ((StringLiteral) e).getLiteralValue();
+                        output.types.add(t);
+                    }
                 }
                 else throw new RuntimeException();
             }

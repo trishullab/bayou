@@ -163,6 +163,7 @@ public class DExcept extends DASTNode {
             }
             catchClause.setBody(catchBlock);
             env.removeScopedVariable(exceptionVar);
+            env.addImport(except);
         }
 
         return statement;

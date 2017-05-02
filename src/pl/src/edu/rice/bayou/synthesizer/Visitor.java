@@ -101,6 +101,7 @@ public class Visitor extends ASTVisitor {
     private Block postprocessLocal(AST ast, Environment env, Block body) {
         /* add uncaught exeptions */
         Set<Class> exceptions = dAST.exceptionsThrown();
+        env.imports.addAll(exceptions);
         if (! exceptions.isEmpty()) {
             TryStatement statement = ast.newTryStatement();
             statement.setBody(body);
@@ -141,7 +142,7 @@ public class Visitor extends ASTVisitor {
         /* add imports */
         ASTRewrite rewriter = ASTRewrite.create(ast);
         ListRewrite lrw = rewriter.getListRewrite(cu, CompilationUnit.IMPORTS_PROPERTY);
-        List<Class> toImport = new ArrayList<>(env.imports);
+        Set<Class> toImport = new HashSet<>(env.imports);
         toImport.addAll(dAST.exceptionsThrown()); // add all catch(...) types to imports
         for (Class cls : toImport) {
             if (cls.isPrimitive() || cls.getPackage().getName().equals("java.lang"))
