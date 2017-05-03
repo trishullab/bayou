@@ -12,10 +12,17 @@ fi
 
 t_start=`date +%s`
 
-export BAYOU_HOME=/Users/vijay/Work/bayou
-export BAYOU_SERVER=/Users/vijay/Work/bayou/demo/server
+export BAYOU_HOME=/home/askbayou/bitbucket/bayou
+export BAYOU_SERVER=/home/askbayou/bitbucket/bayou/demo/server
 export CLASSPATH=$BAYOU_HOME/src/pl/out/production/pl:$BAYOU_HOME/src/pl/lib/android.jar
 export PYTHONPATH=$BAYOU_HOME/src/ml
+
+bayoupipe=$BAYOU_SERVER/bayoupipe
+
+if [ ! -p $bayoupipe ]; then
+    echo "Pipe $bayoupipe not found"
+    exit 1
+fi
 
 input=$(java -jar $BAYOU_HOME/src/pl/out/artifacts/annotations/evidence_extractor.jar -f $1)
 if [ $? -ne 0 ]; then
@@ -25,7 +32,7 @@ fi
 
 outpipe=out$RANDOM
 echo "Querying the model..."
-echo -e "$outpipe#$input" > $BAYOU_SERVER/bayoupipe
+echo -e "$outpipe#$input" > $bayoupipe
 
 maxsleep=10 # seconds
 sleeptime=0
