@@ -27,6 +27,8 @@ public class DOMStatement implements Handler {
             return new DOMDoStatement((DoStatement) statement).handle();
         if (statement instanceof ForStatement)
             return new DOMForStatement((ForStatement) statement).handle();
+        if (statement instanceof EnhancedForStatement)
+            return new DOMEnhancedForStatement((EnhancedForStatement) statement).handle();
         if (statement instanceof WhileStatement)
             return new DOMWhileStatement((WhileStatement) statement).handle();
         if (statement instanceof TryStatement)
