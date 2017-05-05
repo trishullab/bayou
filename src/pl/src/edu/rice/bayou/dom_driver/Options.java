@@ -12,6 +12,27 @@ import java.util.*;
 
 public class Options {
 
+    static String HELP =
+        "Configuration options for driver:\n" +
+        "{                                     |\n" +
+        "  `api-classes`: [                    | Classes that driver should\n" +
+        "      `java.io.BufferedReader`,       | extract data on. Must be fully\n" +
+        "      `java.util.Iterator`            | qualified class names.\n" +
+        "  ],                                  |\n" +
+        "  `api-packages`: [                   | Packages that the driver\n" +
+        "      `java.io`,                      | should extract data on.\n" +
+        "      `java.net`                      |\n" +
+        "  ],                                  |\n" +
+        "  `api-modules`: [                    | Modules (for lack of a better\n" +
+        "      `java`,                         | word) that driver should extract\n" +
+        "      `javax`                         | data on.\n" +
+        "  ],                                  |\n" +
+        "  `num-unrolls`: 1,                   | Max unroll of loops in sequences\n" +
+        "  `max-seqs`: 10,                     | Max num of sequences in sketches\n" +
+        "  `javadoc-type`: `summary`           | `summary` (only first line),\n" +
+        "                                      | `full` (everything)\n" +
+        "}                                     |";
+
     private void addOptions(org.apache.commons.cli.Options opts) {
         opts.addOption(Option.builder("f")
                 .longOpt("input-file")
@@ -136,7 +157,7 @@ public class Options {
             return parser.parse(clopts, args);
         } catch (ParseException e) {
             HelpFormatter help = new HelpFormatter();
-            help.printHelp("driver", clopts);
+            help.printHelp("driver", HELP.replace('`', '\"'), clopts, "", true);
             throw e;
         }
     }
