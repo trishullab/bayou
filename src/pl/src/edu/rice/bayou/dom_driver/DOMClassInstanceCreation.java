@@ -35,7 +35,7 @@ public class DOMClassInstanceCreation implements Handler {
             tree.addNodes(Tmethod.getNodes());
         }
         else if (Utils.isRelevantCall(binding))
-            tree.addNode(new DAPICall(binding));
+            tree.addNode(new DAPICall(binding, Visitor.V().getLineNumber(creation)));
         return tree;
     }
 }

@@ -132,4 +132,8 @@ public class Visitor extends ASTVisitor {
             return false;
         return true;
     }
+
+    public int getLineNumber(ASTNode node) {
+        return unit.getLineNumber(node.getStartPosition());
+    }
 }

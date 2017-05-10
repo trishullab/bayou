@@ -18,15 +18,17 @@ public class DAPICall extends DASTNode {
 
     /* CAUTION: This field is only available during AST generation */
     final transient IMethodBinding methodBinding;
+    int linenum;
     /* CAUTION: These fields are only available during synthesis (after synthesize(...) is called) */
     transient Method method;
     transient Constructor constructor;
 
     /* TODO: Add refinement types (predicates) here */
 
-    public DAPICall(IMethodBinding methodBinding) {
+    public DAPICall(IMethodBinding methodBinding, int linenum) {
         this.methodBinding = methodBinding;
         this._call = getClassName() + "." + getSignature();
+        this.linenum = linenum;
     }
 
     @Override

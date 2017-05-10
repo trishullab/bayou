@@ -35,7 +35,7 @@ public class DOMMethodInvocation implements Handler {
             tree.addNodes(Tconstructor.getNodes());
         }
         else if (Utils.isRelevantCall(binding))
-            tree.addNode(new DAPICall(binding));
+            tree.addNode(new DAPICall(binding, Visitor.V().getLineNumber(invocation)));
         return tree;
     }
 }
