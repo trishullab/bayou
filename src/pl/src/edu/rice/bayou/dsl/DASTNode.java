@@ -7,7 +7,8 @@ import java.util.Set;
 
 public abstract class DASTNode implements Synthesizable {
     public class TooManySequencesException extends Exception { }
-    public abstract void updateSequences(List<Sequence> soFar, int max) throws TooManySequencesException;
+    public class TooLongSequenceException extends Exception { }
+    public abstract void updateSequences(List<Sequence> soFar, int max, int max_length) throws TooManySequencesException, TooLongSequenceException;
 
     public abstract Set<String> keywords();
 

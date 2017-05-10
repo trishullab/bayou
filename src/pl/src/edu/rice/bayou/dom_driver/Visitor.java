@@ -103,12 +103,14 @@ public class Visitor extends ASTVisitor {
             Set<String> keywords = astDoc.getLeft().keywords();
             sequences.add(new Sequence());
             try {
-                astDoc.getLeft().updateSequences(sequences, options.MAX_SEQS);
+                astDoc.getLeft().updateSequences(sequences, options.MAX_SEQS, options.MAX_SEQ_LENGTH);
                 List<Sequence> uniqSequences = new ArrayList<>(new HashSet<>(sequences));
                 if (okToPrintAST(uniqSequences))
                     printJson(astDoc.getLeft(), uniqSequences, keywords, astDoc.getRight());
             } catch (DASTNode.TooManySequencesException e) {
                 System.err.println("Too many sequences from AST");
+            } catch (DASTNode.TooLongSequenceException e) {
+                System.err.println("Too long sequence from AST");
             }
         }
         return false;

@@ -69,6 +69,7 @@ public class Options {
     public final Map<String, String> KNOWN_CONSTANTS_STRING;
     public final int NUM_UNROLLS;
     public final int MAX_SEQS;
+    public final int MAX_SEQ_LENGTH;
     public final String JAVADOC_TYPE;
 
     public Options(String[] args) throws ParseException, IOException {
@@ -134,6 +135,12 @@ public class Options {
             this.MAX_SEQS = this.config.getAsJsonPrimitive("max-seqs").getAsInt();
         else
             this.MAX_SEQS = 10;
+
+        // MAX_SEQS
+        if (this.config.has("max-seq-length"))
+            this.MAX_SEQ_LENGTH = this.config.getAsJsonPrimitive("max-seq-length").getAsInt();
+        else
+            this.MAX_SEQ_LENGTH = 10;
 
         // Javadoc only
         if (this.config.has("javadoc-type")) {

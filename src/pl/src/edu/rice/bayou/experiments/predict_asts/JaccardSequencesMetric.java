@@ -24,8 +24,8 @@ public class JaccardSequencesMetric extends MetricCalculator {
         for (DSubTree predictedAST : predictedASTs) {
             List<Sequence> B;
             try {
-                B = getGeneratedSequences(predictedAST, 10, true);
-            } catch (DASTNode.TooManySequencesException e) {
+                B = getGeneratedSequences(predictedAST, 10, 10, true);
+            } catch (DASTNode.TooManySequencesException|DASTNode.TooLongSequenceException e) {
                 continue;
             }
 

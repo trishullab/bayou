@@ -15,11 +15,11 @@ public abstract class MetricCalculator {
 
     public abstract void doCalculation();
 
-    protected List<Sequence> getGeneratedSequences(DSubTree predictedAST, int max, boolean withSubSeqs)
-            throws DASTNode.TooManySequencesException {
+    protected List<Sequence> getGeneratedSequences(DSubTree predictedAST, int max, int max_length, boolean withSubSeqs)
+            throws DASTNode.TooManySequencesException, DASTNode.TooLongSequenceException {
         List<Sequence> generatedSeqs = new ArrayList<>();
         generatedSeqs.add(new Sequence());
-        predictedAST.updateSequences(generatedSeqs, max);
+        predictedAST.updateSequences(generatedSeqs, max, max_length);
         if (withSubSeqs) {
             int num = generatedSeqs.size();
             for (int i = 0; i < num; i++) {
