@@ -3,6 +3,7 @@ package edu.rice.bayou.synthesizer;
 import org.eclipse.jdt.core.dom.*;
 
 import java.lang.reflect.Constructor;
+import java.lang.reflect.Executable;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.*;
@@ -126,29 +127,61 @@ public class Enumerator {
         Enumerator enumerator = new Enumerator(ast, env);
 
         /* first, see if we can create a new object of target type directly */
-        List<Constructor> constructors = Arrays.asList(targetType.getConstructors());
-        sortConstructorsByCost(constructors);
-        for (Constructor constructor : constructors) {
+        List<Executable> constructors = new ArrayList<>(Arrays.asList(targetType.getConstructors()));
+        /* static methods that return the target type are considered "constructors" here */
+        try {
+            for (Method m : targetType.getMethods())
+                if (Modifier.isStatic(m.getModifiers()) && targetType.isAssignableFrom(m.getReturnType()))
+                    constructors.add(m);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        sortExecutablesByCost(constructors);
+        for (Executable constructor : constructors) {
             if (Modifier.isAbstract(targetType.getModifiers()))
                 break;
             if (! Modifier.isPublic(constructor.getModifiers()))
                 continue;
-            ClassInstanceCreation creation = ast.newClassInstanceCreation();
-            creation.setType(ast.newSimpleType(ast.newSimpleName(targetType.getSimpleName())));
 
-            int i;
-            enumerator.importsDuringSearch.clear();
-            for (i = 0; i < constructor.getParameterTypes().length; i++) {
-                Class argType = constructor.getParameterTypes()[i];
-                Expression arg = enumerator.search(argType, argDepth+1);
-                if (arg == null)
-                    break;
-                creation.arguments().add(arg);
+            if (constructor instanceof Constructor) { /* an actual constructor */
+                ClassInstanceCreation creation = ast.newClassInstanceCreation();
+                creation.setType(ast.newSimpleType(ast.newSimpleName(targetType.getSimpleName())));
+
+                int i;
+                enumerator.importsDuringSearch.clear();
+                for (i = 0; i < constructor.getParameterTypes().length; i++) {
+                    Class argType = constructor.getParameterTypes()[i];
+                    Expression arg = enumerator.search(argType, argDepth + 1);
+                    if (arg == null)
+                        break;
+                    creation.arguments().add(arg);
+                }
+                if (i == constructor.getParameterCount()) {
+                    importsDuringSearch.addAll(enumerator.importsDuringSearch);
+                    importsDuringSearch.add(targetType);
+                    return creation;
+                }
             }
-            if (i == constructor.getParameterCount()) {
-                importsDuringSearch.addAll(enumerator.importsDuringSearch);
-                importsDuringSearch.add(targetType);
-                return creation;
+            else { /* a static method that returns the object type */
+                MethodInvocation invocation = ast.newMethodInvocation();
+                Expression expr = ast.newSimpleName(targetType.getSimpleName());
+
+                int i;
+                enumerator.importsDuringSearch.clear();
+                invocation.setExpression(ast.newSimpleName(targetType.getSimpleName()));
+                invocation.setName(ast.newSimpleName(constructor.getName()));
+                for (i = 0; i < constructor.getParameterTypes().length; i++) {
+                    Class argType = constructor.getParameterTypes()[i];
+                    Expression arg = enumerator.search(argType, argDepth + 1);
+                    if (arg == null)
+                        break;
+                    invocation.arguments().add(arg);
+                }
+                if (i == constructor.getParameterCount()) {
+                    importsDuringSearch.addAll(enumerator.importsDuringSearch);
+                    importsDuringSearch.add(targetType);
+                    return invocation;
+                }
             }
         }
 
@@ -224,6 +257,11 @@ public class Enumerator {
     private void sortMethodsByCost(List<Method> methods) {
         Collections.shuffle(methods);
         methods.sort(Comparator.comparingInt(c -> c.getParameterTypes().length));
+    }
+
+    private void sortExecutablesByCost(List<Executable> exes) {
+        Collections.shuffle(exes);
+        exes.sort(Comparator.comparingInt(e -> e.getParameterTypes().length));
     }
 
     private void sortVariablesByCost(List<Variable> variables) {
