@@ -18,6 +18,10 @@ public class DOMMethodInvocation implements Handler {
     @Override
     public DSubTree handle() {
         DSubTree tree = new DSubTree();
+        // add the expression's subtree (e.g: foo(..).bar() should handle foo(..) first)
+        DSubTree Texp = new DOMExpression(invocation.getExpression()).handle();
+        tree.addNodes(Texp.getNodes());
+
         // evaluate arguments first
         for (Object o : invocation.arguments()) {
             DSubTree Targ = new DOMExpression((Expression) o).handle();

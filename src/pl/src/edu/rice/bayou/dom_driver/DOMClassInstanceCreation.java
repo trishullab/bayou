@@ -18,6 +18,10 @@ public class DOMClassInstanceCreation implements Handler {
     @Override
     public DSubTree handle() {
         DSubTree tree = new DSubTree();
+        // add the expression's subtree (e.g: foo(..).bar() should handle foo(..) first)
+        DSubTree Texp = new DOMExpression(creation.getExpression()).handle();
+        tree.addNodes(Texp.getNodes());
+
         // evaluate arguments first
         for (Object o : creation.arguments()) {
             DSubTree Targ = new DOMExpression((Expression) o).handle();
