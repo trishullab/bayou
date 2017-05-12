@@ -10,6 +10,7 @@ from bayou.core.utils import CONFIG_ENCODER, CONFIG_CHARS_VOCAB, C0, UNK
 from bayou.core.utils import length
 from bayou.core.cells import PretrainedEmbeddingWrapper
 
+
 class Evidence(object):
 
     def init_config(self, evidence, chars_vocab, save_dir):
@@ -28,9 +29,7 @@ class Evidence(object):
         evidences = []
         for evidence in js:
             name = evidence['name']
-            if name == 'sequences':
-                e = Sequences()
-            elif name == 'keywords':
+            if name == 'keywords':
                 e = Keywords()
             elif name == 'javadoc':
                 e = Javadoc()
@@ -104,34 +103,6 @@ class Evidence(object):
         encodings = encodings * self.tile
         return encodings
 
-class Sequences(Evidence):
-
-    def read_data(self, program, infer=False):
-        sequences = self.sub_sequences([sequence['calls'] for sequence in program['sequences']])
-        assert len(sequences) <= self.max_num
-        assert all([len(sequence) <= self.max_length for sequence in sequences])
-        return sequences
-
-    def set_vocab_chars(self, data):
-        self.chars = [C0] + list(set([call for point in data for seq in point for call in seq]))
-        self.vocab = dict(zip(self.chars, range(len(self.chars))))
-        self.vocab_size = len(self.vocab)
-
-    def wrangle(self, data):
-        sequences = np.zeros((len(data), self.max_num, self.max_length, 1), dtype=np.int32)
-        for i, set_of_seqs in enumerate(data):
-            for j, seq in enumerate(set_of_seqs):
-                sequences[i, j, :len(seq), 0] = list(map(self.vocab.get, seq))
-        return sequences
-
-    def sub_sequences(self, sequences):
-        ret = []
-        for sequence in sequences:
-            cuts = [sequence[:i] for i in range(1, len(sequence)+1)]
-            for s in cuts:
-                if s not in ret:
-                    ret.append(s)
-        return ret
 
 class Keywords(Evidence):
 
@@ -177,6 +148,7 @@ class Keywords(Evidence):
         keywords = list(chain.from_iterable([Keywords.split_camel(call) for call in calls]))
         return list(set([kw.lower() for kw in keywords if not kw == '']))
 
+
 class Javadoc(Evidence):
 
     def read_data(self, program, infer=False):
@@ -207,6 +179,7 @@ class Javadoc(Evidence):
         for i, jd in enumerate(data):
             javadoc[i, 0, :len(jd), 0] = list(map(self.vocab.get, jd))
         return javadoc
+
 
 class Types(Evidence):
 

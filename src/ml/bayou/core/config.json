@@ -8,19 +8,11 @@
     "print_step": 1,
     "evidence": [
         {
-            "name": "sequences",
-            "max_num": 32,
-            "max_length": 16,
-            "rnn_units": 128,
-            "tile": 1,
-            "pretrained_embed": false
-        },
-        {
             "name": "keywords",
             "max_num": 32,
             "max_length": 1,
             "rnn_units": 128,
-            "tile": 8,
+            "tile": 2,
             "pretrained_embed": false
         },
         {
@@ -28,7 +20,7 @@
             "max_num": 1,
             "max_length": 64,
             "rnn_units": 128,
-            "tile": 128,
+            "tile": 1,
             "pretrained_embed": true
         },
         {
@@ -36,7 +28,7 @@
             "max_num": 32,
             "max_length": 1,
             "rnn_units": 128,
-            "tile": 32,
+            "tile": 2,
             "pretrained_embed": false
         }
     ],

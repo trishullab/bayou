@@ -25,14 +25,6 @@ Config options should be given as a JSON file (see config.json for example):
     "print_step": 1,                      | Print training output every given steps
     "evidence": [                         | Provide each evidence type in this list
         {                                 |
-            "name": "sequences",          | Name of evidence ("sequences")
-            "max_num": 16,                | Maximum number of sequences in each data point
-            "max_length": 10,             | Maximum length of each sequence
-            "rnn_units": 8,               | Size of the encoder hidden state
-            "tile": 1,                    | Repeat the encoding n times (to boost its signal)
-            "pretrained_embed": false     | No pretrained_embed embeddings for sequences
-        },                                |
-        {                                 |
             "name": "keywords",           | Name of evidence ("keywords")
             "max_num": 16,                | Maximum number of keywords in each data point
             "max_length": 1,              | Keywords do not have a 2nd dimension (length)
@@ -63,6 +55,7 @@ Config options should be given as a JSON file (see config.json for example):
     }                                     |
 }                                         |
 """
+
 
 def train(clargs):
     config_file = clargs.config if clargs.continue_from is None \
