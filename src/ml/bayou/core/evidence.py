@@ -67,7 +67,7 @@ class Evidence(object):
         if self.pretrained_embed:
             self.pretrained_embeddings.load_from(sess, save_dir)
 
-    def encode(self, inputs, config, sample=False):
+    def encode(self, inputs, config):
         cell = rnn.BasicLSTMCell(self.rnn_units, state_is_tuple=False) if config.cell == 'lstm' \
                else rnn.BasicRNNCell(self.rnn_units)
 
@@ -83,9 +83,6 @@ class Evidence(object):
             w = tf.get_variable('w', [cell.state_size, config.latent_size])
             b = tf.get_variable('b', [config.latent_size])
 
-            if sample:
-                stdv = tf.get_variable('sample_stdv', [])
-
             for i, inp in enumerate(inputs):
                 if i > 0:
                     tf.get_variable_scope().reuse_variables()
@@ -94,10 +91,6 @@ class Evidence(object):
                                         initial_state=self.cell_init,
                                         dtype=tf.float32)
                 latent_encoding = tf.nn.xw_plus_b(encoding, w, b)
-                if sample:
-                    normal_sample = tf.random_normal([config.batch_size, config.latent_size],
-                                        mean=0., stddev=stdv, dtype=tf.float32)
-                    latent_encoding = latent_encoding * normal_sample
                 encodings.append(latent_encoding)
 
         encodings = encodings * self.tile
