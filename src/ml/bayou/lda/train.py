@@ -24,8 +24,8 @@ def train(clargs):
         ok = sys.stdin.readline().rstrip('\n')
 
     if ok == 'y':
-        print('Saving model to {:s}'.format(os.path.join(clargs.save, 'lda.pkl')))
-        with open(os.path.join(clargs.save, 'lda.pkl'), 'wb') as fmodel:
+        print('Saving model to {:s}'.format(os.path.join(clargs.save, 'model.pkl')))
+        with open(os.path.join(clargs.save, 'model.pkl'), 'wb') as fmodel:
             pickle.dump((model.model, model.vectorizer), fmodel)
 
 
