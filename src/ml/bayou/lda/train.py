@@ -6,6 +6,7 @@ import argparse
 
 from bayou.lda.model import LDA
 
+
 def train(clargs):
     print('Reading data file...')
     data = get_data(clargs.input_file[0], clargs.evidence)

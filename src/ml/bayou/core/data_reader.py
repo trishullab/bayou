@@ -4,6 +4,7 @@ import numpy as np
 
 from bayou.core.utils import C0, CHILD_EDGE, SIBLING_EDGE
 
+
 class Reader():
     def __init__(self, clargs, config):
         self.config = config
@@ -12,7 +13,7 @@ class Reader():
         print('Reading data file...')
         raw_evidences, raw_targets = self.read_data(clargs.input_file[0])
         raw_evidences = [[raw_evidence[i] for raw_evidence in raw_evidences] for i, ev in
-                            enumerate(config.evidence)]
+                         enumerate(config.evidence)]
 
         # setup input and target chars/vocab
         if clargs.continue_from is None:
@@ -38,7 +39,7 @@ class Reader():
         for i, path in enumerate(raw_targets):
             self.nodes[i, :len(path)] = list(map(config.decoder.vocab.get, [p[0] for p in path]))
             self.edges[i, :len(path)] = [p[1] == CHILD_EDGE for p in path]
-            self.targets[i, :len(path)-1] = self.nodes[i, 1:len(path)] # shifted left by one
+            self.targets[i, :len(path)-1] = self.nodes[i, 1:len(path)]  # shifted left by one
 
         # split into batches
         self.inputs = [np.split(ev_data, config.num_batches, axis=0) for ev_data in self.inputs]
@@ -61,11 +62,10 @@ class Reader():
         if i == len(js):
             cons_calls.append(('STOP', SIBLING_EDGE))
             return [cons_calls]
-        children_paths = []
         node_type = js[i]['node']
 
         if node_type == 'DBranch':
-            pC = self.get_ast_paths(js[i]['_cond']) # will have at most 1 "path"
+            pC = self.get_ast_paths(js[i]['_cond'])  # will have at most 1 "path"
             assert len(pC) <= 1
             p1 = self.get_ast_paths(js[i]['_then'])
             p2 = self.get_ast_paths(js[i]['_else'])
@@ -85,7 +85,7 @@ class Reader():
             return ph + pv
 
         if node_type == 'DLoop':
-            pC = self.get_ast_paths(js[i]['_cond']) # will have at most 1 "path"
+            pC = self.get_ast_paths(js[i]['_cond'])  # will have at most 1 "path"
             assert len(pC) <= 1
             p = self.get_ast_paths(js[i]['_body'])
             pv = [cons_calls + [('DLoop', CHILD_EDGE)] + pC[0] + path for path in p]

@@ -1,7 +1,7 @@
 import tensorflow as tf
 from tensorflow.contrib import rnn
-from tensorflow.contrib import legacy_seq2seq
 from itertools import chain
+
 
 class BayesianEncoder(object):
     def __init__(self, config):
@@ -19,11 +19,11 @@ class BayesianEncoder(object):
         for scope in ['mean', 'stdv']:
             with tf.variable_scope(scope):
                 encodings = [ev.encode(i, config) for ev, i in
-                                        zip(config.evidence, self.inputs)]
+                             zip(config.evidence, self.inputs)]
                 encodings = list(chain.from_iterable(encodings))
                 assert len(exists) == len(encodings)
                 nonzero_encodings = [tf.where(exist, encoding, all_zeros) for exist, encoding in
-                                        zip(exists, encodings)]
+                                     zip(exists, encodings)]
                 sum_encodings = tf.reduce_sum(tf.stack(nonzero_encodings), axis=0)
                 psi.append(tf.divide(sum_encodings, num_nonzero))
                 self.init += [ev.cell_init for ev in config.evidence]
@@ -44,18 +44,19 @@ class BayesianDecoder(object):
         # placeholders
         self.initial_state = initial_state
         self.nodes = [tf.placeholder(tf.int32, [config.batch_size], name='node{0}'.format(i))
-                            for i in range(config.decoder.max_ast_depth)]
+                      for i in range(config.decoder.max_ast_depth)]
         self.edges = [tf.placeholder(tf.bool, [config.batch_size], name='edge{0}'.format(i))
-                            for i in range(config.decoder.max_ast_depth)]
+                      for i in range(config.decoder.max_ast_depth)]
 
         # projection matrices for output
         self.projection_w = tf.get_variable('projection_w', [self.cell1.output_size,
-                                                                config.decoder.vocab_size])
+                                                             config.decoder.vocab_size])
         self.projection_b = tf.get_variable('projection_b', [config.decoder.vocab_size])
 
         # setup embedding
         with tf.variable_scope('decoder'):
             emb = tf.get_variable('emb', [config.decoder.vocab_size, config.decoder.rnn_units])
+
             def loop_fn(prev, _):
                 prev = tf.nn.xw_plus_b(prev, self.projection_w, self.projection_b)
                 prev_symbol = tf.argmax(prev, 1)
@@ -76,9 +77,9 @@ class BayesianDecoder(object):
                             inp = loop_function(prev, i)
                     if i > 0:
                         tf.get_variable_scope().reuse_variables()
-                    with tf.variable_scope('cell1'): # handles CHILD_EDGE
+                    with tf.variable_scope('cell1'):  # handles CHILD_EDGE
                         output1, state1 = self.cell1(inp, self.state)
-                    with tf.variable_scope('cell2'): # handles SIBLING_EDGE
+                    with tf.variable_scope('cell2'):  # handles SIBLING_EDGE
                         output2, state2 = self.cell2(inp, self.state)
                     output = tf.where(self.edges[i], output1, output2)
                     self.state = tf.where(self.edges[i], state1, state2)

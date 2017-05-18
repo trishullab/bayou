@@ -5,11 +5,12 @@ from collections import OrderedDict
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.decomposition import LatentDirichletAllocation
 
+
 class LDA():
 
     def __init__(self, args=None, from_file=None):
-        """ Initialize LDA model from either arguments or a file. If both are
-            provided, file will be used."""
+        # Initialize LDA model from either arguments or a file. If both are
+        # provided, file will be used.
         assert args or from_file, 'Improper initialization of LDA model'
         if from_file is not None:
             self.model, self.vectorizer = pickle.load(from_file)
@@ -23,7 +24,7 @@ class LDA():
     def top_words(self, ntop_words):
         features = self.vectorizer.get_feature_names()
         words = [OrderedDict([(features[i], topic[i]) for i in topic.argsort()[:-ntop_words - 1:-1]])
-                     for topic in self.model.components_]
+                 for topic in self.model.components_]
         return words
 
     def train(self, data):

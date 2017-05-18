@@ -13,6 +13,7 @@ from bayou.core.utils import read_config
 
 MAX_GEN_UNTIL_STOP = 20
 
+
 def infer(clargs):
     with tf.Session() as sess:
         predictor = BayesianPredictor(clargs.save, sess)
@@ -23,7 +24,7 @@ def infer(clargs):
                 js = json.load(f)
             try:
                 inputs = [ev.reshape(ev.wrangle([ev.read_data(js, infer=True)])) for ev in
-                            predictor.model.config.evidence]
+                          predictor.model.config.evidence]
             except AssertionError:
                 print('Given evidence does not follow saved model config')
                 return
@@ -49,11 +50,12 @@ def infer(clargs):
             print('Latent space is not 2-dimensional.. cannot plot')
 
     if clargs.output_file is None:
-        print(json.dumps({ 'asts': asts }, indent=2))
+        print(json.dumps({'asts': asts}, indent=2))
     else:
         with open(clargs.output_file, 'w') as f:
-            json.dump({ 'asts': asts }, fp=f, indent=2)
+            json.dump({'asts': asts}, fp=f, indent=2)
     print('Number of errors: {}'.format(err))
+
 
 class BayesianPredictor(object):
 
@@ -83,7 +85,7 @@ class BayesianPredictor(object):
 
     def gen_until_STOP(self, psi, in_nodes, in_edges, check_call=False):
         ast = []
-        p_ast = 1. # probability of generating this AST
+        p_ast = 1.  # probability of generating this AST
         nodes, edges = in_nodes[:], in_edges[:]
         num = 0
         while True:
@@ -93,7 +95,7 @@ class BayesianPredictor(object):
             p_ast *= dist[idx]
             prediction = self.model.config.decoder.chars[idx]
             nodes += [prediction]
-            if check_call: # exception caught in main
+            if check_call:  # exception caught in main
                 assert prediction not in [ 'DBranch', 'DExcept', 'DLoop', 'DSubTree' ]
             if prediction == 'STOP':
                 edges += [SIBLING_EDGE]
@@ -150,6 +152,7 @@ class BayesianPredictor(object):
             ast['_nodes'] = ast_nodes
             return ast, float(p_ast)
 
+
 def find_api(nodes):
     for node in nodes:
         if node['node'] == 'DAPICall':
@@ -157,6 +160,7 @@ def find_api(nodes):
             api = '.'.join(call[:3])
             return api
     return None
+
 
 def plot2d(asts):
     import matplotlib.pyplot as plt
@@ -187,17 +191,17 @@ def plot2d(asts):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--save', type=str, default='save',
-                       help='directory to laod model from')
+                        help='directory to laod model from')
     parser.add_argument('--evidence_file', type=str, default=None,
-                       help='input file containing evidences (in JSON)')
+                        help='input file containing evidences (in JSON)')
     parser.add_argument('--random', action='store_true',
-                       help='print random ASTs by sampling from Normal(0,1) (ignores evidences)')
+                        help='print random ASTs by sampling from Normal(0,1) (ignores evidences)')
     parser.add_argument('--plot2d', action='store_true',
-                       help='plots the (2d) sampled psi values in scatterplot (requires --random)')
+                        help='plots the (2d) sampled psi values in scatterplot (requires --random)')
     parser.add_argument('--output_file', type=str, default=None,
-                       help='file to print AST (in JSON) to')
+                        help='file to print AST (in JSON) to')
     parser.add_argument('--n', type=int, default=1,
-                       help='number of ASTs to sample/synthesize')
+                        help='number of ASTs to sample/synthesize')
 
     clargs = parser.parse_args()
     if not clargs.evidence_file and not clargs.random:

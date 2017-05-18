@@ -10,7 +10,6 @@ import textwrap
 
 from bayou.core.data_reader import Reader
 from bayou.core.model import Model
-from bayou.core.evidence import Evidence
 from bayou.core.utils import read_config, dump_config
 
 HELP = """\
@@ -62,7 +61,7 @@ def train(clargs):
                                 else os.path.join(clargs.continue_from, 'config.json')
     with open(config_file) as f:
         config = read_config(json.load(f), chars_vocab=clargs.continue_from is not None,
-                                save_dir=clargs.save)
+                             save_dir=clargs.save)
     assert config.cell == 'lstm' or config.cell == 'rnn', 'Invalid cell in config'
     reader = Reader(clargs, config)
     
@@ -95,7 +94,7 @@ def train(clargs):
 
                 # setup the feed dict
                 ev_data, n, e, y = reader.next_batch()
-                feed = { model.targets: y }
+                feed = {model.targets: y}
                 for j, ev in enumerate(config.evidence):
                     for k in range(ev.max_num):
                         feed[model.encoder.inputs[j][k].name] = ev_data[j][k]
@@ -107,33 +106,40 @@ def train(clargs):
 
                 # run the optimizer
                 cost, latent, generation, mean, stdv, _ = sess.run([model.cost,
-                                                                model.latent_loss,
-                                                                model.generation_loss,
-                                                                model.encoder.psi_mean,
-                                                                model.encoder.psi_stdv,
-                                                                model.train_op], feed)
+                                                                    model.latent_loss,
+                                                                    model.gen_loss,
+                                                                    model.encoder.psi_mean,
+                                                                    model.encoder.psi_stdv,
+                                                                    model.train_op], feed)
                 end = time.time()
                 step = i * config.num_batches + b
                 if step % config.print_step == 0:
-                    print('{}/{} (epoch {}), latent: {:.3f}, generation: {:.3f}, cost: {:.3f}, '\
-                            'mean: {:.3f}, stdv: {:.3f}, time: {:.3f}'.format(step,
-                            config.num_epochs * config.num_batches, i, np.mean(latent), generation,
-                            np.mean(cost), np.mean(mean), np.mean(stdv), end - start))
+                    print('{}/{} (epoch {}), latent: {:.3f}, generation: {:.3f}, cost: {:.3f}, '
+                          'mean: {:.3f}, stdv: {:.3f}, time: {:.3f}'.format
+                          (step,
+                           config.num_epochs * config.num_batches,
+                           i,
+                           np.mean(latent),
+                           generation,
+                           np.mean(cost),
+                           np.mean(mean),
+                           np.mean(stdv),
+                           end - start))
             checkpoint_dir = os.path.join(clargs.save, 'model.ckpt')
             saver.save(sess, checkpoint_dir)
             print('Model checkpointed: {}'.format(checkpoint_dir))
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(formatter_class=argparse.RawDescriptionHelpFormatter,
-            description=textwrap.dedent(HELP))
+                                     description=textwrap.dedent(HELP))
     parser.add_argument('input_file', type=str, nargs=1,
-                       help='input data file')
+                        help='input data file')
     parser.add_argument('--save', type=str, default='save',
-                       help='checkpoint model during training here')
+                        help='checkpoint model during training here')
     parser.add_argument('--config', type=str, default=None,
-                       help='config file (see description above for help)')
+                        help='config file (see description above for help)')
     parser.add_argument('--continue_from', type=str, default=None,
-                       help='ignore config options and continue training model checkpointed here')
+                        help='ignore config options and continue training model checkpointed here')
     clargs = parser.parse_args()
     if clargs.config and clargs.continue_from:
         parser.error('Do not provide --config if you are continuing from checkpointed model')

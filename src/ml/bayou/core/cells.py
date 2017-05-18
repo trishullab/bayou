@@ -2,12 +2,13 @@ import tensorflow as tf
 from tensorflow.python.ops.rnn_cell_impl import _RNNCell
 import os
 
+
 class PretrainedEmbeddingWrapper(_RNNCell):
     def __init__(self, cell, evidence):
         self.cell = cell
         self.evidence = evidence
-        self.embedding = tf.get_variable('embedding', [evidence.vocab_size, evidence.rnn_units], 
-                            dtype=tf.float32, trainable=False)
+        self.embedding = tf.get_variable('embedding', [evidence.vocab_size, evidence.rnn_units],
+                                         dtype=tf.float32, trainable=False)
         norm = tf.sqrt(tf.reduce_sum(tf.square(self.embedding), 1, keep_dims=True))
         self.norm_embedding = self.embedding / norm
 

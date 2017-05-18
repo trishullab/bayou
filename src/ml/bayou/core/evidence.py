@@ -21,7 +21,7 @@ class Evidence(object):
 
     def dump_config(self):
         attrs = CONFIG_ENCODER + CONFIG_CHARS_VOCAB
-        js = { attr: self.__getattribute__(attr) for attr in attrs }
+        js = {attr: self.__getattribute__(attr) for attr in attrs}
         return js
 
     @staticmethod
@@ -51,8 +51,8 @@ class Evidence(object):
         raise NotImplementedError('wrangle() has not been implemented')
 
     def placeholder(self, config):
-        return [tf.placeholder(tf.int32, [config.batch_size, self.max_length, 1], 
-                            name='{}{}'.format(self.name, i)) for i in range(self.max_num)]
+        return [tf.placeholder(tf.int32, [config.batch_size, self.max_length, 1],
+                               name='{}{}'.format(self.name, i)) for i in range(self.max_num)]
 
     def reshape(self, data_point):
         return [data_point[:, i, :, :] for i in range(self.max_num)]
@@ -77,8 +77,8 @@ class Evidence(object):
                 cell = self.pretrained_embeddings = PretrainedEmbeddingWrapper(cell, self)
             else:
                 cell = rnn.EmbeddingWrapper(cell,
-                                    embedding_classes=self.vocab_size,
-                                    embedding_size=self.rnn_units)
+                                            embedding_classes=self.vocab_size,
+                                            embedding_size=self.rnn_units)
             self.cell_init = cell.zero_state(config.batch_size, tf.float32)
             w = tf.get_variable('w', [cell.state_size, config.latent_size])
             b = tf.get_variable('b', [config.latent_size])
@@ -87,9 +87,9 @@ class Evidence(object):
                 if i > 0:
                     tf.get_variable_scope().reuse_variables()
                 _, encoding = tf.nn.dynamic_rnn(cell, inp,
-                                        sequence_length=length(inp),
-                                        initial_state=self.cell_init,
-                                        dtype=tf.float32)
+                                                sequence_length=length(inp),
+                                                initial_state=self.cell_init,
+                                                dtype=tf.float32)
                 latent_encoding = tf.nn.xw_plus_b(encoding, w, b)
                 encodings.append(latent_encoding)
 
@@ -124,8 +124,8 @@ class Keywords(Evidence):
 
     @staticmethod
     def split_camel(s):
-        s1 = re.sub('(.)([A-Z][a-z]+)', r'\1#\2', s) # UC followed by LC
-        s1 = re.sub('([a-z0-9])([A-Z])', r'\1#\2', s1) # LC followed by UC
+        s1 = re.sub('(.)([A-Z][a-z]+)', r'\1#\2', s)  # UC followed by LC
+        s1 = re.sub('([a-z0-9])([A-Z])', r'\1#\2', s1)  # LC followed by UC
         return s1.split('#')
 
     @staticmethod
@@ -136,8 +136,8 @@ class Keywords(Evidence):
 
     @staticmethod
     def keywords_from_sequences(sequences):
-        calls = set([Keywords.get_name(call) for sequence in sequences \
-                for call in sequence['calls']])
+        calls = set([Keywords.get_name(call) for sequence in sequences
+                    for call in sequence['calls']])
         keywords = list(chain.from_iterable([Keywords.split_camel(call) for call in calls]))
         return list(set([kw.lower() for kw in keywords if not kw == '']))
 
@@ -148,7 +148,7 @@ class Javadoc(Evidence):
         javadoc = program['javadoc'] if 'javadoc' in program else None
         if not javadoc:
             javadoc = UNK
-        try: # do not consider non-ASCII javadoc
+        try:  # do not consider non-ASCII javadoc
             javadoc.encode('ascii')
         except UnicodeEncodeError:
             javadoc = UNK

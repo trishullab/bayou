@@ -1,8 +1,8 @@
 import argparse
 import tensorflow as tf
 
-CONFIG_GENERAL = ['cell', 'latent_size', 'batch_size', 'weight_loss', 'num_epochs', \
-                 'learning_rate', 'print_step']
+CONFIG_GENERAL = ['cell', 'latent_size', 'batch_size', 'weight_loss', 'num_epochs',
+                  'learning_rate', 'print_step']
 CONFIG_ENCODER = ['name', 'max_num', 'max_length', 'rnn_units', 'tile', 'pretrained_embed']
 CONFIG_DECODER = ['rnn_units', 'max_ast_depth']
 CONFIG_CHARS_VOCAB = ['chars', 'vocab', 'vocab_size']
@@ -12,11 +12,14 @@ UNK = '_UNK_'
 CHILD_EDGE = 'V'
 SIBLING_EDGE = 'H'
 
+
 def length(tensor):
     elems = tf.sign(tf.reduce_max(tensor, axis=2))
     return tf.reduce_sum(elems, axis=1)
 
+# Do not move this import to the top, it will introduce a cyclic dependency
 import bayou.core.evidence
+
 
 # convert JSON to config
 def read_config(js, chars_vocab, save_dir):
@@ -34,6 +37,7 @@ def read_config(js, chars_vocab, save_dir):
 
     return config
 
+
 # convert config to JSON
 def dump_config(config):
     js = {}
@@ -44,6 +48,6 @@ def dump_config(config):
     js['evidence'] = [ev.dump_config() for ev in config.evidence]
 
     attrs = CONFIG_DECODER + CONFIG_CHARS_VOCAB
-    js['decoder'] = { attr: config.decoder.__getattribute__(attr) for attr in attrs }
+    js['decoder'] = {attr: config.decoder.__getattribute__(attr) for attr in attrs}
 
     return js

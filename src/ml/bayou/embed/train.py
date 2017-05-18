@@ -33,11 +33,12 @@ def get_data_keywords(js):
     data = []
     for program in js['programs']:
         calls = set([Keywords.get_name(call) for sequence in program['sequences'] \
-                for call in sequence['calls']])
+                    for call in sequence['calls']])
         for call in calls:
             keywords = Keywords.split_camel(call)
             data.append([kw for kw in keywords if not kw == ''])
     return data
+
 
 def get_data_javadoc(js):
     data = []
@@ -46,6 +47,7 @@ def get_data_javadoc(js):
         if javadoc:
             data.append(javadoc.split())
     return data
+
 
 def to_skip_grams(data, window_size):
     inputs, targets = [], []
@@ -61,6 +63,7 @@ def to_skip_grams(data, window_size):
                 targets.append(point[j])
     return inputs, targets
 
+
 def wrangle(raw_inputs, raw_targets, config):
     sz = config.num_batches * config.batch_size
     raw_inputs = raw_inputs[:sz]
@@ -74,6 +77,7 @@ def wrangle(raw_inputs, raw_targets, config):
 
     return inputs, targets
 
+
 def model(config):
     inputs = tf.placeholder(tf.int32, [config.batch_size])
     targets = tf.placeholder(tf.int32, [config.batch_size, 1])
@@ -86,11 +90,13 @@ def model(config):
 
     embed = tf.nn.embedding_lookup(embeddings, inputs)
     loss = tf.reduce_mean(tf.nn.nce_loss(weights=w, biases=b,
-                                inputs=embed, labels=targets,
-                                num_sampled=config.num_sampled, num_classes=config.vocab_size))
+                                         inputs=embed, labels=targets,
+                                         num_sampled=config.num_sampled,
+                                         num_classes=config.vocab_size))
     optimizer = tf.train.AdagradOptimizer(config.learning_rate).minimize(loss)
 
     return inputs, targets, loss, optimizer
+
 
 def train(clargs):
     with open(clargs.config) as f:
@@ -119,8 +125,8 @@ def train(clargs):
     config.num_batches = int(len(raw_inputs) / config.batch_size)
     assert config.num_batches > 0, 'Not enough data'
     inputs, targets = wrangle(raw_inputs, raw_targets, config)
-    print('Training data: {} pairs, {} batches, {} vocab size'.format(len(raw_inputs), 
-                len(inputs), config.vocab_size))
+    print('Training data: {} pairs, {} batches, {} vocab size'.format
+          (len(raw_inputs), len(inputs), config.vocab_size))
 
     tf_inputs, tf_targets, loss, optimizer = model(config)
 
@@ -147,12 +153,12 @@ def train(clargs):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(formatter_class=argparse.RawDescriptionHelpFormatter,
-            description=textwrap.dedent(HELP))
+                                     description=textwrap.dedent(HELP))
     parser.add_argument('input_file', type=str, nargs=1,
-                       help='input data file')
+                        help='input data file')
     parser.add_argument('--config', type=str, required=True,
-                       help='config file (see description above for help)')
+                        help='config file (see description above for help)')
     parser.add_argument('--save', type=str, default='save',
-                       help='checkpoint model during training here')
+                        help='checkpoint model during training here')
     clargs = parser.parse_args()
     train(clargs)

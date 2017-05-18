@@ -1,8 +1,9 @@
 import argparse
 
-CONFIG_GENERAL = ['evidence', 'embedding_size', 'window_size', 'num_sampled', \
-                    'batch_size', 'num_epochs', 'learning_rate', 'print_step']
+CONFIG_GENERAL = ['evidence', 'embedding_size', 'window_size', 'num_sampled',
+                  'batch_size', 'num_epochs', 'learning_rate', 'print_step']
 CONFIG_CHARS_VOCAB = ['chars', 'vocab', 'vocab_size']
+
 
 # convert JSON to config
 def read_config(js, chars_vocab):
@@ -14,6 +15,7 @@ def read_config(js, chars_vocab):
             config.__setattr__(attr, js[attr])
     
     return config
+
 
 # convert config to JSON
 def dump_config(config):
