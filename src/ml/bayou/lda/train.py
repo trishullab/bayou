@@ -37,7 +37,7 @@ def get_data(input_file, evidence):
 
     for i, program in enumerate(js['programs']):
         bow = set(program[evidence])
-        data.append(';'.join(bow))
+        data.append(bow)
         print('Gathering data for LDA: {:5d}/{:d} programs'.format(i+1, nprograms), end='\r')
     print()
     return data

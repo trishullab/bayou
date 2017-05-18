@@ -28,12 +28,14 @@ class LDA():
         return words
 
     def train(self, data):
+        data = [';'.join(bow) for bow in data]
         vect = self.vectorizer.fit_transform(data)
         self.model.fit(vect)
         # note: normalizing does not change subsequent inference, provided no further training is done
         self.model.components_ /= self.model.components_.sum(axis=1)[:, np.newaxis]
 
     def infer(self, data):
+        data = [';'.join(bow) for bow in data]
         vect = self.vectorizer.transform(data)
         dist = self.model.transform(vect)
         assert vect.shape[0] == dist.shape[0]
