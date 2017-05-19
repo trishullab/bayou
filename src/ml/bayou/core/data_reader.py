@@ -1,6 +1,7 @@
 from __future__ import print_function
 import json
 import numpy as np
+from collections import Counter
 
 from bayou.core.utils import C0, CHILD_EDGE, SIBLING_EDGE
 
@@ -15,14 +16,6 @@ class Reader():
         raw_evidences = [[raw_evidence[i] for raw_evidence in raw_evidences] for i, ev in
                          enumerate(config.evidence)]
 
-        # setup input and target chars/vocab
-        if clargs.continue_from is None:
-            for ev, data in zip(config.evidence, raw_evidences):
-                ev.set_vocab_chars(data)
-            config.decoder.chars = [C0] + list(set([n for path in raw_targets for (n, _) in path]))
-            config.decoder.vocab = dict(zip(config.decoder.chars, range(len(config.decoder.chars))))
-            config.decoder.vocab_size = len(config.decoder.vocab)
-
         # align with number of batches
         config.num_batches = int(len(raw_targets) / config.batch_size)
         assert config.num_batches > 0, 'Not enough data'
@@ -30,6 +23,14 @@ class Reader():
         for i in range(len(raw_evidences)):
             raw_evidences[i] = raw_evidences[i][:sz]
         raw_targets = raw_targets[:sz]
+
+        # setup input and target chars/vocab
+        if clargs.continue_from is None:
+            counts = Counter([n for path in raw_targets for (n, _) in path])
+            counts[C0] = 1
+            config.decoder.chars = sorted(counts.keys(), key=lambda w: counts[w], reverse=True)
+            config.decoder.vocab = dict(zip(config.decoder.chars, range(len(config.decoder.chars))))
+            config.decoder.vocab_size = len(config.decoder.vocab)
 
         # wrangle the evidences and targets into numpy arrays
         self.inputs = [ev.wrangle(data) for ev, data in zip(config.evidence, raw_evidences)]
@@ -103,7 +104,7 @@ class Reader():
             if 'ast' not in program:
                 continue
             try:
-                evidence = [ev.read_data(program) for ev in self.config.evidence]
+                evidence = [ev.read_data_point(program) for ev in self.config.evidence]
                 ast_paths = self.get_ast_paths(program['ast']['_nodes'])
                 for path in ast_paths:
                     path.insert(0, ('DSubTree', CHILD_EDGE))
@@ -123,11 +124,10 @@ class Reader():
         ev_data = batch[3:]
 
         # reshape the batch into required format
-        rev = [ev.reshape(data) for ev, data in zip(self.config.evidence, ev_data)]
         rn = np.transpose(n)
         re = np.transpose(e)
 
-        return rev, rn, re, y
+        return ev_data, rn, re, y
 
     def reset_batches(self):
         self.batches = iter(zip(self.nodes, self.edges, self.targets, *self.inputs))

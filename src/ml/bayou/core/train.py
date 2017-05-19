@@ -25,31 +25,17 @@ Config options should be given as a JSON file (see config.json for example):
     "evidence": [                         | Provide each evidence type in this list
         {                                 |
             "name": "keywords",           | Name of evidence ("keywords")
-            "max_num": 16,                | Maximum number of keywords in each data point
-            "max_length": 1,              | Keywords do not have a 2nd dimension (length)
-            "rnn_units": 8,               | Size of the encoder hidden state
-            "tile": 200,                  | Repeat the encoding n times (to boost its signal)
-            "pretrained_embed": false     | No pretrained_embed embeddings for keywords
-        },                                |
-        {                                 |
-            "name": "javadoc",            | Name of evidence ("javadoc")
-            "max_num": 1,                 | Javadoc does not have first dimension (num)
-            "max_length": 32,             | Maximum number of words in Javadoc
-            "rnn_units": 8,               | Size of the encoder hidden state
-            "tile": 100,                  | Repeat the encoding n times (to boost its signal)
-            "pretrained_embed": true      | Load pretrained_embed embeddings from --save/"javadoc"
+            "units": 8,                   | Size of the encoder hidden state
+            "tile": 1,                    | Repeat the encoding n times (to boost its signal)
         },                                |
         {                                 |
             "name": "types",              | Name of evidence ("types")
-            "max_num": 16,                | Maximum number of types used in each data point
-            "max_length": 1,              | Types do not have a 2nd dimension (length)
-            "rnn_units": 8,               | Size of the encoder hidden state
-            "tile": 200,                  | Repeat the encoding n times (to boost its signal)
-            "pretrained_embed": false     | No pretrained_embed embeddings for types
+            "units": 8,                   | Size of the encoder hidden state
+            "tile": 2,                    | Repeat the encoding n times (to boost its signal)
         }                                 |
     ],                                    |
     "decoder": {                          | Provide parameters for the decoder here
-        "rnn_units": 128,                 | Size of the decoder hidden state
+        "units": 128,                     | Size of the decoder hidden state
         "max_ast_depth": 20               | Maximum depth of the AST (length of the longest path)
     }                                     |
 }                                         |
@@ -60,8 +46,7 @@ def train(clargs):
     config_file = clargs.config if clargs.continue_from is None \
                                 else os.path.join(clargs.continue_from, 'config.json')
     with open(config_file) as f:
-        config = read_config(json.load(f), chars_vocab=clargs.continue_from is not None,
-                             save_dir=clargs.save)
+        config = read_config(json.load(f), save_dir=clargs.save)
     assert config.cell == 'lstm' or config.cell == 'rnn', 'Invalid cell in config'
     reader = Reader(clargs, config)
     
@@ -82,10 +67,6 @@ def train(clargs):
             ckpt = tf.train.get_checkpoint_state(clargs.continue_from)
             saver.restore(sess, ckpt.model_checkpoint_path)
 
-        # load pre-trained embeddings (if any) for each evidence
-        for evconfig in config.evidence:
-            evconfig.load_pretrained_embeddings(sess, clargs.save)
-
         # training
         for i in range(config.num_epochs):
             reader.reset_batches()
@@ -96,13 +77,10 @@ def train(clargs):
                 ev_data, n, e, y = reader.next_batch()
                 feed = {model.targets: y}
                 for j, ev in enumerate(config.evidence):
-                    for k in range(ev.max_num):
-                        feed[model.encoder.inputs[j][k].name] = ev_data[j][k]
+                    feed[model.encoder.inputs[j].name] = ev_data[j]
                 for j in range(config.decoder.max_ast_depth):
                     feed[model.decoder.nodes[j].name] = n[j]
                     feed[model.decoder.edges[j].name] = e[j]
-                for cell_init in model.encoder.init:
-                    feed[cell_init] = cell_init.eval(session=sess)
 
                 # run the optimizer
                 cost, latent, generation, mean, stdv, _ = sess.run([model.cost,

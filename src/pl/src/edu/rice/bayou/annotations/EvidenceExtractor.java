@@ -16,13 +16,13 @@ public class EvidenceExtractor extends ASTVisitor {
     CommandLine cmdLine;
 
     class JSONOutputWrapper {
-        String keywords;
+        List<String> keywords;
         List<Sequence> sequences;
         String javadoc;
         List<String> types;
 
         public JSONOutputWrapper() {
-            this.keywords = "";
+            this.keywords = new ArrayList<>();
             this.sequences = new ArrayList<>();
             this.javadoc = "";
             this.types = new ArrayList<>();
@@ -107,8 +107,11 @@ public class EvidenceExtractor extends ASTVisitor {
                 String type = value.getName().getIdentifier();
 
                 if (type.equals("keywords")) {
-                    String val = ((StringLiteral) value.getValue()).getLiteralValue();
-                    output.keywords += " " + val;
+                    List<Expression> keywords = ((ArrayInitializer) value.getValue()).expressions();
+                    for (Expression e : keywords) {
+                        String k = ((StringLiteral) e).getLiteralValue();
+                        output.keywords.add(k);
+                    }
                 }
                 else if (type.equals("sequence")) {
                     Sequence sequence = new Sequence();

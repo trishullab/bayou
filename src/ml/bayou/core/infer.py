@@ -22,19 +22,13 @@ def infer(clargs):
         if clargs.evidence_file:
             with open(clargs.evidence_file) as f:
                 js = json.load(f)
-            try:
-                inputs = [ev.reshape(ev.wrangle([ev.read_data(js, infer=True)])) for ev in
-                          predictor.model.config.evidence]
-            except AssertionError:
-                print('Given evidence does not follow saved model config')
-                return
         for c in range(clargs.n):
             print('Generated {} ASTs ({} errors)'.format(c, err), end='\r')
             try:
                 if clargs.random:
                     psi = predictor.psi_random()
                 else:
-                    psi = predictor.psi_from_evidence(inputs)
+                    psi = predictor.psi_from_evidence(js)
                 ast, p_ast = predictor.generate_ast(psi)
                 if clargs.plot2d:
                     ast['psi'] = list(psi[0])
@@ -64,7 +58,7 @@ class BayesianPredictor(object):
 
         # load the saved config
         with open(os.path.join(save, 'config.json')) as f:
-            config = read_config(json.load(f), chars_vocab=True, save_dir=save)
+            config = read_config(json.load(f), save_dir=save, infer=True)
         self.model = Model(config, True)
 
         # restore the saved model
@@ -73,15 +67,11 @@ class BayesianPredictor(object):
         ckpt = tf.train.get_checkpoint_state(save)
         saver.restore(self.sess, ckpt.model_checkpoint_path)
 
-        # load pre-trained embeddings (if any) for each evidence
-        for evconfig in config.evidence:
-            evconfig.load_pretrained_embeddings(self.sess, save)
-
     def psi_random(self):
         return np.random.normal(size=[1, self.model.config.latent_size])
 
-    def psi_from_evidence(self, evidences):
-        return self.model.infer_psi(self.sess, evidences, feed_only=True)
+    def psi_from_evidence(self, js_evidences):
+        return self.model.infer_psi(self.sess, js_evidences)
 
     def gen_until_STOP(self, psi, in_nodes, in_edges, check_call=False):
         ast = []

@@ -7,7 +7,7 @@ class PretrainedEmbeddingWrapper(_RNNCell):
     def __init__(self, cell, evidence):
         self.cell = cell
         self.evidence = evidence
-        self.embedding = tf.get_variable('embedding', [evidence.vocab_size, evidence.rnn_units],
+        self.embedding = tf.get_variable('embedding', [evidence.vocab_size, evidence.units],
                                          dtype=tf.float32, trainable=False)
         norm = tf.sqrt(tf.reduce_sum(tf.square(self.embedding), 1, keep_dims=True))
         self.norm_embedding = self.embedding / norm

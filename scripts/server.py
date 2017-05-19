@@ -41,12 +41,10 @@ def serve(content, predictor):
     with open(outpipe, 'w') as out:
         try:
             js = json.loads(content.split('#')[1])
-            inputs = [ev.reshape(ev.wrangle([ev.read_data(js, infer=True)])) for ev in
-                        predictor.model.config.evidence]
             asts = []
             for i in range(10):
                 try:
-                    psi = predictor.psi_from_evidence(inputs)
+                    psi = predictor.psi_from_evidence(js)
                     ast, p = predictor.generate_ast(psi)
                     ast['p_ast'] = p
                     asts.append(ast)

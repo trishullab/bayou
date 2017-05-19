@@ -3,9 +3,9 @@ import tensorflow as tf
 
 CONFIG_GENERAL = ['cell', 'latent_size', 'batch_size', 'weight_loss', 'num_epochs',
                   'learning_rate', 'print_step']
-CONFIG_ENCODER = ['name', 'max_num', 'max_length', 'rnn_units', 'tile', 'pretrained_embed']
-CONFIG_DECODER = ['rnn_units', 'max_ast_depth']
-CONFIG_CHARS_VOCAB = ['chars', 'vocab', 'vocab_size']
+CONFIG_ENCODER = ['name', 'units', 'tile']
+CONFIG_DECODER = ['units', 'max_ast_depth']
+CONFIG_DECODER_INFER = ['chars', 'vocab', 'vocab_size']
 
 C0 = 'CLASS0'
 UNK = '_UNK_'
@@ -22,18 +22,19 @@ import bayou.core.evidence
 
 
 # convert JSON to config
-def read_config(js, chars_vocab, save_dir):
+def read_config(js, save_dir, infer=False):
     config = argparse.Namespace()
 
     for attr in CONFIG_GENERAL:
         config.__setattr__(attr, js[attr])
     
-    config.evidence = bayou.core.evidence.Evidence.read_config(js['evidence'], chars_vocab, save_dir)
-
-    attrs = CONFIG_DECODER + (CONFIG_CHARS_VOCAB if chars_vocab else [])
+    config.evidence = bayou.core.evidence.Evidence.read_config(js['evidence'], save_dir)
     config.decoder = argparse.Namespace()
-    for attr in attrs:
+    for attr in CONFIG_DECODER:
         config.decoder.__setattr__(attr, js['decoder'][attr])
+    if infer:
+        for attr in CONFIG_DECODER_INFER:
+            config.decoder.__setattr__(attr, js['decoder'][attr])
 
     return config
 
@@ -46,8 +47,7 @@ def dump_config(config):
         js[attr] = config.__getattribute__(attr)
 
     js['evidence'] = [ev.dump_config() for ev in config.evidence]
-
-    attrs = CONFIG_DECODER + CONFIG_CHARS_VOCAB
-    js['decoder'] = {attr: config.decoder.__getattribute__(attr) for attr in attrs}
+    js['decoder'] = {attr: config.decoder.__getattribute__(attr) for attr in
+                     CONFIG_DECODER + CONFIG_DECODER_INFER}
 
     return js

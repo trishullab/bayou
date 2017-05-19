@@ -20,9 +20,9 @@ class Model():
         self.psi = self.encoder.psi_mean + self.encoder.psi_stdv * samples
 
         # setup the decoder with psi as the initial state
-        lift_w = tf.get_variable('lift_w', [config.latent_size, config.decoder.rnn_units
+        lift_w = tf.get_variable('lift_w', [config.latent_size, config.decoder.units
                                             * (2 if config.cell == 'lstm' else 1)])
-        lift_b = tf.get_variable('lift_b', [config.decoder.rnn_units
+        lift_b = tf.get_variable('lift_b', [config.decoder.units
                                             * (2 if config.cell == 'lstm' else 1)])
         self.initial_state = tf.nn.xw_plus_b(self.psi, lift_w, lift_b)
         self.decoder = BayesianDecoder(config, initial_state=self.initial_state, infer=infer)
@@ -48,26 +48,19 @@ class Model():
         if not infer:
             print('Model parameters: {}'.format(np.sum(var_params)))
 
-    def infer_psi(self, sess, evidences, feed_only=False):
-        if feed_only:
-            inputs = evidences
-        else:
-            # read, wrangle (with batch_size 1) and reshape the data
-            inputs = [ev.reshape(ev.wrangle([ev.read_data(evidences)])) for ev in
-                      self.config.evidence]
+    def infer_psi(self, sess, evidences):
+        # read and wrangle (with batch_size 1) the data
+        inputs = [ev.wrangle([ev.read_data_point(evidences)]) for ev in self.config.evidence]
 
         # setup initial states and feed
         feed = {}
         for j, ev in enumerate(self.config.evidence):
-            for k in range(ev.max_num):
-                feed[self.encoder.inputs[j][k].name] = inputs[j][k]
-        for cell_init in self.encoder.init:
-            feed[cell_init] = cell_init.eval(session=sess)
+            feed[self.encoder.inputs[j].name] = inputs[j]
         psi = sess.run(self.psi, feed)
         return psi
 
     def infer_ast(self, sess, psi, nodes, edges):
-        # run the encoder (or use the given psi) and get decoder's start state
+        # use the given psi and get decoder's start state
         state = sess.run(self.initial_state, {self.psi: psi})
 
         # run the decoder for every time step

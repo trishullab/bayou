@@ -6,27 +6,15 @@ from itertools import chain
 class BayesianEncoder(object):
     def __init__(self, config):
 
-        self.inputs = [ev.placeholder(config) for ev in config.evidence]
-
-        exists = [ev.exists_tiled(i) for ev, i in zip(config.evidence, self.inputs)]
-        exists = list(chain.from_iterable(exists))
-        all_zeros = tf.zeros([config.batch_size, config.latent_size], dtype=tf.float32)
-        num_nonzero = tf.count_nonzero(tf.stack(exists), axis=0, dtype=tf.float32)
-        num_nonzero = tf.tile(tf.reshape(num_nonzero, [-1, 1]), [1, config.latent_size])
-
         psi = []
-        self.init = []
+        self.inputs = [ev.placeholder(config) for ev in config.evidence]
         for scope in ['mean', 'stdv']:
             with tf.variable_scope(scope):
                 encodings = [ev.encode(i, config) for ev, i in
                              zip(config.evidence, self.inputs)]
                 encodings = list(chain.from_iterable(encodings))
-                assert len(exists) == len(encodings)
-                nonzero_encodings = [tf.where(exist, encoding, all_zeros) for exist, encoding in
-                                     zip(exists, encodings)]
-                sum_encodings = tf.reduce_sum(tf.stack(nonzero_encodings), axis=0)
-                psi.append(tf.divide(sum_encodings, num_nonzero))
-                self.init += [ev.cell_init for ev in config.evidence]
+                mean_encodings = tf.reduce_mean(tf.stack(encodings), axis=0)
+                psi.append(mean_encodings)
 
         self.psi_mean, self.psi_stdv = psi
 
@@ -35,11 +23,11 @@ class BayesianDecoder(object):
     def __init__(self, config, initial_state, infer=False):
 
         if config.cell == 'lstm':
-            self.cell1 = rnn.BasicLSTMCell(config.decoder.rnn_units, state_is_tuple=False)
-            self.cell2 = rnn.BasicLSTMCell(config.decoder.rnn_units, state_is_tuple=False)
+            self.cell1 = rnn.BasicLSTMCell(config.decoder.units, state_is_tuple=False)
+            self.cell2 = rnn.BasicLSTMCell(config.decoder.units, state_is_tuple=False)
         else:
-            self.cell1 = rnn.BasicRNNCell(config.decoder.rnn_units)
-            self.cell2 = rnn.BasicRNNCell(config.decoder.rnn_units)
+            self.cell1 = rnn.BasicRNNCell(config.decoder.units)
+            self.cell2 = rnn.BasicRNNCell(config.decoder.units)
 
         # placeholders
         self.initial_state = initial_state
@@ -55,7 +43,7 @@ class BayesianDecoder(object):
 
         # setup embedding
         with tf.variable_scope('decoder'):
-            emb = tf.get_variable('emb', [config.decoder.vocab_size, config.decoder.rnn_units])
+            emb = tf.get_variable('emb', [config.decoder.vocab_size, config.decoder.units])
 
             def loop_fn(prev, _):
                 prev = tf.nn.xw_plus_b(prev, self.projection_w, self.projection_b)
