@@ -96,6 +96,6 @@ If all went well, the synthesizer should output a set of Java programs with the 
 
 ## Roadmap
 - [ ] Model: Encode natural language evidence (Javadoc) better
-- [ ] Model: Use topic modeling for keywords (method names) and types
+- [ ] Model: Learn the joint distribution P(X, \theta) instead of the conditional P(X | \theta)
 - [ ] Synthesizer: Extract evidence from surrounding context instead of `__bayou_fill`
 - [ ] General: Gather more training data from a larger corpus 
