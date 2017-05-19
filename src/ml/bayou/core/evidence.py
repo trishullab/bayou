@@ -1,7 +1,9 @@
 import tensorflow as tf
 import numpy as np
 import os
+import re
 import json
+from itertools import chain
 
 from bayou.core.utils import CONFIG_ENCODER, C0, UNK, split_camel
 from bayou.lda.model import LDA
@@ -25,10 +27,10 @@ class Evidence(object):
             name = evidence['name']
             if name == 'keywords':
                 e = Keywords()
-            elif name == 'javadoc':
-                e = Javadoc()
             elif name == 'types':
                 e = Types()
+            elif name == 'context':
+                e = Context()
             else:
                 raise TypeError('Invalid evidence name: {}'.format(name))
             e.init_config(evidence, save_dir)
@@ -115,6 +117,41 @@ class Types(Evidence):
         inner = split_camel(split[0])
         outer = split_camel(split[1]) if len(split) > 1 else []
         return inner + outer
+
+
+class Context(Evidence):
+
+    def load_embedding(self, save_dir):
+        embed_save_dir = os.path.join(save_dir, 'embed_context')
+        self.lda = LDA(from_file=os.path.join(embed_save_dir, 'model.pkl'))
+
+    def read_data_point(self, program):
+        context = program['context'] if 'context' in program else []
+        context = list(set(context))
+        return context
+
+    def wrangle(self, data):
+        return np.array(self.lda.infer(data), dtype=np.float32)
+
+    def placeholder(self, config):
+        return tf.placeholder(tf.float32, [config.batch_size, self.lda.model.n_topics])
+
+    def encode(self, inputs, config):
+        with tf.variable_scope('context'):
+            encoding = tf.layers.dense(inputs, self.units)
+            w = tf.get_variable('w', [self.units, config.latent_size])
+            b = tf.get_variable('b', [config.latent_size])
+            latent_encoding = tf.nn.xw_plus_b(encoding, w, b)
+            return [latent_encoding] * self.tile
+
+    @staticmethod
+    def from_call(call):
+        args = call.split('(')[1].split(')')[0].split(',')
+        args = [arg.split('.')[-1] for arg in args]
+        args = [re.sub('<.*', r'', arg) for arg in args]  # remove generics
+        args = [re.sub('\[\]', r'', arg) for arg in args]  # remove array type
+        contexts = list(chain.from_iterable([split_camel(arg) for arg in args]))
+        return [c for c in contexts if not c == '']
 
 
 # TODO: handle Javadoc with word2vec

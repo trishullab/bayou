@@ -9,7 +9,17 @@
         {
             "name": "keywords",
             "units": 32,
-            "tile": 3
+            "tile": 1
+        },
+        {
+            "name": "types",
+            "units": 32,
+            "tile": 1
+        },
+        {
+            "name": "context",
+            "units": 32,
+            "tile": 1
         }
     ],
     "decoder": {

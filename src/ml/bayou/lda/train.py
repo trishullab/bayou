@@ -49,7 +49,7 @@ if __name__ == '__main__':
                            help='input JSON file')
     argparser.add_argument('--ntopics', type=int, required=True,
                            help='run LDA with n topics')
-    argparser.add_argument('--evidence', choices=['keywords', 'types'], required=True,
+    argparser.add_argument('--evidence', choices=['keywords', 'types', 'context'], required=True,
                            help='the type of evidence for which LDA is run')
     argparser.add_argument('--save', type=str, default='save',
                            help='directory to store LDA model')
