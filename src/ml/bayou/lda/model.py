@@ -14,7 +14,7 @@ class LDA():
         assert args or from_file, 'Improper initialization of LDA model'
         if from_file is not None:
             with open(from_file, 'rb') as f:
-                self.model, self.vectorizer = pickle.load(f)
+                self.model, self.vectorizer = pickle.load(f, encoding='latin1')
         else:
             self.vectorizer = TfidfVectorizer(lowercase=False, token_pattern=u'[^;]+')
             self.model = LatentDirichletAllocation(args.ntopics, doc_topic_prior=args.alpha,
