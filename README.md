@@ -56,12 +56,12 @@ cd /path/to/bayou/src/ml
 export PYTHONPATH=`pwd`
 ```
 
-To train word embeddings on a data file `DATA.json` generated from driver,
+To train LDA embeddings on keywords or types in a data file `DATA.json` generated from driver,
 ```
-cd /path/to/bayou/src/ml/bayou/embed
-python3 train.py --config config.json DATA.json
+cd /path/to/bayou/src/ml/bayou/lda
+python3 train.py --ntopics 30 --evidence keywords DATA.json
 ```
-Run train.py with -h for details about the config file.
+Run train.py with -h for details about the command line arguments.
 
 To train the BED neural network on `DATA.json`,
 ```
@@ -70,7 +70,7 @@ python3 train.py --config config.json DATA.json
 ```
 As before, run train.py with -h for details about the config file.
 
-If you are using the trained word embeddings while training the BED network, copy the trained embeddings directory into the directory specified by --save (default `save`) with the name "embed_\<evidence type\>". For example, if you are using trained word embeddings for javadoc, copy it to the directory `save/embed_javadoc`.
+If you are using the trained LDA embeddings while training the BED network, copy the trained embeddings directory into the directory specified by --save (default `save`) with the name "embed_\<evidence type\>". For example, if you are using trained word embeddings for keywords, copy it to the directory `save/embed_keywords`.
 
 #### Synthesizer
 Suppose that the trained model is in a folder `trained`. Run the server to load the trained model into memory. The server will listen to a pipe (here `bayoupipe`) for inference queries:

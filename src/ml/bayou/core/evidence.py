@@ -56,7 +56,7 @@ class Evidence(object):
 class Keywords(Evidence):
 
     def load_embedding(self, save_dir):
-        embed_save_dir = os.path.join(save_dir, 'lda_keywords')
+        embed_save_dir = os.path.join(save_dir, 'embed_keywords')
         self.lda = LDA(from_file=os.path.join(embed_save_dir, 'model.pkl'))
 
     def read_data_point(self, program):
@@ -102,7 +102,7 @@ class Keywords(Evidence):
 class Types(Evidence):
 
     def load_embedding(self, save_dir):
-        embed_save_dir = os.path.join(save_dir, 'lda_types')
+        embed_save_dir = os.path.join(save_dir, 'embed_types')
         self.lda = LDA(from_file=os.path.join(embed_save_dir, 'model.pkl'))
 
     def read_data_point(self, program):
