@@ -75,6 +75,10 @@ def extract_evidence(clargs):
     programs = []
     for program in js['programs']:
         sequences = program['sequences']
+        if len(sequences) > clargs.max_seqs or \
+                any([len(sequence['calls']) > clargs.max_seq_length for sequence in sequences]):
+            continue
+
         calls = set(chain.from_iterable([sequence['calls'] for sequence in sequences]))
 
         keywords = [bayou.core.evidence.Keywords.from_call(call) for call in calls]
@@ -100,5 +104,9 @@ if __name__ == '__main__':
                         help='input data file')
     parser.add_argument('output_file', type=str, nargs=1,
                         help='output data file')
+    parser.add_argument('--max_seqs', type=int, default=9999,
+                        help='maximum number of sequences in a program')
+    parser.add_argument('--max_seq_length', type=int, default=9999,
+                        help='maximum length of each sequence in a program')
     clargs = parser.parse_args()
     extract_evidence(clargs)
