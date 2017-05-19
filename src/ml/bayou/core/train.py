@@ -15,7 +15,6 @@ from bayou.core.utils import read_config, dump_config
 HELP = """\
 Config options should be given as a JSON file (see config.json for example):
 {                                         |
-    "cell": "lstm",                       | The type of RNN cell. Choices: lstm, rnn
     "latent_size": 8,                     | Latent dimensionality
     "batch_size": 50,                     | Minibatch size
     "num_epochs": 500,                    | Number of training epochs
@@ -47,7 +46,6 @@ def train(clargs):
                                 else os.path.join(clargs.continue_from, 'config.json')
     with open(config_file) as f:
         config = read_config(json.load(f), save_dir=clargs.save)
-    assert config.cell == 'lstm' or config.cell == 'rnn', 'Invalid cell in config'
     reader = Reader(clargs, config)
     
     jsconfig = dump_config(config)

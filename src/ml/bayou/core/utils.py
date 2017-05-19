@@ -1,7 +1,7 @@
 import argparse
 import tensorflow as tf
 
-CONFIG_GENERAL = ['cell', 'latent_size', 'batch_size', 'weight_loss', 'num_epochs',
+CONFIG_GENERAL = ['latent_size', 'batch_size', 'weight_loss', 'num_epochs',
                   'learning_rate', 'print_step']
 CONFIG_ENCODER = ['name', 'units', 'tile']
 CONFIG_DECODER = ['units', 'max_ast_depth']

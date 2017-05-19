@@ -22,12 +22,8 @@ class BayesianEncoder(object):
 class BayesianDecoder(object):
     def __init__(self, config, initial_state, infer=False):
 
-        if config.cell == 'lstm':
-            self.cell1 = rnn.BasicLSTMCell(config.decoder.units, state_is_tuple=False)
-            self.cell2 = rnn.BasicLSTMCell(config.decoder.units, state_is_tuple=False)
-        else:
-            self.cell1 = rnn.BasicRNNCell(config.decoder.units)
-            self.cell2 = rnn.BasicRNNCell(config.decoder.units)
+        self.cell1 = rnn.GRUCell(config.decoder.units)
+        self.cell2 = rnn.GRUCell(config.decoder.units)
 
         # placeholders
         self.initial_state = initial_state
@@ -53,7 +49,7 @@ class BayesianDecoder(object):
             loop_function = loop_fn if infer else None
             emb_inp = (tf.nn.embedding_lookup(emb, i) for i in self.nodes)
 
-            # the decoder (modified from tensorflow's seq2seq library to fit tree LSTMs)
+            # the decoder (modified from tensorflow's seq2seq library to fit tree RNNs)
             # TODO: update with dynamic decoder (being implemented in tf) once it is released
             with tf.variable_scope('rnn'):
                 self.state = self.initial_state

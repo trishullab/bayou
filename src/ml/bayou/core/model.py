@@ -20,10 +20,8 @@ class Model():
         self.psi = self.encoder.psi_mean + self.encoder.psi_stdv * samples
 
         # setup the decoder with psi as the initial state
-        lift_w = tf.get_variable('lift_w', [config.latent_size, config.decoder.units
-                                            * (2 if config.cell == 'lstm' else 1)])
-        lift_b = tf.get_variable('lift_b', [config.decoder.units
-                                            * (2 if config.cell == 'lstm' else 1)])
+        lift_w = tf.get_variable('lift_w', [config.latent_size, config.decoder.units])
+        lift_b = tf.get_variable('lift_b', [config.decoder.units])
         self.initial_state = tf.nn.xw_plus_b(self.psi, lift_w, lift_b)
         self.decoder = BayesianDecoder(config, initial_state=self.initial_state, infer=infer)
 

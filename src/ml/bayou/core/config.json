@@ -1,5 +1,4 @@
 {
-    "cell": "lstm",
     "latent_size": 128,
     "batch_size": 50,
     "num_epochs": 500,
