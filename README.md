@@ -5,13 +5,14 @@ Bayou is a data-driven program synthesis system for Java that uses learned Bayes
 
 There are three main modules in Bayou:
 - [driver](https://github.com/capergroup/bayou/tree/master/src/pl/src/edu/rice/bayou/dom_driver): extracts sketches (in the [DSL](https://github.com/capergroup/bayou/tree/master/src/pl/src/edu/rice/bayou/dsl)) and evidences from a Java program to generate the training data
-- [model](https://github.com/capergroup/bayou/tree/master/src/ml/bayou): implements the BED neural network (see paper), its training and inference procedures
+- [model](https://github.com/capergroup/bayou/tree/master/src/ml/bayou): implements the BED neural network (see paper), word embeddings, their training and inference procedures
 - [synthesizer](https://github.com/capergroup/bayou/tree/master/src/pl/src/edu/rice/bayou/synthesizer): performs combinatorial enumeration and concretizes a sketch sampled from the BED during inference into a Java program
 
 ## Requirements
 - JDK 1.8
 - Python3 (Tested with 3.5.1)
 - [Tensorflow](https://www.tensorflow.org) (Tested with 1.0)
+- scikit-learn (Tested with 0.18.1)
 
 ## Setup & Usage
 #### Driver
