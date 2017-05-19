@@ -33,14 +33,12 @@ public class Visitor extends ASTVisitor {
         String file;
         DSubTree ast;
         List<Sequence> sequences;
-        Set<String> keywords;
         String javadoc;
 
-        public JSONOutputWrapper(String file, DSubTree ast, List<Sequence> sequences, Set<String> keywords, String javadoc) {
+        public JSONOutputWrapper(String file, DSubTree ast, List<Sequence> sequences, String javadoc) {
             this.file = file;
             this.ast = ast;
             this.sequences = sequences;
-            this.keywords = keywords;
             this.javadoc = javadoc;
         }
     }
@@ -100,13 +98,12 @@ public class Visitor extends ASTVisitor {
 
         for (Pair<DSubTree,String> astDoc : astsWithJavadoc) {
             List<Sequence> sequences = new ArrayList<>();
-            Set<String> keywords = astDoc.getLeft().keywords();
             sequences.add(new Sequence());
             try {
                 astDoc.getLeft().updateSequences(sequences, options.MAX_SEQS, options.MAX_SEQ_LENGTH);
                 List<Sequence> uniqSequences = new ArrayList<>(new HashSet<>(sequences));
                 if (okToPrintAST(uniqSequences))
-                    printJson(astDoc.getLeft(), uniqSequences, keywords, astDoc.getRight());
+                    printJson(astDoc.getLeft(), uniqSequences, astDoc.getRight());
             } catch (DASTNode.TooManySequencesException e) {
                 System.err.println("Too many sequences from AST");
             } catch (DASTNode.TooLongSequenceException e) {
@@ -117,9 +114,9 @@ public class Visitor extends ASTVisitor {
     }
 
     boolean first = true;
-    private void printJson(DSubTree ast, List<Sequence> sequences, Set<String> keywords, String javadoc) {
+    private void printJson(DSubTree ast, List<Sequence> sequences, String javadoc) {
         String file = options.cmdLine.getOptionValue("input-file");
-        JSONOutputWrapper out = new JSONOutputWrapper(file, ast, sequences, keywords, javadoc);
+        JSONOutputWrapper out = new JSONOutputWrapper(file, ast, sequences, javadoc);
         output.write(first? "" : ",\n");
         output.write(gson.toJson(out));
         output.flush();

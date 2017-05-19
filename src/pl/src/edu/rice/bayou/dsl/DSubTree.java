@@ -42,14 +42,6 @@ public class DSubTree extends DASTNode {
             node.updateSequences(soFar, max, max_length);
     }
 
-    @Override
-    public Set<String> keywords() {
-        Set<String> kw = new HashSet<>();
-        for (DASTNode node : _nodes)
-            kw.addAll(node.keywords());
-        return kw;
-    }
-
     public List<DAPICall> getNodesAsCalls() {
         List<DAPICall> calls = new ArrayList<>();
         for (DASTNode node : _nodes) {

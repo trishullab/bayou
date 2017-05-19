@@ -34,16 +34,6 @@ public class DExcept extends DASTNode {
     }
 
     @Override
-    public Set<String> keywords() {
-        Set<String> kw = new HashSet<>();
-        for (DASTNode t : _try)
-            kw.addAll(t.keywords());
-        for (DASTNode c : _catch)
-            kw.addAll(c.keywords());
-        return kw;
-    }
-
-    @Override
     public int numStatements() {
         int num = _try.size();
         for (DASTNode c : _catch)

@@ -37,16 +37,6 @@ public class DLoop extends DASTNode {
     }
 
     @Override
-    public Set<String> keywords() {
-        Set<String> kw = new HashSet<>();
-        for (DAPICall c : _cond)
-            kw.addAll(c.keywords());
-        for (DASTNode b : _body)
-            kw.addAll(b.keywords());
-        return kw;
-    }
-
-    @Override
     public int numStatements() {
         int num = _cond.size();
         for (DASTNode b : _body)

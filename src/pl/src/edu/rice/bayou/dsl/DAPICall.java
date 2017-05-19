@@ -42,15 +42,6 @@ public class DAPICall extends DASTNode {
         }
     }
 
-    @Override
-    public Set<String> keywords() {
-        String s = methodBinding.getDeclaringClass().getName() + " " + methodBinding.getName();
-        Set<String> kw = new HashSet<>(Arrays.asList(StringUtils.splitByCharacterTypeCamelCase(s)));
-        kw.remove(" ");
-        kw = kw.stream().map(k -> k.toLowerCase()).collect(Collectors.toSet());
-        return kw;
-    }
-
     private String getClassName() {
         String className = methodBinding.getDeclaringClass().getQualifiedName();
         if (className.contains("<")) /* be agnostic to generic versions */

@@ -1,11 +1,9 @@
 import tensorflow as tf
-from itertools import chain
 import numpy as np
 import os
 import json
-import re
 
-from bayou.core.utils import CONFIG_ENCODER, C0, UNK
+from bayou.core.utils import CONFIG_ENCODER, C0, UNK, split_camel
 from bayou.lda.model import LDA
 
 
@@ -61,7 +59,6 @@ class Keywords(Evidence):
 
     def read_data_point(self, program):
         keywords = program['keywords'] if 'keywords' in program else []
-        keywords += Keywords.keywords_from_sequences(program['sequences'])
         keywords = list(set(keywords))
         return keywords
 
@@ -80,23 +77,10 @@ class Keywords(Evidence):
             return [latent_encoding] * self.tile
 
     @staticmethod
-    def split_camel(s):
-        s1 = re.sub('(.)([A-Z][a-z]+)', r'\1#\2', s)  # UC followed by LC
-        s1 = re.sub('([a-z0-9])([A-Z])', r'\1#\2', s1)  # LC followed by UC
-        return s1.split('#')
-
-    @staticmethod
-    def get_name(call):
-        q = call.split('(')[0].split('.')
-        cls, name = q[-2], q[-1]
-        return cls + '#' + name
-
-    @staticmethod
-    def keywords_from_sequences(sequences):
-        calls = set([Keywords.get_name(call) for sequence in sequences
-                    for call in sequence['calls']])
-        keywords = list(chain.from_iterable([Keywords.split_camel(call) for call in calls]))
-        return list(set([kw.lower() for kw in keywords if not kw == '']))
+    def from_call(call):
+        split = call.split('(')[0].split('.')
+        cls, name = split[-2:]
+        return split_camel(name) if not cls == name else []
 
 
 class Types(Evidence):
@@ -107,7 +91,6 @@ class Types(Evidence):
 
     def read_data_point(self, program):
         types = program['types'] if 'types' in program else []
-        types += Types.types_from_sequences(program['sequences'])
         types = list(set(types))
         return types
 
@@ -126,24 +109,12 @@ class Types(Evidence):
             return [latent_encoding] * self.tile
 
     @staticmethod
-    def types_from_sequences(sequences):
-
-        def remove_generics(s):
-            s = s.split('#')
-            return [re.sub('\<.*', r'', c) for c in s]
-
-        def get_class(call):
-            qUC = reversed([q for q in call.split('(')[0].split('.') if q[0].isupper()])
-            inner = next(qUC)
-            try:
-                outer = next(qUC)
-            except StopIteration:
-                outer = ''
-            return outer + '#' + inner
-
-        calls = set([get_class(call) for sequence in sequences for call in sequence['calls']])
-        types = list(chain.from_iterable([remove_generics(call) for call in calls]))
-        return list(set([t for t in types if not t == '']))
+    def from_call(call):
+        split = list(reversed([q for q in call.split('(')[0].split('.')[:-1]
+                               if q[0].isupper()]))
+        inner = split_camel(split[0])
+        outer = split_camel(split[1]) if len(split) > 1 else []
+        return inner + outer
 
 
 # TODO: handle Javadoc with word2vec

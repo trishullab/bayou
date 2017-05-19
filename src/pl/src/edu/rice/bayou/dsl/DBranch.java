@@ -40,18 +40,6 @@ public class DBranch extends DASTNode {
     }
 
     @Override
-    public Set<String> keywords() {
-        Set<String> kw = new HashSet<>();
-        for (DAPICall c : _cond)
-            kw.addAll(c.keywords());
-        for (DASTNode t : _then)
-            kw.addAll(t.keywords());
-        for (DASTNode e : _else)
-            kw.addAll(e.keywords());
-        return kw;
-    }
-
-    @Override
     public int numStatements() {
         int num = _cond.size();
         for (DASTNode t : _then)
