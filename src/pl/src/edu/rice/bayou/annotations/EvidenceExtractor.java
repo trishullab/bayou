@@ -17,15 +17,13 @@ public class EvidenceExtractor extends ASTVisitor {
 
     class JSONOutputWrapper {
         List<String> keywords;
-        List<Sequence> sequences;
-        String javadoc;
         List<String> types;
+        List<String> context;
 
         public JSONOutputWrapper() {
             this.keywords = new ArrayList<>();
-            this.sequences = new ArrayList<>();
-            this.javadoc = "";
             this.types = new ArrayList<>();
+            this.context = new ArrayList<>();
         }
     }
 
@@ -88,6 +86,8 @@ public class EvidenceExtractor extends ASTVisitor {
     public boolean visit(MethodDeclaration method) {
         if (!method.getName().getIdentifier().equals("__bayou_fill"))
             return false;
+
+        /* 1. Get keywords and types from @Evidence annotation */
         List<IExtendedModifier> modifiers = method.modifiers();
 
         // performing casts wildly.. if any exceptions occur it's due to incorrect input format
@@ -113,19 +113,6 @@ public class EvidenceExtractor extends ASTVisitor {
                         output.keywords.add(k);
                     }
                 }
-                else if (type.equals("sequence")) {
-                    Sequence sequence = new Sequence();
-                    List<Expression> calls = ((ArrayInitializer) value.getValue()).expressions();
-                    for (Expression e : calls) {
-                        String call = ((StringLiteral) e).getLiteralValue();
-                        sequence.addCall(call);
-                    }
-                    output.sequences.add(sequence);
-                }
-                else if (type.equals("nl")) {
-                    String val = ((StringLiteral) value.getValue()).getLiteralValue();
-                    output.javadoc = val;
-                }
                 else if (type.equals("types")) {
                     List<Expression> types = ((ArrayInitializer) value.getValue()).expressions();
                     for (Expression e : types) {
@@ -135,6 +122,20 @@ public class EvidenceExtractor extends ASTVisitor {
                 }
                 else throw new RuntimeException();
             }
+        }
+
+        /* 2. Get context from the method's formal parameters */
+        List<SingleVariableDeclaration> params = method.parameters();
+        for (SingleVariableDeclaration param : params) {
+            ITypeBinding binding = param.getType().resolveBinding();
+            if (binding == null)
+                continue;
+            String t = binding.getName();
+
+            // remove generics and array notations
+            t = t.replaceAll("<.*>", "");
+            t = t.replaceAll("\\[.*]", "");
+            output.context.add(t);
         }
         return false;
     }

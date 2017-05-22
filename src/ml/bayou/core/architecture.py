@@ -10,8 +10,7 @@ class BayesianEncoder(object):
         self.inputs = [ev.placeholder(config) for ev in config.evidence]
         for scope in ['mean', 'stdv']:
             with tf.variable_scope(scope):
-                encodings = [ev.encode(i, config) for ev, i in
-                             zip(config.evidence, self.inputs)]
+                encodings = [ev.encode(i, config) for ev, i in zip(config.evidence, self.inputs)]
                 encodings = list(chain.from_iterable(encodings))
                 mean_encodings = tf.reduce_mean(tf.stack(encodings), axis=0)
                 psi.append(mean_encodings)

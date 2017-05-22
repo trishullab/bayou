@@ -61,8 +61,8 @@ class Keywords(Evidence):
 
     def read_data_point(self, program):
         keywords = program['keywords'] if 'keywords' in program else []
-        keywords = list(set(keywords))
-        return keywords
+        keywords = chain.from_iterable([split_camel(k) for k in keywords])
+        return list(set(keywords))
 
     def wrangle(self, data):
         return np.array(self.lda.infer(data), dtype=np.float32)
@@ -93,8 +93,8 @@ class Types(Evidence):
 
     def read_data_point(self, program):
         types = program['types'] if 'types' in program else []
-        types = list(set(types))
-        return types
+        types = chain.from_iterable([split_camel(t) for t in types])
+        return list(set(types))
 
     def wrangle(self, data):
         return np.array(self.lda.infer(data), dtype=np.float32)
@@ -127,8 +127,8 @@ class Context(Evidence):
 
     def read_data_point(self, program):
         context = program['context'] if 'context' in program else []
-        context = list(set(context))
-        return context
+        context = chain.from_iterable([split_camel(c) for c in context])
+        return list(set(context))
 
     def wrangle(self, data):
         return np.array(self.lda.infer(data), dtype=np.float32)
