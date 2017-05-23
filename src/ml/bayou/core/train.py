@@ -16,6 +16,8 @@ HELP = """\
 Config options should be given as a JSON file (see config.json for example):
 {                                         |
     "latent_size": 8,                     | Latent dimensionality
+    "latent_mean": 0.0,                   | Mean of P(\Psi) = Normal(M, S)
+    "latent_stdv": 1.0,                   | Stdv of P(\Psi) = Normal(M, S)
     "batch_size": 50,                     | Minibatch size
     "num_epochs": 500,                    | Number of training epochs
     "weight_loss": 1000,                  | Weight given to generation loss as opposed to latent loss
@@ -86,7 +88,7 @@ def train(clargs):
                     feed[model.decoder.edges[j].name] = e[j]
 
                 # run the optimizer
-                cost, latent, generation, mean, stdv, _ = sess.run([model.cost,
+                loss, latent, generation, mean, stdv, _ = sess.run([model.loss,
                                                                     model.latent_loss,
                                                                     model.gen_loss,
                                                                     model.encoder.psi_mean,
@@ -95,14 +97,14 @@ def train(clargs):
                 end = time.time()
                 step = i * config.num_batches + b
                 if step % config.print_step == 0:
-                    print('{}/{} (epoch {}), latent: {:.3f}, generation: {:.3f}, cost: {:.3f}, '
+                    print('{}/{} (epoch {}), latent: {:.3f}, generation: {:.3f}, loss: {:.3f}, '
                           'mean: {:.3f}, stdv: {:.3f}, time: {:.3f}'.format
                           (step,
                            config.num_epochs * config.num_batches,
                            i,
                            np.mean(latent),
                            generation,
-                           np.mean(cost),
+                           np.mean(loss),
                            np.mean(mean),
                            np.mean(stdv),
                            end - start))

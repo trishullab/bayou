@@ -16,7 +16,9 @@ class Model():
         # setup the encoder
         self.encoder = BayesianEncoder(config)
         samples = tf.random_normal([config.batch_size, config.latent_size],
-                                   mean=0., stddev=1., dtype=tf.float32)
+                                   mean=config.latent_mean,
+                                   stddev=config.latent_stdv,
+                                   dtype=tf.float32)
         self.psi = self.encoder.psi_mean + self.encoder.psi_stdv * samples
 
         # setup the decoder with psi as the initial state
@@ -33,14 +35,22 @@ class Model():
 
         # define losses
         self.targets = tf.placeholder(tf.int32, [config.batch_size, config.decoder.max_ast_depth])
-        self.latent_loss = 0.5 * tf.reduce_sum(tf.square(self.encoder.psi_mean)
-                                               + tf.square(self.encoder.psi_stdv)
-                                               - tf.log(tf.square(self.encoder.psi_stdv)) - 1, 1)
+
+        """ KL-divergence between two Normal distributions: N(M, S) and N(m, s):
+        1/2 * ( log(s^2 / S^2) - 1 + (S^2 + (M-m)^2)/s^2 )
+        """
+        self.latent_loss = 0.5 * tf.reduce_sum(
+                                     tf.log(tf.square(config.latent_stdv))
+                                     - tf.log(tf.square(self.encoder.psi_stdv)) - 1
+                                     + ((tf.square(self.encoder.psi_stdv)
+                                        + tf.square(self.encoder.psi_mean - config.latent_mean))
+                                        / tf.square(config.latent_stdv)), 1)
+
         self.gen_loss = legacy_seq2seq.sequence_loss([logits], [tf.reshape(self.targets, [-1])],
                                                      [tf.ones([config.batch_size *
                                                                config.decoder.max_ast_depth])])
-        self.cost = tf.reduce_mean(self.gen_loss + self.latent_loss / config.weight_loss)
-        self.train_op = tf.train.AdamOptimizer(config.learning_rate).minimize(self.cost)
+        self.loss = tf.reduce_mean(self.gen_loss + self.latent_loss / config.weight_loss)
+        self.train_op = tf.train.AdamOptimizer(config.learning_rate).minimize(self.loss)
 
         var_params = [np.prod([dim.value for dim in var.get_shape()])
                       for var in tf.trainable_variables()]
