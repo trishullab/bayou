@@ -16,13 +16,11 @@ HELP = """\
 Config options should be given as a JSON file (see config.json for example):
 {                                         |
     "latent_size": 8,                     | Latent dimensionality
-    "latent_mean": 0.0,                   | Mean of P(\Psi) = Normal(M, S)
-    "latent_stdv": 1.0,                   | Stdv of P(\Psi) = Normal(M, S)
     "batch_size": 50,                     | Minibatch size
     "num_epochs": 500,                    | Number of training epochs
-    "weight_loss": 1000,                  | Weight given to generation loss as opposed to latent loss
     "learning_rate": 0.02,                | Learning rate
     "print_step": 1,                      | Print training output every given steps
+    "alpha": 0.001,                       | Hyper-param associated with KL-divergence loss
     "evidence": [                         | Provide each evidence type in this list
         {                                 |
             "name": "keywords",           | Name of evidence ("keywords")

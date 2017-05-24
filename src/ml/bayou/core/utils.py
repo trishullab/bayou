@@ -4,8 +4,8 @@ import json
 from itertools import chain
 import tensorflow as tf
 
-CONFIG_GENERAL = ['latent_size', 'batch_size', 'weight_loss', 'num_epochs',
-                  'learning_rate', 'print_step']
+CONFIG_GENERAL = ['latent_size', 'batch_size', 'num_epochs',
+                  'learning_rate', 'print_step', 'alpha']
 CONFIG_ENCODER = ['name', 'units', 'tile']
 CONFIG_DECODER = ['units', 'max_ast_depth']
 CONFIG_DECODER_INFER = ['chars', 'vocab', 'vocab_size']

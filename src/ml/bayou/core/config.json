@@ -1,12 +1,10 @@
 {
     "latent_size": 128,
-    "latent_mean": 0.0,
-    "latent_stdv": 1.0,
     "batch_size": 50,
     "num_epochs": 500,
-    "weight_loss": 1000,
     "learning_rate": 0.002,
     "print_step": 1,
+    "alpha": 0.001,
     "evidence": [
         {
             "name": "keywords",
