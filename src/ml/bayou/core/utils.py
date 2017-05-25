@@ -89,9 +89,6 @@ def extract_evidence(clargs):
         program['types'] = list(set(chain.from_iterable(types)))
         program['context'] = list(set(chain.from_iterable(context)))
 
-        # context might be empty
-        program['context'] = ['EMPTY'] if program['context'] == [] else program['context']
-
         programs.append(program)
 
     with open(clargs.output_file[0], 'w') as f:
