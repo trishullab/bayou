@@ -8,11 +8,24 @@ class BayesianEncoder(object):
 
         psi = []
         self.inputs = [ev.placeholder(config) for ev in config.evidence]
+        exists = [ev.exists(i) for ev, i in zip(config.evidence, self.inputs)]
+        zeros = tf.zeros([config.batch_size, config.latent_size], dtype=tf.float32)
         for scope in ['mean', 'stdv']:
             with tf.variable_scope(scope):
+                # 1. compute encoding
                 encodings = [ev.encode(i, config) for ev, i in zip(config.evidence, self.inputs)]
-                encodings = list(chain.from_iterable(encodings))
-                mean_encodings = tf.reduce_mean(tf.stack(encodings), axis=0)
+
+                # 2. pick only encodings from valid inputs that exist, otherwise pick zero encoding
+                encodings = [tf.where(exist, enc, zeros) for exist, enc in zip(exists, encodings)]
+
+                # 3. tile the encodings according to each evidence type
+                encodings = [[enc] * ev.tile for ev, enc in zip(config.evidence, encodings)]
+                encodings = tf.stack(list(chain.from_iterable(encodings)))
+
+                # 4. compute the mean of non-zero encodings
+                num_nonzero = tf.count_nonzero(encodings, axis=0, dtype=tf.float32)
+                sum_encodings = tf.reduce_sum(encodings, axis=0)
+                mean_encodings = sum_encodings / num_nonzero
                 psi.append(mean_encodings)
 
         self.psi_mean, self.psi_stdv = psi

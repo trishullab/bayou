@@ -49,6 +49,9 @@ class Evidence(object):
     def placeholder(self, config):
         raise NotImplementedError('placeholder() has not been implemented')
 
+    def exists(self, inputs):
+        raise NotImplementedError('exists() has not been implemented')
+
     def encode(self, inputs, config):
         raise NotImplementedError('encode() has not been implemented')
 
@@ -70,13 +73,16 @@ class Keywords(Evidence):
     def placeholder(self, config):
         return tf.placeholder(tf.float32, [config.batch_size, self.lda.model.n_topics])
 
+    def exists(self, inputs):
+        return tf.not_equal(tf.count_nonzero(inputs, axis=1), 0)
+
     def encode(self, inputs, config):
         with tf.variable_scope('keywords'):
             encoding = tf.layers.dense(inputs, self.units)
             w = tf.get_variable('w', [self.units, config.latent_size])
             b = tf.get_variable('b', [config.latent_size])
             latent_encoding = tf.nn.xw_plus_b(encoding, w, b)
-            return [latent_encoding] * self.tile
+            return latent_encoding
 
     @staticmethod
     def from_call(call):
@@ -102,13 +108,16 @@ class Types(Evidence):
     def placeholder(self, config):
         return tf.placeholder(tf.float32, [config.batch_size, self.lda.model.n_topics])
 
+    def exists(self, inputs):
+        return tf.not_equal(tf.count_nonzero(inputs, axis=1), 0)
+
     def encode(self, inputs, config):
         with tf.variable_scope('types'):
             encoding = tf.layers.dense(inputs, self.units)
             w = tf.get_variable('w', [self.units, config.latent_size])
             b = tf.get_variable('b', [config.latent_size])
             latent_encoding = tf.nn.xw_plus_b(encoding, w, b)
-            return [latent_encoding] * self.tile
+            return latent_encoding
 
     @staticmethod
     def from_call(call):
@@ -136,13 +145,16 @@ class Context(Evidence):
     def placeholder(self, config):
         return tf.placeholder(tf.float32, [config.batch_size, self.lda.model.n_topics])
 
+    def exists(self, inputs):
+        return tf.not_equal(tf.count_nonzero(inputs, axis=1), 0)
+
     def encode(self, inputs, config):
         with tf.variable_scope('context'):
             encoding = tf.layers.dense(inputs, self.units)
             w = tf.get_variable('w', [self.units, config.latent_size])
             b = tf.get_variable('b', [config.latent_size])
             latent_encoding = tf.nn.xw_plus_b(encoding, w, b)
-            return [latent_encoding] * self.tile
+            return latent_encoding
 
     @staticmethod
     def from_call(call):
