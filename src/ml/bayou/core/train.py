@@ -23,7 +23,7 @@ Config options should be given as a JSON file (see config.json for example):
     "alpha": 0.001,                       | Hyper-param associated with KL-divergence loss
     "evidence": [                         | Provide each evidence type in this list
         {                                 |
-            "name": "keywords",           | Name of evidence ("keywords")
+            "name": "apicalls",           | Name of evidence ("apicalls")
             "units": 8,                   | Size of the encoder hidden state
             "tile": 1,                    | Repeat the encoding n times (to boost its signal)
             "beta": 0.00001               | Hyper-param associated with loss for this evidence

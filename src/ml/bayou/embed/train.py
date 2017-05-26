@@ -11,13 +11,11 @@ import math
 import time
 
 from bayou.embed.utils import read_config, dump_config
-from bayou.core.evidence import Keywords
 from bayou.core.utils import C0, UNK
 
 HELP = """\
 Config options should be given as a JSON file (see config.json for example):
 {                            |
-    "evidence": "keywords",  | Currently supported: "keywords", "javadoc"
     "embedding_size": 8,     | Size of the embedding
     "window_size": 1,        | Window size to use for skip-grams
     "num_sampled": 64,       | Number of samples for softmax (NCE) loss
@@ -27,17 +25,6 @@ Config options should be given as a JSON file (see config.json for example):
     "print_step": 1          | Print training output every given steps
 }                            |
 """
-
-
-def get_data_keywords(js):
-    data = []
-    for program in js['programs']:
-        calls = set([Keywords.get_name(call) for sequence in program['sequences'] \
-                    for call in sequence['calls']])
-        for call in calls:
-            keywords = Keywords.split_camel(call)
-            data.append([kw for kw in keywords if not kw == ''])
-    return data
 
 
 def get_data_javadoc(js):
@@ -101,14 +88,10 @@ def model(config):
 def train(clargs):
     with open(clargs.config) as f:
         config = read_config(json.load(f), False)
-    assert config.evidence == 'keywords' or config.evidence == 'javadoc', 'Invalid evidence type'
     with open(clargs.input_file[0]) as f:
         js = json.load(f)
 
-    if config.evidence == 'keywords':
-        data = get_data_keywords(js)
-    elif config.evidence == 'javadoc':
-        data = get_data_javadoc(js)
+    data = get_data_javadoc(js)
 
     chars = collections.Counter(chain.from_iterable(data))
     chars[C0] = 1

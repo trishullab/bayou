@@ -81,11 +81,11 @@ def extract_evidence(clargs):
 
         calls = set(chain.from_iterable([sequence['calls'] for sequence in sequences]))
 
-        keywords = [bayou.core.evidence.Keywords.from_call(call) for call in calls]
+        apicalls = [bayou.core.evidence.APICalls.from_call(call) for call in calls]
         types = [bayou.core.evidence.Types.from_call(call) for call in calls]
         context = [bayou.core.evidence.Context.from_call(call) for call in calls]
 
-        program['keywords'] = list(set(chain.from_iterable(keywords)))
+        program['apicalls'] = list(set(chain.from_iterable(apicalls)))
         program['types'] = list(set(chain.from_iterable(types)))
         program['context'] = list(set(chain.from_iterable(context)))
 

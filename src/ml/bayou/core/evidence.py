@@ -25,8 +25,8 @@ class Evidence(object):
         evidences = []
         for evidence in js:
             name = evidence['name']
-            if name == 'keywords':
-                e = Keywords()
+            if name == 'apicalls':
+                e = APICalls()
             elif name == 'types':
                 e = Types()
             elif name == 'context':
@@ -62,16 +62,16 @@ class Evidence(object):
         raise NotImplementedError('evidence_loss() has not been implemented')
 
 
-class Keywords(Evidence):
+class APICalls(Evidence):
 
     def load_embedding(self, save_dir):
-        embed_save_dir = os.path.join(save_dir, 'embed_keywords')
+        embed_save_dir = os.path.join(save_dir, 'embed_apicalls')
         self.lda = LDA(from_file=os.path.join(embed_save_dir, 'model.pkl'))
 
     def read_data_point(self, program):
-        keywords = program['keywords'] if 'keywords' in program else []
-        keywords = chain.from_iterable([split_camel(k) for k in keywords])
-        return list(set(keywords))
+        apicalls = program['apicalls'] if 'apicalls' in program else []
+        apicalls = chain.from_iterable([split_camel(k) for k in apicalls])
+        return list(set(apicalls))
 
     def wrangle(self, data):
         return np.array(self.lda.infer(data), dtype=np.float32)
@@ -83,11 +83,11 @@ class Keywords(Evidence):
         return tf.not_equal(tf.count_nonzero(inputs, axis=1), 0)
 
     def init_evidence_stdv(self, config):
-        with tf.variable_scope('keywords'):
+        with tf.variable_scope('apicalls'):
             self.sigma = tf.get_variable('sigma', [config.batch_size, config.latent_size])
 
     def encode(self, inputs, config):
-        with tf.variable_scope('keywords'):
+        with tf.variable_scope('apicalls'):
             encoding = tf.layers.dense(inputs, self.units)
             w = tf.get_variable('w', [self.units, config.latent_size])
             b = tf.get_variable('b', [config.latent_size])

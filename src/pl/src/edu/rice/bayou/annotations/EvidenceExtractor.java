@@ -16,12 +16,12 @@ public class EvidenceExtractor extends ASTVisitor {
     CommandLine cmdLine;
 
     class JSONOutputWrapper {
-        List<String> keywords;
+        List<String> apicalls;
         List<String> types;
         List<String> context;
 
         public JSONOutputWrapper() {
-            this.keywords = new ArrayList<>();
+            this.apicalls = new ArrayList<>();
             this.types = new ArrayList<>();
             this.context = new ArrayList<>();
         }
@@ -87,7 +87,7 @@ public class EvidenceExtractor extends ASTVisitor {
         if (!method.getName().getIdentifier().equals("__bayou_fill"))
             return false;
 
-        /* 1. Get keywords and types from @Evidence annotation */
+        /* 1. Get apicalls and types from @Evidence annotation */
         List<IExtendedModifier> modifiers = method.modifiers();
 
         // performing casts wildly.. if any exceptions occur it's due to incorrect input format
@@ -106,11 +106,11 @@ public class EvidenceExtractor extends ASTVisitor {
             for (MemberValuePair value : values) {
                 String type = value.getName().getIdentifier();
 
-                if (type.equals("keywords")) {
-                    List<Expression> keywords = ((ArrayInitializer) value.getValue()).expressions();
-                    for (Expression e : keywords) {
+                if (type.equals("apicalls")) {
+                    List<Expression> apicalls = ((ArrayInitializer) value.getValue()).expressions();
+                    for (Expression e : apicalls) {
                         String k = ((StringLiteral) e).getLiteralValue();
-                        output.keywords.add(k);
+                        output.apicalls.add(k);
                     }
                 }
                 else if (type.equals("types")) {

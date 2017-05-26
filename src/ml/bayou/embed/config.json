@@ -1,5 +1,4 @@
 {
-    "evidence": "javadoc",
     "embedding_size": 128,
     "window_size": 1,
     "num_sampled": 64,
