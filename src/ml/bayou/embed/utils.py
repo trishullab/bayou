@@ -1,6 +1,6 @@
 import argparse
 
-CONFIG_GENERAL = ['evidence', 'embedding_size', 'window_size', 'num_sampled',
+CONFIG_GENERAL = ['embedding_size', 'window_size', 'num_sampled',
                   'batch_size', 'num_epochs', 'learning_rate', 'print_step']
 CONFIG_CHARS_VOCAB = ['chars', 'vocab', 'vocab_size']
 
