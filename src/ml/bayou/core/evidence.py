@@ -84,7 +84,7 @@ class APICalls(Evidence):
 
     def init_evidence_stdv(self, config):
         with tf.variable_scope('apicalls'):
-            self.sigma = tf.get_variable('sigma', [config.batch_size, config.latent_size])
+            self.sigma = tf.get_variable('sigma', [config.latent_size])
 
     def encode(self, inputs, config):
         with tf.variable_scope('apicalls'):
@@ -128,7 +128,7 @@ class Types(Evidence):
 
     def init_evidence_stdv(self, config):
         with tf.variable_scope('types'):
-            self.sigma = tf.get_variable('sigma', [config.batch_size, config.latent_size])
+            self.sigma = tf.get_variable('sigma', [config.latent_size])
 
     def encode(self, inputs, config):
         with tf.variable_scope('types'):
@@ -174,7 +174,7 @@ class Context(Evidence):
 
     def init_evidence_stdv(self, config):
         with tf.variable_scope('context'):
-            self.sigma = tf.get_variable('sigma', [config.batch_size, config.latent_size])
+            self.sigma = tf.get_variable('sigma', [config.latent_size])
 
     def encode(self, inputs, config):
         with tf.variable_scope('context'):
