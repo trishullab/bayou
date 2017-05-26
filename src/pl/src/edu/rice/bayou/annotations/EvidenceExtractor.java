@@ -109,8 +109,8 @@ public class EvidenceExtractor extends ASTVisitor {
                 if (type.equals("apicalls")) {
                     List<Expression> apicalls = ((ArrayInitializer) value.getValue()).expressions();
                     for (Expression e : apicalls) {
-                        String k = ((StringLiteral) e).getLiteralValue();
-                        output.apicalls.add(k);
+                        String a = ((StringLiteral) e).getLiteralValue();
+                        output.apicalls.add(a);
                     }
                 }
                 else if (type.equals("types")) {
@@ -120,23 +120,17 @@ public class EvidenceExtractor extends ASTVisitor {
                         output.types.add(t);
                     }
                 }
+                else if (type.equals("context")) {
+                    List<Expression> context = ((ArrayInitializer) value.getValue()).expressions();
+                    for (Expression e : context) {
+                        String c = ((StringLiteral) e).getLiteralValue();
+                        output.context.add(c);
+                    }
+                }
                 else throw new RuntimeException();
             }
         }
 
-        /* 2. Get context from the method's formal parameters */
-        List<SingleVariableDeclaration> params = method.parameters();
-        for (SingleVariableDeclaration param : params) {
-            ITypeBinding binding = param.getType().resolveBinding();
-            if (binding == null)
-                continue;
-            String t = binding.getName();
-
-            // remove generics and array notations
-            t = t.replaceAll("<.*>", "");
-            t = t.replaceAll("\\[.*]", "");
-            output.context.add(t);
-        }
         return false;
     }
 
