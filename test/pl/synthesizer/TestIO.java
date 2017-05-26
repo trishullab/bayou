@@ -2,8 +2,7 @@ import edu.rice.bayou.annotations.Evidence;
 
 public class TestIO {
 
-    @Evidence(apicalls = {"readLine"})
-    @Evidence(types = {"FileReader", "BufferedReader"})
+    @Evidence(apicalls = {"readLine", "close"})
     void __bayou_fill(String file) {
 
     }   

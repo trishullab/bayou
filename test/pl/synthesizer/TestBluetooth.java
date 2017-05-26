@@ -3,9 +3,9 @@ import android.bluetooth.BluetoothAdapter;
 
 public class TestBluetooth {
 
-    @Evidence(apicalls = {"connect", "getInputStream", "close"})
+    @Evidence(apicalls = {"connect", "getInputStream"})
     @Evidence(types = {"BluetoothSocket"})
-    void __bayou_fill(BluetoothAdapter adapter, String address) {
+    void __bayou_fill(BluetoothAdapter adapter) {
 
     }   
 
