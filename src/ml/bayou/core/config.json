@@ -9,17 +9,20 @@
         {
             "name": "keywords",
             "units": 32,
-            "tile": 1
+            "tile": 1,
+            "beta": 0.00001
         },
         {
             "name": "types",
             "units": 32,
-            "tile": 1
+            "tile": 1,
+            "beta": 0.00001
         },
         {
             "name": "context",
             "units": 32,
-            "tile": 1
+            "tile": 1,
+            "beta": 0.00001
         }
     ],
     "decoder": {

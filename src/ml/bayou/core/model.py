@@ -34,15 +34,27 @@ class Model():
         # define losses
         self.targets = tf.placeholder(tf.int32, [config.batch_size, config.decoder.max_ast_depth])
 
-        """ KL-divergence between two Normal distributions N(M, S) and N(m, s)
-        = 1/2 * ( log(s^2 / S^2) - 1 + (S^2 + (M-m)^2)/s^2 )
-        Here we have m = 0 and s = 1. """
-        self.latent_loss = 0.5 * tf.reduce_sum(- tf.log(tf.square(self.encoder.psi_stdv)) - 1
-                                               + tf.square(self.encoder.psi_stdv)
-                                               + tf.square(self.encoder.psi_mean), axis=1)
+        # 1. generation loss: P(X|\Psi)
         self.gen_loss = seq2seq.sequence_loss([logits], [tf.reshape(self.targets, [-1])],
                                               [tf.ones([config.batch_size * config.decoder.max_ast_depth])])
-        self.loss = tf.reduce_mean(self.gen_loss + config.alpha * self.latent_loss)
+
+        # 2. latent loss: KL-divergence between two Normal distributions N(M, S) and N(m, s)
+        #        = 1/2 * ( log(s^2 / S^2) - 1 + (S^2 + (M-m)^2)/s^2 )
+        #    In our case, we have m = 0 and s = 1
+        latent_loss = 0.5 * tf.reduce_sum(- tf.log(tf.square(self.encoder.psi_stdv)) - 1
+                                          + tf.square(self.encoder.psi_stdv)
+                                          + tf.square(self.encoder.psi_mean), axis=1)
+        self.latent_loss = config.alpha * latent_loss
+
+        # 3. evidence loss: log P(f(\theta) | \Psi, \Sigma)
+        #        = -1/2 log 2*pi - log \Sigma - 1/(2 \Sigma^2) (f(\theta) - \Psi)^2
+        evidence_loss = [ev.evidence_loss(self.psi, input_encoding) for ev, input_encoding
+                         in zip(config.evidence, self.encoder.input_encodings)]
+        evidence_loss = [tf.reduce_sum(loss, axis=1) for loss in evidence_loss]
+        self.evidence_loss = tf.reduce_sum(tf.stack(evidence_loss), axis=0)
+
+        # The optimizer
+        self.loss = tf.reduce_mean(self.gen_loss + self.latent_loss + self.evidence_loss)
         self.train_op = tf.train.AdamOptimizer(config.learning_rate).minimize(self.loss)
 
         var_params = [np.prod([dim.value for dim in var.get_shape()])

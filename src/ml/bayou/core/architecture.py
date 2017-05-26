@@ -10,6 +10,11 @@ class BayesianEncoder(object):
         self.inputs = [ev.placeholder(config) for ev in config.evidence]
         exists = [ev.exists(i) for ev, i in zip(config.evidence, self.inputs)]
         zeros = tf.zeros([config.batch_size, config.latent_size], dtype=tf.float32)
+        for ev in config.evidence:
+            ev.init_evidence_stdv(config)
+        input_encodings = []
+
+        # To compute Psi
         for scope in ['mean', 'stdv']:
             with tf.variable_scope(scope):
                 # 1. compute encoding
@@ -17,6 +22,7 @@ class BayesianEncoder(object):
 
                 # 2. pick only encodings from valid inputs that exist, otherwise pick zero encoding
                 encodings = [tf.where(exist, enc, zeros) for exist, enc in zip(exists, encodings)]
+                input_encodings.append(encodings)
 
                 # 3. tile the encodings according to each evidence type
                 encodings = [[enc] * ev.tile for ev, enc in zip(config.evidence, encodings)]
@@ -29,6 +35,10 @@ class BayesianEncoder(object):
                 psi.append(mean_encodings)
 
         self.psi_mean, self.psi_stdv = psi
+
+        # To compute input encoding, f(\theta), for each type of evidence
+        self.input_encodings = [mean + stdv for mean, stdv in zip(*input_encodings)]
+        assert len(self.input_encodings) == len(config.evidence)
 
 
 class BayesianDecoder(object):

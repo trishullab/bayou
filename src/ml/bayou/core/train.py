@@ -26,16 +26,19 @@ Config options should be given as a JSON file (see config.json for example):
             "name": "keywords",           | Name of evidence ("keywords")
             "units": 8,                   | Size of the encoder hidden state
             "tile": 1,                    | Repeat the encoding n times (to boost its signal)
+            "beta": 0.00001               | Hyper-param associated with loss for this evidence
         },                                |
         {                                 |
             "name": "types",              | Name of evidence ("types")
             "units": 8,                   | Size of the encoder hidden state
             "tile": 2,                    | Repeat the encoding n times (to boost its signal)
+            "beta": 0.00001               | Hyper-param associated with loss for this evidence
         },                                |
         {                                 |
             "name": "context",            | Name of evidence ("context")
             "units": 8,                   | Size of the encoder hidden state
             "tile": 2,                    | Repeat the encoding n times (to boost its signal)
+            "beta": 0.00001               | Hyper-param associated with loss for this evidence
         }                                 |
     ],                                    |
     "decoder": {                          | Provide parameters for the decoder here
@@ -86,20 +89,21 @@ def train(clargs):
                     feed[model.decoder.edges[j].name] = e[j]
 
                 # run the optimizer
-                loss, latent, generation, mean, stdv, _ = sess.run([model.loss,
-                                                                    model.latent_loss,
-                                                                    model.gen_loss,
-                                                                    model.encoder.psi_mean,
-                                                                    model.encoder.psi_stdv,
-                                                                    model.train_op], feed)
+                loss, evidence, latent, generation, mean, stdv, _ \
+                    = sess.run([model.loss,
+                                model.evidence_loss,
+                                model.latent_loss,
+                                model.gen_loss,
+                                model.encoder.psi_mean,
+                                model.encoder.psi_stdv,
+                                model.train_op], feed)
                 end = time.time()
                 step = i * config.num_batches + b
                 if step % config.print_step == 0:
-                    print('{}/{} (epoch {}), latent: {:.3f}, generation: {:.3f}, loss: {:.3f}, '
-                          'mean: {:.3f}, stdv: {:.3f}, time: {:.3f}'.format
-                          (step,
-                           config.num_epochs * config.num_batches,
-                           i,
+                    print('{}/{} (epoch {}), evidence: {:.3f}, latent: {:.3f}, generation: {:.3f}, '
+                          'loss: {:.3f}, mean: {:.3f}, stdv: {:.3f}, time: {:.3f}'.format
+                          (step, config.num_epochs * config.num_batches, i,
+                           np.mean(evidence),
                            np.mean(latent),
                            generation,
                            np.mean(loss),
