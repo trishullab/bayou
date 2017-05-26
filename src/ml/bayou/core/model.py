@@ -1,5 +1,5 @@
 import tensorflow as tf
-from tensorflow.contrib import legacy_seq2seq
+from tensorflow.contrib import legacy_seq2seq as seq2seq
 import numpy as np
 
 from bayou.core.architecture import BayesianEncoder, BayesianDecoder
@@ -37,12 +37,11 @@ class Model():
         """ KL-divergence between two Normal distributions N(M, S) and N(m, s)
         = 1/2 * ( log(s^2 / S^2) - 1 + (S^2 + (M-m)^2)/s^2 )
         Here we have m = 0 and s = 1. """
-        self.latent_loss = (1/2) * tf.reduce_sum(- tf.log(tf.square(self.encoder.psi_stdv)) - 1
-                                                 + tf.square(self.encoder.psi_stdv)
-                                                 + tf.square(self.encoder.psi_mean), 1)
-        self.gen_loss = legacy_seq2seq.sequence_loss([logits], [tf.reshape(self.targets, [-1])],
-                                                     [tf.ones([config.batch_size *
-                                                               config.decoder.max_ast_depth])])
+        self.latent_loss = 0.5 * tf.reduce_sum(- tf.log(tf.square(self.encoder.psi_stdv)) - 1
+                                               + tf.square(self.encoder.psi_stdv)
+                                               + tf.square(self.encoder.psi_mean), axis=1)
+        self.gen_loss = seq2seq.sequence_loss([logits], [tf.reshape(self.targets, [-1])],
+                                              [tf.ones([config.batch_size * config.decoder.max_ast_depth])])
         self.loss = tf.reduce_mean(self.gen_loss + config.alpha * self.latent_loss)
         self.train_op = tf.train.AdamOptimizer(config.learning_rate).minimize(self.loss)
 
