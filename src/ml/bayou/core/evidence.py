@@ -3,9 +3,8 @@ import numpy as np
 import os
 import re
 import json
-from itertools import chain
 
-from bayou.core.utils import CONFIG_ENCODER, C0, UNK, split_camel
+from bayou.core.utils import CONFIG_ENCODER, C0, UNK
 from bayou.lda.model import LDA
 
 
@@ -70,7 +69,6 @@ class APICalls(Evidence):
 
     def read_data_point(self, program):
         apicalls = program['apicalls'] if 'apicalls' in program else []
-        apicalls = chain.from_iterable([split_camel(k) for k in apicalls])
         return list(set(apicalls))
 
     def wrangle(self, data):
@@ -103,7 +101,7 @@ class APICalls(Evidence):
     def from_call(call):
         split = call.split('(')[0].split('.')
         cls, name = split[-2:]
-        return split_camel(name) if not cls == name else []
+        return [name] if not cls == name else []
 
 
 class Types(Evidence):
@@ -114,7 +112,6 @@ class Types(Evidence):
 
     def read_data_point(self, program):
         types = program['types'] if 'types' in program else []
-        types = chain.from_iterable([split_camel(t) for t in types])
         return list(set(types))
 
     def wrangle(self, data):
@@ -145,11 +142,8 @@ class Types(Evidence):
 
     @staticmethod
     def from_call(call):
-        split = list(reversed([q for q in call.split('(')[0].split('.')[:-1]
-                               if q[0].isupper()]))
-        inner = split_camel(split[0])
-        outer = split_camel(split[1]) if len(split) > 1 else []
-        return inner + outer
+        split = list(reversed([q for q in call.split('(')[0].split('.')[:-1] if q[0].isupper()]))
+        return [split[1], split[0]] if len(split) > 1 else [split[0]]
 
 
 class Context(Evidence):
@@ -160,7 +154,6 @@ class Context(Evidence):
 
     def read_data_point(self, program):
         context = program['context'] if 'context' in program else []
-        context = chain.from_iterable([split_camel(c) for c in context])
         return list(set(context))
 
     def wrangle(self, data):
@@ -195,8 +188,7 @@ class Context(Evidence):
         args = [arg.split('.')[-1] for arg in args]
         args = [re.sub('<.*', r'', arg) for arg in args]  # remove generics
         args = [re.sub('\[\]', r'', arg) for arg in args]  # remove array type
-        contexts = list(chain.from_iterable([split_camel(arg) for arg in args]))
-        return [c for c in contexts if not c == '']
+        return [arg for arg in args if not arg == '']
 
 
 # TODO: handle Javadoc with word2vec
