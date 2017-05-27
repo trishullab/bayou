@@ -1,3 +1,4 @@
+from __future__ import print_function
 import argparse
 import re
 import json
@@ -70,8 +71,11 @@ You can also filter programs based on number and length of sequences."""
 
 
 def extract_evidence(clargs):
+    print('Loading data file...', end='')
     with open(clargs.input_file[0]) as f:
         js = json.load(f)
+    print('done')
+    done = 0
     programs = []
     for program in js['programs']:
         sequences = program['sequences']
@@ -90,9 +94,13 @@ def extract_evidence(clargs):
         program['context'] = list(set(chain.from_iterable(context)))
 
         programs.append(program)
+        done += 1
+        print('Extracted evidence for {} programs'.format(done), end='\r')
 
+    print('\nWriting to {}...'.format(clargs.output_file[0]), end='')
     with open(clargs.output_file[0], 'w') as f:
         json.dump({'programs': programs}, fp=f, indent=2)
+    print('done')
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(formatter_class=argparse.RawDescriptionHelpFormatter,
