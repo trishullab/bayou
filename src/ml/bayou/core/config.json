@@ -10,19 +10,19 @@
             "name": "apicalls",
             "units": 32,
             "tile": 1,
-            "beta": 0.00001
+            "beta": 1e-05
         },
         {
             "name": "types",
             "units": 32,
             "tile": 1,
-            "beta": 0.00001
+            "beta": 1e-05
         },
         {
             "name": "context",
             "units": 32,
             "tile": 1,
-            "beta": 0.00001
+            "beta": 1e-05
         }
     ],
     "decoder": {

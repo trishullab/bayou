@@ -26,19 +26,19 @@ Config options should be given as a JSON file (see config.json for example):
             "name": "apicalls",           | Name of evidence ("apicalls")
             "units": 8,                   | Size of the encoder hidden state
             "tile": 1,                    | Repeat the encoding n times (to boost its signal)
-            "beta": 0.00001               | Hyper-param associated with loss for this evidence
+            "beta": 1e-05                 | Hyper-param associated with loss for this evidence
         },                                |
         {                                 |
             "name": "types",              | Name of evidence ("types")
             "units": 8,                   | Size of the encoder hidden state
             "tile": 2,                    | Repeat the encoding n times (to boost its signal)
-            "beta": 0.00001               | Hyper-param associated with loss for this evidence
+            "beta": 1e-05                 | Hyper-param associated with loss for this evidence
         },                                |
         {                                 |
             "name": "context",            | Name of evidence ("context")
             "units": 8,                   | Size of the encoder hidden state
             "tile": 2,                    | Repeat the encoding n times (to boost its signal)
-            "beta": 0.00001               | Hyper-param associated with loss for this evidence
+            "beta": 1e-05                 | Hyper-param associated with loss for this evidence
         }                                 |
     ],                                    |
     "decoder": {                          | Provide parameters for the decoder here
