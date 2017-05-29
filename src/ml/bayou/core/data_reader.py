@@ -1,6 +1,7 @@
 from __future__ import print_function
 import json
 import numpy as np
+import random
 from collections import Counter
 
 from bayou.core.utils import C0, CHILD_EDGE, SIBLING_EDGE
@@ -116,6 +117,12 @@ class Reader():
             done += 1
             print('{:8d} programs in training data'.format(done), end='\r')
         print('\n{:8d} programs ignored by given config'.format(ignored))
+
+        # randomly shuffle to avoid bias towards initial data points during training
+        data_points = list(zip(evidences, targets))
+        random.shuffle(data_points)
+        evidences, targets = zip(*data_points)
+
         return evidences, targets
 
     def next_batch(self):
