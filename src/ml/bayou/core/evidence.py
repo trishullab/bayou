@@ -94,7 +94,7 @@ class APICalls(Evidence):
 
     def evidence_loss(self, psi, encoding):
         sigma_sq = tf.square(self.sigma)
-        loss = 0.5 * (tf.log(2 * np.pi * sigma_sq) + tf.square(encoding - psi) / sigma_sq)
+        loss = 0.5 * (tf.log(2 * np.pi * sigma_sq + 1e-10) + tf.square(encoding - psi) / sigma_sq)
         return self.beta * loss
 
     @staticmethod
@@ -137,7 +137,7 @@ class Types(Evidence):
 
     def evidence_loss(self, psi, encoding):
         sigma_sq = tf.square(self.sigma)
-        loss = 0.5 * (tf.log(2 * np.pi * sigma_sq) + tf.square(encoding - psi) / sigma_sq)
+        loss = 0.5 * (tf.log(2 * np.pi * sigma_sq + 1e-10) + tf.square(encoding - psi) / sigma_sq)
         return self.beta * loss
 
     @staticmethod
@@ -179,7 +179,7 @@ class Context(Evidence):
 
     def evidence_loss(self, psi, encoding):
         sigma_sq = tf.square(self.sigma)
-        loss = 0.5 * (tf.log(2 * np.pi * sigma_sq) + tf.square(encoding - psi) / sigma_sq)
+        loss = 0.5 * (tf.log(2 * np.pi * sigma_sq + 1e-10) + tf.square(encoding - psi) / sigma_sq)
         return self.beta * loss
 
     @staticmethod

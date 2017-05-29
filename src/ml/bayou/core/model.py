@@ -41,7 +41,7 @@ class Model():
         # 2. latent loss: KL-divergence between two Normal distributions N(M, S) and N(m, s)
         #        = 1/2 * ( log(s^2 / S^2) - 1 + (S^2 + (M-m)^2)/s^2 )
         #    In our case, we have m = 0 and s = 1
-        latent_loss = 0.5 * tf.reduce_sum(- tf.log(tf.square(self.encoder.psi_stdv)) - 1
+        latent_loss = 0.5 * tf.reduce_sum(- tf.log(tf.square(self.encoder.psi_stdv) + 1e-10) - 1
                                           + tf.square(self.encoder.psi_stdv)
                                           + tf.square(self.encoder.psi_mean), axis=1)
         self.latent_loss = config.alpha * latent_loss
