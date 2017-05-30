@@ -1,9 +1,0 @@
-{
-    "embedding_size": 128,
-    "window_size": 1,
-    "num_sampled": 64,
-    "batch_size": 128,
-    "num_epochs": 100,
-    "learning_rate": 1.0,
-    "print_step": 100
-}

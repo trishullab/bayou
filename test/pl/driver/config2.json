@@ -1,6 +1,0 @@
-{
-    "api-classes": [
-        "android.bluetooth.BluetoothSocket"
-    ],
-    "num-unrolls": 1
-}
