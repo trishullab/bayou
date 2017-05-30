@@ -89,7 +89,7 @@ class APICalls(Evidence):
             encoding = tf.layers.dense(inputs, self.units)
             w = tf.get_variable('w', [self.units, config.latent_size])
             b = tf.get_variable('b', [config.latent_size])
-            latent_encoding = tf.nn.xw_plus_b(encoding, w, b) * self.sigma
+            latent_encoding = tf.nn.xw_plus_b(encoding, w, b) + self.beta * self.sigma
             return latent_encoding
 
     def evidence_loss(self, psi, encoding):
@@ -132,7 +132,7 @@ class Types(Evidence):
             encoding = tf.layers.dense(inputs, self.units)
             w = tf.get_variable('w', [self.units, config.latent_size])
             b = tf.get_variable('b', [config.latent_size])
-            latent_encoding = tf.nn.xw_plus_b(encoding, w, b) * self.sigma
+            latent_encoding = tf.nn.xw_plus_b(encoding, w, b) + self.beta * self.sigma
             return latent_encoding
 
     def evidence_loss(self, psi, encoding):
@@ -174,7 +174,7 @@ class Context(Evidence):
             encoding = tf.layers.dense(inputs, self.units)
             w = tf.get_variable('w', [self.units, config.latent_size])
             b = tf.get_variable('b', [config.latent_size])
-            latent_encoding = tf.nn.xw_plus_b(encoding, w, b) * self.sigma
+            latent_encoding = tf.nn.xw_plus_b(encoding, w, b) + self.beta * self.sigma
             return latent_encoding
 
     def evidence_loss(self, psi, encoding):
