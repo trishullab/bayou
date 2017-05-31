@@ -15,7 +15,6 @@ from variational.data_reader import sub_sequences, CHILD_EDGE, SIBLING_EDGE
 
 MAX_GEN_UNTIL_STOP = 20
 
-
 def predict_asts(args):
     with tf.Session() as sess:
         predictor = VariationalPredictor(args.save_dir, sess)
@@ -52,14 +51,14 @@ def predict_asts(args):
             print('Latent space is not 2-dimensional.. cannot plot')
 
     if args.output_file is None:
-        print(json.dumps({'asts': asts}, indent=2))
+        print(json.dumps({ 'asts': asts }, indent=2))
     else:
         with open(args.output_file, 'w') as f:
-            json.dump({'asts': asts}, fp=f, indent=2)
+            json.dump({ 'asts': asts }, fp=f, indent=2)
     print('Number of errors: {}'.format(err))
 
-
 class VariationalPredictor(object):
+
     def __init__(self, save_dir, sess):
         self.sess = sess
 
@@ -68,7 +67,7 @@ class VariationalPredictor(object):
             saved_args = pickle.load(f)
         with open(os.path.join(save_dir, 'chars_vocab.pkl'), 'rb') as f:
             _, self.input_vocab_seqs, _, self.input_vocab_kws, \
-            self.target_chars, self.target_vocab = pickle.load(f)
+                    self.target_chars, self.target_vocab = pickle.load(f)
         self.model = Model(saved_args, True)
 
         # restore the saved model
@@ -86,18 +85,18 @@ class VariationalPredictor(object):
 
     def gen_until_STOP(self, psi, in_nodes, in_edges, check_call=False):
         ast = []
-        p_ast = 1.  # probability of generating this AST
+        p_ast = 1. # probability of generating this AST
         nodes, edges = in_nodes[:], in_edges[:]
         num = 0
         while True:
-            assert num < MAX_GEN_UNTIL_STOP  # exception caught in main
+            assert num < MAX_GEN_UNTIL_STOP # exception caught in main
             dist = self.model.infer_ast(self.sess, psi, nodes, edges, self.target_vocab)
             idx = weighted_pick(dist)
             p_ast *= dist[idx]
             prediction = self.target_chars[idx]
             nodes += [prediction]
-            if check_call:  # exception caught in main
-                assert prediction not in ['DBranch', 'DExcept', 'DLoop', 'DSubTree']
+            if check_call: # exception caught in main
+                assert prediction not in [ 'DBranch', 'DExcept', 'DLoop', 'DSubTree' ]
             if prediction == 'STOP':
                 edges += [SIBLING_EDGE]
                 break
@@ -114,7 +113,7 @@ class VariationalPredictor(object):
         node = in_nodes[-1]
 
         # Return the "AST" if the node is an API call
-        if node not in ['DBranch', 'DExcept', 'DLoop', 'DSubTree']:
+        if node not in [ 'DBranch', 'DExcept', 'DLoop', 'DSubTree' ]:
             ast['node'] = 'DAPICall'
             ast['_call'] = node
             return ast, 1.
@@ -153,7 +152,6 @@ class VariationalPredictor(object):
             ast['_nodes'] = ast_nodes
             return ast, float(p_ast)
 
-
 def find_api(nodes):
     for node in nodes:
         if node['node'] == 'DAPICall':
@@ -161,7 +159,6 @@ def find_api(nodes):
             api = '.'.join(call[:3])
             return api
     return None
-
 
 def plot2d(asts):
     import matplotlib.pyplot as plt
@@ -188,24 +185,23 @@ def plot2d(asts):
     plt.axhline(0, color='black')
     plt.axvline(0, color='black')
     plt.show()
-
-
+        
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--save_dir', type=str, default='save',
-                        help='model directory to laod from')
+                       help='model directory to laod from')
     parser.add_argument('--seqs_file', type=str, default=None,
-                        help='input file containing set of sequences (in JSON)')
+                       help='input file containing set of sequences (in JSON)')
     parser.add_argument('--keywords_file', type=str, default=None,
-                        help='input file containing keywords')
+                       help='input file containing keywords')
     parser.add_argument('--random', action='store_true',
-                        help='print random ASTs by sampling from Normal(0,1) (ignores sequences)')
+                       help='print random ASTs by sampling from Normal(0,1) (ignores sequences)')
     parser.add_argument('--plot2d', action='store_true',
-                        help='(requires --random) plots the (2d) sampled psi values in scatterplot')
+                       help='(requires --random) plots the (2d) sampled psi values in scatterplot')
     parser.add_argument('--output_file', type=str, default=None,
-                        help='file to print AST (in JSON) to')
+                       help='file to print AST (in JSON) to')
     parser.add_argument('--n', type=int, default=1,
-                        help='number of ASTs to sample/synthesize')
+                       help='number of ASTs to sample/synthesize')
 
     args = parser.parse_args()
     if args.seqs_file is None and args.keywords_file is None and not args.random:

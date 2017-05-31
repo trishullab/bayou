@@ -12,21 +12,27 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import tensorflow as tf
-
 import argparse
 import json
-import socket
-import logging
 import logging.handlers
+import os
+import socket
 
+import tensorflow as tf
 from variational.predict_ast import VariationalPredictor
-from variational.data_reader import sub_sequences
 from variational.utils import get_keywords
+
+from variational.data_reader import sub_sequences
 
 
 def _start_server(save_dir, logger):
     with tf.Session() as sess:
+        logger.info("loading model")
+
+        print("===================================")
+        print("    Loading Model. Please Wait.    ")
+        print("===================================")
+
         predictor = VariationalPredictor(save_dir, sess) # create a predictor that can generates ASTs from evidence
 
         #
@@ -36,6 +42,10 @@ def _start_server(save_dir, logger):
         server_socket.bind(('localhost', 8084))
         server_socket.listen(20)
         logger.info("server listening")
+
+        print("===================================")
+        print("            Bayou Ready            ")
+        print("===================================")
 
         #
         # 1.) Wait for an incoming client connection.
@@ -131,7 +141,9 @@ if __name__ == '__main__':
     # Create the logger for the application.
     logger = logging.getLogger('logger')
     logger.setLevel(logging.DEBUG)
-    logger.addHandler(logging.handlers.RotatingFileHandler('python_tf_server.log', maxBytes=100000000, backupCount=9))
+    dirpath = os.path.dirname(__file__);
+    logpath = os.path.join(dirpath, "../logs/ast_server.log");
+    logger.addHandler(logging.handlers.RotatingFileHandler(logpath, maxBytes=100000000, backupCount=9))
 
     # Parse command line args.
     parser = argparse.ArgumentParser()
