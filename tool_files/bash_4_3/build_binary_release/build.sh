@@ -14,6 +14,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+apt-get update
+apt-get install openjdk-8-jdk maven zip
+
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 cd ../../maven_3_3_9
 mvn clean package
