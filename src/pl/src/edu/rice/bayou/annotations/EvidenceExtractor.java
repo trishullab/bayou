@@ -83,9 +83,36 @@ public class EvidenceExtractor extends ASTVisitor {
     }
 
     @Override
+    public boolean visit(MethodInvocation invoke) {
+	// We only handle the method invocation with special name __bayou_evidence
+	if (!invoke.toString().startsWith("__bayou_evidence("))
+	    return false;
+
+	// Extacting invoke arguments
+	for (Object argObj : invoke.arguments()) {
+	    EvidenceObject evidObj = new EvidenceObject(argObj.toString());
+	    if (evidObj.getType().equals("apicalls")) {
+		for (String elem : evidObj.getElements()) {
+		    output.apicalls.add(elem);
+		}
+	    } else if (evidObj.getType().equals("types")) {
+		for (String elem : evidObj.getElements()) {
+                    output.types.add(elem);
+                }
+	    } else if (evidObj.getType().equals("context")) {
+		for (String elem : evidObj.getElements()) {
+                    output.context.add(elem);
+                }
+	    }
+	}
+
+	return false;
+    }
+
+    @Override
     public boolean visit(MethodDeclaration method) {
-        if (!method.getName().getIdentifier().equals("__bayou_fill"))
-            return false;
+        // if (!method.getName().getIdentifier().equals("__bayou_fill"))
+	// return false;
 
         /* 1. Get apicalls and types from @Evidence annotation */
         List<IExtendedModifier> modifiers = method.modifiers();
@@ -131,7 +158,7 @@ public class EvidenceExtractor extends ASTVisitor {
             }
         }
 
-        return false;
+        return true;
     }
 
     public static void main(String args[]) {
