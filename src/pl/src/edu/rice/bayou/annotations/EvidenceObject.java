@@ -11,7 +11,7 @@ public class EvidenceObject {
 
     public EvidenceObject(String evidStr) {
 	try {
-            parseString(evidStr);
+            parseString(evidStr.substring(1, evidStr.length() - 1));
         } catch (ParseException e) {
             System.out.println("The bayou evidence should use such format: '" + "@key : value1, value2, ... '");
         }
@@ -23,7 +23,8 @@ public class EvidenceObject {
 	} 
 
 	int start = input.indexOf("@");
-	if (start > 0) {
+	// System.out.println("start = " + start);
+	if (start > 1) {
 	    checkBlank(input.substring(0, start));
 	}
 
@@ -35,8 +36,10 @@ public class EvidenceObject {
 
     // Parse the type name
     protected String parseType(String input) throws ParseException {
+	// System.out.println("type: " + input);
 	int stop = input.indexOf(":");
 	int stop_ = input.indexOf(" ");
+	// System.out.println("stop  = " + stop + " stop_ = " + stop_);
 	if (stop == 0 || stop_ == 0)
 	    throw new ParseException("Wrong type");
 
@@ -63,15 +66,24 @@ public class EvidenceObject {
 
 	int stop = input.indexOf(",");
 	int stop_ = input.indexOf(" ");
-	if (stop == 0)
-	    throw new ParseException("Wrong value");
+	// System.out.println(input + " stop = " + stop + " stop_ = " + stop_); 
+	if (stop < 0 && stop_ < 0) {
+	    if (input.length() > 0) {
+		addValue(input);
+		return null;
+	    } else
+		throw new ParseException("Wrong value");
+	}
 
-	if (stop > stop_) {
+	if (stop > stop_ && stop_ > 0) {
 	    addValue(input.substring(0, stop_));
-	    return input.substring(stop_, input.length());
-	} else if (stop > 0) {
-            addValue(this.type = input.substring(0, stop));
-	    return input.substring(stop, input.length());
+	    return input.substring(stop_ + 1, input.length());
+	} else if (stop < 0 && stop_ > 0) {
+            addValue(input.substring(0, stop_));
+            return input.substring(stop_ + 1, input.length());
+        } else if (stop > 0) {
+            addValue(input.substring(0, stop));
+	    return input.substring(stop + 1, input.length());
 	}
 
 	throw new ParseException("Wrong value");
