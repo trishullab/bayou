@@ -21,8 +21,11 @@ def train(clargs):
             print('\nTop words in Topic#{:d}'.format(i))
             for w in words:
                 print('{:.2f} {:s}'.format(words[w], w))
-        print('\nOK with the model (y(es)/n(o)/r(edo))? ', end='')
-        ok = sys.stdin.readline().rstrip('\n')
+        if clargs.confirm:
+            print('\nOK with the model (y(es)/n(o)/r(edo))? ', end='')
+            ok = sys.stdin.readline().rstrip('\n')
+        else:
+            ok = 'y'
 
     if ok == 'y':
         print('Saving model to {:s}'.format(os.path.join(clargs.save, 'model.pkl')))
@@ -58,5 +61,7 @@ if __name__ == '__main__':
                            help='initial alpha value')
     argparser.add_argument('--top', type=int, default=5,
                            help='top-k words to print from each topic')
+    argparser.add_argument('--confirm', action='store_true',
+                           help='confirm topics before saving')
     clargs = argparser.parse_args()
     train(clargs)
