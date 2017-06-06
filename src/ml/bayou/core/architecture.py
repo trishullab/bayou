@@ -36,8 +36,9 @@ class BayesianEncoder(object):
             self.psi_mean = tf.reduce_sum(encodings, axis=0) / denom
 
         # Compute the covariance of Psi
-        I = tf.ones([config.batch_size, config.latent_size], dtype=tf.float32)
-        self.psi_covariance = I / denom
+        with tf.variable_scope('covariance'):
+            I = tf.ones([config.batch_size, config.latent_size], dtype=tf.float32)
+            self.psi_covariance = I / denom
 
 
 class BayesianDecoder(object):
