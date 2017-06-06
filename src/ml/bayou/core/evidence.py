@@ -51,13 +51,13 @@ class Evidence(object):
     def exists(self, inputs):
         raise NotImplementedError('exists() has not been implemented')
 
-    def init_evidence_stdv(self, config):
-        raise NotImplementedError('init_evidence_stdv() has not been implemented')
+    def init_sigma(self, config):
+        raise NotImplementedError('init_sigma() has not been implemented')
 
     def encode(self, inputs, config):
         raise NotImplementedError('encode() has not been implemented')
 
-    def evidence_loss(self, psi, encoding):
+    def evidence_loss(self, psi, encoding, config):
         raise NotImplementedError('evidence_loss() has not been implemented')
 
 
@@ -80,22 +80,23 @@ class APICalls(Evidence):
     def exists(self, inputs):
         return tf.not_equal(tf.count_nonzero(inputs, axis=1), 0)
 
-    def init_evidence_stdv(self, config):
+    def init_sigma(self, config):
         with tf.variable_scope('apicalls'):
-            self.sigma = tf.get_variable('sigma', [config.latent_size])
+            self.sigma = tf.get_variable('sigma', [])
 
     def encode(self, inputs, config):
         with tf.variable_scope('apicalls'):
             encoding = tf.layers.dense(inputs, self.units)
             w = tf.get_variable('w', [self.units, config.latent_size])
             b = tf.get_variable('b', [config.latent_size])
-            latent_encoding = tf.nn.xw_plus_b(encoding, w, b) + self.beta * self.sigma
+            latent_encoding = tf.nn.xw_plus_b(encoding, w, b)
             return latent_encoding
 
-    def evidence_loss(self, psi, encoding):
+    def evidence_loss(self, psi, encoding, config):
         sigma_sq = tf.square(self.sigma)
-        loss = 0.5 * (tf.log(2 * np.pi * sigma_sq + 1e-10) + tf.square(encoding - psi) / sigma_sq)
-        return self.beta * loss
+        loss = 0.5 * (config.latent_size * tf.log(2 * np.pi * sigma_sq + 1e-10)
+                      + tf.square(encoding - psi) / sigma_sq)
+        return loss
 
     @staticmethod
     def from_call(call):
@@ -123,22 +124,23 @@ class Types(Evidence):
     def exists(self, inputs):
         return tf.not_equal(tf.count_nonzero(inputs, axis=1), 0)
 
-    def init_evidence_stdv(self, config):
+    def init_sigma(self, config):
         with tf.variable_scope('types'):
-            self.sigma = tf.get_variable('sigma', [config.latent_size])
+            self.sigma = tf.get_variable('sigma', [])
 
     def encode(self, inputs, config):
         with tf.variable_scope('types'):
             encoding = tf.layers.dense(inputs, self.units)
             w = tf.get_variable('w', [self.units, config.latent_size])
             b = tf.get_variable('b', [config.latent_size])
-            latent_encoding = tf.nn.xw_plus_b(encoding, w, b) + self.beta * self.sigma
+            latent_encoding = tf.nn.xw_plus_b(encoding, w, b)
             return latent_encoding
 
-    def evidence_loss(self, psi, encoding):
+    def evidence_loss(self, psi, encoding, config):
         sigma_sq = tf.square(self.sigma)
-        loss = 0.5 * (tf.log(2 * np.pi * sigma_sq + 1e-10) + tf.square(encoding - psi) / sigma_sq)
-        return self.beta * loss
+        loss = 0.5 * (config.latent_size * tf.log(2 * np.pi * sigma_sq + 1e-10)
+                      + tf.square(encoding - psi) / sigma_sq)
+        return loss
 
     @staticmethod
     def from_call(call):
@@ -165,22 +167,23 @@ class Context(Evidence):
     def exists(self, inputs):
         return tf.not_equal(tf.count_nonzero(inputs, axis=1), 0)
 
-    def init_evidence_stdv(self, config):
+    def init_sigma(self, config):
         with tf.variable_scope('context'):
-            self.sigma = tf.get_variable('sigma', [config.latent_size])
+            self.sigma = tf.get_variable('sigma', [])
 
     def encode(self, inputs, config):
         with tf.variable_scope('context'):
             encoding = tf.layers.dense(inputs, self.units)
             w = tf.get_variable('w', [self.units, config.latent_size])
             b = tf.get_variable('b', [config.latent_size])
-            latent_encoding = tf.nn.xw_plus_b(encoding, w, b) + self.beta * self.sigma
+            latent_encoding = tf.nn.xw_plus_b(encoding, w, b)
             return latent_encoding
 
-    def evidence_loss(self, psi, encoding):
+    def evidence_loss(self, psi, encoding, config):
         sigma_sq = tf.square(self.sigma)
-        loss = 0.5 * (tf.log(2 * np.pi * sigma_sq + 1e-10) + tf.square(encoding - psi) / sigma_sq)
-        return self.beta * loss
+        loss = 0.5 * (config.latent_size * tf.log(2 * np.pi * sigma_sq + 1e-10)
+                      + tf.square(encoding - psi) / sigma_sq)
+        return loss
 
     @staticmethod
     def from_call(call):

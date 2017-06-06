@@ -4,29 +4,27 @@
     "num_epochs": 500,
     "learning_rate": 0.002,
     "print_step": 1,
-    "alpha": 0.001,
+    "alpha": 1e-05,
+    "beta": 1e-05,
     "evidence": [
         {
             "name": "apicalls",
             "units": 32,
-            "tile": 1,
-            "beta": 1e-05
+            "tile": 1
         },
         {
             "name": "types",
             "units": 32,
-            "tile": 1,
-            "beta": 1e-05
+            "tile": 1
         },
         {
             "name": "context",
             "units": 32,
-            "tile": 1,
-            "beta": 1e-05
+            "tile": 1
         }
     ],
     "decoder": {
-        "units": 128,
+        "units": 256,
         "max_ast_depth": 32
     }
 }

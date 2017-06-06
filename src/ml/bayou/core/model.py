@@ -17,7 +17,7 @@ class Model():
         self.encoder = BayesianEncoder(config)
         samples = tf.random_normal([config.batch_size, config.latent_size],
                                    mean=0., stddev=1., dtype=tf.float32)
-        self.psi = self.encoder.psi_mean + self.encoder.psi_stdv * samples
+        self.psi = self.encoder.psi_mean + self.encoder.psi_covariance * samples
 
         # setup the decoder with psi as the initial state
         lift_w = tf.get_variable('lift_w', [config.latent_size, config.decoder.units])
@@ -31,27 +31,23 @@ class Model():
         logits = tf.matmul(output, self.decoder.projection_w) + self.decoder.projection_b
         self.probs = tf.nn.softmax(logits)
 
-        # define losses
+        # 1. generation loss: log P(X | \Psi)
         self.targets = tf.placeholder(tf.int32, [config.batch_size, config.decoder.max_ast_depth])
-
-        # 1. generation loss: P(X|\Psi)
         self.gen_loss = seq2seq.sequence_loss([logits], [tf.reshape(self.targets, [-1])],
                                               [tf.ones([config.batch_size * config.decoder.max_ast_depth])])
 
-        # 2. latent loss: KL-divergence between two Normal distributions N(M, S) and N(m, s)
-        #        = 1/2 * ( log(s^2 / S^2) - 1 + (S^2 + (M-m)^2)/s^2 )
-        #    In our case, we have m = 0 and s = 1
-        latent_loss = 0.5 * tf.reduce_sum(- tf.log(tf.square(self.encoder.psi_stdv) + 1e-10) - 1
-                                          + tf.square(self.encoder.psi_stdv)
+        # 2. latent loss: KL-divergence between P(\Psi | f(\Theta)) and P(\Psi)
+        latent_loss = 0.5 * tf.reduce_sum(config.latent_size *
+                                          (- tf.log(tf.square(self.encoder.psi_covariance) + 1e-10)
+                                           - 1 + self.encoder.psi_covariance)
                                           + tf.square(self.encoder.psi_mean), axis=1)
         self.latent_loss = config.alpha * latent_loss
 
-        # 3. evidence loss: log P(f(\theta) | \Psi, \Sigma)
-        #        = -1/2 log 2*pi - log \Sigma - 1/(2 \Sigma^2) (f(\theta) - \Psi)^2
-        evidence_loss = [ev.evidence_loss(self.psi, input_encoding) for ev, input_encoding
-                         in zip(config.evidence, self.encoder.input_encodings)]
+        # 3. evidence loss: log P(f(\theta) | \Psi; \sigma)
+        evidence_loss = [ev.evidence_loss(self.psi, encoding, config) for ev, encoding
+                         in zip(config.evidence, self.encoder.encodings)]
         evidence_loss = [tf.reduce_sum(loss, axis=1) for loss in evidence_loss]
-        self.evidence_loss = tf.reduce_sum(tf.stack(evidence_loss), axis=0)
+        self.evidence_loss = config.beta * tf.reduce_sum(tf.stack(evidence_loss), axis=0)
 
         # The optimizer
         self.loss = tf.reduce_mean(self.gen_loss + self.latent_loss + self.evidence_loss)

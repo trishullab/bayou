@@ -15,35 +15,33 @@ from bayou.core.utils import read_config, dump_config
 HELP = """\
 Config options should be given as a JSON file (see config.json for example):
 {                                         |
-    "latent_size": 8,                     | Latent dimensionality
+    "latent_size": 128,                   | Latent dimensionality
     "batch_size": 50,                     | Minibatch size
     "num_epochs": 500,                    | Number of training epochs
     "learning_rate": 0.02,                | Learning rate
     "print_step": 1,                      | Print training output every given steps
-    "alpha": 0.001,                       | Hyper-param associated with KL-divergence loss
+    "alpha": 1e-05,                       | Hyper-param associated with KL-divergence loss
+    "beta": 1e-05,                        | Hyper-param associated with evidence loss
     "evidence": [                         | Provide each evidence type in this list
         {                                 |
             "name": "apicalls",           | Name of evidence ("apicalls")
-            "units": 8,                   | Size of the encoder hidden state
-            "tile": 1,                    | Repeat the encoding n times (to boost its signal)
-            "beta": 1e-05                 | Hyper-param associated with loss for this evidence
+            "units": 32,                  | Size of the encoder hidden state
+            "tile": 1                     | Repeat the encoding n times (to boost its signal)
         },                                |
         {                                 |
             "name": "types",              | Name of evidence ("types")
-            "units": 8,                   | Size of the encoder hidden state
-            "tile": 2,                    | Repeat the encoding n times (to boost its signal)
-            "beta": 1e-05                 | Hyper-param associated with loss for this evidence
+            "units": 32,                  | Size of the encoder hidden state
+            "tile": 1                     | Repeat the encoding n times (to boost its signal)
         },                                |
         {                                 |
             "name": "context",            | Name of evidence ("context")
-            "units": 8,                   | Size of the encoder hidden state
-            "tile": 2,                    | Repeat the encoding n times (to boost its signal)
-            "beta": 1e-05                 | Hyper-param associated with loss for this evidence
+            "units": 32,                  | Size of the encoder hidden state
+            "tile": 1                     | Repeat the encoding n times (to boost its signal)
         }                                 |
     ],                                    |
     "decoder": {                          | Provide parameters for the decoder here
-        "units": 128,                     | Size of the decoder hidden state
-        "max_ast_depth": 20               | Maximum depth of the AST (length of the longest path)
+        "units": 256,                     | Size of the decoder hidden state
+        "max_ast_depth": 32               | Maximum depth of the AST (length of the longest path)
     }                                     |
 }                                         |
 """
@@ -89,26 +87,26 @@ def train(clargs):
                     feed[model.decoder.edges[j].name] = e[j]
 
                 # run the optimizer
-                loss, evidence, latent, generation, mean, stdv, _ \
+                loss, evidence, latent, generation, mean, covariance, _ \
                     = sess.run([model.loss,
                                 model.evidence_loss,
                                 model.latent_loss,
                                 model.gen_loss,
                                 model.encoder.psi_mean,
-                                model.encoder.psi_stdv,
+                                model.encoder.psi_covariance,
                                 model.train_op], feed)
                 end = time.time()
                 step = i * config.num_batches + b
                 if step % config.print_step == 0:
                     print('{}/{} (epoch {}), evidence: {:.3f}, latent: {:.3f}, generation: {:.3f}, '
-                          'loss: {:.3f}, mean: {:.3f}, stdv: {:.3f}, time: {:.3f}'.format
+                          'loss: {:.3f}, mean: {:.3f}, covariance: {:.3f}, time: {:.3f}'.format
                           (step, config.num_epochs * config.num_batches, i,
                            np.mean(evidence),
                            np.mean(latent),
                            generation,
                            np.mean(loss),
                            np.mean(mean),
-                           np.mean(stdv),
+                           np.mean(covariance),
                            end - start))
             checkpoint_dir = os.path.join(clargs.save, 'model.ckpt')
             saver.save(sess, checkpoint_dir)

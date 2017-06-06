@@ -6,39 +6,38 @@ from itertools import chain
 class BayesianEncoder(object):
     def __init__(self, config):
 
-        psi = []
         self.inputs = [ev.placeholder(config) for ev in config.evidence]
         exists = [ev.exists(i) for ev, i in zip(config.evidence, self.inputs)]
         zeros = tf.zeros([config.batch_size, config.latent_size], dtype=tf.float32)
+
+        # Compute the denominator used for mean and covariance
         for ev in config.evidence:
-            ev.init_evidence_stdv(config)
-        input_encodings = []
+            ev.init_sigma(config)
+        d = [tf.where(exist, tf.tile([1. / tf.square(ev.sigma)], [config.batch_size]),
+                      tf.zeros(config.batch_size)) for ev, exist in zip(config.evidence, exists)]
+        d = 1. + tf.reduce_sum(tf.stack(d), axis=0)
+        denom = tf.tile(tf.reshape(d, [-1, 1]), [1, config.latent_size])
 
-        # To compute Psi
-        for scope in ['mean', 'stdv']:
-            with tf.variable_scope(scope):
-                # 1. compute encoding
-                encodings = [ev.encode(i, config) for ev, i in zip(config.evidence, self.inputs)]
+        # Compute the mean of Psi
+        with tf.variable_scope('mean'):
+            # 1. compute encoding
+            self.encodings = [ev.encode(i, config) for ev, i in zip(config.evidence, self.inputs)]
+            encodings = [encoding / tf.square(ev.sigma) for ev, encoding in
+                         zip(config.evidence, self.encodings)]
 
-                # 2. pick only encodings from valid inputs that exist, otherwise pick zero encoding
-                encodings = [tf.where(exist, enc, zeros) for exist, enc in zip(exists, encodings)]
-                input_encodings.append(encodings)
+            # 2. pick only encodings from valid inputs that exist, otherwise pick zero encoding
+            encodings = [tf.where(exist, enc, zeros) for exist, enc in zip(exists, encodings)]
 
-                # 3. tile the encodings according to each evidence type
-                encodings = [[enc] * ev.tile for ev, enc in zip(config.evidence, encodings)]
-                encodings = tf.stack(list(chain.from_iterable(encodings)))
+            # 3. tile the encodings according to each evidence type
+            encodings = [[enc] * ev.tile for ev, enc in zip(config.evidence, encodings)]
+            encodings = tf.stack(list(chain.from_iterable(encodings)))
 
-                # 4. compute the mean of non-zero encodings
-                num_nonzero = tf.count_nonzero(encodings, axis=0, dtype=tf.float32)
-                sum_encodings = tf.reduce_sum(encodings, axis=0)
-                mean_encodings = sum_encodings / num_nonzero
-                psi.append(mean_encodings)
+            # 4. compute the mean of non-zero encodings
+            self.psi_mean = tf.reduce_sum(encodings, axis=0) / denom
 
-        self.psi_mean, self.psi_stdv = psi
-
-        # To compute input encoding, f(\theta), for each type of evidence
-        self.input_encodings = [mean + stdv for mean, stdv in zip(*input_encodings)]
-        assert len(self.input_encodings) == len(config.evidence)
+        # Compute the covariance of Psi
+        I = tf.ones([config.batch_size, config.latent_size], dtype=tf.float32)
+        self.psi_covariance = I / denom
 
 
 class BayesianDecoder(object):
