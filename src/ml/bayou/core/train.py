@@ -15,9 +15,9 @@ from bayou.core.utils import read_config, dump_config
 HELP = """\
 Config options should be given as a JSON file (see config.json for example):
 {                                         |
-    "latent_size": 128,                   | Latent dimensionality
+    "latent_size": 32,                    | Latent dimensionality
     "batch_size": 50,                     | Minibatch size
-    "num_epochs": 500,                    | Number of training epochs
+    "num_epochs": 100,                    | Number of training epochs
     "learning_rate": 0.02,                | Learning rate
     "print_step": 1,                      | Print training output every given steps
     "alpha": 1e-05,                       | Hyper-param associated with KL-divergence loss
@@ -25,7 +25,7 @@ Config options should be given as a JSON file (see config.json for example):
     "evidence": [                         | Provide each evidence type in this list
         {                                 |
             "name": "apicalls",           | Name of evidence ("apicalls")
-            "units": 32,                  | Size of the encoder hidden state
+            "units": 64,                  | Size of the encoder hidden state
             "tile": 1                     | Repeat the encoding n times (to boost its signal)
         },                                |
         {                                 |
@@ -74,6 +74,7 @@ def train(clargs):
         # training
         for i in range(config.num_epochs):
             reader.reset_batches()
+            avg_loss = avg_evidence = avg_latent = avg_generation = 0
             for b in range(config.num_batches):
                 start = time.time()
 
@@ -96,6 +97,10 @@ def train(clargs):
                                 model.encoder.psi_covariance,
                                 model.train_op], feed)
                 end = time.time()
+                avg_loss += np.mean(loss)
+                avg_evidence += np.mean(evidence)
+                avg_latent += np.mean(latent)
+                avg_generation += generation
                 step = i * config.num_batches + b
                 if step % config.print_step == 0:
                     print('{}/{} (epoch {}), evidence: {:.3f}, latent: {:.3f}, generation: {:.3f}, '
@@ -110,7 +115,13 @@ def train(clargs):
                            end - start))
             checkpoint_dir = os.path.join(clargs.save, 'model.ckpt')
             saver.save(sess, checkpoint_dir)
-            print('Model checkpointed: {}'.format(checkpoint_dir))
+            print('Model checkpointed: {}. Average for epoch evidence: {:.3f}, latent: {:.3f}, '
+                  'generation: {:.3f}, loss: {:.3f}'.format
+                  (checkpoint_dir,
+                   avg_evidence / config.num_batches,
+                   avg_latent / config.num_batches,
+                   avg_generation / config.num_batches,
+                   avg_loss / config.num_batches))
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(formatter_class=argparse.RawDescriptionHelpFormatter,
