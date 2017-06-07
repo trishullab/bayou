@@ -106,6 +106,10 @@ public class EvidenceObject {
         this.elements.add(value);
     }
 
+    public static String getElement(String input) {
+	return null;
+    }
+
     public String getType() {
         return this.type;
     }

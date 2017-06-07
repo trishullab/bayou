@@ -85,11 +85,33 @@ public class EvidenceExtractor extends ASTVisitor {
     @Override
     public boolean visit(MethodInvocation invoke) {
         // We only handle the method invocation with special name __bayou_evidence
-        if (!invoke.toString().startsWith("__bayou_evidence("))
-            return false;
+        // if (!invoke.toString().startsWith("__bayou_evidence("))
+        //     return false;
+	// else 
+	
+	if (!(invoke.getExpression() != null && invoke.getExpression().toString().equals("Evidence"))) 
+	    return false;
 
+	System.out.println("got apicalls " + invoke.getExpression().toString() + " name: " + invoke.getName().toString());
+	if (invoke.getName() == null)
+	    return false;
+
+	if (invoke.getName().toString().equals("apicalls")) {
+	    for (Object argObj : invoke.arguments()) {
+		output.apicalls.add(argObj.toString());
+	    }
+	    throw new Error("apicalls");
+	} else if (invoke.getName().toString().equals("types")) {
+	    for (Object argObj : invoke.arguments()) {
+		output.types.add(argObj.toString());
+            }
+	} if (invoke.getName().toString().equals("context")) {
+	    for (Object argObj : invoke.arguments()) {
+		output.context.add(argObj.toString());
+            }
+	}
         // Extracting invoke arguments
-        for (Object argObj : invoke.arguments()) {
+        /*for (Object argObj : invoke.arguments()) {
             EvidenceObject evidObj = new EvidenceObject(argObj.toString());
             if (evidObj.getType().equals("apicalls")) {
                 for (String elem : evidObj.getElements()) {
@@ -104,7 +126,7 @@ public class EvidenceExtractor extends ASTVisitor {
                     output.context.add(elem);
                 }
             }
-        }
+        }*/
 
         return false;
     }
