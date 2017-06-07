@@ -92,15 +92,15 @@ public class EvidenceExtractor extends ASTVisitor {
 	if (!(invoke.getExpression() != null && invoke.getExpression().toString().equals("Evidence"))) 
 	    return false;
 
-	System.out.println("got apicalls " + invoke.getExpression().toString() + " name: " + invoke.getName().toString());
+	// System.out.println("got apicalls " + invoke.getExpression().toString() + " name: " + invoke.getName().toString());
 	if (invoke.getName() == null)
 	    return false;
 
+	// Extracting invoke arguments 
 	if (invoke.getName().toString().equals("apicalls")) {
 	    for (Object argObj : invoke.arguments()) {
 		output.apicalls.add(argObj.toString());
 	    }
-	    throw new Error("apicalls");
 	} else if (invoke.getName().toString().equals("types")) {
 	    for (Object argObj : invoke.arguments()) {
 		output.types.add(argObj.toString());
