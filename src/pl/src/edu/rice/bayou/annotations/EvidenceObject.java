@@ -107,7 +107,12 @@ public class EvidenceObject {
     }
 
     public static String getElement(String input) {
-	return null;
+	if (input == null || input.length() <= 2)
+	    return null;
+
+	String res = input.substring(1, input.length() - 1);
+
+	return res;
     }
 
     public String getType() {

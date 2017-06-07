@@ -99,15 +99,15 @@ public class EvidenceExtractor extends ASTVisitor {
 	// Extracting invoke arguments 
 	if (invoke.getName().toString().equals("apicalls")) {
 	    for (Object argObj : invoke.arguments()) {
-		output.apicalls.add(argObj.toString());
+		output.apicalls.add(EvidenceObject.getElement(argObj.toString()));
 	    }
 	} else if (invoke.getName().toString().equals("types")) {
 	    for (Object argObj : invoke.arguments()) {
-		output.types.add(argObj.toString());
+		output.types.add(EvidenceObject.getElement(argObj.toString()));
             }
 	} if (invoke.getName().toString().equals("context")) {
 	    for (Object argObj : invoke.arguments()) {
-		output.context.add(argObj.toString());
+		output.context.add(EvidenceObject.getElement(argObj.toString()));
             }
 	}
         // Extracting invoke arguments
