@@ -42,7 +42,7 @@ class LDA():
         assert vect.shape[0] == dist.shape[0]
 
         # NOTE: if a document is empty, this method returns a zero topic-dist vector
-        samples = [list(doc_topic_dist) if m.count_nonzero() > 0 else ([0.] * self.model.n_topics)
+        samples = [list(doc_topic_dist) if m.nnz > 0 else ([0.] * self.model.n_topics)
                    for m, doc_topic_dist in zip(vect, dist)]
         return samples
 
