@@ -41,45 +41,16 @@ class ApiSynthesisServerMain
         /*
          * Construct a new api synthesis server.
          */
-        ApiSynthesisServer server;
         try
         {
-            ExecutorService threadPool = Executors.newFixedThreadPool(Configuration.RequestProcessingThreadPoolSize);
-
-            ApiSynthesisStrategy synthesisStrategy;
-            if(Configuration.UseSynthesizeEchoMode)
-            {
-                synthesisStrategy = new ApiSynthesisStrategyEcho(Configuration.EchoModeDelayMs);
-            }
-            else
-            {
-                synthesisStrategy =
-                        new ApiSynthesisStrategyRemoteTensorFlowAsts("localhost", 8084,
-                                Configuration.SynthesizeTimeoutMs,
-                                Configuration.EvidenceClasspath, Configuration.AndroidJarPath);
-            }
-
-            server = new ApiSynthesisServer(Configuration.ListenPort, threadPool, synthesisStrategy);
+            new ApiSynthesisServerRest().start();
         }
         catch (Throwable e)
         {
             _logger.fatal("Error creating ApiSynthesisServer", e);
+            _logger.debug("exiting");
             System.exit(1);
-            return; // for static analysis to remove uninitialized error on "return server;" below in IntelliJ
         }
-
-        /*
-         * Start the sever.
-         */
-        //noinspection Convert2Lambda -- obfuscates instantiation of ServiceServerLauncher
-        new ServiceServerLauncher()
-        {
-            @Override
-            public ServiceServer makeServer()
-            {
-                return server;
-            }
-        }.launchAsync();
 
         _logger.debug("exiting");
     }

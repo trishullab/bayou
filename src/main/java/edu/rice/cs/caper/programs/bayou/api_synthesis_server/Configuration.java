@@ -3,6 +3,7 @@ package edu.rice.cs.caper.programs.bayou.api_synthesis_server;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Properties;
 
 /**
@@ -25,6 +26,12 @@ class Configuration
     static final String EvidenceClasspath;
 
     static final File AndroidJarPath;
+
+    private static final int MEGA_BYTES_IN_BYTES = 1000000;
+
+    static int CodeCompletionRequestBodyMaxBytesCount = MEGA_BYTES_IN_BYTES;
+
+    static final String[] CorsAllowedOrigins = new String[] { "http://www.askbayou.com", "http://askbayou.com" };
 
     static
     {

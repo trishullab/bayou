@@ -19,4 +19,20 @@ interface ApiSynthesisStrategy
     }
 
     Iterable<String> synthesise(String searchCode) throws SynthesiseException;
+
+    static ApiSynthesisStrategy fromConfig()
+    {
+        if(Configuration.UseSynthesizeEchoMode)
+        {
+            return  new ApiSynthesisStrategyEcho(Configuration.EchoModeDelayMs);
+        }
+        else
+        {
+           return new ApiSynthesisStrategyRemoteTensorFlowAsts("localhost", 8084,
+                                                               Configuration.SynthesizeTimeoutMs,
+                                                               Configuration.EvidenceClasspath,
+                                                               Configuration.AndroidJarPath);
+        }
+
+    }
 }
