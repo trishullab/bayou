@@ -37,9 +37,8 @@ class Model():
                                               [tf.ones([config.batch_size * config.decoder.max_ast_depth])])
 
         # 2. latent loss: KL-divergence between P(\Psi | f(\Theta)) and P(\Psi)
-        latent_loss = 0.5 * tf.reduce_sum(config.latent_size *
-                                          (- tf.log(self.encoder.psi_covariance)
-                                           - 1 + self.encoder.psi_covariance)
+        latent_loss = 0.5 * tf.reduce_sum(- tf.log(self.encoder.psi_covariance)
+                                          - 1 + self.encoder.psi_covariance
                                           + tf.square(self.encoder.psi_mean), axis=1)
         self.latent_loss = config.alpha * latent_loss
 
