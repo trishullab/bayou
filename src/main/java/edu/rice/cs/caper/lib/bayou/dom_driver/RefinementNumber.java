@@ -1,6 +1,5 @@
 package edu.rice.cs.caper.lib.bayou.dom_driver;
 
-
 import org.eclipse.jdt.core.dom.Expression;
 import org.eclipse.jdt.core.dom.Name;
 import org.eclipse.jdt.core.dom.NumberLiteral;

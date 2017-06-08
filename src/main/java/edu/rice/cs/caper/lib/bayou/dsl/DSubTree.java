@@ -3,7 +3,6 @@ package edu.rice.cs.caper.lib.bayou.dsl;
 import edu.rice.cs.caper.lib.bayou.synthesizer.Environment;
 import org.eclipse.jdt.core.dom.*;
 
-
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -36,19 +35,11 @@ public class DSubTree extends DASTNode {
     }
 
     @Override
-    public void updateSequences(List<Sequence> soFar, int max) throws TooManySequencesException {
+    public void updateSequences(List<Sequence> soFar, int max, int max_length) throws TooManySequencesException, TooLongSequenceException {
         if (soFar.size() >= max)
             throw new TooManySequencesException();
         for (DASTNode node : _nodes)
-            node.updateSequences(soFar, max);
-    }
-
-    @Override
-    public Set<String> keywords() {
-        Set<String> kw = new HashSet<>();
-        for (DASTNode node : _nodes)
-            kw.addAll(node.keywords());
-        return kw;
+            node.updateSequences(soFar, max, max_length);
     }
 
     public List<DAPICall> getNodesAsCalls() {

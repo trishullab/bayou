@@ -12,40 +12,35 @@ import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-public class DAPICall extends DASTNode
-{
+public class DAPICall extends DASTNode {
 
     final String node = "DAPICall";
     final String _call;
 
     /* CAUTION: This field is only available during AST generation */
     final transient IMethodBinding methodBinding;
+    int linenum;
     /* CAUTION: These fields are only available during synthesis (after synthesize(...) is called) */
     transient Method method;
     transient Constructor constructor;
 
     /* TODO: Add refinement types (predicates) here */
 
-    public DAPICall(IMethodBinding methodBinding) {
+    public DAPICall(IMethodBinding methodBinding, int linenum) {
         this.methodBinding = methodBinding;
         this._call = getClassName() + "." + getSignature();
+        this.linenum = linenum;
     }
 
     @Override
-    public void updateSequences(List<Sequence> soFar, int max) throws TooManySequencesException {
+    public void updateSequences(List<Sequence> soFar, int max, int max_length) throws TooManySequencesException, TooLongSequenceException {
         if (soFar.size() >= max)
             throw new TooManySequencesException();
-        for (Sequence sequence : soFar)
+        for (Sequence sequence : soFar) {
             sequence.addCall(_call);
-    }
-
-    @Override
-    public Set<String> keywords() {
-        String s = methodBinding.getDeclaringClass().getName() + " " + methodBinding.getName();
-        Set<String> kw = new HashSet<>(Arrays.asList(StringUtils.splitByCharacterTypeCamelCase(s)));
-        kw.remove(" ");
-        kw = kw.stream().map(k -> k.toLowerCase()).collect(Collectors.toSet());
-        return kw;
+            if (sequence.getCalls().size() > max_length)
+                throw new TooLongSequenceException();
+        }
     }
 
     private String getClassName() {

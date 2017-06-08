@@ -19,29 +19,19 @@ public class DExcept extends DASTNode {
     }
 
     @Override
-    public void updateSequences(List<Sequence> soFar, int max)  throws TooManySequencesException {
+    public void updateSequences(List<Sequence> soFar, int max, int max_length)  throws TooManySequencesException, TooLongSequenceException {
         if (soFar.size() >= max)
             throw new TooManySequencesException();
         for (DASTNode node : _try)
-            node.updateSequences(soFar, max);
+            node.updateSequences(soFar, max, max_length);
         List<Sequence> copy = new ArrayList<>();
         for (Sequence seq : soFar)
             copy.add(new Sequence(seq.calls));
         for (DASTNode e : _catch)
-            e.updateSequences(copy, max);
+            e.updateSequences(copy, max, max_length);
         for (Sequence seq : copy)
             if (! soFar.contains(seq))
                 soFar.add(seq);
-    }
-
-    @Override
-    public Set<String> keywords() {
-        Set<String> kw = new HashSet<>();
-        for (DASTNode t : _try)
-            kw.addAll(t.keywords());
-        for (DASTNode c : _catch)
-            kw.addAll(c.keywords());
-        return kw;
     }
 
     @Override

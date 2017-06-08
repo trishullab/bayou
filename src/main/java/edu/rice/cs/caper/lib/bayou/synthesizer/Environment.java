@@ -83,7 +83,9 @@ public class Environment {
             try {
                 cls = Class.forName(innerClassName, false, Synthesizer.classLoader);
             } catch (ClassNotFoundException e) {
-                throw new RuntimeException(e);
+                System.err.println("Class " + name + " could not be loaded!");
+                e.printStackTrace();
+                System.exit(1);
             }
         }
         return cls;

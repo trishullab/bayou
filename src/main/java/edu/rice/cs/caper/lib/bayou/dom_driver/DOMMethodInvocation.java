@@ -1,6 +1,5 @@
 package edu.rice.cs.caper.lib.bayou.dom_driver;
 
-
 import edu.rice.cs.caper.lib.bayou.dsl.DAPICall;
 import edu.rice.cs.caper.lib.bayou.dsl.DSubTree;
 import org.eclipse.jdt.core.dom.Expression;
@@ -19,6 +18,10 @@ public class DOMMethodInvocation implements Handler {
     @Override
     public DSubTree handle() {
         DSubTree tree = new DSubTree();
+        // add the expression's subtree (e.g: foo(..).bar() should handle foo(..) first)
+        DSubTree Texp = new DOMExpression(invocation.getExpression()).handle();
+        tree.addNodes(Texp.getNodes());
+
         // evaluate arguments first
         for (Object o : invocation.arguments()) {
             DSubTree Targ = new DOMExpression((Expression) o).handle();
@@ -32,7 +35,7 @@ public class DOMMethodInvocation implements Handler {
             tree.addNodes(Tconstructor.getNodes());
         }
         else if (Utils.isRelevantCall(binding))
-            tree.addNode(new DAPICall(binding));
+            tree.addNode(new DAPICall(binding, Visitor.V().getLineNumber(invocation)));
         return tree;
     }
 }

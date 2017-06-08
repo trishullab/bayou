@@ -18,7 +18,6 @@
 
 package edu.rice.cs.caper.lib.bayou.dom_driver;
 
-
 import org.apache.commons.cli.*;
 import org.apache.commons.io.FileUtils;
 import org.eclipse.jdt.core.dom.AST;

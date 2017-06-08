@@ -1,5 +1,6 @@
 package edu.rice.cs.caper.lib.bayou.dom_driver;
 
+import edu.rice.cs.caper.lib.bayou.dom_driver.Visitor;
 import org.apache.commons.lang3.StringUtils;
 import org.eclipse.jdt.core.dom.*;
 

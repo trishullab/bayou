@@ -1,6 +1,5 @@
 package edu.rice.cs.caper.lib.bayou.dsl;
 
-
 import edu.rice.cs.caper.lib.bayou.dom_driver.Visitor;
 import edu.rice.cs.caper.lib.bayou.synthesizer.Environment;
 import org.eclipse.jdt.core.dom.*;
@@ -23,29 +22,19 @@ public class DLoop extends DASTNode {
     }
 
     @Override
-    public void updateSequences(List<Sequence> soFar, int max) throws TooManySequencesException {
+    public void updateSequences(List<Sequence> soFar, int max, int max_length) throws TooManySequencesException, TooLongSequenceException {
         if (soFar.size() >= max)
             throw new TooManySequencesException();
         for (DAPICall call : _cond)
-            call.updateSequences(soFar, max);
+            call.updateSequences(soFar, max, max_length);
 
         int num_unrolls = Visitor.V() == null? 1: Visitor.V().options.NUM_UNROLLS;
         for (int i = 0; i < num_unrolls; i++) {
             for (DASTNode node : _body)
-                node.updateSequences(soFar, max);
+                node.updateSequences(soFar, max, max_length);
             for (DAPICall call : _cond)
-                call.updateSequences(soFar, max);
+                call.updateSequences(soFar, max, max_length);
         }
-    }
-
-    @Override
-    public Set<String> keywords() {
-        Set<String> kw = new HashSet<>();
-        for (DAPICall c : _cond)
-            kw.addAll(c.keywords());
-        for (DASTNode b : _body)
-            kw.addAll(b.keywords());
-        return kw;
     }
 
     @Override

@@ -1,6 +1,5 @@
 package edu.rice.cs.caper.lib.bayou.dom_driver;
 
-
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
@@ -12,6 +11,27 @@ import java.io.IOException;
 import java.util.*;
 
 public class Options {
+
+    static String HELP =
+        "Configuration options for driver:\n" +
+        "{                                     |\n" +
+        "  `api-classes`: [                    | Classes that driver should\n" +
+        "      `java.io.BufferedReader`,       | extract data on. Must be fully\n" +
+        "      `java.util.Iterator`            | qualified class names.\n" +
+        "  ],                                  |\n" +
+        "  `api-packages`: [                   | Packages that the driver\n" +
+        "      `java.io`,                      | should extract data on.\n" +
+        "      `java.net`                      |\n" +
+        "  ],                                  |\n" +
+        "  `api-modules`: [                    | Modules (for lack of a better\n" +
+        "      `java`,                         | word) that driver should extract\n" +
+        "      `javax`                         | data on.\n" +
+        "  ],                                  |\n" +
+        "  `num-unrolls`: 1,                   | Max unroll of loops in sequences\n" +
+        "  `max-seqs`: 10,                     | Max num of sequences in sketches\n" +
+        "  `javadoc-type`: `summary`           | `summary` (only first line),\n" +
+        "                                      | `full` (everything)\n" +
+        "}                                     |";
 
     private void addOptions(org.apache.commons.cli.Options opts) {
         opts.addOption(Option.builder("f")
@@ -49,6 +69,7 @@ public class Options {
     public final Map<String, String> KNOWN_CONSTANTS_STRING;
     public final int NUM_UNROLLS;
     public final int MAX_SEQS;
+    public final int MAX_SEQ_LENGTH;
     public final String JAVADOC_TYPE;
 
     public Options(String[] args) throws ParseException, IOException {
@@ -115,6 +136,12 @@ public class Options {
         else
             this.MAX_SEQS = 10;
 
+        // MAX_SEQS
+        if (this.config.has("max-seq-length"))
+            this.MAX_SEQ_LENGTH = this.config.getAsJsonPrimitive("max-seq-length").getAsInt();
+        else
+            this.MAX_SEQ_LENGTH = 10;
+
         // Javadoc only
         if (this.config.has("javadoc-type")) {
             this.JAVADOC_TYPE = this.config.getAsJsonPrimitive("javadoc-type").getAsString();
@@ -137,7 +164,7 @@ public class Options {
             return parser.parse(clopts, args);
         } catch (ParseException e) {
             HelpFormatter help = new HelpFormatter();
-            help.printHelp("driver", clopts);
+            help.printHelp("driver", HELP.replace('`', '\"'), clopts, "", true);
             throw e;
         }
     }

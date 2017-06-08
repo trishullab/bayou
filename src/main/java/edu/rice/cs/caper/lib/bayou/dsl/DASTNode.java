@@ -1,7 +1,6 @@
 package edu.rice.cs.caper.lib.bayou.dsl;
 
 
-
 import edu.rice.cs.caper.lib.bayou.synthesizer.Synthesizable;
 
 import java.util.List;
@@ -10,9 +9,8 @@ import java.util.Set;
 public abstract class DASTNode implements Synthesizable
 {
     public class TooManySequencesException extends Exception { }
-    public abstract void updateSequences(List<Sequence> soFar, int max) throws TooManySequencesException;
-
-    public abstract Set<String> keywords();
+    public class TooLongSequenceException extends Exception { }
+    public abstract void updateSequences(List<Sequence> soFar, int max, int max_length) throws TooManySequencesException, TooLongSequenceException;
 
     public abstract int numStatements();
     public abstract int numLoops();
