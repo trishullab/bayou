@@ -19,10 +19,7 @@ import os
 import socket
 
 import tensorflow as tf
-from variational.predict_ast import VariationalPredictor
-from variational.utils import get_keywords
-
-from variational.data_reader import sub_sequences
+from bayou.core.infer import BayesianPredictor
 
 
 def _start_server(save_dir, logger):
@@ -33,7 +30,7 @@ def _start_server(save_dir, logger):
         print("    Loading Model. Please Wait.    ")
         print("===================================")
 
-        predictor = VariationalPredictor(save_dir, sess) # create a predictor that can generates ASTs from evidence
+        predictor = BayesianPredictor(save_dir, sess) # create a predictor that can generates ASTs from evidence
 
         #
         # Create a socket listening to localhost:8084
@@ -103,37 +100,18 @@ def _generate_asts(evidence_json, predictor, logger):
     js = json.loads(evidence_json) # parse evidence as a JSON string
 
     #
-    # Extract keywords and sequences from given evidence.
-    #
-    if not('keywords' in js or 'sequences' in js):
-        raise ValueError("expected keywords or sequences in evidence.  Found: " + evidence)
-
-    keywords, sequences = [], []
-    if 'keywords' in js:
-        keywords = js['keywords'].split()
-    if 'sequences' in js and len(js['sequences']) > 0:
-        list_of_call_objects = js['sequences']
-        first_obj = list_of_call_objects[0]
-        call_list = first_obj['calls']
-        logger.debug(str(call_list))
-        sequences = sub_sequences([call_list], predictor.model.args)
-    keywords = list(set(keywords + get_keywords(sequences)))
-    keywords = [k for k in keywords if k in predictor.input_vocab_kws]
-
-    #
     # Generate ASTs from sequences and keywords in evidence.
     #
     asts = []
     for i in range(10):
         try:
-            psi = predictor.psi_from_evidence(sequences, keywords)
+            psi = predictor.psi_from_evidence(js)
             ast, p = predictor.generate_ast(psi)
             ast['p_ast'] = p
             asts.append(ast)
         except AssertionError:
             continue
-
-    return json.dumps({'asts': asts}, indent=2) # return all ASTs as a JSON string
+    return json.dumps({ 'asts': asts }, indent=2) # return all ASTs as a JSON string
 
 
 if __name__ == '__main__':
