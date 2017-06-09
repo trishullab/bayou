@@ -17,3 +17,5 @@
 apt-get update
 apt-get install openjdk-8-jre python3-pip
 pip3 install 'tensorflow==1.0.1'
+pip3 install 'scikit-learn'
+pip3 install 'scipy'
