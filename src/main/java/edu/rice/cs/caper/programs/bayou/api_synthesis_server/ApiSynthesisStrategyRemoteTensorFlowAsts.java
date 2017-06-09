@@ -99,11 +99,11 @@ class ApiSynthesisStrategyRemoteTensorFlowAsts implements ApiSynthesisStrategy
             throw new NullPointerException("androidJarPath");
         }
 
-//        if(!androidJarPath.exists())
-//        {
-//            _logger.debug("exiting");
-//            throw new IllegalArgumentException("androidJarPath does not exist: " + androidJarPath.getAbsolutePath());
-//        }
+        if(!androidJarPath.exists())
+        {
+            _logger.debug("exiting");
+            throw new IllegalArgumentException("androidJarPath does not exist: " + androidJarPath.getAbsolutePath());
+        }
 
         _tensorFlowHost = tensorFlowHost;
 	    _logger.trace("_tensorFlowHost:" + _tensorFlowHost);
