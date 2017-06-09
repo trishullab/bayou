@@ -39,8 +39,19 @@ class Configuration
         {
             String propertyKey = "configurationFile";
 
-            String configPath = System.getProperty(propertyKey) != null ? System.getProperty(propertyKey) :
+            String configPathStr = System.getProperty(propertyKey) != null ? System.getProperty(propertyKey) :
                                                                           "apiSynthesisServerConfig.properties";
+            File configPath;
+            try
+            {
+                // do getCanonicalFile to resolve path entries like ../
+                // this makes for better error messages in the RuntimeException created if .load(...) exceptions.
+                configPath = new File(configPathStr).getCanonicalFile();
+            }
+            catch (IOException e)
+            {
+                throw new RuntimeException("Could not load configuration file: " + configPathStr, e);
+            }
 
             try
             {
@@ -48,7 +59,7 @@ class Configuration
             }
             catch (IOException e)
             {
-                throw new RuntimeException("Could not load configuration file.", e);
+                throw new RuntimeException("Could not load configuration file: " + configPath.getAbsolutePath() , e);
             }
         }
 
