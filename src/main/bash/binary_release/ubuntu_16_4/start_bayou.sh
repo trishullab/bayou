@@ -21,5 +21,6 @@ mkdir -p logs
 
 java -DconfigurationFile=resources/conf/apiSynthesisServerConfig.properties -Dlog4j.configurationFile=resources/conf/apiSynthesisServerLog4j2.xml -jar bayou-1.0.jar &
 
+SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 export PYTHONPATH=python
-/usr/bin/python3 python/ast_server.py --save_dir resources/network
+/usr/bin/python3 python/ast_server.py --save_dir "$SCRIPT_DIR/resources/network"
