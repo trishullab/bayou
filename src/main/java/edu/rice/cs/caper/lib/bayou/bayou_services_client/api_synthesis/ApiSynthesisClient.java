@@ -1,17 +1,28 @@
 package edu.rice.cs.caper.lib.bayou.bayou_services_client.api_synthesis;
 
 import edu.rice.cs.caper.lib.bayou.bayou_services_client.JsonMsgClientBase;
+import edu.rice.cs.caper.programs.bayou.api_synthesis_server.ApiSynthesisServlet;
+import org.apache.commons.io.IOUtils;
+import org.apache.http.HttpResponse;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.entity.BasicHttpEntity;
+import org.apache.http.entity.ByteArrayEntity;
+import org.apache.http.impl.client.HttpClients;
+import org.apache.http.protocol.BasicHttpContext;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import javax.xml.ws.spi.http.HttpContext;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Socket;
 import java.net.SocketTimeoutException;
+import java.net.URL;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -63,45 +74,46 @@ public class ApiSynthesisClient extends JsonMsgClientBase
             throw new IllegalArgumentException("code may not be null");
 
         /*
-         * Connect to host, send request, parse and return response.
+         * Create request and send to server.
          */
-        try(Socket connection = new Socket(this.host, this.port))
+        JSONObject requestMsg = new JSONObject();
+        requestMsg.put("code", code);
+
+        HttpClient httpclient = HttpClients.createDefault();
+        HttpPost post = new HttpPost("http://" + host + ":" + port + "/apisynthesis");
+        post.addHeader("Origin", "http://askbayou.com");
+        post.setEntity(new ByteArrayEntity(requestMsg.toString(4).getBytes()));
+
+        /*
+         * Read and parse the response from the server.
+         */
+        JSONObject responseBodyObj;
         {
-            int thirtySecondsInMs = 30 * 1000;
-            connection.setSoTimeout(thirtySecondsInMs); // ensure reads from the socket can't block forever
-
-            try(InputStream in = connection.getInputStream(); OutputStream out = connection.getOutputStream())
+            HttpResponse response =  httpclient.execute(post);
+            if(response.getStatusLine().getStatusCode() != 200)
             {
-                /*
-                 * Send the request to the server.
-                 */
-                JSONObject requestMsg = new JSONObject();
-                requestMsg.put("code", code);
-                sendRequest(requestMsg, out);
+                throw new IOException("Unexpected status code: " + response.getStatusLine().getStatusCode());
+            }
 
-                /*
-                 * Read and parse the response from the server.
-                 */
-                JSONObject responseBodyObj;
-                {
-                    String responseBodyAsString = readResponseAsString(in);
+            String responseBodyAsString;
+            {
+                byte[] responseBytes = IOUtils.toByteArray(response.getEntity().getContent());
+                responseBodyAsString = new String(responseBytes);
+            }
 
-                    try
-                    {
-                        responseBodyObj = parseResponseMessageBodyToJson(responseBodyAsString);
-                    }
-                    catch (IllegalArgumentException e)
-                    {
-                        _logger.debug("exiting");
-                        throw new SynthesisError(e.getMessage());
-                    }
-                }
-
+            try
+            {
+                responseBodyObj = parseResponseMessageBodyToJson(responseBodyAsString);
+            }
+            catch (IllegalArgumentException e)
+            {
                 _logger.debug("exiting");
-                return parseResponseMessageBody(responseBodyObj);
+                throw new SynthesisError(e.getMessage());
             }
         }
 
+        _logger.debug("exiting");
+        return parseResponseMessageBody(responseBodyObj);
     }
 
     /**

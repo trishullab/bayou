@@ -28,6 +28,8 @@ class ApiSynthesisServerRest
      */
     private static int _codeCompletionRequestBodyMaxBytesCount = Configuration.CodeCompletionRequestBodyMaxBytesCount;
 
+    static final String ApiSynthesisServletPath = "/apisynthesis";
+
     void start()
     {
         /*
@@ -41,7 +43,7 @@ class ApiSynthesisServerRest
 
 
             // register a servlet for performing apisynthesis
-            handler.addServletWithMapping(ApiSynthesisServlet.class, "/apisynthesis");
+            handler.addServletWithMapping(ApiSynthesisServlet.class, ApiSynthesisServletPath);
 
             // register a servlet for checking on the health of the entire apisynthesis process
             handler.addServletWithMapping(ApiSynthesisHealthCheckServlet.class, "/apisynthesishealth");
