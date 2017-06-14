@@ -4,11 +4,14 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import edu.rice.cs.caper.lib.bayou.dsl.*;
 import org.apache.commons.cli.*;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.eclipse.jdt.core.dom.AST;
 import org.eclipse.jdt.core.dom.ASTParser;
 import org.eclipse.jdt.core.dom.CompilationUnit;
 import org.eclipse.jface.text.Document;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.net.URL;
@@ -17,6 +20,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Synthesizer {
+
+    /**
+     * Place to send program logging information.
+     */
+    private static final Logger _logger = LogManager.getLogger(Synthesizer.class.getName());
+
 
     private final PrintStream _out;
 
@@ -28,11 +37,6 @@ public class Synthesizer {
         List<DSubTree> asts;
     }
 
-    public Synthesizer(String[] args)
-    {
-        this(System.out);
-    }
-
     public Synthesizer(PrintStream outStream)
     {
         _out = outStream;
@@ -41,12 +45,6 @@ public class Synthesizer {
 
         addOptions(clopts);
 
-//        try {
-//            this.cmdLine = parser.parse(clopts, args);
-//        } catch (ParseException e) {
-//            HelpFormatter help = new HelpFormatter();
-//            help.printHelp("edu/rice/bayou/synthesizer", clopts);
-//        }
     }
 
     private void addOptions(org.apache.commons.cli.Options opts) {
@@ -83,11 +81,8 @@ public class Synthesizer {
     }
 
     public void execute(String source, String astJson, String classpath) throws IOException {
-       // if (cmdLine == null)
-        //    return;
 
         ASTParser parser = ASTParser.newParser(AST.JLS8);
-     //   File input = new File(cmdLine.getOptionValue("input-file"));
         classpath = classpath == null? "" : classpath;
 
        // String source = FileUtils.readFileToString(input, "utf-8");
@@ -101,10 +96,15 @@ public class Synthesizer {
         List<DSubTree> asts = getASTsFromNN(astJson);
 
         List<URL> urlList = new ArrayList<>();
-        for (String cp : classpath.split(":"))
+        for (String cp : classpath.split(File.pathSeparator))
+        {
+            _logger.trace("cp: " + cp);
             urlList.add(new URL("jar:file:" + cp + "!/"));
+        }
         URL[] urls = urlList.toArray(new URL[0]);
+
         classLoader = URLClassLoader.newInstance(urls);
+
 
         List<String> programs = new ArrayList<>();
         for (DSubTree ast : asts) {

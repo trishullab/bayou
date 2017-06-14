@@ -185,7 +185,17 @@ public class DAPICall extends DASTNode {
     private Executable getConstructorOrMethod() {
         String qualifiedName = _call.substring(0, _call.indexOf("("));
         String className = qualifiedName.substring(0, qualifiedName.lastIndexOf("."));
-        Class cls = Environment.getClass(className);
+        Class cls = null;
+        try
+        {
+            cls = Environment.getClass(className);
+        }
+        catch (ClassNotFoundException e)
+        {
+            System.err.println("Could not find methodBinding or constructor " + qualifiedName);
+            System.exit(1);
+            return null;
+        }
 
         /* find the method in the class */
         for (Method m : cls.getMethods()) {

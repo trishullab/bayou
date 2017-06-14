@@ -52,7 +52,13 @@ public class Visitor extends ASTVisitor {
                 ITypeBinding binding = t.resolveBinding();
                 if (binding == null)
                     continue;
-                type = Environment.getClass(binding.getQualifiedName());
+                try {
+                    type = Environment.getClass(binding.getQualifiedName());
+                }
+                catch (ClassNotFoundException e)
+                {
+                    continue;
+                }
             }
             else if (t.isPrimitiveType())
                 type = primitiveToClass.get(((PrimitiveType) t).getPrimitiveTypeCode().toString());
