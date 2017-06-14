@@ -163,6 +163,7 @@ public abstract class SizeConstrainedPostBodyServlet extends HttpServlet
         }
         catch (Throwable e)
         {
+            _logger.error(e.getMessage(), e);
             writeErrorResponse(e.getMessage(), resp);
             _logger.debug("exiting");
             return;
