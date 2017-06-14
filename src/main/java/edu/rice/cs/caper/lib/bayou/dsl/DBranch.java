@@ -123,7 +123,8 @@ public class DBranch extends DASTNode {
 
 
     @Override
-    public IfStatement synthesize(Environment env) {
+    public IfStatement synthesize(Environment env) throws ClassNotFoundException, BindingNotFoundException
+    {
         AST ast = env.ast();
         IfStatement statement = ast.newIfStatement();
 

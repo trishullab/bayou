@@ -124,14 +124,5 @@ public class Synthesizer {
             }
         }
     }
-
-//    public static void main(String args[]) {
-//        try {
-//            new Synthesizer(args).execute();
-//        } catch (IOException e) {
-//            System.err.println("Error occurred: " + e.getMessage());
-//            e.printStackTrace();
-//            System.exit(1);
-//        }
-//    }
+    
 }

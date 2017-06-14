@@ -1,5 +1,6 @@
 package edu.rice.cs.caper.lib.bayou.synthesizer;
 
+import edu.rice.cs.caper.lib.bayou.dsl.BindingNotFoundException;
 import edu.rice.cs.caper.lib.bayou.dsl.DSubTree;
 import org.eclipse.jdt.core.dom.*;
 import org.eclipse.jdt.core.dom.rewrite.ASTRewrite;
@@ -69,7 +70,15 @@ public class Visitor extends ASTVisitor {
         }
 
         Environment env = new Environment(method.getAST(), scope);
-        Block body = dAST.synthesize(env);
+        Block body = null;
+        try
+        {
+            body = dAST.synthesize(env);
+        }
+        catch (ClassNotFoundException | BindingNotFoundException e)
+        {
+            throw new RuntimeException(e);
+        }
 
         try {
             /* make rewrites to the local method body */
@@ -94,9 +103,10 @@ public class Visitor extends ASTVisitor {
 
             /* make rewrites to the document */
             postprocessGlobal(cu.getAST(), env, document);
-        } catch (BadLocationException e) {
-            System.err.println("Could not edit document for some reason.\n" + e.getMessage());
-            System.exit(1);
+        }
+        catch (BadLocationException e)
+        {
+            throw new RuntimeException(e);
         }
 
         synthesizedProgram = document.get();

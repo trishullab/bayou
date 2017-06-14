@@ -58,6 +58,28 @@ public class ApiSynthesisServlet extends SizeConstrainedPostBodyServlet implemen
     protected void doPost(HttpServletRequest req, HttpServletResponse resp, String body) throws IOException
     {
         _logger.debug("entering");
+        try
+        {
+            doPostHelp(req, resp, body);
+        }
+        catch (Throwable e)
+        {
+            _logger.error(e.getMessage(), e);
+            JSONObject responseBody = new ErrorJsonResponse("Unexpected exception during synthesis.");
+            resp.setStatus(HttpStatus.INTERNAL_SERVER_ERROR_500);
+            writeObjectToServletOutputStream(responseBody, resp);
+
+        }
+        finally
+        {
+            _logger.debug("exiting");
+        }
+    }
+
+    private void doPostHelp(HttpServletRequest req, HttpServletResponse resp, String body)
+            throws IOException, ApiSynthesisStrategy.SynthesiseException
+    {
+        _logger.debug("entering");
 
         // only allow CORS processing from origins we approve
         boolean requestFromAllowedOrigin = _corsHeaderSetter.applyAccessControlHeaderIfAllowed(req, resp);
@@ -115,20 +137,7 @@ public class ApiSynthesisServlet extends SizeConstrainedPostBodyServlet implemen
         /*
          * Perform synthesis.
          */
-        Iterable<String> results;
-        try
-        {
-            results = _synthesisStrategy.synthesise(code);
-        }
-        catch (ApiSynthesisStrategy.SynthesiseException e)
-        {
-            _logger.error(requestId, e);
-            JSONObject responseBody = new ErrorJsonResponse("Unexpected exception during synthesis.");
-            resp.setStatus(HttpStatus.INTERNAL_SERVER_ERROR_500);
-            writeObjectToServletOutputStream(responseBody, resp);
-            _logger.debug("exiting");
-            return;
-        }
+        Iterable<String> results = _synthesisStrategy.synthesise(code);
 
         /*
          * Place synthesis results into a JSON string, send response, and close socket.
@@ -140,7 +149,6 @@ public class ApiSynthesisServlet extends SizeConstrainedPostBodyServlet implemen
         responseBody.put("results", new JSONArray(resultsCollection));
         writeObjectToServletOutputStream(responseBody, resp);
         _logger.debug("exiting");
-
     }
 
 

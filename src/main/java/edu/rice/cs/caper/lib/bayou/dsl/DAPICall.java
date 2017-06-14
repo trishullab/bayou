@@ -111,7 +111,8 @@ public class DAPICall extends DASTNode {
 
 
     @Override
-    public ASTNode synthesize(Environment env) {
+    public ASTNode synthesize(Environment env) throws ClassNotFoundException, BindingNotFoundException
+    {
         Executable executable = getConstructorOrMethod();
         if (executable instanceof Constructor) {
             constructor = (Constructor) executable;
@@ -182,20 +183,11 @@ public class DAPICall extends DASTNode {
         return assignment;
     }
 
-    private Executable getConstructorOrMethod() {
+    private Executable getConstructorOrMethod() throws ClassNotFoundException, BindingNotFoundException
+    {
         String qualifiedName = _call.substring(0, _call.indexOf("("));
         String className = qualifiedName.substring(0, qualifiedName.lastIndexOf("."));
-        Class cls = null;
-        try
-        {
-            cls = Environment.getClass(className);
-        }
-        catch (ClassNotFoundException e)
-        {
-            System.err.println("Could not find methodBinding or constructor " + qualifiedName);
-            System.exit(1);
-            return null;
-        }
+        Class cls = Environment.getClass(className);
 
         /* find the method in the class */
         for (Method m : cls.getMethods()) {
@@ -222,8 +214,7 @@ public class DAPICall extends DASTNode {
                 return c;
         }
 
-        System.err.println("Could not find methodBinding or constructor " + qualifiedName);
-        System.exit(1);
-        return null;
+        throw new BindingNotFoundException(qualifiedName);
+
     }
 }

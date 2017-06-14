@@ -13,6 +13,14 @@ import org.eclipse.jetty.servlet.ServletHandler;
  */
 class ApiSynthesisServerRest
 {
+    class StartErrorException extends Exception
+    {
+        StartErrorException(Throwable throwable)
+        {
+            super(throwable);
+        }
+    }
+
     /**
      * Place to send program logging information.
      */
@@ -30,7 +38,7 @@ class ApiSynthesisServerRest
 
     static final String ApiSynthesisServletPath = "/apisynthesis";
 
-    void start()
+    void start() throws StartErrorException
     {
         /*
          * Create and configure the HTTP server.
@@ -71,10 +79,9 @@ class ApiSynthesisServerRest
             server.start();
             _logger.info("Started HTTP server on port " + _httpListenPort);
         }
-        catch (Exception e)
+        catch (Throwable e)
         {
-            _logger.fatal(e);
-            System.exit(1);
+            throw new StartErrorException(e);
         }
     }
 }

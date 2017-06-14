@@ -109,7 +109,8 @@ public class DLoop extends DASTNode {
 
 
     @Override
-    public WhileStatement synthesize(Environment env) {
+    public WhileStatement synthesize(Environment env) throws ClassNotFoundException, BindingNotFoundException
+    {
         AST ast = env.ast();
         WhileStatement statement = ast.newWhileStatement();
 

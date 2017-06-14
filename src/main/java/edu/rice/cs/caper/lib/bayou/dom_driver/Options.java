@@ -146,8 +146,7 @@ public class Options {
         if (this.config.has("javadoc-type")) {
             this.JAVADOC_TYPE = this.config.getAsJsonPrimitive("javadoc-type").getAsString();
             if (! (this.JAVADOC_TYPE.equals("full") || this.JAVADOC_TYPE.equals("summary"))) {
-                System.err.println("javadoc-type must be \"full\" or \"summary\"");
-                System.exit(1);
+                throw new IllegalArgumentException("javadoc-type must be \"full\" or \"summary\"");
             }
         }
         else

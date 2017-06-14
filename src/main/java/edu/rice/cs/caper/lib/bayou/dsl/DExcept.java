@@ -112,7 +112,8 @@ public class DExcept extends DASTNode {
 
 
     @Override
-    public TryStatement synthesize(Environment env) {
+    public TryStatement synthesize(Environment env) throws ClassNotFoundException, BindingNotFoundException
+    {
         AST ast = env.ast();
         TryStatement statement = ast.newTryStatement();
 

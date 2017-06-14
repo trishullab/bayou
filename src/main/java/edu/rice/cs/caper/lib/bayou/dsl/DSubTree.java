@@ -125,7 +125,8 @@ public class DSubTree extends DASTNode {
 
 
     @Override
-    public Block synthesize(Environment env) {
+    public Block synthesize(Environment env) throws ClassNotFoundException, BindingNotFoundException
+    {
         AST ast = env.ast();
         Block block = ast.newBlock();
 
