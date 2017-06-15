@@ -1,0 +1,397 @@
+{
+  "asts": [
+    {
+      "node": "DSubTree",
+      "_nodes": [
+        {
+          "node": "DExcept",
+          "_try": [
+            {
+              "node": "DLoop",
+              "_cond": [
+                {
+                  "node": "DAPICall",
+                  "_call": "java.io.BufferedReader.readLine()",
+                  "p": 0.9784785509109497
+                }
+              ],
+              "_body": [],
+              "p": 0.18483084440231323
+            }
+          ],
+          "_catch": [
+            {
+              "node": "DAPICall",
+              "_call": "java.lang.Throwable.printStackTrace()",
+              "p": 0.8654532432556152
+            }
+          ],
+          "p": 0.6618564128875732
+        }
+      ],
+      "p_ast": 0.07146827456469058
+    },
+    {
+      "node": "DSubTree",
+      "_nodes": [
+        {
+          "node": "DAPICall",
+          "_call": "java.io.FileReader.FileReader(java.lang.String)",
+          "p": 0.13275212049484253
+        },
+        {
+          "node": "DAPICall",
+          "_call": "java.io.BufferedReader.BufferedReader(java.io.Reader)",
+          "p": 0.8814309239387512
+        },
+        {
+          "node": "DLoop",
+          "_cond": [
+            {
+              "node": "DAPICall",
+              "_call": "java.io.BufferedReader.readLine()",
+              "p": 0.9946078062057495
+            }
+          ],
+          "_body": [],
+          "p": 0.8390502333641052
+        }
+      ],
+      "p_ast": 0.06558024520091356
+    },
+    {
+      "node": "DSubTree",
+      "_nodes": [
+        {
+          "node": "DExcept",
+          "_try": [
+            {
+              "node": "DAPICall",
+              "_call": "java.io.FileWriter.FileWriter(java.io.File)",
+              "p": 0.028535546734929085
+            },
+            {
+              "node": "DAPICall",
+              "_call": "java.io.BufferedWriter.BufferedWriter(java.io.Writer)",
+              "p": 0.7539450526237488
+            },
+            {
+              "node": "DAPICall",
+              "_call": "java.io.BufferedWriter.close()",
+              "p": 0.43368834257125854
+            }
+          ],
+          "_catch": [
+            {
+              "node": "DAPICall",
+              "_call": "java.lang.Throwable.printStackTrace()",
+              "p": 0.9923875331878662
+            }
+          ],
+          "p": 0.2722265124320984
+        }
+      ],
+      "p_ast": 0.002170956983354881
+    },
+    {
+      "node": "DSubTree",
+      "_nodes": [
+        {
+          "node": "DExcept",
+          "_try": [
+            {
+              "node": "DAPICall",
+              "_call": "java.lang.Throwable.printStackTrace()",
+              "p": 0.004606959875673056
+            },
+            {
+              "node": "DAPICall",
+              "_call": "java.io.InputStreamReader.InputStreamReader(java.io.InputStream)",
+              "p": 0.848928689956665
+            },
+            {
+              "node": "DAPICall",
+              "_call": "java.io.BufferedReader.BufferedReader(java.io.Reader)",
+              "p": 0.9789246320724487
+            },
+            {
+              "node": "DLoop",
+              "_cond": [
+                {
+                  "node": "DAPICall",
+                  "_call": "java.io.BufferedReader.ready()",
+                  "p": 0.00486178882420063
+                }
+              ],
+              "_body": [
+                {
+                  "node": "DAPICall",
+                  "_call": "java.io.BufferedReader.readLine()",
+                  "p": 0.9532216787338257
+                },
+                {
+                  "node": "DAPICall",
+                  "_call": "java.io.BufferedReader.readLine()",
+                  "p": 0.1144910678267479
+                },
+                {
+                  "node": "DAPICall",
+                  "_call": "java.io.BufferedReader.readLine()",
+                  "p": 0.4135214686393738
+                }
+              ],
+              "p": 0.9165681004524231
+            }
+          ],
+          "_catch": [
+            {
+              "node": "DAPICall",
+              "_call": "java.lang.Throwable.printStackTrace()",
+              "p": 0.9942753911018372
+            }
+          ],
+          "p": 0.4553249478340149
+        }
+      ],
+      "p_ast": 7.104131803297209e-08
+    },
+    {
+      "node": "DSubTree",
+      "_nodes": [
+        {
+          "node": "DExcept",
+          "_try": [
+            {
+              "node": "DAPICall",
+              "_call": "java.io.FileReader.FileReader(java.io.File)",
+              "p": 0.066924549639225
+            },
+            {
+              "node": "DAPICall",
+              "_call": "java.io.BufferedReader.BufferedReader(java.io.Reader)",
+              "p": 0.9857583045959473
+            },
+            {
+              "node": "DLoop",
+              "_cond": [
+                {
+                  "node": "DAPICall",
+                  "_call": "java.io.BufferedReader.readLine()",
+                  "p": 0.994234025478363
+                }
+              ],
+              "_body": [
+                {
+                  "node": "DAPICall",
+                  "_call": "java.io.BufferedReader.readLine()",
+                  "p": 0.010609172284603119
+                },
+                {
+                  "node": "DAPICall",
+                  "_call": "java.io.BufferedReader.readLine()",
+                  "p": 0.506377100944519
+                }
+              ],
+              "p": 0.9582405090332031
+            },
+            {
+              "node": "DAPICall",
+              "_call": "java.io.BufferedReader.close()",
+              "p": 0.46687355637550354
+            }
+          ],
+          "_catch": [
+            {
+              "node": "DAPICall",
+              "_call": "java.lang.Throwable.printStackTrace()",
+              "p": 0.9526882767677307
+            }
+          ],
+          "p": 0.38282397389411926
+        }
+      ],
+      "p_ast": 2.7148283888618374e-05
+    },
+    {
+      "node": "DSubTree",
+      "_nodes": [
+        {
+          "node": "DAPICall",
+          "_call": "java.io.FileReader.FileReader(java.io.File)",
+          "p": 0.020432572811841965
+        },
+        {
+          "node": "DAPICall",
+          "_call": "java.io.BufferedReader.BufferedReader(java.io.Reader)",
+          "p": 0.9908722043037415
+        },
+        {
+          "node": "DLoop",
+          "_cond": [
+            {
+              "node": "DAPICall",
+              "_call": "java.io.BufferedReader.readLine()",
+              "p": 0.9967615008354187
+            }
+          ],
+          "_body": [],
+          "p": 0.9043868780136108
+        },
+        {
+          "node": "DAPICall",
+          "_call": "java.io.BufferedReader.close()",
+          "p": 0.7349365949630737
+        }
+      ],
+      "p_ast": 0.008853321218594558
+    },
+    {
+      "node": "DSubTree",
+      "_nodes": [
+        {
+          "node": "DAPICall",
+          "_call": "java.io.InputStreamReader.InputStreamReader(java.io.InputStream)",
+          "p": 0.08891596645116806
+        },
+        {
+          "node": "DAPICall",
+          "_call": "java.io.BufferedReader.BufferedReader(java.io.Reader)",
+          "p": 0.9561517238616943
+        },
+        {
+          "node": "DLoop",
+          "_cond": [
+            {
+              "node": "DAPICall",
+              "_call": "java.io.BufferedReader.readLine()",
+              "p": 0.9956938028335571
+            }
+          ],
+          "_body": [],
+          "p": 0.7162366509437561
+        },
+        {
+          "node": "DAPICall",
+          "_call": "java.io.BufferedReader.close()",
+          "p": 0.5130999684333801
+        },
+        {
+          "node": "DAPICall",
+          "_call": "java.lang.Throwable.printStackTrace()",
+          "p": 0.07503850013017654
+        }
+      ],
+      "p_ast": 0.0019270324969256156
+    },
+    {
+      "node": "DSubTree",
+      "_nodes": [
+        {
+          "node": "DExcept",
+          "_try": [
+            {
+              "node": "DAPICall",
+              "_call": "java.io.BufferedReader.readLine()",
+              "p": 0.020729046314954758
+            },
+            {
+              "node": "DLoop",
+              "_cond": [
+                {
+                  "node": "DAPICall",
+                  "_call": "java.io.BufferedReader.readLine()",
+                  "p": 0.9078356027603149
+                }
+              ],
+              "_body": [],
+              "p": 0.37230005860328674
+            },
+            {
+              "node": "DAPICall",
+              "_call": "java.io.BufferedReader.close()",
+              "p": 0.14513848721981049
+            }
+          ],
+          "_catch": [
+            {
+              "node": "DAPICall",
+              "_call": "java.lang.Throwable.printStackTrace()",
+              "p": 0.9362613558769226
+            }
+          ],
+          "p": 0.3560989201068878
+        }
+      ],
+      "p_ast": 0.0003146766427841574
+    },
+    {
+      "node": "DSubTree",
+      "_nodes": [
+        {
+          "node": "DLoop",
+          "_cond": [
+            {
+              "node": "DAPICall",
+              "_call": "java.io.BufferedReader.readLine()",
+              "p": 0.9891239404678345
+            }
+          ],
+          "_body": [],
+          "p": 0.28544044494628906
+        },
+        {
+          "node": "DAPICall",
+          "_call": "java.io.PrintWriter.checkError()",
+          "p": 0.0637492761015892
+        },
+        {
+          "node": "DAPICall",
+          "_call": "java.io.PrintWriter.checkError()",
+          "p": 1.0
+        }
+      ],
+      "p_ast": 0.016852202053995992
+    },
+    {
+      "node": "DSubTree",
+      "_nodes": [
+        {
+          "node": "DExcept",
+          "_try": [
+            {
+              "node": "DAPICall",
+              "_call": "java.io.InputStreamReader.InputStreamReader(java.io.InputStream)",
+              "p": 0.5714359879493713
+            },
+            {
+              "node": "DAPICall",
+              "_call": "java.io.BufferedReader.BufferedReader(java.io.Reader)",
+              "p": 0.9987831711769104
+            },
+            {
+              "node": "DLoop",
+              "_cond": [
+                {
+                  "node": "DAPICall",
+                  "_call": "java.io.BufferedReader.readLine()",
+                  "p": 0.9862089157104492
+                }
+              ],
+              "_body": [],
+              "p": 0.8598731756210327
+            }
+          ],
+          "_catch": [
+            {
+              "node": "DAPICall",
+              "_call": "java.lang.Throwable.getMessage()",
+              "p": 0.1485363245010376
+            }
+          ],
+          "p": 0.6982229351997375
+        }
+      ],
+      "p_ast": 0.017396666168538924
+    }
+  ]
+}

@@ -3,10 +3,10 @@ import java.io.InputStreamReader;
 
 public class TestIO2 {
 
-    @Evidence(types = {"BufferedReader"})
-    @Evidence(context = {"Reader"})
-    void __bayou_fill(InputStreamReader input) {
-
+    void read() {
+        InputStreamReader input;
+        Evidence.types("BufferedReader");
+        Evidence.context("Reader");
     }   
 
 }
