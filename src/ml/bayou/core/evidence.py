@@ -346,15 +346,3 @@ class Javadoc(Evidence):
                       + tf.square(encoding - psi) / sigma_sq)
         return loss
 
-    # def set_dicts(self, data):
-    #     if self.pretrained_embed:
-    #         save_dir = os.path.join(self.save_dir, 'embed_' + self.name)
-    #         with open(os.path.join(save_dir, 'config.json')) as f:
-    #             js = json.load(f)
-    #         self.chars = js['chars']
-    #     else:
-    #         self.chars = [C0] + list(set([w for point in data for w in point]))
-    #     self.vocab = dict(zip(self.chars, range(len(self.chars))))
-    #     self.vocab_size = len(self.vocab)
-
-
