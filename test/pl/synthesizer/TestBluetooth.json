@@ -1,0 +1,200 @@
+{
+  "asts": [
+    {
+      "node": "DSubTree",
+      "_nodes": [
+        {
+          "node": "DAPICall",
+          "_call": "android.bluetooth.BluetoothSocket.getInputStream()",
+          "p": 0.35215896368026733
+        },
+        {
+          "node": "DAPICall",
+          "_call": "android.bluetooth.BluetoothSocket.getOutputStream()",
+          "p": 0.2501876950263977
+        },
+        {
+          "node": "DAPICall",
+          "_call": "android.bluetooth.BluetoothAdapter.getDefaultAdapter()",
+          "p": 0.07245536893606186
+        },
+        {
+          "node": "DAPICall",
+          "_call": "android.bluetooth.BluetoothSocket.close()",
+          "p": 0.9999626874923706
+        },
+        {
+          "node": "DAPICall",
+          "_call": "android.bluetooth.BluetoothSocket.close()",
+          "p": 0.9996702671051025
+        },
+        {
+          "node": "DAPICall",
+          "_call": "android.opengl.GLES20.glBindBuffer(int,int)",
+          "p": 0.0016685047885403037
+        }
+      ],
+      "p_ast": 9.644620579558349e-06
+    },
+    {
+      "node": "DSubTree",
+      "_nodes": [
+        {
+          "node": "DAPICall",
+          "_call": "android.bluetooth.BluetoothSocket.connect()",
+          "p": 0.5646816492080688
+        },
+        {
+          "node": "DAPICall",
+          "_call": "android.bluetooth.BluetoothSocket.getInputStream()",
+          "p": 0.999993085861206
+        },
+        {
+          "node": "DAPICall",
+          "_call": "android.bluetooth.BluetoothSocket.getOutputStream()",
+          "p": 0.9997767806053162
+        },
+        {
+          "node": "DAPICall",
+          "_call": "android.bluetooth.BluetoothSocket.connect()",
+          "p": 0.9737715721130371
+        },
+        {
+          "node": "DAPICall",
+          "_call": "android.bluetooth.BluetoothSocket.getInputStream()",
+          "p": 0.9931817650794983
+        },
+        {
+          "node": "DAPICall",
+          "_call": "android.bluetooth.BluetoothSocket.getOutputStream()",
+          "p": 0.9997261166572571
+        }
+      ],
+      "p_ast": 0.5045234539236021
+    },
+    {
+      "node": "DSubTree",
+      "_nodes": [
+        {
+          "node": "DAPICall",
+          "_call": "android.bluetooth.BluetoothSocket.getInputStream()",
+          "p": 0.2186528444290161
+        },
+        {
+          "node": "DAPICall",
+          "_call": "android.bluetooth.BluetoothDevice.getAddress()",
+          "p": 0.042948488146066666
+        }
+      ],
+      "p_ast": 0.009277153615201712
+    },
+    {
+      "node": "DSubTree",
+      "_nodes": [
+        {
+          "node": "DAPICall",
+          "_call": "android.bluetooth.BluetoothSocket.connect()",
+          "p": 0.3046506345272064
+        },
+        {
+          "node": "DAPICall",
+          "_call": "android.bluetooth.BluetoothSocket.getInputStream()",
+          "p": 0.9999942779541016
+        },
+        {
+          "node": "DAPICall",
+          "_call": "android.bluetooth.BluetoothSocket.getOutputStream()",
+          "p": 0.9999370574951172
+        },
+        {
+          "node": "DAPICall",
+          "_call": "android.bluetooth.BluetoothSocket.connect()",
+          "p": 0.901334822177887
+        },
+        {
+          "node": "DAPICall",
+          "_call": "android.bluetooth.BluetoothSocket.getInputStream()",
+          "p": 0.9998302459716797
+        },
+        {
+          "node": "DAPICall",
+          "_call": "android.bluetooth.BluetoothSocket.getOutputStream()",
+          "p": 0.9999008178710938
+        }
+      ],
+      "p_ast": 0.2627918211141909
+    },
+    {
+      "node": "DSubTree",
+      "_nodes": [
+        {
+          "node": "DAPICall",
+          "_call": "android.bluetooth.BluetoothSocket.connect()",
+          "p": 0.24085138738155365
+        },
+        {
+          "node": "DAPICall",
+          "_call": "android.bluetooth.BluetoothSocket.getInputStream()",
+          "p": 0.999994158744812
+        },
+        {
+          "node": "DAPICall",
+          "_call": "android.bluetooth.BluetoothSocket.getOutputStream()",
+          "p": 0.9999210834503174
+        },
+        {
+          "node": "DAPICall",
+          "_call": "android.bluetooth.BluetoothSocket.connect()",
+          "p": 0.9090421199798584
+        },
+        {
+          "node": "DAPICall",
+          "_call": "android.bluetooth.BluetoothSocket.getInputStream()",
+          "p": 0.9988364577293396
+        },
+        {
+          "node": "DAPICall",
+          "_call": "android.bluetooth.BluetoothSocket.getOutputStream()",
+          "p": 0.9997709393501282
+        }
+      ],
+      "p_ast": 0.18951609737907457
+    },
+    {
+      "node": "DSubTree",
+      "_nodes": [
+        {
+          "node": "DAPICall",
+          "_call": "android.bluetooth.BluetoothSocket.close()",
+          "p": 0.06685467064380646
+        },
+        {
+          "node": "DAPICall",
+          "_call": "android.bluetooth.BluetoothSocket.close()",
+          "p": 0.9605897068977356
+        },
+        {
+          "node": "DAPICall",
+          "_call": "android.bluetooth.BluetoothServerSocket.close()",
+          "p": 0.6054401993751526
+        },
+        {
+          "node": "DAPICall",
+          "_call": "android.bluetooth.BluetoothSocket.getInputStream()",
+          "p": 0.9489219784736633
+        },
+        {
+          "node": "DAPICall",
+          "_call": "android.bluetooth.BluetoothSocket.getOutputStream()",
+          "p": 0.9835049510002136
+        },
+        {
+          "node": "DAPICall",
+          "_call": "android.bluetooth.BluetoothDevice.getName()",
+          "p": 0.6267858147621155
+        }
+      ],
+      "p_ast": 0.022308345597008217
+    }
+  ]
+}
