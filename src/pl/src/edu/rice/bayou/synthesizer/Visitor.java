@@ -38,9 +38,41 @@ public class Visitor extends ASTVisitor {
     }
 
     @Override
+    public boolean visit(MethodInvocation invoke) {
+	if (!(invoke.getExpression() != null && invoke.getExpression().toString().equals("Evidence")))
+	    return false;
+	
+	if (invoke.getName() == null)
+	    return false;
+    
+	List<Variable> scope = new ArrayList<>();
+	Environment env = new Environment(invoke.getAST(), scope);
+	Block body = dAST.synthesize(env);
+	
+	try {
+            // make rewrites to the local method body 
+            body = postprocessLocal(invoke.getAST(), env, body);
+            ASTRewrite rewriter = ASTRewrite.create(invoke.getAST());
+            rewriter.replace(invoke, body, null);
+
+            rewriter.rewriteAST(document, null).apply(document);
+
+	    // make rewrites to the document 
+            postprocessGlobal(cu.getAST(), env, document);
+        } catch (BadLocationException e) {
+            System.err.println("Could not edit document for some reason.\n" + e.getMessage());
+            System.exit(1);
+        }
+
+        synthesizedProgram = document.get();
+
+	return true;
+    }
+
+    @Override
     public boolean visit(MethodDeclaration method) {
-        if (! method.getName().getIdentifier().equals("__bayou_fill"))
-            return false;
+        if (!method.getName().getIdentifier().equals("__bayou_fill"))
+            return true;
 
         List<Variable> scope = new ArrayList<>();
         for (Object o : method.parameters()) {
