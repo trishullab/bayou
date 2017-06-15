@@ -21,6 +21,30 @@
             "name": "context",
             "units": 32,
             "tile": 1
+        },
+        {
+            "name": "javadoc_0",
+            "units": 32,
+            "tile": 1,
+            "max_length": 80,
+            "filter_sizes": [3, 4, 5],
+            "num_filters": 100
+        },
+        {
+            "name": "javadoc_1",
+            "units": 32,
+            "tile": 1,
+            "max_length": 80,
+            "filter_sizes": [3, 4, 5],
+            "num_filters": 100
+        },
+        {
+            "name": "javadoc_2",
+            "units": 32,
+            "tile": 1,
+            "max_length": 80,
+            "filter_sizes": [3, 4, 5],
+            "num_filters": 100
         }
     ],
     "decoder": {
