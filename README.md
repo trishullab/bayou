@@ -11,7 +11,7 @@ There are three main modules in Bayou:
 ## Requirements
 - JDK 1.8
 - Python3 (Tested with 3.5.1)
-- [Tensorflow](https://www.tensorflow.org) (Tested with 1.0)
+- [Tensorflow](https://www.tensorflow.org) (Tested with 1.2)
 - scikit-learn (Tested with 0.18.1)
 
 ## Setup & Usage
