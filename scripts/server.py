@@ -50,7 +50,7 @@ def serve(content, predictor):
                     asts.append(ast)
                 except AssertionError:
                     continue
-            json.dump({ 'asts': asts }, out, indent=2)
+            json.dump({ 'evidences': js, 'asts': asts }, out, indent=2)
         except json.decoder.JSONDecodeError:
             out.write('ERROR: Malformed input.')
         except AssertionError:
