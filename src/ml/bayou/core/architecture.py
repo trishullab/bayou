@@ -1,5 +1,4 @@
 import tensorflow as tf
-from tensorflow.contrib import rnn
 from itertools import chain
 
 
@@ -44,8 +43,8 @@ class BayesianEncoder(object):
 class BayesianDecoder(object):
     def __init__(self, config, initial_state, infer=False):
 
-        self.cell1 = rnn.GRUCell(config.decoder.units)
-        self.cell2 = rnn.GRUCell(config.decoder.units)
+        self.cell1 = tf.nn.rnn_cell.GRUCell(config.decoder.units)
+        self.cell2 = tf.nn.rnn_cell.GRUCell(config.decoder.units)
 
         # placeholders
         self.initial_state = initial_state
