@@ -1,6 +1,7 @@
 package edu.rice.bayou.dsl;
 
 import edu.rice.bayou.dom_driver.Visitor;
+import edu.rice.bayou.synthesizer.SynthesisException;
 import org.eclipse.jdt.core.dom.*;
 import edu.rice.bayou.synthesizer.Environment;
 
@@ -108,7 +109,7 @@ public class DLoop extends DASTNode {
 
 
     @Override
-    public WhileStatement synthesize(Environment env) {
+    public WhileStatement synthesize(Environment env) throws SynthesisException {
         AST ast = env.ast();
         WhileStatement statement = ast.newWhileStatement();
 

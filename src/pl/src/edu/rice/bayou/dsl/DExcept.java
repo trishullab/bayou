@@ -1,5 +1,6 @@
 package edu.rice.bayou.dsl;
 
+import edu.rice.bayou.synthesizer.SynthesisException;
 import org.eclipse.jdt.core.dom.*;
 import edu.rice.bayou.synthesizer.Environment;
 import edu.rice.bayou.synthesizer.Variable;
@@ -111,7 +112,7 @@ public class DExcept extends DASTNode {
 
 
     @Override
-    public TryStatement synthesize(Environment env) {
+    public TryStatement synthesize(Environment env) throws SynthesisException {
         AST ast = env.ast();
         TryStatement statement = ast.newTryStatement();
 

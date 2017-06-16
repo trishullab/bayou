@@ -107,6 +107,8 @@ public class Synthesizer {
             Visitor visitor = new Visitor(ast, new Document(source), cu);
             try {
                 cu.accept(visitor);
+                if (visitor.synthesizedProgram == null)
+                    continue;
                 String program = visitor.synthesizedProgram.replaceAll("\\s", "");
                 if (! programs.contains(program)) {
                     programs.add(program);
@@ -123,7 +125,6 @@ public class Synthesizer {
         } catch (IOException e) {
             System.err.println("Error occurred: " + e.getMessage());
             e.printStackTrace();
-            System.exit(1);
         }
     }
 }

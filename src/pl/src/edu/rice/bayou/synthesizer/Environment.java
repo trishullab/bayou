@@ -72,7 +72,7 @@ public class Environment {
         mu_scope.remove(v);
     }
 
-    public static Class getClass(String name) {
+    public static Class getClass(String name) throws SynthesisException {
         Class cls = null;
         try {
             cls = Class.forName(name, false, Synthesizer.classLoader);
@@ -85,7 +85,7 @@ public class Environment {
             } catch (ClassNotFoundException e) {
                 System.err.println("Class " + name + " could not be loaded!");
                 e.printStackTrace();
-                System.exit(1);
+                throw new SynthesisException();
             }
         }
         return cls;

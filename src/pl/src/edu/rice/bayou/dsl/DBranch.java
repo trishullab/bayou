@@ -1,5 +1,6 @@
 package edu.rice.bayou.dsl;
 
+import edu.rice.bayou.synthesizer.SynthesisException;
 import org.eclipse.jdt.core.dom.*;
 import edu.rice.bayou.synthesizer.Environment;
 
@@ -122,7 +123,7 @@ public class DBranch extends DASTNode {
 
 
     @Override
-    public IfStatement synthesize(Environment env) {
+    public IfStatement synthesize(Environment env) throws SynthesisException {
         AST ast = env.ast();
         IfStatement statement = ast.newIfStatement();
 

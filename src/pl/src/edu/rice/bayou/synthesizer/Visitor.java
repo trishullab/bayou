@@ -52,7 +52,12 @@ public class Visitor extends ASTVisitor {
                 ITypeBinding binding = t.resolveBinding();
                 if (binding == null)
                     continue;
-                type = Environment.getClass(binding.getQualifiedName());
+                try {
+                    type = Environment.getClass(binding.getQualifiedName());
+                } catch (SynthesisException e) {
+                    synthesizedProgram = null;
+                    return false;
+                }
             }
             else if (t.isPrimitiveType())
                 type = primitiveToClass.get(((PrimitiveType) t).getPrimitiveTypeCode().toString());
@@ -63,7 +68,13 @@ public class Visitor extends ASTVisitor {
         }
 
         Environment env = new Environment(method.getAST(), scope);
-        Block body = dAST.synthesize(env);
+        Block body;
+        try {
+            body = dAST.synthesize(env);
+        } catch (SynthesisException e) {
+            synthesizedProgram = null;
+            return false;
+        }
 
         try {
             /* make rewrites to the local method body */
@@ -90,7 +101,8 @@ public class Visitor extends ASTVisitor {
             postprocessGlobal(cu.getAST(), env, document);
         } catch (BadLocationException e) {
             System.err.println("Could not edit document for some reason.\n" + e.getMessage());
-            System.exit(1);
+            synthesizedProgram = null;
+            return false;
         }
 
         synthesizedProgram = document.get();

@@ -1,5 +1,6 @@
 package edu.rice.bayou.dsl;
 
+import edu.rice.bayou.synthesizer.SynthesisException;
 import org.eclipse.jdt.core.dom.*;
 import edu.rice.bayou.synthesizer.Environment;
 
@@ -125,7 +126,7 @@ public class DSubTree extends DASTNode {
 
 
     @Override
-    public Block synthesize(Environment env) {
+    public Block synthesize(Environment env) throws SynthesisException {
         AST ast = env.ast();
         Block block = ast.newBlock();
 

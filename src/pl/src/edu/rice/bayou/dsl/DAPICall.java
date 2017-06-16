@@ -1,5 +1,6 @@
 package edu.rice.bayou.dsl;
 
+import edu.rice.bayou.synthesizer.SynthesisException;
 import org.apache.commons.lang3.StringUtils;
 import org.eclipse.jdt.core.dom.*;
 import edu.rice.bayou.synthesizer.Environment;
@@ -110,7 +111,7 @@ public class DAPICall extends DASTNode {
 
 
     @Override
-    public ASTNode synthesize(Environment env) {
+    public ASTNode synthesize(Environment env) throws SynthesisException {
         Executable executable = getConstructorOrMethod();
         if (executable instanceof Constructor) {
             constructor = (Constructor) executable;
@@ -181,7 +182,7 @@ public class DAPICall extends DASTNode {
         return assignment;
     }
 
-    private Executable getConstructorOrMethod() {
+    private Executable getConstructorOrMethod() throws SynthesisException {
         String qualifiedName = _call.substring(0, _call.indexOf("("));
         String className = qualifiedName.substring(0, qualifiedName.lastIndexOf("."));
         Class cls = Environment.getClass(className);
@@ -211,8 +212,6 @@ public class DAPICall extends DASTNode {
                 return c;
         }
 
-        System.err.println("Could not find methodBinding or constructor " + qualifiedName);
-        System.exit(1);
-        return null;
+        throw new SynthesisException();
     }
 }
