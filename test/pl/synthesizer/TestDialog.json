@@ -5,230 +5,230 @@
       "_nodes": [
         {
           "node": "DAPICall",
-          "_call": "android.app.AlertDialog.Builder.Builder(android.content.Context)",
-          "p": 0.7523525357246399
+          "_call": "android.app.AlertDialog.Builder.Builder(android.content.Context)"
         },
         {
           "node": "DAPICall",
-          "_call": "android.app.AlertDialog.Builder.setMessage(java.lang.CharSequence)",
-          "p": 0.08851262927055359
+          "_call": "android.app.AlertDialog.Builder.setTitle(java.lang.CharSequence)"
         },
         {
           "node": "DAPICall",
-          "_call": "android.app.AlertDialog.Builder.show()",
-          "p": 0.3204142153263092
+          "_call": "android.app.AlertDialog.Builder.setMessage(java.lang.CharSequence)"
+        },
+        {
+          "node": "DAPICall",
+          "_call": "android.app.Dialog.show()"
         }
       ],
-      "p_ast": 0.02094690875625032
+      "count": 50
     },
     {
       "node": "DSubTree",
       "_nodes": [
         {
           "node": "DAPICall",
-          "_call": "android.app.ProgressDialog.ProgressDialog(android.content.Context)",
-          "p": 0.023153554648160934
+          "_call": "android.app.AlertDialog.Builder.Builder(android.content.Context)"
         },
         {
           "node": "DAPICall",
-          "_call": "android.app.AlertDialog.setTitle(java.lang.CharSequence)",
-          "p": 0.8114018440246582
+          "_call": "android.app.AlertDialog.Builder.setTitle(java.lang.CharSequence)"
         },
         {
           "node": "DAPICall",
-          "_call": "android.app.ProgressDialog.setMessage(java.lang.CharSequence)",
-          "p": 0.9403418302536011
+          "_call": "android.app.AlertDialog.Builder.setMessage(java.lang.CharSequence)"
         },
         {
           "node": "DAPICall",
-          "_call": "android.app.Dialog.setOnDismissListener(android.content.DialogInterface.OnDismissListener)",
-          "p": 0.08125942945480347
+          "_call": "android.app.AlertDialog.Builder.show()"
         }
       ],
-      "p_ast": 0.0007547919591523433
+      "count": 5
     },
     {
       "node": "DSubTree",
       "_nodes": [
         {
           "node": "DAPICall",
-          "_call": "android.app.AlertDialog.Builder.Builder(android.content.Context)",
-          "p": 0.7706904411315918
+          "_call": "android.app.AlertDialog.Builder.Builder(android.content.Context)"
         },
         {
           "node": "DAPICall",
-          "_call": "android.app.AlertDialog.Builder.setTitle(java.lang.CharSequence)",
-          "p": 0.8334240317344666
+          "_call": "android.app.AlertDialog.Builder.setTitle(java.lang.CharSequence)"
         },
         {
           "node": "DAPICall",
-          "_call": "android.app.AlertDialog.Builder.setItems(java.lang.CharSequence[],android.content.DialogInterface.OnClickListener)",
-          "p": 0.007981700822710991
-        },
-        {
-          "node": "DAPICall",
-          "_call": "android.app.AlertDialog.Builder.show()",
-          "p": 0.6031038165092468
+          "_call": "android.app.Dialog.show()"
         }
       ],
-      "p_ast": 0.0030791104618692927
+      "count": 3
     },
     {
       "node": "DSubTree",
       "_nodes": [
         {
           "node": "DAPICall",
-          "_call": "android.app.AlertDialog.setTitle(java.lang.CharSequence)",
-          "p": 0.051553476601839066
+          "_call": "android.app.AlertDialog.Builder.Builder(android.content.Context)"
         },
         {
           "node": "DAPICall",
-          "_call": "android.app.AlertDialog.setMessage(java.lang.CharSequence)",
-          "p": 0.1239752396941185
+          "_call": "android.app.AlertDialog.Builder.setTitle(java.lang.CharSequence)"
+        },
+        {
+          "node": "DAPICall",
+          "_call": "android.app.AlertDialog.Builder.setMessage(java.lang.CharSequence)"
+        },
+        {
+          "node": "DAPICall",
+          "_call": "android.app.AlertDialog.Builder.setPositiveButton(java.lang.CharSequence,android.content.DialogInterface.OnClickListener)"
+        },
+        {
+          "node": "DAPICall",
+          "_call": "android.app.AlertDialog.Builder.setNegativeButton(java.lang.CharSequence,android.content.DialogInterface.OnClickListener)"
+        },
+        {
+          "node": "DAPICall",
+          "_call": "android.app.AlertDialog.Builder.show()"
         }
       ],
-      "p_ast": 0.0002943913151190694
+      "count": 3
     },
     {
       "node": "DSubTree",
       "_nodes": [
         {
           "node": "DAPICall",
-          "_call": "android.app.AlertDialog.Builder.Builder(android.content.Context)",
-          "p": 0.5979032516479492
+          "_call": "android.app.AlertDialog.Builder.Builder(android.content.Context)"
         },
         {
           "node": "DAPICall",
-          "_call": "android.app.AlertDialog.Builder.setOnKeyListener(android.content.DialogInterface.OnKeyListener)",
-          "p": 0.0038177839014679193
+          "_call": "android.app.AlertDialog.Builder.setTitle(java.lang.CharSequence)"
         },
         {
           "node": "DAPICall",
-          "_call": "android.app.AlertDialog.Builder.setTitle(java.lang.CharSequence)",
-          "p": 0.5071730017662048
+          "_call": "android.app.AlertDialog.Builder.setMessage(java.lang.CharSequence)"
         },
         {
           "node": "DAPICall",
-          "_call": "android.app.Dialog.show()",
-          "p": 0.4502129852771759
+          "_call": "android.app.AlertDialog.Builder.setPositiveButton(java.lang.CharSequence,android.content.DialogInterface.OnClickListener)"
+        },
+        {
+          "node": "DAPICall",
+          "_call": "android.app.AlertDialog.Builder.show()"
         }
       ],
-      "p_ast": 0.0005147776957322739
+      "count": 3
     },
     {
       "node": "DSubTree",
       "_nodes": [
         {
           "node": "DAPICall",
-          "_call": "android.app.AlertDialog.Builder.Builder(android.content.Context)",
-          "p": 0.7814845442771912
+          "_call": "android.app.AlertDialog.Builder.Builder(android.content.Context)"
         },
         {
           "node": "DAPICall",
-          "_call": "android.app.AlertDialog.Builder.setTitle(java.lang.CharSequence)",
-          "p": 0.8480272889137268
-        },
-        {
-          "node": "DAPICall",
-          "_call": "android.app.AlertDialog.Builder.setMessage(java.lang.CharSequence)",
-          "p": 0.8381764888763428
-        },
-        {
-          "node": "DAPICall",
-          "_call": "android.app.Dialog.show()",
-          "p": 0.7002182006835938
+          "_call": "android.app.AlertDialog.Builder.setTitle(java.lang.CharSequence)"
         }
       ],
-      "p_ast": 0.38610780173431286
+      "count": 2
     },
     {
       "node": "DSubTree",
       "_nodes": [
         {
           "node": "DAPICall",
-          "_call": "android.app.AlertDialog.Builder.Builder(android.content.Context)",
-          "p": 0.7574188709259033
+          "_call": "android.app.AlertDialog.Builder.Builder(android.content.Context)"
         },
         {
           "node": "DAPICall",
-          "_call": "android.app.AlertDialog.Builder.setTitle(java.lang.CharSequence)",
-          "p": 0.8409935832023621
+          "_call": "android.app.AlertDialog.Builder.setMessage(java.lang.CharSequence)"
         },
         {
           "node": "DAPICall",
-          "_call": "android.app.AlertDialog.Builder.setMessage(java.lang.CharSequence)",
-          "p": 0.8464546799659729
-        },
-        {
-          "node": "DAPICall",
-          "_call": "android.app.Dialog.show()",
-          "p": 0.8269952535629272
+          "_call": "android.app.Dialog.show()"
         }
       ],
-      "p_ast": 0.4404383845014078
+      "count": 2
     },
     {
       "node": "DSubTree",
       "_nodes": [
         {
           "node": "DAPICall",
-          "_call": "android.app.AlertDialog.Builder.Builder(android.content.Context)",
-          "p": 0.7261238098144531
+          "_call": "android.app.ProgressDialog.ProgressDialog(android.content.Context)"
         },
         {
           "node": "DAPICall",
-          "_call": "android.app.AlertDialog.Builder.setMessage(java.lang.CharSequence)",
-          "p": 0.10531164705753326
+          "_call": "android.app.AlertDialog.setTitle(java.lang.CharSequence)"
         },
         {
           "node": "DAPICall",
-          "_call": "android.app.Dialog.show()",
-          "p": 0.22274233400821686
+          "_call": "android.app.ProgressDialog.setMessage(java.lang.CharSequence)"
+        },
+        {
+          "node": "DAPICall",
+          "_call": "android.app.Dialog.show()"
         }
       ],
-      "p_ast": 0.01683689251148276
+      "count": 2
     },
     {
       "node": "DSubTree",
       "_nodes": [
         {
           "node": "DAPICall",
-          "_call": "android.app.AlertDialog.Builder.Builder(android.content.Context)",
-          "p": 0.829076886177063
+          "_call": "android.app.AlertDialog.Builder.Builder(android.content.Context)"
         },
         {
           "node": "DAPICall",
-          "_call": "android.app.Dialog.show()",
-          "p": 0.00845928955823183
+          "_call": "android.app.AlertDialog.Builder.setTitle(java.lang.CharSequence)"
+        },
+        {
+          "node": "DAPICall",
+          "_call": "android.app.AlertDialog.Builder.setMessage(java.lang.CharSequence)"
+        },
+        {
+          "node": "DAPICall",
+          "_call": "android.app.AlertDialog.Builder.setCancelable(boolean)"
+        },
+        {
+          "node": "DAPICall",
+          "_call": "android.app.AlertDialog.Builder.setPositiveButton(java.lang.CharSequence,android.content.DialogInterface.OnClickListener)"
+        },
+        {
+          "node": "DAPICall",
+          "_call": "android.app.AlertDialog.Builder.show()"
         }
       ],
-      "p_ast": 0.006631049533986269
+      "count": 2
     },
     {
       "node": "DSubTree",
       "_nodes": [
         {
           "node": "DAPICall",
-          "_call": "android.app.AlertDialog.Builder.Builder(android.content.Context)",
-          "p": 0.7423746585845947
+          "_call": "android.app.AlertDialog.Builder.Builder(android.content.Context)"
         },
         {
           "node": "DAPICall",
-          "_call": "android.app.AlertDialog.Builder.setTitle(java.lang.CharSequence)",
-          "p": 0.8464341759681702
+          "_call": "android.app.AlertDialog.Builder.setMessage(java.lang.CharSequence)"
         },
         {
           "node": "DAPICall",
-          "_call": "android.app.AlertDialog.Builder.setMessage(java.lang.CharSequence)",
-          "p": 0.825502872467041
-        },
-        {
-          "node": "DAPICall",
-          "_call": "android.app.Dialog.show()",
-          "p": 0.8662708401679993
+          "_call": "android.app.AlertDialog.Builder.show()"
         }
       ],
-      "p_ast": 0.44209733707793436
+      "count": 2
     }
-  ]
+  ],
+  "evidences": {
+    "context": [],
+    "types": [
+      "AlertDialog"
+    ],
+    "apicalls": [
+      "setTitle",
+      "setMessage"
+    ]
+  }
 }
