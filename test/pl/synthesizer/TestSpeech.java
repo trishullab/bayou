@@ -1,7 +1,7 @@
 import edu.rice.bayou.annotations.Evidence;
 import android.content.Context;
 
-public class TestCamera {
+public class TestSpeech {
 
     @Evidence(types = {"SpeechRecognizer"})
     @Evidence(context = {"Context"})
