@@ -1,10 +1,11 @@
-import tensorflow as tf
-import numpy as np
+import json
 import os
 import re
-import json
 
-from bayou.nonbayesian.utils import CONFIG_ENCODER, C0, UNK
+import numpy as np
+import tensorflow as tf
+
+from bayou.experiments.nonbayesian.utils import CONFIG_ENCODER, C0, UNK
 from bayou.lda.model import LDA
 
 

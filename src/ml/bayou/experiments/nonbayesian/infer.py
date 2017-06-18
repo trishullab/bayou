@@ -1,15 +1,16 @@
 from __future__ import print_function
-import tensorflow as tf
-import numpy as np
 
 import argparse
-import os
-import json
 import collections
+import json
+import os
 
-from bayou.nonbayesian.model import Model
-from bayou.nonbayesian.utils import CHILD_EDGE, SIBLING_EDGE
-from bayou.nonbayesian.utils import read_config
+import numpy as np
+import tensorflow as tf
+
+from bayou.experiments.nonbayesian.utils import CHILD_EDGE, SIBLING_EDGE
+from bayou.experiments.nonbayesian.model import Model
+from bayou.experiments.nonbayesian.utils import read_config
 
 MAX_GEN_UNTIL_STOP = 20
 

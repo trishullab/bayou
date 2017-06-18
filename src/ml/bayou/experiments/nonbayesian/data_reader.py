@@ -1,10 +1,12 @@
 from __future__ import print_function
+
 import json
-import numpy as np
 import random
 from collections import Counter
 
-from bayou.nonbayesian.utils import C0, CHILD_EDGE, SIBLING_EDGE
+import numpy as np
+
+from bayou.experiments.nonbayesian.utils import C0, CHILD_EDGE, SIBLING_EDGE
 
 
 class Reader():

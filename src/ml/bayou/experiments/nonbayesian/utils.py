@@ -1,9 +1,11 @@
 from __future__ import print_function
+
 import argparse
-import re
 import json
 import random
+import re
 from itertools import chain
+
 import tensorflow as tf
 
 CONFIG_GENERAL = ['batch_size', 'num_epochs', 'learning_rate', 'print_step', 'units']
@@ -31,7 +33,7 @@ def split_camel(s):
 
 
 # Do not move these imports to the top, it will introduce a cyclic dependency
-import bayou.nonbayesian.evidence
+import bayou.experiments.nonbayesian.evidence
 
 
 # convert JSON to config
@@ -41,7 +43,7 @@ def read_config(js, save_dir, infer=False):
     for attr in CONFIG_GENERAL:
         config.__setattr__(attr, js[attr])
     
-    config.evidence = bayou.nonbayesian.evidence.Evidence.read_config(js['evidence'], save_dir)
+    config.evidence = bayou.experiments.nonbayesian.evidence.Evidence.read_config(js['evidence'], save_dir)
     config.decoder = argparse.Namespace()
     for attr in CONFIG_DECODER:
         config.decoder.__setattr__(attr, js['decoder'][attr])
@@ -85,9 +87,9 @@ def extract_evidence(clargs):
 
         calls = set(chain.from_iterable([sequence['calls'] for sequence in sequences]))
 
-        apicalls = list(set(chain.from_iterable([bayou.nonbayesian.evidence.APICalls.from_call(call) for call in calls])))
-        types = list(set(chain.from_iterable([bayou.nonbayesian.evidence.Types.from_call(call) for call in calls])))
-        context = list(set(chain.from_iterable([bayou.nonbayesian.evidence.Context.from_call(call) for call in calls])))
+        apicalls = list(set(chain.from_iterable([bayou.experiments.nonbayesian.evidence.APICalls.from_call(call) for call in calls])))
+        types = list(set(chain.from_iterable([bayou.experiments.nonbayesian.evidence.Types.from_call(call) for call in calls])))
+        context = list(set(chain.from_iterable([bayou.experiments.nonbayesian.evidence.Context.from_call(call) for call in calls])))
 
         if clargs.num_samples == 0:
             program['apicalls'] = apicalls

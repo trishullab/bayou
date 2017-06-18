@@ -1,16 +1,17 @@
 from __future__ import print_function
+
+import argparse
+import json
+import os
+import textwrap
+import time
+
 import numpy as np
 import tensorflow as tf
 
-import argparse
-import time
-import os
-import json
-import textwrap
-
-from bayou.nonbayesian.data_reader import Reader
-from bayou.nonbayesian.model import Model
-from bayou.nonbayesian.utils import read_config, dump_config
+from bayou.experiments.nonbayesian.model import Model
+from bayou.experiments.nonbayesian.data_reader import Reader
+from bayou.experiments.nonbayesian.utils import read_config, dump_config
 
 HELP = """\
 Config options should be given as a JSON file (see config.json for example):

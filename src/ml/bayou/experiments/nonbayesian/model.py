@@ -1,9 +1,9 @@
+import numpy as np
 import tensorflow as tf
 from tensorflow.contrib import legacy_seq2seq as seq2seq
-import numpy as np
 
-from bayou.nonbayesian.architecture import NonBayesianEncoder, NonBayesianDecoder
-from bayou.nonbayesian.data_reader import CHILD_EDGE, SIBLING_EDGE
+from bayou.experiments.nonbayesian.utils import CHILD_EDGE, SIBLING_EDGE
+from bayou.experiments.nonbayesian.architecture import NonBayesianEncoder, NonBayesianDecoder
 
 
 class Model():
