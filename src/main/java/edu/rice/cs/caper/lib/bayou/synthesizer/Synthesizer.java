@@ -111,6 +111,8 @@ public class Synthesizer {
             Visitor visitor = new Visitor(ast, new Document(source), cu);
             try {
                 cu.accept(visitor);
+                if (visitor.synthesizedProgram == null)
+                    continue;
                 String program = visitor.synthesizedProgram.replaceAll("\\s", "");
                 if (! programs.contains(program)) {
                     programs.add(program);
