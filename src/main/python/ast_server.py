@@ -144,7 +144,7 @@ if __name__ == '__main__':
         logpath = args.logs_dir + "/ast_server.log"
 
     # Create the logger for the application.
-    logging.basicConfig(format='%(asctime)s,%(msecs)d %(levelname)-8s [%(filename)s:%(lineno)d] %(message)s',
+    logging.basicConfig(format='%(asctime)s,%(msecs)d %(levelname)-8s [%(threadName)s %(filename)s:%(lineno)d] %(message)s',
                         datefmt='%d-%m-%Y:%H:%M:%S',
                         level=logging.DEBUG,
                         handlers=[logging.handlers.RotatingFileHandler(logpath, maxBytes=100000000, backupCount=9)])
