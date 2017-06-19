@@ -29,10 +29,9 @@ def infer(clargs):
                     psi = predictor.psi_random()
                 else:
                     psi = predictor.psi_from_evidence(js)
-                ast, p_ast = predictor.generate_ast(psi)
+                ast = predictor.generate_ast(psi)
                 if clargs.plot2d:
                     ast['psi'] = list(psi[0])
-                ast['p_ast'] = p_ast
                 asts.append(ast)
                 c += 1
             except AssertionError:
@@ -52,7 +51,6 @@ def infer(clargs):
 
 
 class BayesianPredictor(object):
-
     def __init__(self, save, sess):
         self.sess = sess
 
@@ -75,72 +73,65 @@ class BayesianPredictor(object):
 
     def gen_until_STOP(self, psi, in_nodes, in_edges, check_call=False):
         ast = []
-        p_ast = 1.  # probability of generating this AST
         nodes, edges = in_nodes[:], in_edges[:]
         num = 0
         while True:
-            assert num < MAX_GEN_UNTIL_STOP # exception caught in main
+            assert num < MAX_GEN_UNTIL_STOP  # exception caught in main
             dist = self.model.infer_ast(self.sess, psi, nodes, edges)
             idx = np.random.choice(range(len(dist)), p=dist)
-            p_ast *= dist[idx]
             prediction = self.model.config.decoder.chars[idx]
             nodes += [prediction]
             if check_call:  # exception caught in main
-                assert prediction not in [ 'DBranch', 'DExcept', 'DLoop', 'DSubTree' ]
+                assert prediction not in ['DBranch', 'DExcept', 'DLoop', 'DSubTree']
             if prediction == 'STOP':
                 edges += [SIBLING_EDGE]
                 break
-            js, p = self.generate_ast(psi, nodes, edges + [CHILD_EDGE])
-            js['p'] = float(dist[idx])
+            js = self.generate_ast(psi, nodes, edges + [CHILD_EDGE])
             ast.append(js)
-            p_ast *= p
             edges += [SIBLING_EDGE]
             num += 1
-        return ast, p_ast, nodes, edges
+        return ast, nodes, edges
 
     def generate_ast(self, psi, in_nodes=['DSubTree'], in_edges=[CHILD_EDGE]):
         ast = collections.OrderedDict()
         node = in_nodes[-1]
 
         # Return the "AST" if the node is an API call
-        if node not in [ 'DBranch', 'DExcept', 'DLoop', 'DSubTree' ]:
+        if node not in ['DBranch', 'DExcept', 'DLoop', 'DSubTree']:
             ast['node'] = 'DAPICall'
             ast['_call'] = node
-            return ast, 1.
+            return ast
 
         ast['node'] = node
         nodes, edges = in_nodes[:], in_edges[:]
 
         if node == 'DBranch':
-            ast_cond, pC, nodes, edges = self.gen_until_STOP(psi, nodes, edges, check_call=True)
-            ast_then, p1, nodes, edges = self.gen_until_STOP(psi, nodes, edges)
-            ast_else, p2, nodes, edges = self.gen_until_STOP(psi, nodes, edges)
+            ast_cond, nodes, edges = self.gen_until_STOP(psi, nodes, edges, check_call=True)
+            ast_then, nodes, edges = self.gen_until_STOP(psi, nodes, edges)
+            ast_else, nodes, edges = self.gen_until_STOP(psi, nodes, edges)
             ast['_cond'] = ast_cond
             ast['_then'] = ast_then
             ast['_else'] = ast_else
-            p_ast = pC * p1 * p2
-            return ast, float(p_ast)
+            return ast
 
         if node == 'DExcept':
-            ast_try, p1, nodes, edges = self.gen_until_STOP(psi, nodes, edges)
-            ast_catch, p2, nodes, edges = self.gen_until_STOP(psi, nodes, edges)
+            ast_try, nodes, edges = self.gen_until_STOP(psi, nodes, edges)
+            ast_catch, nodes, edges = self.gen_until_STOP(psi, nodes, edges)
             ast['_try'] = ast_try
             ast['_catch'] = ast_catch
-            p_ast = p1 * p2
-            return ast, float(p_ast)
+            return ast
 
         if node == 'DLoop':
-            ast_cond, pC, nodes, edges = self.gen_until_STOP(psi, nodes, edges, check_call=True)
-            ast_body, p1, nodes, edges = self.gen_until_STOP(psi, nodes, edges)
+            ast_cond, nodes, edges = self.gen_until_STOP(psi, nodes, edges, check_call=True)
+            ast_body, nodes, edges = self.gen_until_STOP(psi, nodes, edges)
             ast['_cond'] = ast_cond
             ast['_body'] = ast_body
-            p_ast = pC * p1
-            return ast, float(p_ast)
+            return ast
 
         if node == 'DSubTree':
-            ast_nodes, p_ast, _, _ = self.gen_until_STOP(psi, nodes, edges)
+            ast_nodes, _, _ = self.gen_until_STOP(psi, nodes, edges)
             ast['_nodes'] = ast_nodes
-            return ast, float(p_ast)
+            return ast
 
 
 def find_api(nodes):
@@ -177,7 +168,8 @@ def plot2d(asts):
     plt.axhline(0, color='black')
     plt.axvline(0, color='black')
     plt.show()
-        
+
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--save', type=str, default='save',

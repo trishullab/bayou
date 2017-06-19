@@ -72,7 +72,7 @@ def _start_server(save_dir, logger):
             except Exception as e:
                 try:
                     logger.exception(str(e))
-                    _send_string_response(json.dumps({'asts': []}, indent=2), client_socket)
+                    _send_string_response(json.dumps({ 'evidences': [], 'asts': [] }, indent=2), client_socket)
                     client_socket.close()
                 except Exception as e1:
                     pass
@@ -100,18 +100,24 @@ def _generate_asts(evidence_json, predictor, logger):
     js = json.loads(evidence_json) # parse evidence as a JSON string
 
     #
-    # Generate ASTs from sequences and keywords in evidence.
+    # Generate ASTs from evidence.
     #
-    asts = []
-    for i in range(10):
+    asts, counts = [], []
+    for i in range(100):
         try:
             psi = predictor.psi_from_evidence(js)
-            ast, p = predictor.generate_ast(psi)
-            ast['p_ast'] = p
-            asts.append(ast)
+            ast = predictor.generate_ast(psi)
+            if ast in asts:
+                counts[asts.index(ast)] += 1
+            else:
+                asts.append(ast)
+                counts.append(1)
         except AssertionError:
             continue
-    return json.dumps({ 'asts': asts }, indent=2) # return all ASTs as a JSON string
+    for ast, count in zip(asts, counts):
+        ast['count'] = count
+    asts.sort(key=lambda x: x['count'], reverse=True)
+    return json.dumps({'evidences': js, 'asts': asts[:10]}, indent=2) # return all ASTs as a JSON string
 
 
 if __name__ == '__main__':

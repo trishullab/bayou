@@ -142,7 +142,7 @@ class ApiSynthesisStrategyRemoteTensorFlowAsts implements ApiSynthesisStrategy
             sendString(evidence, new DataOutputStream(pyServerSocket.getOutputStream()));
 
             astsJson = receiveString(pyServerSocket.getInputStream());
-	    _logger.trace("astsJson:" + astsJson);
+	        _logger.trace("astsJson:" + astsJson);
         }
         catch (IOException e)
         {

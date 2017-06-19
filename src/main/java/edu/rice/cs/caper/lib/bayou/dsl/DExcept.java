@@ -1,13 +1,14 @@
 package edu.rice.cs.caper.lib.bayou.dsl;
 
 import edu.rice.cs.caper.lib.bayou.synthesizer.Environment;
+import edu.rice.cs.caper.lib.bayou.synthesizer.SynthesisException;
 import edu.rice.cs.caper.lib.bayou.synthesizer.Variable;
 import org.eclipse.jdt.core.dom.*;
 
-
 import java.util.*;
 
-public class DExcept extends DASTNode {
+public class DExcept extends DASTNode
+{
 
     final String node = "DExcept";
     public List<DASTNode> _try;
@@ -112,7 +113,7 @@ public class DExcept extends DASTNode {
 
 
     @Override
-    public TryStatement synthesize(Environment env) throws ClassNotFoundException, BindingNotFoundException
+    public TryStatement synthesize(Environment env) throws SynthesisException
     {
         AST ast = env.ast();
         TryStatement statement = ast.newTryStatement();

@@ -1,16 +1,18 @@
 package edu.rice.cs.caper.lib.bayou.dsl;
 
+
 import edu.rice.cs.caper.lib.bayou.dom_driver.Visitor;
 import edu.rice.cs.caper.lib.bayou.synthesizer.Environment;
+import edu.rice.cs.caper.lib.bayou.synthesizer.SynthesisException;
 import org.eclipse.jdt.core.dom.*;
-
 
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-public class DLoop extends DASTNode {
+public class DLoop extends DASTNode
+{
 
     final String node = "DLoop";
     final List<DAPICall> _cond;
@@ -109,7 +111,7 @@ public class DLoop extends DASTNode {
 
 
     @Override
-    public WhileStatement synthesize(Environment env) throws ClassNotFoundException, BindingNotFoundException
+    public WhileStatement synthesize(Environment env) throws SynthesisException
     {
         AST ast = env.ast();
         WhileStatement statement = ast.newWhileStatement();

@@ -1,9 +1,10 @@
 package edu.rice.cs.caper.lib.bayou.dsl;
 
+
 import edu.rice.cs.caper.lib.bayou.synthesizer.Environment;
+import edu.rice.cs.caper.lib.bayou.synthesizer.SynthesisException;
 import org.apache.commons.lang3.StringUtils;
 import org.eclipse.jdt.core.dom.*;
-
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Executable;
@@ -12,7 +13,8 @@ import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-public class DAPICall extends DASTNode {
+public class DAPICall extends DASTNode
+{
 
     final String node = "DAPICall";
     final String _call;
@@ -111,7 +113,7 @@ public class DAPICall extends DASTNode {
 
 
     @Override
-    public ASTNode synthesize(Environment env) throws ClassNotFoundException, BindingNotFoundException
+    public ASTNode synthesize(Environment env) throws SynthesisException
     {
         Executable executable = getConstructorOrMethod();
         if (executable instanceof Constructor) {
@@ -183,11 +185,18 @@ public class DAPICall extends DASTNode {
         return assignment;
     }
 
-    private Executable getConstructorOrMethod() throws ClassNotFoundException, BindingNotFoundException
-    {
+    private Executable getConstructorOrMethod() throws SynthesisException {
         String qualifiedName = _call.substring(0, _call.indexOf("("));
         String className = qualifiedName.substring(0, qualifiedName.lastIndexOf("."));
-        Class cls = Environment.getClass(className);
+        Class cls = null;
+        try
+        {
+            cls = Environment.getClass(className);
+        }
+        catch (ClassNotFoundException e)
+        {
+            throw new SynthesisException(e);
+        }
 
         /* find the method in the class */
         for (Method m : cls.getMethods()) {
@@ -214,7 +223,6 @@ public class DAPICall extends DASTNode {
                 return c;
         }
 
-        throw new BindingNotFoundException(qualifiedName);
-
+        throw new SynthesisException("Contructor or method not found: " + qualifiedName);
     }
 }

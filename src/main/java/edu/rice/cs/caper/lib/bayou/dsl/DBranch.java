@@ -1,15 +1,16 @@
 package edu.rice.cs.caper.lib.bayou.dsl;
 
 import edu.rice.cs.caper.lib.bayou.synthesizer.Environment;
+import edu.rice.cs.caper.lib.bayou.synthesizer.SynthesisException;
 import org.eclipse.jdt.core.dom.*;
-
 
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-public class DBranch extends DASTNode {
+public class DBranch extends DASTNode
+{
 
     final String node = "DBranch";
     final List<DAPICall> _cond;
@@ -123,7 +124,7 @@ public class DBranch extends DASTNode {
 
 
     @Override
-    public IfStatement synthesize(Environment env) throws ClassNotFoundException, BindingNotFoundException
+    public IfStatement synthesize(Environment env) throws SynthesisException
     {
         AST ast = env.ast();
         IfStatement statement = ast.newIfStatement();
@@ -134,7 +135,7 @@ public class DBranch extends DASTNode {
             /* this cast is safe (unless NN has gone crazy) because a call that returns void cannot be in condition */
             Assignment assignment = (Assignment) call.synthesize(env);
             if (call.method == null || (!call.method.getReturnType().equals(Boolean.class) &&
-                                        !call.method.getReturnType().equals(boolean.class))) {
+                    !call.method.getReturnType().equals(boolean.class))) {
                 ParenthesizedExpression pAssignment = ast.newParenthesizedExpression();
                 pAssignment.setExpression(assignment);
                 InfixExpression notEqualsNull = ast.newInfixExpression();

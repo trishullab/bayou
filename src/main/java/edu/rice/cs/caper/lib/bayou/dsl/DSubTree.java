@@ -1,6 +1,7 @@
 package edu.rice.cs.caper.lib.bayou.dsl;
 
 import edu.rice.cs.caper.lib.bayou.synthesizer.Environment;
+import edu.rice.cs.caper.lib.bayou.synthesizer.SynthesisException;
 import org.eclipse.jdt.core.dom.*;
 
 import java.util.ArrayList;
@@ -9,7 +10,8 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-public class DSubTree extends DASTNode {
+public class DSubTree extends DASTNode
+{
 
     final String node = "DSubTree";
     final List<DASTNode> _nodes;
@@ -125,7 +127,7 @@ public class DSubTree extends DASTNode {
 
 
     @Override
-    public Block synthesize(Environment env) throws ClassNotFoundException, BindingNotFoundException
+    public Block synthesize(Environment env) throws SynthesisException
     {
         AST ast = env.ast();
         Block block = ast.newBlock();
