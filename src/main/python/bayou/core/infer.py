@@ -4,6 +4,7 @@ import numpy as np
 
 import argparse
 import os
+import time
 import json
 import collections
 import logging
@@ -13,7 +14,7 @@ from bayou.core.utils import CHILD_EDGE, SIBLING_EDGE
 from bayou.core.utils import read_config
 
 MAX_GEN_UNTIL_STOP = 20
-MAX_AST_DEPTH = 10
+TIMEOUT = 5 # seconds
 
 
 def infer(clargs):
@@ -76,12 +77,15 @@ class BayesianPredictor(object):
         logging.debug("exiting")
         return psi
 
-    def gen_until_STOP(self, psi, in_nodes, in_edges, depth, check_call=False):
+    def gen_until_STOP(self, psi, in_nodes, in_edges, timestamp, check_call=False):
         ast = []
         nodes, edges = in_nodes[:], in_edges[:]
         num = 0
         while True:
             assert num < MAX_GEN_UNTIL_STOP  # exception caught in main
+            now = time.time()
+            if now - timestamp > TIMEOUT:
+                raise TimeoutError
             dist = self.model.infer_ast(self.sess, psi, nodes, edges)
             idx = np.random.choice(range(len(dist)), p=dist)
             prediction = self.model.config.decoder.chars[idx]
@@ -91,17 +95,21 @@ class BayesianPredictor(object):
             if prediction == 'STOP':
                 edges += [SIBLING_EDGE]
                 break
-            js = self.generate_ast(psi, nodes, edges + [CHILD_EDGE], depth + 1)
+            js = self.generate_ast(psi, nodes, edges + [CHILD_EDGE], timestamp)
             ast.append(js)
             edges += [SIBLING_EDGE]
             num += 1
         return ast, nodes, edges
 
-    def generate_ast(self, psi, in_nodes=['DSubTree'], in_edges=[CHILD_EDGE], depth=0):
+    def generate_ast(self, psi, in_nodes=['DSubTree'], in_edges=[CHILD_EDGE], timestamp=0):
         logging.debug("entering")
         ast = collections.OrderedDict()
         node = in_nodes[-1]
-        assert depth < MAX_AST_DEPTH
+        if timestamp == 0:
+            timestamp = time.time()
+        now = time.time()
+        if now - timestamp > TIMEOUT:
+            raise TimeoutError
 
         # Return the "AST" if the node is an API call
         if node not in ['DBranch', 'DExcept', 'DLoop', 'DSubTree']:
@@ -114,9 +122,9 @@ class BayesianPredictor(object):
         nodes, edges = in_nodes[:], in_edges[:]
 
         if node == 'DBranch':
-            ast_cond, nodes, edges = self.gen_until_STOP(psi, nodes, edges, depth, check_call=True)
-            ast_then, nodes, edges = self.gen_until_STOP(psi, nodes, edges, depth)
-            ast_else, nodes, edges = self.gen_until_STOP(psi, nodes, edges, depth)
+            ast_cond, nodes, edges = self.gen_until_STOP(psi, nodes, edges, timestamp, check_call=True)
+            ast_then, nodes, edges = self.gen_until_STOP(psi, nodes, edges, timestamp)
+            ast_else, nodes, edges = self.gen_until_STOP(psi, nodes, edges, timestamp)
             ast['_cond'] = ast_cond
             ast['_then'] = ast_then
             ast['_else'] = ast_else
@@ -124,23 +132,23 @@ class BayesianPredictor(object):
             return ast
 
         if node == 'DExcept':
-            ast_try, nodes, edges = self.gen_until_STOP(psi, nodes, edges, depth)
-            ast_catch, nodes, edges = self.gen_until_STOP(psi, nodes, edges, depth)
+            ast_try, nodes, edges = self.gen_until_STOP(psi, nodes, edges, timestamp)
+            ast_catch, nodes, edges = self.gen_until_STOP(psi, nodes, edges, timestamp)
             ast['_try'] = ast_try
             ast['_catch'] = ast_catch
             logging.debug("exiting")
             return ast
 
         if node == 'DLoop':
-            ast_cond, nodes, edges = self.gen_until_STOP(psi, nodes, edges, depth, check_call=True)
-            ast_body, nodes, edges = self.gen_until_STOP(psi, nodes, edges, depth)
+            ast_cond, nodes, edges = self.gen_until_STOP(psi, nodes, edges, timestamp, check_call=True)
+            ast_body, nodes, edges = self.gen_until_STOP(psi, nodes, edges, timestamp)
             ast['_cond'] = ast_cond
             ast['_body'] = ast_body
             logging.debug("exiting")
             return ast
 
         if node == 'DSubTree':
-            ast_nodes, _, _ = self.gen_until_STOP(psi, nodes, edges, depth)
+            ast_nodes, _, _ = self.gen_until_STOP(psi, nodes, edges, timestamp)
             ast['_nodes'] = ast_nodes
             logging.debug("exiting")
             return ast

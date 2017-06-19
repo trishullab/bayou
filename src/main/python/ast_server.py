@@ -16,7 +16,6 @@ import argparse
 import json
 import logging.handlers
 import os
-import time
 import socket
 
 import tensorflow as tf
@@ -109,11 +108,8 @@ def _generate_asts(evidence_json, predictor):
     # Generate ASTs from evidence.
     #
     asts, counts = [], []
-    start = time.time()
     for i in range(100):
         try:
-            now = time.time()
-            assert now - start < TIMEOUT
             psi = predictor.psi_from_evidence(js)
             ast = predictor.generate_ast(psi)
             if ast in asts:
