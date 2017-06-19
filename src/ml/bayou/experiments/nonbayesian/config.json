@@ -3,7 +3,7 @@
     "num_epochs": 500,
     "learning_rate": 0.002,
     "print_step": 1,
-    "units": 256,
+    "units": 128,
     "evidence": [
         {
             "name": "apicalls"

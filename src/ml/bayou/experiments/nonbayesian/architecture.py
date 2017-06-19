@@ -6,14 +6,14 @@ class NonBayesianEncoder(object):
 
         self.inputs = [ev.placeholder(config) for ev in config.evidence]
         encodings = [ev.encode(i, config) for ev, i in zip(config.evidence, self.inputs)]
-        self.encoding = tf.reduce_sum(tf.stack(encodings), axis=0)
+        self.encoding = tf.reshape(tf.stack(encodings), [config.batch_size, -1])
 
 
 class NonBayesianDecoder(object):
     def __init__(self, config, initial_state, infer=False):
 
-        self.cell1 = tf.nn.rnn_cell.GRUCell(config.units)
-        self.cell2 = tf.nn.rnn_cell.GRUCell(config.units)
+        self.cell1 = tf.nn.rnn_cell.GRUCell(config.units * len(config.evidence))
+        self.cell2 = tf.nn.rnn_cell.GRUCell(config.units * len(config.evidence))
 
         # placeholders
         self.initial_state = initial_state
