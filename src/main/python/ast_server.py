@@ -22,9 +22,11 @@ import tensorflow as tf
 from bayou.core.infer import BayesianPredictor
 
 
-def _start_server(save_dir, logger):
+def _start_server(save_dir):
+    logging.debug("entering")
+
     with tf.Session() as sess:
-        logger.info("loading model")
+        logging.info("loading model")
 
         print("===================================")
         print("    Loading Model. Please Wait.    ")
@@ -38,7 +40,7 @@ def _start_server(save_dir, logger):
         server_socket = socket.socket()
         server_socket.bind(('localhost', 8084))
         server_socket.listen(20)
-        logger.info("server listening")
+        logging.info("server listening")
 
         print("===================================")
         print("            Bayou Ready            ")
@@ -56,22 +58,22 @@ def _start_server(save_dir, logger):
         while True:
             try:
                 client_socket, addr = server_socket.accept()  # await client connection
-                logger.info("connection accepted")
+                logging.info("connection accepted")
 
                 evidence_size_in_bytes = int.from_bytes(_read_bytes(4, client_socket), byteorder='big', signed=True) # how long is the evidence string?
-                logger.debug(evidence_size_in_bytes)
+                logging.debug(evidence_size_in_bytes)
 
                 evidence = _read_bytes(evidence_size_in_bytes, client_socket).decode("utf-8") # read evidence string
-                logger.debug(evidence)
+                logging.debug(evidence)
 
-                asts = _generate_asts(evidence, predictor, logger) # use predictor to generate ASTs JSON from evidence
-                logger.debug(asts)
+                asts = _generate_asts(evidence, predictor) # use predictor to generate ASTs JSON from evidence
+                logging.debug(asts)
 
                 _send_string_response(asts, client_socket)
                 client_socket.close()
             except Exception as e:
                 try:
-                    logger.exception(str(e))
+                    logging.exception(str(e))
                     _send_string_response(json.dumps({ 'evidences': [], 'asts': [] }, indent=2), client_socket)
                     client_socket.close()
                 except Exception as e1:
@@ -96,7 +98,8 @@ def _read_bytes(byte_count, connection):
 
     return buffer
 
-def _generate_asts(evidence_json, predictor, logger):
+def _generate_asts(evidence_json, predictor):
+    logging.debug("entering")
     js = json.loads(evidence_json) # parse evidence as a JSON string
 
     #
@@ -112,27 +115,37 @@ def _generate_asts(evidence_json, predictor, logger):
             else:
                 asts.append(ast)
                 counts.append(1)
-        except AssertionError:
+        except AssertionError as e:
+            logging.debug("AssertionError: " + e)
             continue
+
     for ast, count in zip(asts, counts):
         ast['count'] = count
     asts.sort(key=lambda x: x['count'], reverse=True)
+
+    logging.debug("exiting")
     return json.dumps({'evidences': js, 'asts': asts[:10]}, indent=2) # return all ASTs as a JSON string
 
 
 if __name__ == '__main__':
 
-    # Create the logger for the application.
-    logger = logging.getLogger('logger')
-    logger.setLevel(logging.DEBUG)
-    dirpath = os.path.dirname(__file__);
-    logpath = os.path.join(dirpath, "../logs/ast_server.log");
-    logger.addHandler(logging.handlers.RotatingFileHandler(logpath, maxBytes=100000000, backupCount=9))
-
     # Parse command line args.
     parser = argparse.ArgumentParser()
     parser.add_argument('--save_dir', type=str, required=True,help='model directory to laod from')
+    parser.add_argument('--logs_dir', type=str, required=False, help='the directory to store log information')
     args = parser.parse_args()
 
+    if args.logs_dir is None:
+        dirpath = os.path.dirname(__file__);
+        logpath = os.path.join(dirpath, "../logs/ast_server.log")
+    else:
+        logpath = args.logs_dir + "/ast_server.log"
+
+    # Create the logger for the application.
+    logging.basicConfig(format='%(asctime)s,%(msecs)d %(levelname)-8s [%(filename)s:%(lineno)d] %(message)s',
+                        datefmt='%d-%m-%Y:%H:%M:%S',
+                        level=logging.DEBUG,
+                        handlers=[logging.handlers.RotatingFileHandler(logpath, maxBytes=100000000, backupCount=9)])
+
     # Start processing requests.
-    _start_server(args.save_dir, logger)
+    _start_server(args.save_dir)

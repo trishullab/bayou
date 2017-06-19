@@ -6,6 +6,7 @@ import argparse
 import os
 import json
 import collections
+import logging
 
 from bayou.core.model import Model
 from bayou.core.utils import CHILD_EDGE, SIBLING_EDGE
@@ -69,7 +70,10 @@ class BayesianPredictor(object):
         return np.random.normal(size=[1, self.model.config.latent_size])
 
     def psi_from_evidence(self, js_evidences):
-        return self.model.infer_psi(self.sess, js_evidences)
+        logging.debug("entering")
+        psi = self.model.infer_psi(self.sess, js_evidences)
+        logging.debug("exiting")
+        return psi
 
     def gen_until_STOP(self, psi, in_nodes, in_edges, check_call=False):
         ast = []
@@ -93,6 +97,7 @@ class BayesianPredictor(object):
         return ast, nodes, edges
 
     def generate_ast(self, psi, in_nodes=['DSubTree'], in_edges=[CHILD_EDGE]):
+        logging.debug("entering")
         ast = collections.OrderedDict()
         node = in_nodes[-1]
 
@@ -100,6 +105,7 @@ class BayesianPredictor(object):
         if node not in ['DBranch', 'DExcept', 'DLoop', 'DSubTree']:
             ast['node'] = 'DAPICall'
             ast['_call'] = node
+            logging.debug("exiting")
             return ast
 
         ast['node'] = node
@@ -112,6 +118,7 @@ class BayesianPredictor(object):
             ast['_cond'] = ast_cond
             ast['_then'] = ast_then
             ast['_else'] = ast_else
+            logging.debug("exiting")
             return ast
 
         if node == 'DExcept':
@@ -119,6 +126,7 @@ class BayesianPredictor(object):
             ast_catch, nodes, edges = self.gen_until_STOP(psi, nodes, edges)
             ast['_try'] = ast_try
             ast['_catch'] = ast_catch
+            logging.debug("exiting")
             return ast
 
         if node == 'DLoop':
@@ -126,12 +134,16 @@ class BayesianPredictor(object):
             ast_body, nodes, edges = self.gen_until_STOP(psi, nodes, edges)
             ast['_cond'] = ast_cond
             ast['_body'] = ast_body
+            logging.debug("exiting")
             return ast
 
         if node == 'DSubTree':
             ast_nodes, _, _ = self.gen_until_STOP(psi, nodes, edges)
             ast['_nodes'] = ast_nodes
+            logging.debug("exiting")
             return ast
+
+        logging.debug("exiting")
 
 
 def find_api(nodes):
