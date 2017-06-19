@@ -12,14 +12,14 @@ class ApiSynthesisLocalClient
 {
     private static final String _testIO = "import edu.rice.bayou.annotations.Evidence;\n" +
             "\n" +
-            "public class TestIO {\n" +
+            "public class TestIO1 {\n" +
             "\n" +
-            "    @Evidence(keywords = \"read buffered line from the file\")\n" +
+            "    @Evidence(apicalls = {\"readLine\", \"ready\"})\n" +
             "    void __bayou_fill(String file) {\n" +
             "\n" +
-            "    }   \n" +
+            "    }\n" +
             "\n" +
-            "}\n";
+            "}";
 
     private static void synthesise(String code) throws IOException, SynthesisError
     {
