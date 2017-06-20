@@ -104,16 +104,18 @@ public class Synthesizer {
 
         List<String> programs = new ArrayList<>();
         for (DSubTree ast : asts) {
-            Visitor visitor = new Visitor(ast, new Document(source), cu);
-            try {
-                cu.accept(visitor);
-                String program = visitor.synthesizedProgram.replaceAll("\\s", "");
-                if (! programs.contains(program)) {
-                    programs.add(program);
+	    Visitor visitor = new Visitor(ast, new Document(source), cu);
+	    try {
+		cu.accept(visitor);
+		visitor.rewrite();
+
+		String program = visitor.synthesizedProgram.replaceAll("\\s", "");
+		if (! programs.contains(program)) {
+		    programs.add(program);
                     System.out.println(visitor.synthesizedProgram);
                     System.out.println("/* --- End of program --- */\n\n");
-                }
-            } catch (Exception e) { }
+		}
+	    } catch (Exception e) { }
         }
     }
 

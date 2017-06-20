@@ -15,6 +15,8 @@ public class Visitor extends ASTVisitor {
     final Document document;
     final CompilationUnit cu;
     String synthesizedProgram;
+    
+    protected List<Environment> envs;
 
     private static final Map<String,Class> primitiveToClass;
     static {
@@ -35,7 +37,12 @@ public class Visitor extends ASTVisitor {
         this.dAST = dAST;
         this.document = document;
         this.cu = cu;
+	
+	this.envs = new ArrayList<Environment>();
+	this.current_rewriter = ASTRewrite.create(this.cu.getAST());
     }
+
+    protected ASTRewrite current_rewriter;
 
     @Override
     public boolean visit(MethodInvocation invoke) {
@@ -44,34 +51,31 @@ public class Visitor extends ASTVisitor {
 	
 	if (invoke.getName() == null)
 	    return false;
-    
+
+	if (!(invoke.getName().toString().equals("apicalls") || invoke.getName().toString().equals("types")
+	      || invoke.getName().toString().equals("context")))
+	    return false;
+
 	List<Variable> scope = new ArrayList<>();
 	Environment env = new Environment(invoke.getAST(), scope);
 	Block body = dAST.synthesize(env);
+
+	// make rewrites to the local method body 
+	body = postprocessLocal(invoke.getAST(), env, body);
+	ASTRewrite rewriter = this.current_rewriter;
+	rewriter.replace(invoke, body, null);
 	
-	try {
-            // make rewrites to the local method body 
-            body = postprocessLocal(invoke.getAST(), env, body);
-            ASTRewrite rewriter = ASTRewrite.create(invoke.getAST());
-            rewriter.replace(invoke, body, null);
+	// Record the environments
+	envs.add(env);
 
-            rewriter.rewriteAST(document, null).apply(document);
+	// synthesizedProgram = document.get();
 
-	    // make rewrites to the document 
-            postprocessGlobal(cu.getAST(), env, document);
-        } catch (BadLocationException e) {
-            System.err.println("Could not edit document for some reason.\n" + e.getMessage());
-            System.exit(1);
-        }
-
-        synthesizedProgram = document.get();
-
-	return true;
+	return false;
     }
 
     @Override
     public boolean visit(MethodDeclaration method) {
-        if (!method.getName().getIdentifier().equals("__bayou_fill"))
+	if (!method.getName().getIdentifier().equals("__bayou_fill"))
             return true;
 
         List<Variable> scope = new ArrayList<>();
@@ -185,5 +189,42 @@ public class Visitor extends ASTVisitor {
             lrw.insertLast(impDecl, null);
         }
         rewriter.rewriteAST(document, null).apply(document);
+    }
+
+    protected void postprocessGlobal(AST ast, Document document) throws BadLocationException {
+	// add imports 
+	ASTRewrite rewriter = ASTRewrite.create(ast);
+	ListRewrite lrw = rewriter.getListRewrite(cu, CompilationUnit.IMPORTS_PROPERTY);
+	Set<Class> toImport = new HashSet<>();
+	for (Environment env : this.envs) 
+	    toImport.addAll(env.imports);
+        toImport.addAll(dAST.exceptionsThrown()); // add all catch(...) types to imports 
+	
+	for (Class cls : toImport) {
+            if (cls.isPrimitive() || cls.getPackage().getName().equals("java.lang"))
+                continue;
+            ImportDeclaration impDecl = cu.getAST().newImportDeclaration();
+            String className = cls.getName().replaceAll("\\$", "\\.");
+            impDecl.setName(cu.getAST().newName(className.split("\\.")));
+            lrw.insertLast(impDecl, null);
+        }
+        rewriter.rewriteAST(document, null).apply(document);
+    }
+
+    // Check if rewrite is needed
+    public boolean rewrite() {
+	try {
+	    // if (this.current_rewriter != null)
+	    this.current_rewriter.rewriteAST(this.document, null).apply(this.document);
+	  	
+	    // make rewrites to the document
+	    postprocessGlobal(this.cu.getAST(), this.document);
+	} catch(Exception e) {
+	    System.out.println("No rewriter?");
+	}
+
+	synthesizedProgram = document.get();
+
+	return this.synthesizedProgram != null;
     }
 }
