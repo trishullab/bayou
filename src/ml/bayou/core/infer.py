@@ -66,6 +66,10 @@ class BayesianPredictor(object):
         ckpt = tf.train.get_checkpoint_state(save)
         saver.restore(self.sess, ckpt.model_checkpoint_path)
 
+    def infer(self, evidences):
+        psi = self.psi_from_evidence(evidences)
+        return self.generate_ast(psi)
+
     def psi_random(self):
         return np.random.normal(size=[1, self.model.config.latent_size])
 

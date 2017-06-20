@@ -39,7 +39,7 @@ class Model():
         if not infer:
             print('Model parameters: {}'.format(np.sum(var_params)))
 
-    def infer_ast(self, sess, evidences, nodes, edges):
+    def infer_encoding(self, sess, evidences):
         # read and wrangle (with batch_size 1) the data
         inputs = [ev.wrangle([ev.read_data_point(evidences)]) for ev in self.config.evidence]
 
@@ -47,7 +47,11 @@ class Model():
         feed = {}
         for j, ev in enumerate(self.config.evidence):
             feed[self.encoder.inputs[j].name] = inputs[j]
-        state = sess.run(self.encoder.encoding, feed)
+        encoding = sess.run(self.encoder.encoding, feed)
+        return encoding
+
+    def infer_ast(self, sess, encoding, nodes, edges):
+        state = encoding
 
         # run the decoder for every time step
         for node, edge in zip(nodes, edges):

@@ -56,6 +56,13 @@ class NonBayesianPredictor(object):
         ckpt = tf.train.get_checkpoint_state(save)
         saver.restore(self.sess, ckpt.model_checkpoint_path)
 
+    def infer(self, evidences):
+        encoding = self.encoding_from_evidence(evidences)
+        return self.generate_ast(encoding)
+
+    def encoding_from_evidence(self, js_evidences):
+        return self.model.infer_encoding(self.sess, js_evidences)
+
     def gen_until_STOP(self, evidences, in_nodes, in_edges, check_call=False):
         ast = []
         nodes, edges = in_nodes[:], in_edges[:]
