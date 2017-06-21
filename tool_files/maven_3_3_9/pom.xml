@@ -25,7 +25,7 @@
                 <archive>
                     <manifest>
                         <addClasspath>true</addClasspath>
-                        <mainClass>edu.rice.cs.caper.bayou.program.api_synthesis_server.ApiSynthesisServerMain</mainClass>
+                        <mainClass>edu.rice.cs.caper.bayou.application.api_synthesis_server.ApiSynthesisServerMain</mainClass>
                     </manifest>
                 </archive>
                 <descriptorRefs>

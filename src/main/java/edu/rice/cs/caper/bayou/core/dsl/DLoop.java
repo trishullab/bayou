@@ -1,7 +1,7 @@
 package edu.rice.cs.caper.bayou.core.dsl;
 
 
-import edu.rice.cs.caper.bayou.program.dom_driver.Visitor;
+import edu.rice.cs.caper.bayou.application.dom_driver.Visitor;
 import edu.rice.cs.caper.bayou.core.synthesizer.Environment;
 import edu.rice.cs.caper.bayou.core.synthesizer.SynthesisException;
 import org.eclipse.jdt.core.dom.*;

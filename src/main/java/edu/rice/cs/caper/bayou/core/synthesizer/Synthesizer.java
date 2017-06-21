@@ -22,7 +22,7 @@ import java.util.List;
 public class Synthesizer {
 
     /**
-     * Place to send program logging information.
+     * Place to send application logging information.
      */
     private static final Logger _logger = LogManager.getLogger(Synthesizer.class.getName());
 
@@ -53,7 +53,7 @@ public class Synthesizer {
                 .hasArg()
                 .numberOfArgs(1)
                 .required()
-                .desc("input Java program")
+                .desc("input Java application")
                 .build());
         opts.addOption(Option.builder("a")
                 .longOpt("asts-file")
@@ -117,7 +117,7 @@ public class Synthesizer {
                 if (! programs.contains(program)) {
                     programs.add(program);
                     _out.println(visitor.synthesizedProgram);
-                    _out.println("/* --- End of program --- */\n\n");
+                    _out.println("/* --- End of application --- */\n\n");
                 }
             }
             catch (Exception e)

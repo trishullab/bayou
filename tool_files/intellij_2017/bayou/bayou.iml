@@ -4,6 +4,9 @@
     <output url="file://$MODULE_DIR$/../../maven_3_3_9/target/classes" />
     <output-test url="file://$MODULE_DIR$/../../maven_3_3_9/target/test-classes" />
     <content url="file://$MODULE_DIR$/../../../examples" />
+    <content url="file://$MODULE_DIR$/../../../src/main/bash/binary_release/ubuntu_16_4">
+      <excludeFolder url="file://$MODULE_DIR$/../../../src/main/bash/binary_release/ubuntu_16_4" />
+    </content>
     <content url="file://$MODULE_DIR$/../../../src/main/java">
       <sourceFolder url="file://$MODULE_DIR$/../../../src/main/java" isTestSource="false" />
     </content>
