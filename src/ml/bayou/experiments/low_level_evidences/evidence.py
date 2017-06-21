@@ -76,7 +76,8 @@ class APICalls(Evidence):
         wrangled = np.zeros((len(data), self.max_num, self.vocab_size), dtype=np.int32)
         for i, apicalls in enumerate(data):
             for j, c in enumerate(apicalls):
-                wrangled[i, j, self.vocab[c]] = 1
+                if c in self.vocab:
+                    wrangled[i, j, self.vocab[c]] = 1
         return wrangled
 
     def placeholder(self, config):
