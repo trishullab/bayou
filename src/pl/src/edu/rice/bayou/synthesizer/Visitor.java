@@ -16,6 +16,9 @@ public class Visitor extends ASTVisitor {
     final CompilationUnit cu;
     String synthesizedProgram;
     
+    // The internal table for maintianing the block and its evidence APIs
+    protected Map<Block, List<MethodInvocation>> evidBlocks;
+    // The temproary list for the environment objects
     protected List<Environment> envs;
 
     private static final Map<String,Class> primitiveToClass;
@@ -38,6 +41,7 @@ public class Visitor extends ASTVisitor {
         this.document = document;
         this.cu = cu;
 	
+	this.evidBlocks = new HashMap<Block, List<MethodInvocation>>();
 	this.envs = new ArrayList<Environment>();
 	this.current_rewriter = ASTRewrite.create(this.cu.getAST());
     }
@@ -56,6 +60,11 @@ public class Visitor extends ASTVisitor {
 	      || invoke.getName().toString().equals("context")))
 	    return false;
 
+	// Check if current block has been registered for evidence API, if so, just simply remove current 
+	// evidence API
+	if (checkEvidenceBlock(invoke))
+	    return false;
+	
 	List<Variable> scope = new ArrayList<>();
 	Environment env = new Environment(invoke.getAST(), scope);
 	Block body = dAST.synthesize(env);
@@ -63,14 +72,37 @@ public class Visitor extends ASTVisitor {
 	// make rewrites to the local method body 
 	body = postprocessLocal(invoke.getAST(), env, body);
 	ASTRewrite rewriter = this.current_rewriter;
-	rewriter.replace(invoke, body, null);
-	
+	rewriter.replace(invoke.getParent().getParent(), body, null);
+
 	// Record the environments
 	envs.add(env);
 
 	// synthesizedProgram = document.get();
 
 	return false;
+    }
+
+    protected boolean checkEvidenceBlock(MethodInvocation invoke) {
+	if (invoke.getParent().getParent() instanceof Block) {
+	    Block parentBlock = (Block)invoke.getParent().getParent();
+	    List<MethodInvocation> evidInvocations = this.evidBlocks.get(parentBlock);
+	    if (evidInvocations == null) {
+		evidInvocations = new ArrayList<MethodInvocation>();
+		evidInvocations.add(invoke);
+		this.evidBlocks.put(parentBlock, evidInvocations);
+		// This is the 1st evidence API call in current block
+		return false;
+	    } else {
+		for (MethodInvocation evidInvocation : evidInvocations) {
+		    if (invoke.getName().toString().equals(evidInvocation.getName().toString()))
+			throw new Error("Same evidence API occured more than once in one block: " + invoke.getName().toString());
+		}
+		evidInvocations.add(invoke);
+		// This is not the 1st evidence API call in current block
+		return true;
+	    }
+	} else
+	    throw new Error("No block?");
     }
 
     @Override
