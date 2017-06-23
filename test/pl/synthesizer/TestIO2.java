@@ -5,8 +5,10 @@ public class TestIO2 {
 
     void read() {
         InputStreamReader input;
-        Evidence.types("BufferedReader");
-        Evidence.context("Reader");
+        {
+	    Evidence.types("BufferedReader");
+	    Evidence.context("Reader");
+	}
     }   
 
 }
