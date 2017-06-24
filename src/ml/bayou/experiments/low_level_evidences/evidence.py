@@ -132,7 +132,8 @@ class Types(Evidence):
         wrangled = np.zeros((len(data), self.max_num, self.vocab_size), dtype=np.int32)
         for i, types in enumerate(data):
             for j, t in enumerate(types):
-                wrangled[i, j, self.vocab[t]] = 1
+                if t in self.vocab:
+                    wrangled[i, j, self.vocab[t]] = 1
         return wrangled
 
     def placeholder(self, config):
@@ -186,7 +187,8 @@ class Context(Evidence):
         wrangled = np.zeros((len(data), self.max_num, self.vocab_size), dtype=np.int32)
         for i, context in enumerate(data):
             for j, c in enumerate(context):
-                wrangled[i, j, self.vocab[c]] = 1
+                if c in self.vocab:
+                    wrangled[i, j, self.vocab[c]] = 1
         return wrangled
 
     def placeholder(self, config):
