@@ -29,12 +29,21 @@ def main(clargs):
 
         for i, program in enumerate(programs):
             start = time.time()
+            if not clargs.evidence == 'all':
+                if program[clargs.evidence] is []:
+                    program['out_asts'] = []
+                    print('Program {}, {} ASTs, {:.2f}s'.format(
+                        i, len(program['out_asts']), time.time() - start))
+                    continue
+                evidences = {clargs.evidence: program[clargs.evidence]}
+            else:
+                evidences = program
             asts, counts = [], []
             for j in range(100):
                 if time.time() - start > TIMEOUT:
                     break
                 try:
-                    ast = predictor.infer(program)
+                    ast = predictor.infer(evidences)
                 except AssertionError:
                     continue
                 try:
@@ -64,6 +73,9 @@ if __name__ == '__main__':
     parser.add_argument('--model', type=str, required=True,
                         choices=['bayesian', 'nonbayesian', 'low_level_evidences'],
                         help='the type of model')
+    parser.add_argument('--evidence', type=str, default='all',
+                        choices=['apicalls', 'types', 'context', 'all'],
+                        help='use only this evidence for inference queries')
     parser.add_argument('--output_file', type=str, default=None,
                         help='output file to print predicted ASTs')
     clargs = parser.parse_args()

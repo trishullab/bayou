@@ -98,11 +98,11 @@ def extract_evidence(clargs):
         else:
             for i in range(clargs.num_samples):
                 sample = dict(program)
-                sample['apicalls'] = random.sample(apicalls, random.choice(range(len(apicalls) + 1)))
-                sample['types'] = random.sample(types, random.choice(range(len(types) + 1)))
-                sample['context'] = random.sample(context, random.choice(range(len(context) + 1)))
-                if sample['apicalls'] == [] and sample['types'] == [] and sample['context'] == []:
-                    continue
+                sample['apicalls'], sample['types'], sample['context'] = [], [], []
+                while sample['apicalls'] == [] and sample['types'] == [] and sample['context'] == []:
+                    sample['apicalls'] = random.sample(apicalls, random.choice(range(len(apicalls) + 1)))
+                    sample['types'] = random.sample(types, random.choice(range(len(types) + 1)))
+                    sample['context'] = random.sample(context, random.choice(range(len(context) + 1)))
                 programs.append(sample)
 
         done += 1
