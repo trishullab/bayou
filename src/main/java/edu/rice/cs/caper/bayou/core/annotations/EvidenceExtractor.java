@@ -1,19 +1,21 @@
-package edu.rice.bayou.annotations;
+package edu.rice.cs.caper.bayou.core.annotations;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import edu.rice.bayou.dsl.Sequence;
-import org.apache.commons.cli.*;
-import org.apache.commons.io.FileUtils;
 import org.eclipse.jdt.core.dom.*;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
-import java.io.File;
-import java.io.IOException;
 import java.util.*;
 
 public class EvidenceExtractor extends ASTVisitor {
 
-    CommandLine cmdLine;
+    /**
+     * Place to send logging information.
+     */
+    private static final Logger _logger = LogManager.getLogger(EvidenceExtractor.class.getName());
+
+  //  CommandLine cmdLine;
 
     class JSONOutputWrapper {
         List<String> apicalls;
@@ -27,43 +29,17 @@ public class EvidenceExtractor extends ASTVisitor {
         }
     }
 
-    JSONOutputWrapper output;
+    JSONOutputWrapper output = new JSONOutputWrapper();
 
-    public EvidenceExtractor(String[] args) {
-        CommandLineParser parser = new DefaultParser();
-        org.apache.commons.cli.Options clopts = new org.apache.commons.cli.Options();
 
-        addOptions(clopts);
+    public String execute(String source, String classpath) {
 
-        try {
-            this.cmdLine = parser.parse(clopts, args);
-        } catch (ParseException e) {
-            HelpFormatter help = new HelpFormatter();
-            help.printHelp("edu/rice/bayou/evidence_extractor", clopts);
-        }
-
-        this.output = new JSONOutputWrapper();
-    }
-
-    private void addOptions(org.apache.commons.cli.Options opts) {
-        opts.addOption(Option.builder("f")
-                .longOpt("input-file")
-                .hasArg()
-                .numberOfArgs(1)
-                .required()
-                .desc("input Java program")
-                .build());
-    }
-
-    public void execute() throws IOException {
-        if (cmdLine == null)
-            return;
+        _logger.trace("source");
+        _logger.trace("classpath:" + classpath);
 
         ASTParser parser = ASTParser.newParser(AST.JLS8);
-        File input = new File(cmdLine.getOptionValue("input-file"));
-        String classpath = System.getenv("CLASSPATH");
 
-        String source = FileUtils.readFileToString(input, "utf-8");
+
         parser.setSource(source.toCharArray());
         parser.setKind(ASTParser.K_COMPILATION_UNIT);
         parser.setUnitName("Program.java");
@@ -72,14 +48,9 @@ public class EvidenceExtractor extends ASTVisitor {
         parser.setResolveBindings(true);
         CompilationUnit cu = (CompilationUnit) parser.createAST(null);
 
-        try {
-            Gson gson = new GsonBuilder().setPrettyPrinting().serializeNulls().create();
-            cu.accept(this);
-            System.out.println(gson.toJson(output));
-        } catch (Exception e) {
-            System.err.println("Unexpected error occurred. Make sure evidences are in the right format.");
-            System.exit(1);
-        }
+        Gson gson = new GsonBuilder().setPrettyPrinting().serializeNulls().create();
+        cu.accept(this);
+        return gson.toJson(output);
     }
 
     @Override
@@ -134,13 +105,4 @@ public class EvidenceExtractor extends ASTVisitor {
         return false;
     }
 
-    public static void main(String args[]) {
-        try {
-            new EvidenceExtractor(args).execute();
-        } catch (IOException e) {
-            System.err.println("Error occurred: " + e.getMessage());
-            e.printStackTrace();
-            System.exit(1);
-        }
-    }
 }

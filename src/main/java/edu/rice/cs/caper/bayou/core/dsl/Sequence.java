@@ -1,4 +1,4 @@
-package edu.rice.bayou.dsl;
+package edu.rice.cs.caper.bayou.core.dsl;
 
 import java.util.ArrayList;
 import java.util.List;

@@ -1,4 +1,4 @@
-package edu.rice.bayou.synthesizer;
+package edu.rice.cs.caper.bayou.core.synthesizer;
 
 import org.eclipse.jdt.core.dom.*;
 

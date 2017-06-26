@@ -1,9 +1,9 @@
-package edu.rice.bayou.dsl;
+package edu.rice.cs.caper.bayou.core.dsl;
 
-import edu.rice.bayou.synthesizer.SynthesisException;
+import edu.rice.cs.caper.bayou.core.synthesizer.Environment;
+import edu.rice.cs.caper.bayou.core.synthesizer.SynthesisException;
+import edu.rice.cs.caper.bayou.core.synthesizer.Variable;
 import org.eclipse.jdt.core.dom.*;
-import edu.rice.bayou.synthesizer.Environment;
-import edu.rice.bayou.synthesizer.Variable;
 
 import java.util.*;
 

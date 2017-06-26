@@ -16,7 +16,7 @@
 
 
 
-package edu.rice.bayou.dom_driver;
+package edu.rice.cs.caper.bayou.application.dom_driver;
 
 import org.apache.commons.cli.*;
 import org.apache.commons.io.FileUtils;
@@ -57,11 +57,11 @@ public class Driver {
         visitor.output.close();
     }
 
-	public static void main(String args[]) {
-        try {
-            new Driver(args).execute();
-        } catch (ParseException | IOException e) {
-            System.out.println("Unexpected exception: " + e.getMessage());
-        }
-	}
+//	public static void main(String args[]) {
+//        try {
+//            new Driver(args).execute();
+//        } catch (ParseException | IOException e) {
+//            System.out.println("Unexpected exception: " + e.getMessage());
+//        }
+//	}
 }

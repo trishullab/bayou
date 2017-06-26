@@ -1,6 +1,7 @@
-package edu.rice.bayou.dsl;
+package edu.rice.cs.caper.bayou.core.dsl;
 
-import edu.rice.bayou.synthesizer.Synthesizable;
+
+import edu.rice.cs.caper.bayou.core.synthesizer.Synthesizable;
 
 import java.util.List;
 import java.util.Set;

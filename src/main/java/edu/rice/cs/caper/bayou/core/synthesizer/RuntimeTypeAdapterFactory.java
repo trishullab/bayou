@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package edu.rice.bayou.synthesizer;
+package edu.rice.cs.caper.bayou.core.synthesizer;
 
 import java.io.IOException;
 import java.util.LinkedHashMap;

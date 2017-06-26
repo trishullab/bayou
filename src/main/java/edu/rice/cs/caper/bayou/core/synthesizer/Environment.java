@@ -1,4 +1,4 @@
-package edu.rice.bayou.synthesizer;
+package edu.rice.cs.caper.bayou.core.synthesizer;
 
 import org.eclipse.jdt.core.dom.AST;
 import org.eclipse.jdt.core.dom.Expression;
@@ -72,23 +72,74 @@ public class Environment {
         mu_scope.remove(v);
     }
 
-    public static Class getClass(String name) throws SynthesisException {
-        Class cls = null;
+    /**
+     * Attempts to find the Class representation of the given fully qualified <code>name</code> from
+     * <code>Synthesizer.classLoader</code>.
+     *
+     * If no such class is found and the given name contains the character '.', a new search name will
+     * be generated replacing the final '.' with a '$' and the search will continue in an iterative fashion.
+     *
+     * For example, if the given name is
+     *
+     *     foo.bar.baz
+     *
+     * then this method will effectively search for the following classes in order until one (or none) is found:
+     *
+     *     foo.bar.baz
+     *     foo.bar$baz
+     *     foo$bar$baz
+     *     << throws ClassNotFoundException  >>
+     *
+     * @param name the fully qualified class name to search for
+     * @return the Class representation of name (or an attempted alternate) if found
+     * @throws ClassNotFoundException if no classes with the name search name or its variations are found.
+     */
+    public static Class getClass(String name) throws ClassNotFoundException
+    {
+        return getClassHelp(name, name);
+    }
+
+    /**
+     * Attempts to find the Class representation of the given fully qualified <code>searchName</code> from
+     * <code>Synthesizer.classLoader</code>.
+     *
+     * If no such class is found and the given searchName contains the character '.', a new search name will
+     * be generated replacing the final '.' with a '$' and this method recurses.  As such, if the given searchName
+     * is
+     *     foo.bar.baz
+     *
+     * then this method will effectively search for the following classes in order until one (or none) is found:
+     *
+     *     foo.bar.baz
+     *     foo.bar$baz
+     *     foo$bar$baz
+     *     << throws ClassNotFoundException of originalName >>
+     *
+     * @param searchName the fully qualified class name to search for
+     * @param originalName  if no variations of searchName are found, the name reported in the exception message
+     *                      of ClassNotFoundException
+     * @return the Class representation of searchName (or an attempted alternate) if found
+     * @throws ClassNotFoundException if no classes with the name search name or its variations are found.
+     */
+    private static Class getClassHelp(String searchName, String originalName) throws ClassNotFoundException
+    {
         try {
-            cls = Class.forName(name, false, Synthesizer.classLoader);
-        } catch (ClassNotFoundException _e) {
-            /* check if it's an inner class (limitation: only one level down) */
-            int dot = name.lastIndexOf('.');
-            String innerClassName = new StringBuilder(name).replace(dot, dot+1, "$").toString();
-            try {
-                cls = Class.forName(innerClassName, false, Synthesizer.classLoader);
-            } catch (ClassNotFoundException e) {
-                System.err.println("Class " + name + " could not be loaded!");
-                e.printStackTrace();
-                throw new SynthesisException();
+
+            return Class.forName(searchName, false, Synthesizer.classLoader);
+
+        } catch (ClassNotFoundException e) {
+
+            int lastDotIndex = searchName.lastIndexOf('.');
+            if(lastDotIndex == -1) {
+                throw new ClassNotFoundException(originalName);
             }
+
+            String possibleInnerClassName =
+                    new StringBuilder(searchName).replace(lastDotIndex, lastDotIndex+1, "$").toString();
+
+            return getClassHelp(possibleInnerClassName, originalName);
+
         }
-        return cls;
     }
 
     public void addImport(Class c) {

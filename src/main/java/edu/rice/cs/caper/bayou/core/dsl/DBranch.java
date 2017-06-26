@@ -1,8 +1,8 @@
-package edu.rice.bayou.dsl;
+package edu.rice.cs.caper.bayou.core.dsl;
 
-import edu.rice.bayou.synthesizer.SynthesisException;
+import edu.rice.cs.caper.bayou.core.synthesizer.Environment;
+import edu.rice.cs.caper.bayou.core.synthesizer.SynthesisException;
 import org.eclipse.jdt.core.dom.*;
-import edu.rice.bayou.synthesizer.Environment;
 
 import java.util.ArrayList;
 import java.util.HashSet;

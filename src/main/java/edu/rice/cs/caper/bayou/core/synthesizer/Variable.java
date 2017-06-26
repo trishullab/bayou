@@ -1,4 +1,4 @@
-package edu.rice.bayou.synthesizer;
+package edu.rice.cs.caper.bayou.core.synthesizer;
 
 public class Variable {
 

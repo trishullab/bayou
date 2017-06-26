@@ -1,6 +1,6 @@
-package edu.rice.bayou.synthesizer;
+package edu.rice.cs.caper.bayou.core.synthesizer;
 
-import edu.rice.bayou.dsl.DSubTree;
+import edu.rice.cs.caper.bayou.core.dsl.DSubTree;
 import org.eclipse.jdt.core.dom.*;
 import org.eclipse.jdt.core.dom.rewrite.ASTRewrite;
 import org.eclipse.jdt.core.dom.rewrite.ListRewrite;
@@ -54,7 +54,7 @@ public class Visitor extends ASTVisitor {
                     continue;
                 try {
                     type = Environment.getClass(binding.getQualifiedName());
-                } catch (SynthesisException e) {
+                } catch (ClassNotFoundException  e) {
                     synthesizedProgram = null;
                     return false;
                 }

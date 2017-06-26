@@ -1,10 +1,11 @@
-package edu.rice.bayou.synthesizer;
+package edu.rice.cs.caper.bayou.core.synthesizer;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import edu.rice.bayou.dsl.*;
+import edu.rice.cs.caper.bayou.core.dsl.*;
 import org.apache.commons.cli.*;
-import org.apache.commons.io.FileUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.eclipse.jdt.core.dom.AST;
 import org.eclipse.jdt.core.dom.ASTParser;
 import org.eclipse.jdt.core.dom.CompilationUnit;
@@ -12,17 +13,23 @@ import org.eclipse.jface.text.Document;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.PrintStream;
 import java.net.URL;
 import java.net.URLClassLoader;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 public class Synthesizer {
 
-    CommandLine cmdLine;
+    /**
+     * Place to send application logging information.
+     */
+    private static final Logger _logger = LogManager.getLogger(Synthesizer.class.getName());
+
+
+    private final PrintStream _out;
+
+   // CommandLine cmdLine;
 
     static ClassLoader classLoader;
 
@@ -30,18 +37,14 @@ public class Synthesizer {
         List<DSubTree> asts;
     }
 
-    public Synthesizer(String[] args) {
+    public Synthesizer(PrintStream outStream)
+    {
+        _out = outStream;
         CommandLineParser parser = new DefaultParser();
         org.apache.commons.cli.Options clopts = new org.apache.commons.cli.Options();
 
         addOptions(clopts);
 
-        try {
-            this.cmdLine = parser.parse(clopts, args);
-        } catch (ParseException e) {
-            HelpFormatter help = new HelpFormatter();
-            help.printHelp("edu/rice/bayou/synthesizer", clopts);
-        }
     }
 
     private void addOptions(org.apache.commons.cli.Options opts) {
@@ -61,7 +64,7 @@ public class Synthesizer {
                 .build());
     }
 
-    private List<DSubTree> getASTsFromNN() throws IOException {
+    private List<DSubTree> getASTsFromNN(String astJson) {
         RuntimeTypeAdapterFactory<DASTNode> nodeAdapter = RuntimeTypeAdapterFactory.of(DASTNode.class, "node")
                 .registerSubtype(DAPICall.class)
                 .registerSubtype(DBranch.class)
@@ -71,22 +74,18 @@ public class Synthesizer {
         Gson gson = new GsonBuilder().serializeNulls()
                 .registerTypeAdapterFactory(nodeAdapter)
                 .create();
-        String s = new String(Files.readAllBytes(Paths.get(cmdLine.getOptionValue("a"))));
-        JSONInputWrapper js = gson.fromJson(s, JSONInputWrapper.class);
+       // String s = new String(Files.readAllBytes(Paths.get(cmdLine.getOptionValue("a"))));
+        JSONInputWrapper js = gson.fromJson(astJson, JSONInputWrapper.class);
 
         return js.asts;
     }
 
-    public void execute() throws IOException {
-        if (cmdLine == null)
-            return;
+    public void execute(String source, String astJson, String classpath) throws IOException {
 
         ASTParser parser = ASTParser.newParser(AST.JLS8);
-        File input = new File(cmdLine.getOptionValue("input-file"));
-        String classpath = System.getenv("CLASSPATH");
         classpath = classpath == null? "" : classpath;
 
-        String source = FileUtils.readFileToString(input, "utf-8");
+       // String source = FileUtils.readFileToString(input, "utf-8");
         parser.setSource(source.toCharArray());
         parser.setKind(ASTParser.K_COMPILATION_UNIT);
         parser.setUnitName("Program.java");
@@ -94,13 +93,18 @@ public class Synthesizer {
                 new String[] { "" }, new String[] { "UTF-8" }, true);
         parser.setResolveBindings(true);
         CompilationUnit cu = (CompilationUnit) parser.createAST(null);
-        List<DSubTree> asts = getASTsFromNN();
+        List<DSubTree> asts = getASTsFromNN(astJson);
 
         List<URL> urlList = new ArrayList<>();
-        for (String cp : classpath.split(":"))
+        for (String cp : classpath.split(File.pathSeparator))
+        {
+            _logger.trace("cp: " + cp);
             urlList.add(new URL("jar:file:" + cp + "!/"));
+        }
         URL[] urls = urlList.toArray(new URL[0]);
+
         classLoader = URLClassLoader.newInstance(urls);
+
 
         List<String> programs = new ArrayList<>();
         for (DSubTree ast : asts) {
@@ -112,19 +116,15 @@ public class Synthesizer {
                 String program = visitor.synthesizedProgram.replaceAll("\\s", "");
                 if (! programs.contains(program)) {
                     programs.add(program);
-                    System.out.println(visitor.synthesizedProgram);
-                    System.out.println("/* --- End of program --- */\n\n");
+                    _out.println(visitor.synthesizedProgram);
+                    _out.println("/* --- End of application --- */\n\n");
                 }
-            } catch (Exception e) { }
+            }
+            catch (Exception e)
+            {
+                // do nothing and try next ast
+            }
         }
     }
 
-    public static void main(String args[]) {
-        try {
-            new Synthesizer(args).execute();
-        } catch (IOException e) {
-            System.err.println("Error occurred: " + e.getMessage());
-            e.printStackTrace();
-        }
-    }
 }

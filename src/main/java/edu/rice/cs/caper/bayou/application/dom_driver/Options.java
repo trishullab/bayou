@@ -1,4 +1,4 @@
-package edu.rice.bayou.dom_driver;
+package edu.rice.cs.caper.bayou.application.dom_driver;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
@@ -146,8 +146,7 @@ public class Options {
         if (this.config.has("javadoc-type")) {
             this.JAVADOC_TYPE = this.config.getAsJsonPrimitive("javadoc-type").getAsString();
             if (! (this.JAVADOC_TYPE.equals("full") || this.JAVADOC_TYPE.equals("summary"))) {
-                System.err.println("javadoc-type must be \"full\" or \"summary\"");
-                System.exit(1);
+                throw new IllegalArgumentException("javadoc-type must be \"full\" or \"summary\"");
             }
         }
         else
