@@ -1,7 +1,7 @@
 import urllib.request
 import tarfile
 
-localDir  = '../src/main/resources/network/'
+localDir  = '../src/main/resources/model/'
 localFile = localDir + 'popl18.tar.gz'
 
 print('downloading network...')
