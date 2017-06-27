@@ -57,11 +57,11 @@ public class Driver {
         visitor.output.close();
     }
 
-//	public static void main(String args[]) {
-//        try {
-//            new Driver(args).execute();
-//        } catch (ParseException | IOException e) {
-//            System.out.println("Unexpected exception: " + e.getMessage());
-//        }
-//	}
+	public static void main(String args[]) {
+        try {
+            new Driver(args).execute();
+        } catch (ParseException | IOException e) {
+            System.out.println("Unexpected exception: " + e.getMessage());
+        }
+	}
 }
