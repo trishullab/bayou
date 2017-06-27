@@ -1,0 +1,101 @@
+package edu.rice.bayou.experiments.low_level_sketches;
+
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.stream.JsonReader;
+import com.google.gson.stream.JsonWriter;
+import edu.rice.bayou.dsl.*;
+import edu.rice.bayou.synthesizer.RuntimeTypeAdapterFactory;
+
+import java.io.*;
+import java.util.List;
+
+public class LowLevelSketchExtractor {
+
+    class JSONInputWrapper {
+        String file;
+        DSubTreeLowLevel ast;
+        List<Sequence> sequences;
+        List<String> apicalls, types, context;
+    }
+
+    class JsonOutputWrapper {
+        String file;
+        DSubTreeLowLevel ast;
+        String low_level_sketch;
+        List<Sequence> sequences;
+        List<String> apicalls, types, context;
+    }
+
+    File inFile, outFile;
+
+    public LowLevelSketchExtractor(String input, String output) {
+        this.inFile = new File(input);
+        this.outFile = new File(output);
+    }
+
+    public void execute() throws IOException {
+        RuntimeTypeAdapterFactory<DASTNodeLowLevel> nodeAdapter =
+                RuntimeTypeAdapterFactory.of(DASTNodeLowLevel.class, "node")
+                        .registerSubtype(DAPICallLowLevel.class, "DAPICall")
+                        .registerSubtype(DBranchLowLevel.class, "DBranch")
+                        .registerSubtype(DExceptLowLevel.class, "DExcept")
+                        .registerSubtype(DLoopLowLevel.class, "DLoop")
+                        .registerSubtype(DSubTreeLowLevel.class, "DSubTree");
+        Gson gsonIn = new GsonBuilder().registerTypeAdapterFactory(nodeAdapter).
+                serializeNulls().create();
+        JsonReader reader = new JsonReader(new FileReader(inFile));
+
+        Gson gsonOut = new GsonBuilder().serializeNulls().create();
+        JsonWriter writer = new JsonWriter(new FileWriter(outFile));
+
+        reader.beginObject();
+        reader.nextName();
+        reader.beginArray();
+
+        writer.setIndent("  ");
+        writer.beginObject();
+        writer.name("programs");
+        writer.beginArray();
+
+        System.out.println();
+        for (int i = 0; reader.hasNext(); i++) {
+            System.out.print(String.format("\rProcessed %s programs", i));
+            JSONInputWrapper inputProgram = gsonIn.fromJson(reader, JSONInputWrapper.class);
+            JsonOutputWrapper outputProgram = new JsonOutputWrapper();
+
+            outputProgram.file = inputProgram.file;
+            outputProgram.ast = inputProgram.ast;
+            outputProgram.low_level_sketch = inputProgram.ast.getLowLevelSketch();
+            outputProgram.sequences = inputProgram.sequences;
+            outputProgram.apicalls = inputProgram.apicalls;
+            outputProgram.types = inputProgram.types;
+            outputProgram.context = inputProgram.context;
+
+            gsonOut.toJson(outputProgram, JsonOutputWrapper.class, writer);
+        }
+        System.out.println();
+
+        reader.close();
+        writer.endArray();
+        writer.endObject();
+        writer.close();
+    }
+
+    static void usage() {
+        System.out.println("Usage: extractor DATA-input.json DATA-output.json");
+    }
+
+    public static void main(String args[]) {
+        if (args.length == 2) {
+            try {
+                new LowLevelSketchExtractor(args[0], args[1]).execute();
+            } catch (IOException e) {
+                System.err.println("Unexpected exception: " + e.getMessage());
+                System.exit(1);
+            }
+        }
+        else
+            usage();
+    }
+}
