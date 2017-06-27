@@ -219,7 +219,7 @@
     <!-- Perform any build initialization in this target -->
   </target>
   
-  <target name="clean" depends="clean.module.pl, clean.artifact.driver, clean.artifact.evidence_extractor, clean.artifact.predict_asts, clean.artifact.synthesizer" description="cleanup all"/>
+  <target name="clean" depends="clean.module.pl, clean.artifact.driver, clean.artifact.evidence_extractor, clean.artifact.low_level_sketch_extractor, clean.artifact.predict_asts, clean.artifact.synthesizer" description="cleanup all"/>
   
   <target name="build.modules" depends="init, clean, compile.module.pl" description="build all modules"/>
   
@@ -227,11 +227,13 @@
     <property name="artifacts.temp.dir" value="${basedir}/__artifacts_temp"/>
     <property name="artifact.output.driver" value="${basedir}/out/artifacts/driver"/>
     <property name="artifact.output.evidence_extractor" value="${basedir}/out/artifacts/annotations"/>
+    <property name="artifact.output.low_level_sketch_extractor" value="${basedir}/out/artifacts/experiments/low_level_sketches"/>
     <property name="artifact.output.predict_asts" value="${basedir}/out/artifacts/experiments/predict_asts"/>
     <property name="artifact.output.synthesizer" value="${basedir}/out/artifacts/synthesizer"/>
     <mkdir dir="${artifacts.temp.dir}"/>
     <property name="temp.jar.path.driver.jar" value="${artifacts.temp.dir}/driver.jar"/>
     <property name="temp.jar.path.evidence_extractor.jar" value="${artifacts.temp.dir}/evidence_extractor.jar"/>
+    <property name="temp.jar.path.low_level_sketch_extractor.jar" value="${artifacts.temp.dir}/low_level_sketch_extractor.jar"/>
     <property name="temp.jar.path.predict_asts.jar" value="${artifacts.temp.dir}/predict_asts.jar"/>
     <property name="temp.jar.path.synthesizer.jar" value="${artifacts.temp.dir}/synthesizer.jar"/>
   </target>
@@ -242,6 +244,10 @@
   
   <target name="clean.artifact.evidence_extractor" description="clean evidence_extractor artifact output">
     <delete dir="${artifact.output.evidence_extractor}"/>
+  </target>
+  
+  <target name="clean.artifact.low_level_sketch_extractor" description="clean low_level_sketch_extractor artifact output">
+    <delete dir="${artifact.output.low_level_sketch_extractor}"/>
   </target>
   
   <target name="clean.artifact.predict_asts" description="clean predict_asts artifact output">
@@ -296,6 +302,28 @@
     <copy file="${basedir}/lib/commons-lang3-3.5.jar" tofile="${artifact.output.evidence_extractor}/commons-lang3-3.5.jar"/>
   </target>
   
+  <target name="artifact.low_level_sketch_extractor" depends="init.artifacts, compile.module.pl" description="Build &#39;low_level_sketch_extractor&#39; artifact">
+    <mkdir dir="${artifact.output.low_level_sketch_extractor}"/>
+    <jar destfile="${temp.jar.path.low_level_sketch_extractor.jar}" duplicate="preserve" filesetmanifest="merge">
+      <zipfileset file="${basedir}/src/edu/rice/bayou/experiments/low_level_sketches/META-INF/MANIFEST.MF" prefix="META-INF"/>
+      <zipfileset dir="${pl.output.dir}"/>
+    </jar>
+    <copy file="${temp.jar.path.low_level_sketch_extractor.jar}" tofile="${artifact.output.low_level_sketch_extractor}/low_level_sketch_extractor.jar"/>
+    <copy file="${basedir}/lib/gson-2.6.3.jar" tofile="${artifact.output.low_level_sketch_extractor}/gson-2.6.3.jar"/>
+    <copy file="${basedir}/lib/org.eclipse.core.jobs_3.8.0.v20160509-0411.jar" tofile="${artifact.output.low_level_sketch_extractor}/org.eclipse.core.jobs_3.8.0.v20160509-0411.jar"/>
+    <copy file="${basedir}/lib/org.eclipse.equinox.common_3.8.0.v20160509-1230.jar" tofile="${artifact.output.low_level_sketch_extractor}/org.eclipse.equinox.common_3.8.0.v20160509-1230.jar"/>
+    <copy file="${basedir}/lib/commons-cli-1.3.1.jar" tofile="${artifact.output.low_level_sketch_extractor}/commons-cli-1.3.1.jar"/>
+    <copy file="${basedir}/lib/org.eclipse.core.contenttype_3.5.100.v20160418-1621.jar" tofile="${artifact.output.low_level_sketch_extractor}/org.eclipse.core.contenttype_3.5.100.v20160418-1621.jar"/>
+    <copy file="${basedir}/lib/commons-io-2.5.jar" tofile="${artifact.output.low_level_sketch_extractor}/commons-io-2.5.jar"/>
+    <copy file="${basedir}/lib/org.eclipse.equinox.preferences_3.6.0.v20160120-1756.jar" tofile="${artifact.output.low_level_sketch_extractor}/org.eclipse.equinox.preferences_3.6.0.v20160120-1756.jar"/>
+    <copy file="${basedir}/lib/org.eclipse.core.resources_3.11.0.v20160503-1608.jar" tofile="${artifact.output.low_level_sketch_extractor}/org.eclipse.core.resources_3.11.0.v20160503-1608.jar"/>
+    <copy file="${basedir}/lib/org.eclipse.core.runtime_3.12.0.v20160606-1342.jar" tofile="${artifact.output.low_level_sketch_extractor}/org.eclipse.core.runtime_3.12.0.v20160606-1342.jar"/>
+    <copy file="${basedir}/lib/org.eclipse.text_3.5.0.jar" tofile="${artifact.output.low_level_sketch_extractor}/org.eclipse.text_3.5.0.jar"/>
+    <copy file="${basedir}/lib/org.eclipse.jdt.core_3.12.0.v20160516-2131.jar" tofile="${artifact.output.low_level_sketch_extractor}/org.eclipse.jdt.core_3.12.0.v20160516-2131.jar"/>
+    <copy file="${basedir}/lib/org.eclipse.osgi_3.11.0.v20160603-1336.jar" tofile="${artifact.output.low_level_sketch_extractor}/org.eclipse.osgi_3.11.0.v20160603-1336.jar"/>
+    <copy file="${basedir}/lib/commons-lang3-3.5.jar" tofile="${artifact.output.low_level_sketch_extractor}/commons-lang3-3.5.jar"/>
+  </target>
+  
   <target name="artifact.predict_asts" depends="init.artifacts, compile.module.pl" description="Build &#39;predict_asts&#39; artifact">
     <mkdir dir="${artifact.output.predict_asts}"/>
     <jar destfile="${temp.jar.path.predict_asts.jar}" duplicate="preserve" filesetmanifest="merge">
@@ -340,7 +368,7 @@
     <copy file="${basedir}/lib/commons-lang3-3.5.jar" tofile="${artifact.output.synthesizer}/commons-lang3-3.5.jar"/>
   </target>
   
-  <target name="build.all.artifacts" depends="artifact.driver, artifact.evidence_extractor, artifact.predict_asts, artifact.synthesizer" description="Build all artifacts">
+  <target name="build.all.artifacts" depends="artifact.driver, artifact.evidence_extractor, artifact.low_level_sketch_extractor, artifact.predict_asts, artifact.synthesizer" description="Build all artifacts">
     
     <!-- Delete temporary files -->
     <delete dir="${artifacts.temp.dir}"/>
