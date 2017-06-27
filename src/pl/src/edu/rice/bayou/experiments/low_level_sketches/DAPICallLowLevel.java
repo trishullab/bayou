@@ -7,6 +7,7 @@ public class DAPICallLowLevel extends DASTNodeLowLevel {
 
     @Override
     public String getLowLevelSketch() {
-        return node + delim + _call + delim + STOP;
+        String[] tokens = _call.split("[,()]");
+        return node + delim + String.join(delim, tokens) + delim + STOP;
     }
 }
