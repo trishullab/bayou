@@ -1,0 +1,30 @@
+{
+    "latent_size": 32,
+    "batch_size": 50,
+    "num_epochs": 100,
+    "learning_rate": 0.002,
+    "print_step": 1,
+    "alpha": 0.001,
+    "beta": 1e-05,
+    "evidence": [
+        {
+            "name": "apicalls",
+            "units": 128,
+            "tile": 1
+        },
+        {
+            "name": "types",
+            "units": 64,
+            "tile": 1
+        },
+        {
+            "name": "context",
+            "units": 64,
+            "tile": 1
+        }
+    ],
+    "decoder": {
+        "units": 256,
+        "max_tokens": 128
+    }
+}
