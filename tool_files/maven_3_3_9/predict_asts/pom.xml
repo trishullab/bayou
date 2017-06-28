@@ -30,7 +30,7 @@
                 <archive>
                     <manifest>
                         <addClasspath>true</addClasspath>
-                        <mainClass>edu.rice.cs.caper.bayou.application.experiments.predit_asts.ASTReader</mainClass>
+                        <mainClass>edu.rice.cs.caper.bayou.application.experiments.predict_asts.ASTReader</mainClass>
                     </manifest>
                 </archive>
                 <descriptorRefs>

@@ -1,4 +1,4 @@
-package edu.rice.cs.caper.bayou.application.experiments.predit_asts;
+package edu.rice.cs.caper.bayou.application.experiments.predict_asts;
 
 
 import com.google.gson.Gson;
