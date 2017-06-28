@@ -27,6 +27,7 @@ public class EvidenceExtractor extends ASTVisitor {
     }
 
     JSONOutputWrapper output;
+    Block evidenceBlock;
 
     public EvidenceExtractor(String[] args) {
         CommandLineParser parser = new DefaultParser();
@@ -91,6 +92,13 @@ public class EvidenceExtractor extends ASTVisitor {
         ITypeBinding cls = binding.getDeclaringClass();
         if (cls == null || !cls.getQualifiedName().equals("edu.rice.bayou.annotations.Evidence"))
             return false;
+
+        if (! (invocation.getParent().getParent() instanceof Block))
+            throw new RuntimeException("Evidence has to be given in a (empty) block.");
+        Block evidenceBlock = (Block) invocation.getParent().getParent();
+        if (this.evidenceBlock != null && this.evidenceBlock != evidenceBlock)
+            throw new RuntimeException("Only one synthesis query at a time is supported.");
+        this.evidenceBlock = evidenceBlock;
 
         // performing casts wildly.. if any exceptions occur it's due to incorrect input format
         if (binding.getName().equals("apicalls")) {
