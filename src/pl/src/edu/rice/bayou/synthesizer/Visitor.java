@@ -146,6 +146,7 @@ public class Visitor extends ASTVisitor {
         rewriter.rewriteAST(document, null).apply(document);
     }
 
+    /* setup the scope of variables for synthesis */
     @Override
     public boolean visit(MethodDeclaration method) {
         currentScope.clear();
@@ -168,6 +169,33 @@ public class Visitor extends ASTVisitor {
 
             Variable v = new Variable(param.getName().getIdentifier(), type);
             currentScope.add(v);
+        }
+
+        /* add local variables declared in the (beginning of) method body */
+        Block body = method.getBody();
+        for (Object o : body.statements()) {
+            Statement stmt = (Statement) o;
+            if (! (stmt instanceof VariableDeclarationStatement))
+                break; // stop at the first non-variable declaration
+            VariableDeclarationStatement varDecl = (VariableDeclarationStatement) stmt;
+            Type t = varDecl.getType();
+            Class type;
+
+            if (t.isSimpleType()) {
+                ITypeBinding binding = t.resolveBinding();
+                if (binding == null)
+                    continue;
+                type = Environment.getClass(binding.getQualifiedName());
+            }
+            else if (t.isPrimitiveType())
+                type = primitiveToClass.get(((PrimitiveType) t).getPrimitiveTypeCode().toString());
+            else continue;
+
+            for (Object f : varDecl.fragments()) {
+                VariableDeclarationFragment frag = (VariableDeclarationFragment) f;
+                Variable v = new Variable(frag.getName().getIdentifier(), type);
+                currentScope.add(v);
+            }
         }
 
         return true;
