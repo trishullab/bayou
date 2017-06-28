@@ -42,8 +42,8 @@ public class Visitor extends ASTVisitor {
         this.document = document;
         this.cu = cu;
 
-        this.evidBlocks = new HashMap<Block, List<MethodInvocation>>();
-        this.envs = new ArrayList<Environment>();
+        this.evidBlocks = new HashMap<>();
+        this.envs = new ArrayList<>();
         this.current_rewriter = ASTRewrite.create(this.cu.getAST());
     }
 
@@ -87,7 +87,7 @@ public class Visitor extends ASTVisitor {
             List<MethodInvocation> evidInvocations = this.evidBlocks.get(parentBlock);
 
             if (evidInvocations == null) {
-                evidInvocations = new ArrayList<MethodInvocation>();
+                evidInvocations = new ArrayList<>();
                 evidInvocations.add(invoke);
                 this.evidBlocks.put(parentBlock, evidInvocations);
                 // This is the 1st evidence API call in current block
