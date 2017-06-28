@@ -36,8 +36,6 @@ class ApiSynthesisServerRest
      */
     private static int _codeCompletionRequestBodyMaxBytesCount = Configuration.CodeCompletionRequestBodyMaxBytesCount;
 
-    static final String ApiSynthesisServletPath = "/apisynthesis";
-
     void start() throws StartErrorException
     {
         /*
@@ -49,9 +47,11 @@ class ApiSynthesisServerRest
             ServletHandler handler = new ServletHandler();
             server.setHandler(handler);
 
-
             // register a servlet for performing apisynthesis
-            handler.addServletWithMapping(ApiSynthesisServlet.class, ApiSynthesisServletPath);
+            handler.addServletWithMapping(ApiSynthesisServlet.class, "/apisynthesis");
+
+            // register a servlet for collecting user feedback on result quatliy
+            handler.addServletWithMapping(ApiSynthesisResultQualityFeedbackServlet.class, "/apisynthesisfeedback");
 
             // register a servlet for checking on the health of the entire apisynthesis process
             handler.addServletWithMapping(ApiSynthesisHealthCheckServlet.class, "/apisynthesishealth");

@@ -1,27 +1,27 @@
 package edu.rice.cs.caper.bayou.application.api_synthesis_server.synthesis_logging;
 
 import com.amazonaws.auth.AWSCredentials;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.text.DateFormat;
 import java.util.Date;
-import java.util.List;
 import java.util.UUID;
 
 import static edu.rice.cs.caper.programming.Assertions.*;
 
 /**
- * A SynthesisLogger that stores the log message on AWS S3.  Stores log messages as a JSON string using UTF-8 encoding.
+ * A SynthesisQualityFeedbackLogger that stores the log message on AWS S3.
+ * Stores log messages as a JSON string using UTF-8 encoding.
  */
-public class SynthesisLoggerS3 extends S3LoggerBase implements SynthesisLogger
+public class SynthesisQualityFeedbackLoggerS3 extends S3LoggerBase implements SynthesisQualityFeedbackLogger
 {
     /**
      * Place to send application logging information.
      */
-    private static final Logger _logger = LogManager.getLogger(SynthesisLoggerS3.class.getName());
+    private static final Logger _logger = LogManager.getLogger(SynthesisQualityFeedbackLoggerS3.class.getName());
 
     /**
      * Will use environment credentials when authenticating with S3.
@@ -29,7 +29,7 @@ public class SynthesisLoggerS3 extends S3LoggerBase implements SynthesisLogger
      * @param bucketName The name of the S3 bucket where log message should be stored. May not be null, white space
      *                   only, or empty.
      */
-    public SynthesisLoggerS3(String bucketName)
+    public SynthesisQualityFeedbackLoggerS3(String bucketName)
     {
         super(null, bucketName);
     }
@@ -40,13 +40,14 @@ public class SynthesisLoggerS3 extends S3LoggerBase implements SynthesisLogger
      * @param creds The credentials to be used for communicating with S3. null indicates the environment's credentials
      *              should be used.
      */
-    public SynthesisLoggerS3(String bucketName, AWSCredentials creds)
+    public SynthesisQualityFeedbackLoggerS3(String bucketName, AWSCredentials creds)
     {
         super(assertArgumentNonNull("creds", creds), bucketName);
     }
 
+
     @Override
-    public void log(UUID requestId, String searchCode, List<String> results)
+    public void log(UUID requestId, String searchCode, String resultCode, boolean isGood)
     {
         _logger.debug("entering");
 
@@ -61,16 +62,10 @@ public class SynthesisLoggerS3 extends S3LoggerBase implements SynthesisLogger
             recordObj.put("version", "1");
             recordObj.put("requestId", requestId);
             recordObj.put("searchCode", searchCode);
+            recordObj.put("resultCode", resultCode);
+            recordObj.put("isGood", isGood);
             recordObj.put("logMomentUtc", now);
             recordObj.put("logMomentHuman", DateFormat.getDateTimeInstance().format(new Date(now)));
-
-            JSONArray resultsArray = new JSONArray();
-            for (String result : results)
-            {
-                resultsArray.put(result);
-            }
-
-            recordObj.put("results", resultsArray);
 
             logMsg = recordObj.toString(1);
         }
