@@ -54,15 +54,6 @@ public class EvidenceExtractor extends ASTVisitor {
                 .build());
     }
 
-    String getElement(String input) {
-        if (input == null || input.length() <= 2)
-            return null;
-
-        String res = input.substring(1, input.length() - 1);
-
-        return res;
-    }
-
     public void execute() throws IOException {
         if (cmdLine == null)
             return;
@@ -85,84 +76,41 @@ public class EvidenceExtractor extends ASTVisitor {
             cu.accept(this);
             System.out.println(gson.toJson(output));
         } catch (Exception e) {
-            System.err.println("Unexpected error occurred. Make sure evidences are in the right format.");
+            System.err.println("Unexpected error occurred: " + e.getMessage());
             System.exit(1);
         }
     }
 
     @Override
-    public boolean visit(MethodInvocation invoke) {
-        if (!(invoke.getExpression() != null && invoke.getExpression().toString().equals("Evidence")))
+    public boolean visit(MethodInvocation invocation) {
+        IMethodBinding binding = invocation.resolveMethodBinding();
+        if (binding == null)
+            throw new RuntimeException("Could not resolve binding. " +
+                "Either CLASSPATH is not set correctly, or there is an invalid evidence type.");
+
+        ITypeBinding cls = binding.getDeclaringClass();
+        if (cls == null || !cls.getQualifiedName().equals("edu.rice.bayou.annotations.Evidence"))
             return false;
-
-        if (invoke.getName() == null)
-            return false;
-
-        // Extracting invoke arguments
-        if (invoke.getName().toString().equals("apicalls")) {
-            for (Object argObj : invoke.arguments()) {
-                output.apicalls.add(getElement(argObj.toString()));
-            }
-        } else if (invoke.getName().toString().equals("types")) {
-            for (Object argObj : invoke.arguments()) {
-                output.types.add(getElement(argObj.toString()));
-            }
-        } if (invoke.getName().toString().equals("context")) {
-            for (Object argObj : invoke.arguments()) {
-                output.context.add(getElement(argObj.toString()));
-            }
-        }
-
-        return false;
-    }
-
-    @Override
-    public boolean visit(MethodDeclaration method) {
-        /* 1. Get apicalls and types from @Evidence annotation */
-        List<IExtendedModifier> modifiers = method.modifiers();
 
         // performing casts wildly.. if any exceptions occur it's due to incorrect input format
-        for (IExtendedModifier m : modifiers) {
-            if (! m.isAnnotation() || ! ((Annotation) m).isNormalAnnotation())
-                continue;
-            NormalAnnotation annotation = (NormalAnnotation) m;
-            IAnnotationBinding aBinding = annotation.resolveAnnotationBinding();
-            ITypeBinding binding;
-            if (aBinding == null || (binding = aBinding.getAnnotationType()) == null)
-                continue;
-            if (! binding.getQualifiedName().equals("edu.rice.bayou.annotations.Evidence"))
-                continue;
-            List<MemberValuePair> values = annotation.values();
-
-            for (MemberValuePair value : values) {
-                String type = value.getName().getIdentifier();
-
-                if (type.equals("apicalls")) {
-                    List<Expression> apicalls = ((ArrayInitializer) value.getValue()).expressions();
-                    for (Expression e : apicalls) {
-                        String a = ((StringLiteral) e).getLiteralValue();
-                        output.apicalls.add(a);
-                    }
-                }
-                else if (type.equals("types")) {
-                    List<Expression> types = ((ArrayInitializer) value.getValue()).expressions();
-                    for (Expression e : types) {
-                        String t = ((StringLiteral) e).getLiteralValue();
-                        output.types.add(t);
-                    }
-                }
-                else if (type.equals("context")) {
-                    List<Expression> context = ((ArrayInitializer) value.getValue()).expressions();
-                    for (Expression e : context) {
-                        String c = ((StringLiteral) e).getLiteralValue();
-                        output.context.add(c);
-                    }
-                }
-                else throw new RuntimeException();
+        if (binding.getName().equals("apicalls")) {
+            for (Object arg : invocation.arguments()) {
+                StringLiteral a = (StringLiteral) arg;
+                output.apicalls.add(a.getLiteralValue());
             }
-        }
+        } else if (binding.getName().equals("types")) {
+            for (Object arg : invocation.arguments()) {
+                StringLiteral a = (StringLiteral) arg;
+                output.types.add(a.getLiteralValue());
+            }
+        } else if (binding.getName().equals("context")) {
+            for (Object arg : invocation.arguments()) {
+                StringLiteral a = (StringLiteral) arg;
+                output.context.add(a.getLiteralValue());
+            }
+        } else throw new RuntimeException("Invalid evidence type: " + binding.getName());
 
-        return true;
+        return false;
     }
 
     public static void main(String args[]) {
