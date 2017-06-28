@@ -1,0 +1,213 @@
+{
+  "asts": [
+    {
+      "node": "DSubTree",
+      "_nodes": [
+        {
+          "node": "DAPICall",
+          "_call": "android.speech.SpeechRecognizer.createSpeechRecognizer(android.content.Context)"
+        },
+        {
+          "node": "DAPICall",
+          "_call": "android.speech.SpeechRecognizer.setRecognitionListener(android.speech.RecognitionListener)"
+        },
+        {
+          "node": "DAPICall",
+          "_call": "android.speech.SpeechRecognizer.startListening(android.content.Intent)"
+        }
+      ],
+      "count": 9
+    },
+    {
+      "node": "DSubTree",
+      "_nodes": [
+        {
+          "node": "DAPICall",
+          "_call": "android.app.ActivityOptions.makeCustomAnimation(android.content.Context,int,int)"
+        },
+        {
+          "node": "DAPICall",
+          "_call": "android.app.ActivityOptions.toBundle()"
+        }
+      ],
+      "count": 9
+    },
+    {
+      "node": "DSubTree",
+      "_nodes": [
+        {
+          "node": "DBranch",
+          "_cond": [
+            {
+              "node": "DAPICall",
+              "_call": "android.speech.SpeechRecognizer.isRecognitionAvailable(android.content.Context)"
+            }
+          ],
+          "_then": [
+            {
+              "node": "DAPICall",
+              "_call": "android.speech.SpeechRecognizer.createSpeechRecognizer(android.content.Context)"
+            },
+            {
+              "node": "DAPICall",
+              "_call": "android.speech.SpeechRecognizer.setRecognitionListener(android.speech.RecognitionListener)"
+            }
+          ],
+          "_else": []
+        }
+      ],
+      "count": 6
+    },
+    {
+      "node": "DSubTree",
+      "_nodes": [
+        {
+          "node": "DAPICall",
+          "_call": "android.widget.ArrayAdapter.ArrayAdapter(android.content.Context,int)"
+        },
+        {
+          "node": "DAPICall",
+          "_call": "android.widget.ArrayAdapter.add(java.lang.String)"
+        }
+      ],
+      "count": 5
+    },
+    {
+      "node": "DSubTree",
+      "_nodes": [
+        {
+          "node": "DAPICall",
+          "_call": "android.animation.AnimatorInflater.loadAnimator(android.content.Context,int)"
+        },
+        {
+          "node": "DAPICall",
+          "_call": "android.animation.Animator.setTarget(java.lang.Object)"
+        },
+        {
+          "node": "DAPICall",
+          "_call": "android.animation.Animator.start()"
+        }
+      ],
+      "count": 3
+    },
+    {
+      "node": "DSubTree",
+      "_nodes": [
+        {
+          "node": "DAPICall",
+          "_call": "android.widget.RelativeLayout.RelativeLayout(android.content.Context)"
+        },
+        {
+          "node": "DAPICall",
+          "_call": "android.widget.AbsListView.LayoutParams.LayoutParams(int,int)"
+        },
+        {
+          "node": "DAPICall",
+          "_call": "android.widget.RelativeLayout.setGravity(int)"
+        },
+        {
+          "node": "DAPICall",
+          "_call": "android.widget.ProgressBar.ProgressBar(android.content.Context)"
+        },
+        {
+          "node": "DAPICall",
+          "_call": "android.widget.BaseAdapter.getViewTypeCount()"
+        }
+      ],
+      "count": 3
+    },
+    {
+      "node": "DSubTree",
+      "_nodes": [
+        {
+          "node": "DBranch",
+          "_cond": [
+            {
+              "node": "DAPICall",
+              "_call": "android.provider.DocumentsContract.isDocumentUri(android.content.Context,android.net.Uri)"
+            }
+          ],
+          "_then": [
+            {
+              "node": "DAPICall",
+              "_call": "android.provider.DocumentsContract.getDocumentId(android.net.Uri)"
+            }
+          ],
+          "_else": []
+        }
+      ],
+      "count": 2
+    },
+    {
+      "node": "DSubTree",
+      "_nodes": [
+        {
+          "node": "DBranch",
+          "_cond": [
+            {
+              "node": "DAPICall",
+              "_call": "android.speech.SpeechRecognizer.isRecognitionAvailable(android.content.Context)"
+            }
+          ],
+          "_then": [
+            {
+              "node": "DAPICall",
+              "_call": "android.speech.SpeechRecognizer.createSpeechRecognizer(android.content.Context)"
+            },
+            {
+              "node": "DAPICall",
+              "_call": "android.speech.SpeechRecognizer.setRecognitionListener(android.speech.RecognitionListener)"
+            }
+          ],
+          "_else": []
+        },
+        {
+          "node": "DAPICall",
+          "_call": "android.speech.SpeechRecognizer.startListening(android.content.Intent)"
+        }
+      ],
+      "count": 2
+    },
+    {
+      "node": "DSubTree",
+      "_nodes": [
+        {
+          "node": "DAPICall",
+          "_call": "android.webkit.WebView.WebView(android.content.Context)"
+        },
+        {
+          "node": "DAPICall",
+          "_call": "android.webkit.WebView.canZoomOut()"
+        }
+      ],
+      "count": 2
+    },
+    {
+      "node": "DSubTree",
+      "_nodes": [
+        {
+          "node": "DAPICall",
+          "_call": "android.speech.SpeechRecognizer.destroy()"
+        },
+        {
+          "node": "DAPICall",
+          "_call": "android.speech.SpeechRecognizer.createSpeechRecognizer(android.content.Context)"
+        },
+        {
+          "node": "DAPICall",
+          "_call": "android.speech.SpeechRecognizer.setRecognitionListener(android.speech.RecognitionListener)"
+        }
+      ],
+      "count": 2
+    }
+  ],
+  "evidences": {
+    "context": [
+      "Context"
+    ],
+    "types": [
+      "SpeechRecognizer"
+    ],
+    "apicalls": []
+  }
+}

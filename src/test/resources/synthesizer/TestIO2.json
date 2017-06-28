@@ -1,0 +1,277 @@
+{
+  "asts": [
+    {
+      "node": "DSubTree",
+      "_nodes": [
+        {
+          "node": "DAPICall",
+          "_call": "java.io.InputStreamReader.InputStreamReader(java.io.InputStream)"
+        },
+        {
+          "node": "DAPICall",
+          "_call": "java.io.BufferedReader.BufferedReader(java.io.Reader)"
+        },
+        {
+          "node": "DLoop",
+          "_cond": [
+            {
+              "node": "DAPICall",
+              "_call": "java.io.BufferedReader.readLine()"
+            }
+          ],
+          "_body": []
+        }
+      ],
+      "count": 16
+    },
+    {
+      "node": "DSubTree",
+      "_nodes": [
+        {
+          "node": "DAPICall",
+          "_call": "java.io.BufferedReader.BufferedReader(java.io.Reader)"
+        },
+        {
+          "node": "DLoop",
+          "_cond": [
+            {
+              "node": "DAPICall",
+              "_call": "java.io.BufferedReader.readLine()"
+            }
+          ],
+          "_body": []
+        }
+      ],
+      "count": 13
+    },
+    {
+      "node": "DSubTree",
+      "_nodes": [
+        {
+          "node": "DAPICall",
+          "_call": "java.io.FileReader.FileReader(java.lang.String)"
+        },
+        {
+          "node": "DAPICall",
+          "_call": "java.io.BufferedReader.BufferedReader(java.io.Reader)"
+        },
+        {
+          "node": "DLoop",
+          "_cond": [
+            {
+              "node": "DAPICall",
+              "_call": "java.io.BufferedReader.readLine()"
+            }
+          ],
+          "_body": []
+        }
+      ],
+      "count": 12
+    },
+    {
+      "node": "DSubTree",
+      "_nodes": [
+        {
+          "node": "DAPICall",
+          "_call": "java.io.InputStreamReader.InputStreamReader(java.io.InputStream)"
+        },
+        {
+          "node": "DAPICall",
+          "_call": "java.io.BufferedReader.BufferedReader(java.io.Reader)"
+        },
+        {
+          "node": "DLoop",
+          "_cond": [
+            {
+              "node": "DAPICall",
+              "_call": "java.io.BufferedReader.readLine()"
+            }
+          ],
+          "_body": []
+        },
+        {
+          "node": "DAPICall",
+          "_call": "java.io.BufferedReader.close()"
+        }
+      ],
+      "count": 6
+    },
+    {
+      "node": "DSubTree",
+      "_nodes": [
+        {
+          "node": "DAPICall",
+          "_call": "java.io.FileReader.FileReader(java.lang.String)"
+        },
+        {
+          "node": "DAPICall",
+          "_call": "java.io.BufferedReader.BufferedReader(java.io.Reader)"
+        },
+        {
+          "node": "DAPICall",
+          "_call": "java.io.BufferedReader.readLine()"
+        },
+        {
+          "node": "DLoop",
+          "_cond": [
+            {
+              "node": "DAPICall",
+              "_call": "java.io.BufferedReader.readLine()"
+            }
+          ],
+          "_body": []
+        }
+      ],
+      "count": 4
+    },
+    {
+      "node": "DSubTree",
+      "_nodes": [
+        {
+          "node": "DAPICall",
+          "_call": "java.io.FileReader.FileReader(java.lang.String)"
+        },
+        {
+          "node": "DAPICall",
+          "_call": "java.io.BufferedReader.BufferedReader(java.io.Reader)"
+        },
+        {
+          "node": "DLoop",
+          "_cond": [
+            {
+              "node": "DAPICall",
+              "_call": "java.io.BufferedReader.readLine()"
+            }
+          ],
+          "_body": []
+        },
+        {
+          "node": "DAPICall",
+          "_call": "java.io.BufferedReader.close()"
+        }
+      ],
+      "count": 3
+    },
+    {
+      "node": "DSubTree",
+      "_nodes": [
+        {
+          "node": "DAPICall",
+          "_call": "java.io.FileReader.FileReader(java.io.File)"
+        },
+        {
+          "node": "DAPICall",
+          "_call": "java.io.BufferedReader.BufferedReader(java.io.Reader)"
+        },
+        {
+          "node": "DLoop",
+          "_cond": [
+            {
+              "node": "DAPICall",
+              "_call": "java.io.BufferedReader.readLine()"
+            }
+          ],
+          "_body": []
+        }
+      ],
+      "count": 3
+    },
+    {
+      "node": "DSubTree",
+      "_nodes": [
+        {
+          "node": "DAPICall",
+          "_call": "java.io.FileReader.FileReader(java.io.File)"
+        },
+        {
+          "node": "DAPICall",
+          "_call": "java.io.BufferedReader.BufferedReader(java.io.Reader)"
+        },
+        {
+          "node": "DLoop",
+          "_cond": [
+            {
+              "node": "DAPICall",
+              "_call": "java.io.BufferedReader.readLine()"
+            }
+          ],
+          "_body": []
+        },
+        {
+          "node": "DAPICall",
+          "_call": "java.io.BufferedReader.close()"
+        }
+      ],
+      "count": 2
+    },
+    {
+      "node": "DSubTree",
+      "_nodes": [
+        {
+          "node": "DAPICall",
+          "_call": "java.io.FileReader.FileReader(java.lang.String)"
+        },
+        {
+          "node": "DAPICall",
+          "_call": "java.io.BufferedReader.BufferedReader(java.io.Reader)"
+        },
+        {
+          "node": "DLoop",
+          "_cond": [
+            {
+              "node": "DAPICall",
+              "_call": "java.io.BufferedReader.readLine()"
+            }
+          ],
+          "_body": []
+        },
+        {
+          "node": "DAPICall",
+          "_call": "java.io.BufferedReader.close()"
+        },
+        {
+          "node": "DAPICall",
+          "_call": "java.lang.Throwable.printStackTrace()"
+        },
+        {
+          "node": "DAPICall",
+          "_call": "java.lang.Throwable.printStackTrace()"
+        }
+      ],
+      "count": 1
+    },
+    {
+      "node": "DSubTree",
+      "_nodes": [
+        {
+          "node": "DAPICall",
+          "_call": "java.io.BufferedReader.readLine()"
+        },
+        {
+          "node": "DAPICall",
+          "_call": "java.io.BufferedReader.readLine()"
+        },
+        {
+          "node": "DLoop",
+          "_cond": [
+            {
+              "node": "DAPICall",
+              "_call": "java.io.BufferedReader.readLine()"
+            }
+          ],
+          "_body": []
+        }
+      ],
+      "count": 1
+    }
+  ],
+  "evidences": {
+    "context": [
+      "Reader"
+    ],
+    "types": [
+      "BufferedReader"
+    ],
+    "apicalls": []
+  }
+}

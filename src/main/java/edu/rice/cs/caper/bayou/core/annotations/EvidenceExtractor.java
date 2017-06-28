@@ -1,0 +1,96 @@
+package edu.rice.cs.caper.bayou.core.annotations;
+
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import org.eclipse.jdt.core.dom.*;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
+import java.util.*;
+
+public class EvidenceExtractor extends ASTVisitor {
+
+    /**
+     * Place to send logging information.
+     */
+    private static final Logger _logger = LogManager.getLogger(EvidenceExtractor.class.getName());
+
+  //  CommandLine cmdLine;
+
+    class JSONOutputWrapper {
+        List<String> apicalls;
+        List<String> types;
+        List<String> context;
+
+        public JSONOutputWrapper() {
+            this.apicalls = new ArrayList<>();
+            this.types = new ArrayList<>();
+            this.context = new ArrayList<>();
+        }
+    }
+
+    JSONOutputWrapper output = new JSONOutputWrapper();
+    Block evidenceBlock;
+
+
+    public String execute(String source, String classpath) {
+
+        _logger.trace("source");
+        _logger.trace("classpath:" + classpath);
+
+        ASTParser parser = ASTParser.newParser(AST.JLS8);
+
+
+        parser.setSource(source.toCharArray());
+        parser.setKind(ASTParser.K_COMPILATION_UNIT);
+        parser.setUnitName("Program.java");
+        parser.setEnvironment(new String[] { classpath != null? classpath : "" },
+                new String[] { "" }, new String[] { "UTF-8" }, true);
+        parser.setResolveBindings(true);
+        CompilationUnit cu = (CompilationUnit) parser.createAST(null);
+
+        Gson gson = new GsonBuilder().setPrettyPrinting().serializeNulls().create();
+        cu.accept(this);
+        return gson.toJson(output);
+    }
+
+    @Override
+    public boolean visit(MethodInvocation invocation) {
+        IMethodBinding binding = invocation.resolveMethodBinding();
+        if (binding == null)
+            throw new RuntimeException("Could not resolve binding. " +
+                "Either CLASSPATH is not set correctly, or there is an invalid evidence type.");
+
+        ITypeBinding cls = binding.getDeclaringClass();
+        if (cls == null || !cls.getQualifiedName().equals("edu.rice.bayou.annotations.Evidence"))
+            return false;
+
+        if (! (invocation.getParent().getParent() instanceof Block))
+            throw new RuntimeException("Evidence has to be given in a (empty) block.");
+        Block evidenceBlock = (Block) invocation.getParent().getParent();
+        if (this.evidenceBlock != null && this.evidenceBlock != evidenceBlock)
+            throw new RuntimeException("Only one synthesis query at a time is supported.");
+        this.evidenceBlock = evidenceBlock;
+
+        // performing casts wildly.. if any exceptions occur it's due to incorrect input format
+        if (binding.getName().equals("apicalls")) {
+            for (Object arg : invocation.arguments()) {
+                StringLiteral a = (StringLiteral) arg;
+                output.apicalls.add(a.getLiteralValue());
+            }
+        } else if (binding.getName().equals("types")) {
+            for (Object arg : invocation.arguments()) {
+                StringLiteral a = (StringLiteral) arg;
+                output.types.add(a.getLiteralValue());
+            }
+        } else if (binding.getName().equals("context")) {
+            for (Object arg : invocation.arguments()) {
+                StringLiteral a = (StringLiteral) arg;
+                output.context.add(a.getLiteralValue());
+            }
+        } else throw new RuntimeException("Invalid evidence type: " + binding.getName());
+
+        return false;
+    }
+
+}
