@@ -14,6 +14,101 @@ There are three main modules in Bayou:
 - [Tensorflow](https://www.tensorflow.org) (Tested with 1.2)
 - scikit-learn (Tested with 0.18.1)
 
+## Compiling and Running Bayou from Source on Ubuntu
+
+#### 1.) Download source from GitHub:
+
+```
+git clone https://github.com/capergroup/bayou.git
+```
+
+#### 2.) Install Model
+
+```
+cd bayou/tool_files/
+python3 install_model.py 
+```
+
+#### 3.) Install Build Tools
+
+```
+cd build_scripts
+sudo ./install_deps.sh
+```
+
+#### 4.) Compile Bayou
+
+```
+./build.sh
+```
+
+#### 5.) Install Bayou Dependenices
+
+```
+cd out
+chmod +x install_dependencies.sh
+sudo ./install_dependencies.sh
+```
+
+#### 6.) Run Bayou
+
+```
+chmod +x start_bayou.sh synthesize.sh
+./start_bayou.sh &
+```
+
+Wait until you see:
+
+```
+===================================
+            Bayou Ready            
+===================================
+```
+
+then execute:
+
+```
+./synthesize.sh
+```
+
+You should see output that ends with characters similar to:
+
+```
+/* --- End of application --- */
+
+
+import edu.rice.bayou.annotations.Evidence;
+import java.io.IOException;
+import java.io.FileReader;
+import java.io.BufferedReader;
+import java.io.FileNotFoundException;
+
+public class TestIO1 {
+
+    @Evidence(apicalls = {"readLine", "ready"})
+    void __bayou_fill(String file) {
+		String s1;
+		String s;
+		boolean b;
+		BufferedReader br;
+		FileReader fr;
+		try {
+			fr = new FileReader(file);
+			br = new BufferedReader(fr);
+			while (b = br.ready()) {
+				s = br.readLine();
+				s1 = br.readLine();
+			}
+			br.close();
+		} catch (FileNotFoundException _e) {
+		} catch (IOException _e) {
+		}
+	}
+
+}
+/* --- End of application --- */
+```
+
 ## Setup & Usage
 #### Driver
 ```

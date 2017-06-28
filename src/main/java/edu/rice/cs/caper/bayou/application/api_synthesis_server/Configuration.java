@@ -22,6 +22,8 @@ class Configuration
 
     static final String SynthesisLogBucketName;
 
+    static final String SynthesisQualityFeedbackLogBucketName;
+
     static final String EvidenceClasspath;
 
     static final File AndroidJarPath;
@@ -68,6 +70,7 @@ class Configuration
         UseSynthesizeEchoMode = Boolean.parseBoolean(properties.getProperty("UseSynthesizeEchoMode"));
         EchoModeDelayMs = Long.parseLong(properties.getProperty("EchoModeDelayMs"));
         SynthesisLogBucketName = properties.getProperty("SynthesisLogBucketName");
+        SynthesisQualityFeedbackLogBucketName = properties.getProperty("SynthesisQualityFeedbackLogBucketName");
         EvidenceClasspath = properties.getProperty("EvidenceClasspath");
         AndroidJarPath = new File(properties.getProperty("AndroidJarPath"));
     }
