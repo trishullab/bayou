@@ -15,10 +15,11 @@ public class Visitor extends ASTVisitor {
     final Document document;
     final CompilationUnit cu;
     String synthesizedProgram;
-    
-    // The internal table for maintianing the block and its evidence APIs
+
+    // The internal table for maintaining the block and its evidence APIs
     protected Map<Block, List<MethodInvocation>> evidBlocks;
-    // The temproary list for the environment objects
+
+    // The temporary list for the environment objects
     protected List<Environment> envs;
 
     private static final Map<String,Class> primitiveToClass;
@@ -40,74 +41,73 @@ public class Visitor extends ASTVisitor {
         this.dAST = dAST;
         this.document = document;
         this.cu = cu;
-	
-	this.evidBlocks = new HashMap<Block, List<MethodInvocation>>();
-	this.envs = new ArrayList<Environment>();
-	this.current_rewriter = ASTRewrite.create(this.cu.getAST());
+
+        this.evidBlocks = new HashMap<Block, List<MethodInvocation>>();
+        this.envs = new ArrayList<Environment>();
+        this.current_rewriter = ASTRewrite.create(this.cu.getAST());
     }
 
     protected ASTRewrite current_rewriter;
 
     @Override
     public boolean visit(MethodInvocation invoke) {
-	if (!(invoke.getExpression() != null && invoke.getExpression().toString().equals("Evidence")))
-	    return false;
-	
-	if (invoke.getName() == null)
-	    return false;
+        if (!(invoke.getExpression() != null && invoke.getExpression().toString().equals("Evidence")))
+            return false;
 
-	if (!(invoke.getName().toString().equals("apicalls") || invoke.getName().toString().equals("types")
-	      || invoke.getName().toString().equals("context")))
-	    return false;
+        if (invoke.getName() == null)
+            return false;
 
-	// Check if current block has been registered for evidence API, if so, just simply remove current 
-	// evidence API
-	if (checkEvidenceBlock(invoke))
-	    return false;
-	
-	List<Variable> scope = new ArrayList<>();
-	Environment env = new Environment(invoke.getAST(), scope);
-	Block body = dAST.synthesize(env);
+        if (!(invoke.getName().toString().equals("apicalls") || invoke.getName().toString().equals("types")
+                || invoke.getName().toString().equals("context")))
+            return false;
 
-	// make rewrites to the local method body 
-	body = postprocessLocal(invoke.getAST(), env, body);
-	ASTRewrite rewriter = this.current_rewriter;
-	rewriter.replace(invoke.getParent().getParent(), body, null);
+        // Check if current block has been registered for evidence API, if so, just simply remove current
+        // evidence API
+        if (checkEvidenceBlock(invoke))
+            return false;
 
-	// Record the environments
-	envs.add(env);
+        List<Variable> scope = new ArrayList<>();
+        Environment env = new Environment(invoke.getAST(), scope);
+        Block body = dAST.synthesize(env);
 
-	// synthesizedProgram = document.get();
+        // make rewrites to the local method body
+        body = postprocessLocal(invoke.getAST(), env, body);
+        ASTRewrite rewriter = this.current_rewriter;
+        rewriter.replace(invoke.getParent().getParent(), body, null);
 
-	return false;
+        // Record the environments
+        envs.add(env);
+
+        return false;
     }
 
     protected boolean checkEvidenceBlock(MethodInvocation invoke) {
-	if (invoke.getParent().getParent() instanceof Block) {
-	    Block parentBlock = (Block)invoke.getParent().getParent();
-	    List<MethodInvocation> evidInvocations = this.evidBlocks.get(parentBlock);
-	    if (evidInvocations == null) {
-		evidInvocations = new ArrayList<MethodInvocation>();
-		evidInvocations.add(invoke);
-		this.evidBlocks.put(parentBlock, evidInvocations);
-		// This is the 1st evidence API call in current block
-		return false;
-	    } else {
-		for (MethodInvocation evidInvocation : evidInvocations) {
-		    if (invoke.getName().toString().equals(evidInvocation.getName().toString()))
-			throw new Error("Same evidence API occured more than once in one block: " + invoke.getName().toString());
-		}
-		evidInvocations.add(invoke);
-		// This is not the 1st evidence API call in current block
-		return true;
-	    }
-	} else
-	    throw new Error("No block?");
+        if (invoke.getParent().getParent() instanceof Block) {
+            Block parentBlock = (Block)invoke.getParent().getParent();
+            List<MethodInvocation> evidInvocations = this.evidBlocks.get(parentBlock);
+
+            if (evidInvocations == null) {
+                evidInvocations = new ArrayList<MethodInvocation>();
+                evidInvocations.add(invoke);
+                this.evidBlocks.put(parentBlock, evidInvocations);
+                // This is the 1st evidence API call in current block
+                return false;
+            } else {
+                for (MethodInvocation evidInvocation : evidInvocations) {
+                    if (invoke.getName().toString().equals(evidInvocation.getName().toString()))
+                        throw new Error("Same evidence API occurred more than once in one block: " + invoke.getName().toString());
+                }
+                evidInvocations.add(invoke);
+                // This is not the 1st evidence API call in current block
+                return true;
+            }
+        } else
+            throw new Error("No block?");
     }
 
     @Override
     public boolean visit(MethodDeclaration method) {
-	if (!method.getName().getIdentifier().equals("__bayou_fill"))
+        if (!method.getName().getIdentifier().equals("__bayou_fill"))
             return true;
 
         List<Variable> scope = new ArrayList<>();
@@ -224,15 +224,15 @@ public class Visitor extends ASTVisitor {
     }
 
     protected void postprocessGlobal(AST ast, Document document) throws BadLocationException {
-	// add imports 
-	ASTRewrite rewriter = ASTRewrite.create(ast);
-	ListRewrite lrw = rewriter.getListRewrite(cu, CompilationUnit.IMPORTS_PROPERTY);
-	Set<Class> toImport = new HashSet<>();
-	for (Environment env : this.envs) 
-	    toImport.addAll(env.imports);
+        // add imports
+        ASTRewrite rewriter = ASTRewrite.create(ast);
+        ListRewrite lrw = rewriter.getListRewrite(cu, CompilationUnit.IMPORTS_PROPERTY);
+        Set<Class> toImport = new HashSet<>();
+        for (Environment env : this.envs)
+            toImport.addAll(env.imports);
         toImport.addAll(dAST.exceptionsThrown()); // add all catch(...) types to imports 
-	
-	for (Class cls : toImport) {
+
+        for (Class cls : toImport) {
             if (cls.isPrimitive() || cls.getPackage().getName().equals("java.lang"))
                 continue;
             ImportDeclaration impDecl = cu.getAST().newImportDeclaration();
@@ -245,18 +245,17 @@ public class Visitor extends ASTVisitor {
 
     // Check if rewrite is needed
     public boolean rewrite() {
-	try {
-	    // if (this.current_rewriter != null)
-	    this.current_rewriter.rewriteAST(this.document, null).apply(this.document);
-	  	
-	    // make rewrites to the document
-	    postprocessGlobal(this.cu.getAST(), this.document);
-	} catch(Exception e) {
-	    System.out.println("No rewriter?");
-	}
+        try {
+            this.current_rewriter.rewriteAST(this.document, null).apply(this.document);
 
-	synthesizedProgram = document.get();
+            // make rewrites to the document
+            postprocessGlobal(this.cu.getAST(), this.document);
+        } catch(Exception e) {
+            System.out.println("No rewriter?");
+        }
 
-	return this.synthesizedProgram != null;
+        synthesizedProgram = document.get();
+
+        return this.synthesizedProgram != null;
     }
 }

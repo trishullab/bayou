@@ -24,7 +24,6 @@ public class EvidenceObject {
         }
 
         int start = input.indexOf("@");
-        // System.out.println("start = " + start);
         if (start > 1) {
             checkBlank(input.substring(0, start));
         }
@@ -37,10 +36,8 @@ public class EvidenceObject {
 
     // Parse the type name
     protected String parseType(String input) throws ParseException {
-        // System.out.println("type: " + input);
         int stop = input.indexOf(":");
         int stop_ = input.indexOf(" ");
-        // System.out.println("stop  = " + stop + " stop_ = " + stop_);
         if (stop == 0 || stop_ == 0)
             throw new ParseException("Wrong type");
 
@@ -67,7 +64,6 @@ public class EvidenceObject {
 
         int stop = input.indexOf(",");
         int stop_ = input.indexOf(" ");
-        // System.out.println(input + " stop = " + stop + " stop_ = " + stop_);
         if (stop < 0 && stop_ < 0) {
             if (input.length() > 0) {
                 addValue(input);
@@ -107,12 +103,12 @@ public class EvidenceObject {
     }
 
     public static String getElement(String input) {
-	if (input == null || input.length() <= 2)
-	    return null;
+        if (input == null || input.length() <= 2)
+            return null;
 
-	String res = input.substring(1, input.length() - 1);
+        String res = input.substring(1, input.length() - 1);
 
-	return res;
+        return res;
     }
 
     public String getType() {
