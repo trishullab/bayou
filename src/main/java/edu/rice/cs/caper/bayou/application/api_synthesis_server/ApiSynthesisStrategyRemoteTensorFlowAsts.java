@@ -170,7 +170,7 @@ class ApiSynthesisStrategyRemoteTensorFlowAsts implements ApiSynthesisStrategy
         /*
          * Split results into into individual solutions and return.
          */
-        String[] results = synthesizeResult.split("/\\* --- End of program --- \\*/");
+        String[] results = synthesizeResult.split("/\\* --- End of application --- \\*/");
         _logger.debug("exiting");
         return Arrays.asList(results);
     }
