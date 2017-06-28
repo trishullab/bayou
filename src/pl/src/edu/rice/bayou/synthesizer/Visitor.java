@@ -15,12 +15,9 @@ public class Visitor extends ASTVisitor {
     final Document document;
     final CompilationUnit cu;
     String synthesizedProgram;
-
-    // The internal table for maintaining the block and its evidence APIs
-    protected Map<Block, List<MethodInvocation>> evidBlocks;
-
-    // The temporary list for the environment objects
-    protected List<Environment> envs;
+    protected ASTRewrite rewriter;
+    Block evidenceBlock;
+    List<Variable> currentScope;
 
     private static final Map<String,Class> primitiveToClass;
     static {
@@ -42,123 +39,49 @@ public class Visitor extends ASTVisitor {
         this.document = document;
         this.cu = cu;
 
-        this.evidBlocks = new HashMap<>();
-        this.envs = new ArrayList<>();
-        this.current_rewriter = ASTRewrite.create(this.cu.getAST());
-    }
-
-    protected ASTRewrite current_rewriter;
-
-    @Override
-    public boolean visit(MethodInvocation invoke) {
-        if (!(invoke.getExpression() != null && invoke.getExpression().toString().equals("Evidence")))
-            return false;
-
-        if (invoke.getName() == null)
-            return false;
-
-        if (!(invoke.getName().toString().equals("apicalls") || invoke.getName().toString().equals("types")
-                || invoke.getName().toString().equals("context")))
-            return false;
-
-        // Check if current block has been registered for evidence API, if so, just simply remove current
-        // evidence API
-        if (checkEvidenceBlock(invoke))
-            return false;
-
-        List<Variable> scope = new ArrayList<>();
-        Environment env = new Environment(invoke.getAST(), scope);
-        Block body = dAST.synthesize(env);
-
-        // make rewrites to the local method body
-        body = postprocessLocal(invoke.getAST(), env, body);
-        ASTRewrite rewriter = this.current_rewriter;
-        rewriter.replace(invoke.getParent().getParent(), body, null);
-
-        // Record the environments
-        envs.add(env);
-
-        return false;
-    }
-
-    protected boolean checkEvidenceBlock(MethodInvocation invoke) {
-        if (invoke.getParent().getParent() instanceof Block) {
-            Block parentBlock = (Block)invoke.getParent().getParent();
-            List<MethodInvocation> evidInvocations = this.evidBlocks.get(parentBlock);
-
-            if (evidInvocations == null) {
-                evidInvocations = new ArrayList<>();
-                evidInvocations.add(invoke);
-                this.evidBlocks.put(parentBlock, evidInvocations);
-                // This is the 1st evidence API call in current block
-                return false;
-            } else {
-                for (MethodInvocation evidInvocation : evidInvocations) {
-                    if (invoke.getName().toString().equals(evidInvocation.getName().toString()))
-                        throw new Error("Same evidence API occurred more than once in one block: " + invoke.getName().toString());
-                }
-                evidInvocations.add(invoke);
-                // This is not the 1st evidence API call in current block
-                return true;
-            }
-        } else
-            throw new Error("No block?");
+        this.rewriter = ASTRewrite.create(this.cu.getAST());
+        this.currentScope = new ArrayList<>();
     }
 
     @Override
-    public boolean visit(MethodDeclaration method) {
-        if (!method.getName().getIdentifier().equals("__bayou_fill"))
-            return true;
+    public boolean visit(MethodInvocation invocation) {
+        /* TODO: these checks are the same as in EvidenceExtractor. Make this process better. */
+        IMethodBinding binding = invocation.resolveMethodBinding();
+        if (binding == null)
+            throw new RuntimeException("Could not resolve binding. " +
+                    "Either CLASSPATH is not set correctly, or there is an invalid evidence type.");
 
-        List<Variable> scope = new ArrayList<>();
-        for (Object o : method.parameters()) {
-            SingleVariableDeclaration param = (SingleVariableDeclaration) o;
-            Type t = param.getType();
-            Class type;
+        ITypeBinding cls = binding.getDeclaringClass();
+        if (cls == null || !cls.getQualifiedName().equals("edu.rice.bayou.annotations.Evidence"))
+            return false;
 
-            if (t.isSimpleType()) {
-                ITypeBinding binding = t.resolveBinding();
-                if (binding == null)
-                    continue;
-                type = Environment.getClass(binding.getQualifiedName());
-            }
-            else if (t.isPrimitiveType())
-                type = primitiveToClass.get(((PrimitiveType) t).getPrimitiveTypeCode().toString());
-            else continue;
+        if (! (invocation.getParent().getParent() instanceof Block))
+            throw new RuntimeException("Evidence has to be given in a (empty) block.");
+        Block evidenceBlock = (Block) invocation.getParent().getParent();
+        if (this.evidenceBlock != null)
+            if (this.evidenceBlock != evidenceBlock)
+                throw new RuntimeException("Only one synthesis query at a time is supported.");
+            else return false; /* synthesis is already done */
+        this.evidenceBlock = evidenceBlock;
 
-            Variable v = new Variable(param.getName().getIdentifier(), type);
-            scope.add(v);
-        }
+        String name = binding.getName();
+        if (! (name.equals("apicalls") || name.equals("types") || name.equals("context")))
+            throw new RuntimeException("Invalid evidence type: " + binding.getName());
 
-        Environment env = new Environment(method.getAST(), scope);
+        Environment env = new Environment(invocation.getAST(), currentScope);
         Block body = dAST.synthesize(env);
+
+        /* make rewrites to the local method body */
+        body = postprocessLocal(invocation.getAST(), env, body);
+        rewriter.replace(evidenceBlock, body, null);
 
         try {
-            /* make rewrites to the local method body */
-            body = postprocessLocal(method.getAST(), env, body);
-            ASTRewrite rewriter = ASTRewrite.create(method.getAST());
-            rewriter.replace(method.getBody(), body, null);
-
-            /* remove the evidence annotations */
-            List<IExtendedModifier> modifiers = method.modifiers();
-            for (IExtendedModifier m : modifiers) {
-                if (!m.isAnnotation() || !((Annotation) m).isNormalAnnotation())
-                    continue;
-                NormalAnnotation annotation = (NormalAnnotation) m;
-                IAnnotationBinding aBinding = annotation.resolveAnnotationBinding();
-                ITypeBinding binding;
-                if (aBinding == null || (binding = aBinding.getAnnotationType()) == null)
-                    continue;
-                if (binding.getQualifiedName().equals("edu.rice.bayou.annotations.Evidence"))
-                    rewriter.remove(annotation, null);
-            }
             rewriter.rewriteAST(document, null).apply(document);
 
             /* make rewrites to the document */
             postprocessGlobal(cu.getAST(), env, document);
         } catch (BadLocationException e) {
             System.err.println("Could not edit document for some reason.\n" + e.getMessage());
-            System.exit(1);
         }
 
         synthesizedProgram = document.get();
@@ -223,39 +146,30 @@ public class Visitor extends ASTVisitor {
         rewriter.rewriteAST(document, null).apply(document);
     }
 
-    protected void postprocessGlobal(AST ast, Document document) throws BadLocationException {
-        // add imports
-        ASTRewrite rewriter = ASTRewrite.create(ast);
-        ListRewrite lrw = rewriter.getListRewrite(cu, CompilationUnit.IMPORTS_PROPERTY);
-        Set<Class> toImport = new HashSet<>();
-        for (Environment env : this.envs)
-            toImport.addAll(env.imports);
-        toImport.addAll(dAST.exceptionsThrown()); // add all catch(...) types to imports 
+    @Override
+    public boolean visit(MethodDeclaration method) {
+        currentScope.clear();
 
-        for (Class cls : toImport) {
-            if (cls.isPrimitive() || cls.getPackage().getName().equals("java.lang"))
-                continue;
-            ImportDeclaration impDecl = cu.getAST().newImportDeclaration();
-            String className = cls.getName().replaceAll("\\$", "\\.");
-            impDecl.setName(cu.getAST().newName(className.split("\\.")));
-            lrw.insertLast(impDecl, null);
-        }
-        rewriter.rewriteAST(document, null).apply(document);
-    }
+        /* add variables in the formal parameters */
+        for (Object o : method.parameters()) {
+            SingleVariableDeclaration param = (SingleVariableDeclaration) o;
+            Type t = param.getType();
+            Class type;
 
-    // Check if rewrite is needed
-    public boolean rewrite() {
-        try {
-            this.current_rewriter.rewriteAST(this.document, null).apply(this.document);
+            if (t.isSimpleType()) {
+                ITypeBinding binding = t.resolveBinding();
+                if (binding == null)
+                    continue;
+                type = Environment.getClass(binding.getQualifiedName());
+            }
+            else if (t.isPrimitiveType())
+                type = primitiveToClass.get(((PrimitiveType) t).getPrimitiveTypeCode().toString());
+            else continue;
 
-            // make rewrites to the document
-            postprocessGlobal(this.cu.getAST(), this.document);
-        } catch(Exception e) {
-            System.out.println("No rewriter?");
+            Variable v = new Variable(param.getName().getIdentifier(), type);
+            currentScope.add(v);
         }
 
-        synthesizedProgram = document.get();
-
-        return this.synthesizedProgram != null;
+        return true;
     }
 }
