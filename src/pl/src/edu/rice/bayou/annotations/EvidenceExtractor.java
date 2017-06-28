@@ -2,7 +2,6 @@ package edu.rice.bayou.annotations;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import edu.rice.bayou.dsl.Sequence;
 import org.apache.commons.cli.*;
 import org.apache.commons.io.FileUtils;
 import org.eclipse.jdt.core.dom.*;
@@ -55,6 +54,15 @@ public class EvidenceExtractor extends ASTVisitor {
                 .build());
     }
 
+    String getElement(String input) {
+        if (input == null || input.length() <= 2)
+            return null;
+
+        String res = input.substring(1, input.length() - 1);
+
+        return res;
+    }
+
     public void execute() throws IOException {
         if (cmdLine == null)
             return;
@@ -93,15 +101,15 @@ public class EvidenceExtractor extends ASTVisitor {
         // Extracting invoke arguments
         if (invoke.getName().toString().equals("apicalls")) {
             for (Object argObj : invoke.arguments()) {
-                output.apicalls.add(EvidenceObject.getElement(argObj.toString()));
+                output.apicalls.add(getElement(argObj.toString()));
             }
         } else if (invoke.getName().toString().equals("types")) {
             for (Object argObj : invoke.arguments()) {
-                output.types.add(EvidenceObject.getElement(argObj.toString()));
+                output.types.add(getElement(argObj.toString()));
             }
         } if (invoke.getName().toString().equals("context")) {
             for (Object argObj : invoke.arguments()) {
-                output.context.add(EvidenceObject.getElement(argObj.toString()));
+                output.context.add(getElement(argObj.toString()));
             }
         }
 
