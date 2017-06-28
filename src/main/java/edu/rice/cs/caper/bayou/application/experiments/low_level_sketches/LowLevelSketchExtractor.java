@@ -1,11 +1,12 @@
-package edu.rice.bayou.experiments.low_level_sketches;
+package edu.rice.cs.caper.bayou.application.experiments.low_level_sketches;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonWriter;
-import edu.rice.bayou.dsl.*;
-import edu.rice.bayou.synthesizer.RuntimeTypeAdapterFactory;
+import edu.rice.cs.caper.bayou.core.dsl.Sequence;
+import edu.rice.cs.caper.bayou.core.synthesizer.RuntimeTypeAdapterFactory;
+
 
 import java.io.*;
 import java.util.List;

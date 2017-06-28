@@ -1,4 +1,4 @@
-package edu.rice.bayou.experiments.low_level_sketches;
+package edu.rice.cs.caper.bayou.application.experiments.low_level_sketches;
 
 import java.util.List;
 import java.util.stream.Collectors;
