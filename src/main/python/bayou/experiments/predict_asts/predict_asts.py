@@ -6,6 +6,7 @@ import time
 import bayou.core.infer
 import bayou.experiments.nonbayesian.infer
 import bayou.experiments.low_level_evidences.infer
+import bayou.experiments.low_level_sketches.infer
 
 TIMEOUT = 20  # seconds per query
 
@@ -22,6 +23,8 @@ def main(clargs):
             p_type = bayou.experiments.nonbayesian.infer.NonBayesianPredictor
         elif clargs.model == 'low_level_evidences':
             p_type = bayou.experiments.low_level_evidences.infer.BayesianPredictor
+        elif clargs.model == 'low_level_sketches':
+            p_type = bayou.experiments.low_level_sketches.infer.BayesianPredictor
         else:
             raise TypeError('invalid type of model specified')
         print('Loading model...')
@@ -71,7 +74,7 @@ if __name__ == '__main__':
     parser.add_argument('--save', type=str, required=True,
                         help='directory to load model from')
     parser.add_argument('--model', type=str, required=True,
-                        choices=['bayesian', 'nonbayesian', 'low_level_evidences'],
+                        choices=['bayesian', 'nonbayesian', 'low_level_evidences', 'low_level_sketches'],
                         help='the type of model')
     parser.add_argument('--evidence', type=str, default='all',
                         choices=['apicalls', 'types', 'context', 'all'],
