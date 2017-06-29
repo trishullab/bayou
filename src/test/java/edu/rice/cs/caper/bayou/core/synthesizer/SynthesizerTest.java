@@ -1,33 +1,33 @@
-package edu.rice.cs.caper.bayou.annotations;
+package edu.rice.cs.caper.bayou.core.synthesizer;
 
-
-import com.google.gson.Gson;
-import com.google.gson.JsonSyntaxException;
-import edu.rice.cs.caper.bayou.core.synthesizer.EvidenceExtractor;
 import org.junit.Assert;
 import org.junit.Test;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.PrintStream;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 
-public class EvidenceExtractorTest
-{
+public class SynthesizerTest {
+
     String testDir = "/Users/vijay/Work/bayou/src/test/resources/synthesizer";
     String classpath = "/Users/vijay/Work/bayou/tool_files/build_scripts/out/resources/artifacts/classes:/Users/vijay/Work/bayou/tool_files/build_scripts/out/resources/artifacts/jar/android.jar";
 
-    Gson gson = new Gson();
-
     void testExecute(String test) throws IOException
     {
-        String code = new String(Files.readAllBytes(Paths.get(String.format("%s/%s.java", testDir, test))));
-        String content = new EvidenceExtractor().execute(code, classpath);
+        ByteArrayOutputStream bout = new ByteArrayOutputStream();
+        PrintStream out = new PrintStream(bout);
+        Synthesizer synthesizer = new Synthesizer(out);
 
-        try {
-            gson.fromJson(content, Object.class); // check valid JSON
-        } catch(JsonSyntaxException e) {
-            Assert.fail("Invalid JSON: " + e.getMessage());
-        }
+        String code = new String(Files.readAllBytes(Paths.get(String.format("%s/%s.java", testDir, test))));
+        String asts = new String(Files.readAllBytes(Paths.get(String.format("%s/%s.json", testDir, test))));
+
+        synthesizer.execute(code, asts, classpath);
+        String content = new String(bout.toByteArray(), StandardCharsets.UTF_8);
+
+        Assert.assertTrue(content.contains("public class")); // some code was synthesized
     }
 
     @Test
