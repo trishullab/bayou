@@ -52,7 +52,7 @@ public class Visitor extends ASTVisitor {
                     "Either CLASSPATH is not set correctly, or there is an invalid evidence type.");
 
         ITypeBinding cls = binding.getDeclaringClass();
-        if (cls == null || !cls.getQualifiedName().equals("edu.rice.bayou.annotations.Evidence"))
+        if (cls == null || !cls.getQualifiedName().equals("edu.rice.cs.caper.bayou.annotations.Evidence"))
             return false;
 
         if (! (invocation.getParent().getParent() instanceof Block))

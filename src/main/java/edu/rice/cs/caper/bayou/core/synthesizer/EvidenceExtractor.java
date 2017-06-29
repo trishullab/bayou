@@ -1,4 +1,4 @@
-package edu.rice.cs.caper.bayou.core.annotations;
+package edu.rice.cs.caper.bayou.core.synthesizer;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -62,7 +62,7 @@ public class EvidenceExtractor extends ASTVisitor {
                 "Either CLASSPATH is not set correctly, or there is an invalid evidence type.");
 
         ITypeBinding cls = binding.getDeclaringClass();
-        if (cls == null || !cls.getQualifiedName().equals("edu.rice.bayou.annotations.Evidence"))
+        if (cls == null || !cls.getQualifiedName().equals("edu.rice.cs.caper.bayou.annotations.Evidence"))
             return false;
 
         if (! (invocation.getParent().getParent() instanceof Block))

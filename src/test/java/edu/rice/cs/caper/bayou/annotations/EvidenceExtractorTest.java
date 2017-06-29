@@ -1,7 +1,7 @@
-package edu.rice.cs.caper.bayou.core.annotations;
+package edu.rice.cs.caper.bayou.annotations;
 
 
-import edu.rice.cs.caper.bayou.core.annotations.EvidenceExtractor;
+import edu.rice.cs.caper.bayou.core.synthesizer.EvidenceExtractor;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -15,14 +15,16 @@ public class EvidenceExtractorTest
     @Test
     public void testExecute() throws IOException
     {
-        String searchCode = "import edu.rice.bayou.annotations.Evidence;\n" +
+        String searchCode = "import edu.rice.cs.caper.bayou.annotations.Evidence;\n" +
                 "import android.content.Context;\n" +
                 "\n" +
                 "public class TestDialog {\n" +
                 "\n" +
-                "    @Evidence(apicalls = {\"setTitle\", \"setMessage\"})\n" +
-                "    @Evidence(types = {\"AlertDialog\"})\n" +
-                "    void __bayou_fill(Context c, String str1, String str2) {\n" +
+                "    void test(Context c, String str1, String str2) {\n" +
+                "       {\n" +
+                "       Evidence.apicalls(\"setTitle\", \"setMessage\");\n" +
+                "       Evidence.types(\"AlertDialog\");\n" +
+                "       }\n" +
                 "\n" +
                 "    }   \n" +
                 "\n" +

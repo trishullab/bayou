@@ -1,4 +1,4 @@
-import edu.rice.bayou.annotations.Evidence;
+import edu.rice.cs.caper.bayou.annotations.Evidence;
 import android.bluetooth.BluetoothAdapter;
 
 public class TestBluetooth {

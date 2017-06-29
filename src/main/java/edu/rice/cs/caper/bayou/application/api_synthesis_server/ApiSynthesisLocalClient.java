@@ -10,7 +10,7 @@ import java.nio.file.Paths;
 
 class ApiSynthesisLocalClient
 {
-    private static final String _testIO = "import edu.rice.bayou.annotations.Evidence;\n" +
+    private static final String _testIO = "import edu.rice.cs.caper.bayou.annotations.Evidence;\n" +
             "\n" +
             "public class TestIO1 {\n" +
             "\n" +

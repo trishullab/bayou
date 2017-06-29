@@ -1,4 +1,4 @@
-package edu.rice.bayou.annotations;
+package edu.rice.cs.caper.bayou.annotations;
 
 public interface Evidence {
     public static void apicalls(String... s) { }
