@@ -125,10 +125,12 @@ class ApiSynthesisStrategyRemoteTensorFlowAsts implements ApiSynthesisStrategy
             throw new NullPointerException("code");
         }
 
+        String combinedClassPath = _evidenceClasspath + File.pathSeparator + _androidJarPath.getAbsolutePath();
+
         /*
          * Extract a description of the evidence in the search code that should guide AST results generation.
          */
-        String evidence = extractEvidence(code, new EvidenceExtractor(), _evidenceClasspath);
+        String evidence = extractEvidence(code, new EvidenceExtractor(), combinedClassPath);
 
         /*
          * Contact the remote Python server and provide evidence to be fed to Tensor Flow to generate solution
@@ -157,8 +159,9 @@ class ApiSynthesisStrategyRemoteTensorFlowAsts implements ApiSynthesisStrategy
         try
         {
             ByteArrayOutputStream outAccum = new ByteArrayOutputStream();
-            new Synthesizer(new PrintStream(outAccum)).execute(code, astsJson, _androidJarPath.getAbsolutePath());
+            new Synthesizer(new PrintStream(outAccum)).execute(code, astsJson, combinedClassPath);
             synthesizeResult = outAccum.toString();
+            _logger.trace("synthesizeResult: " + synthesizeResult);
         }
         catch (IOException e)
         {
