@@ -7,27 +7,52 @@ import edu.rice.cs.caper.bayou.core.synthesizer.EvidenceExtractor;
 import org.junit.Assert;
 import org.junit.Test;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 
 public class EvidenceExtractorTest
 {
-    String testDir = "/Users/vijay/Work/bayou/src/test/resources/synthesizer";
-    String classpath = "/Users/vijay/Work/bayou/tool_files/build_scripts/out/resources/artifacts/classes:/Users/vijay/Work/bayou/tool_files/build_scripts/out/resources/artifacts/jar/android.jar";
 
-    Gson gson = new Gson();
-
-    void testExecute(String test) throws IOException
+    private void testExecute(String test) throws IOException
     {
+        File srcFolder;
+        {
+            File projRoot = new File(System.getProperty("user.dir")).getParentFile().getParentFile().getParentFile();
+            srcFolder = new File(projRoot.getAbsolutePath() + File.separator + "src");
+        }
+
+        File artifactsFolder;
+        {
+            File mainResourcesFolder = new File(srcFolder.getAbsolutePath() + File.separator + "main" + File.separator +
+                                                "resources");
+            artifactsFolder = new File(mainResourcesFolder + File.separator + "artifacts");
+        }
+
+        String classpath;
+        {
+            File classesFolder = new File(artifactsFolder.getAbsolutePath() + File.separator + "classes");
+            File androidJar = new File(artifactsFolder.getAbsolutePath() + File.separator + "jar" + File.separator +
+                                       "android.jar");
+
+            if(!classesFolder.exists())
+                throw new IllegalStateException();
+
+            if(!androidJar.exists())
+                throw new IllegalStateException();
+
+            classpath = classesFolder.getAbsolutePath() + File.pathSeparator + androidJar.getAbsolutePath();
+        }
+
+        String testDir = srcFolder.getAbsolutePath() + File.separator + "test" + File.separator + "resources" +
+                         File.separator + "synthesizer";
+
         String code = new String(Files.readAllBytes(Paths.get(String.format("%s/%s.java", testDir, test))));
         String content = new EvidenceExtractor().execute(code, classpath);
 
-        try {
-            gson.fromJson(content, Object.class); // check valid JSON
-        } catch(JsonSyntaxException e) {
-            Assert.fail("Invalid JSON: " + e.getMessage());
-        }
+        new Gson().fromJson(content, Object.class); // check valid JSON
+
     }
 
     @Test
