@@ -52,28 +52,31 @@ class BayesianPredictor(object):
             tokens += [prediction]
             if check_call:  # exception caught in main
                 assert prediction not in ['DAPICall', 'DBranch', 'DExcept', 'DLoop', 'DSubTree']
+            else:
+                assert prediction in ['DAPICall', 'DBranch', 'DExcept', 'DLoop', 'DSubTree', 'STOP']
             if prediction == 'STOP':
                 break
-            js = self.generate_ast(psi, depth + 1, tokens)
+            js, tokens = self.generate_ast_with_tokens(psi, depth + 1, tokens)
             ast.append(js)
             num += 1
         return ast, tokens
 
-    def generate_ast(self, psi, depth=0, in_tokens=[]):
+    def generate_ast_with_tokens(self, psi, depth, in_tokens):
         assert depth < MAX_AST_DEPTH
         ast = collections.OrderedDict()
-        token = in_tokens[-1] if not in_tokens == [] else 'DSubTree'
+        token = in_tokens[-1]
 
         if token not in ['DAPICall', 'DBranch', 'DExcept', 'DLoop', 'DSubTree']:
-            return token
+            return token, in_tokens
 
         ast['node'] = token
         tokens = in_tokens[:]
 
         if token == 'DAPICall':
-            ast_call, tokens = self.gen_until_STOP(psi, depth, tokens)
-            ast['_call'] = ast_call[0]
-            return ast
+            ast_call, tokens = self.gen_until_STOP(psi, depth, tokens, check_call=True)
+            assert len(ast_call) > 0
+            ast['_call'] = ast_call[0] + '(' + ','.join(ast_call[1:]) + ')'
+            return ast, tokens
 
         if token == 'DBranch':
             ast_cond, tokens = self.gen_until_STOP(psi, depth, tokens, check_call=True)
@@ -82,23 +85,30 @@ class BayesianPredictor(object):
             ast['_cond'] = ast_cond
             ast['_then'] = ast_then
             ast['_else'] = ast_else
-            return ast
+            return ast, tokens
 
         if token == 'DExcept':
             ast_try, tokens = self.gen_until_STOP(psi, depth, tokens)
             ast_catch, tokens = self.gen_until_STOP(psi, depth, tokens)
             ast['_try'] = ast_try
             ast['_catch'] = ast_catch
-            return ast
+            return ast, tokens
 
         if token == 'DLoop':
             ast_cond, tokens = self.gen_until_STOP(psi, depth, tokens, check_call=True)
             ast_body, tokens = self.gen_until_STOP(psi, depth, tokens)
             ast['_cond'] = ast_cond
             ast['_body'] = ast_body
-            return ast
+            return ast, tokens
 
         if token == 'DSubTree':
-            ast_nodes, _ = self.gen_until_STOP(psi, depth, tokens)
+            ast_nodes, tokens = self.gen_until_STOP(psi, depth, tokens)
             ast['_nodes'] = ast_nodes
-            return ast
+            return ast, tokens
+
+        raise TypeError('Invalid token type: ' + token)
+
+    def generate_ast(self, psi):
+        ast, _ = self.generate_ast_with_tokens(psi, depth=0, in_tokens=['DSubTree'])
+        return ast
+
