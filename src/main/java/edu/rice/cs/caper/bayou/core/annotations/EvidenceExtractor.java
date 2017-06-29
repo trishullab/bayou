@@ -30,6 +30,7 @@ public class EvidenceExtractor extends ASTVisitor {
     }
 
     JSONOutputWrapper output = new JSONOutputWrapper();
+    Block evidenceBlock;
 
 
     public String execute(String source, String classpath) {
@@ -54,53 +55,40 @@ public class EvidenceExtractor extends ASTVisitor {
     }
 
     @Override
-    public boolean visit(MethodDeclaration method) {
-        if (!method.getName().getIdentifier().equals("__bayou_fill"))
+    public boolean visit(MethodInvocation invocation) {
+        IMethodBinding binding = invocation.resolveMethodBinding();
+        if (binding == null)
+            throw new RuntimeException("Could not resolve binding. " +
+                "Either CLASSPATH is not set correctly, or there is an invalid evidence type.");
+
+        ITypeBinding cls = binding.getDeclaringClass();
+        if (cls == null || !cls.getQualifiedName().equals("edu.rice.bayou.annotations.Evidence"))
             return false;
 
-        /* 1. Get apicalls and types from @Evidence annotation */
-        List<IExtendedModifier> modifiers = method.modifiers();
+        if (! (invocation.getParent().getParent() instanceof Block))
+            throw new RuntimeException("Evidence has to be given in a (empty) block.");
+        Block evidenceBlock = (Block) invocation.getParent().getParent();
+        if (this.evidenceBlock != null && this.evidenceBlock != evidenceBlock)
+            throw new RuntimeException("Only one synthesis query at a time is supported.");
+        this.evidenceBlock = evidenceBlock;
 
         // performing casts wildly.. if any exceptions occur it's due to incorrect input format
-        for (IExtendedModifier m : modifiers) {
-            if (! m.isAnnotation() || ! ((Annotation) m).isNormalAnnotation())
-                continue;
-            NormalAnnotation annotation = (NormalAnnotation) m;
-            IAnnotationBinding aBinding = annotation.resolveAnnotationBinding();
-            ITypeBinding binding;
-            if (aBinding == null || (binding = aBinding.getAnnotationType()) == null)
-                continue;
-            if (! binding.getQualifiedName().equals("edu.rice.bayou.annotations.Evidence"))
-                continue;
-            List<MemberValuePair> values = annotation.values();
-
-            for (MemberValuePair value : values) {
-                String type = value.getName().getIdentifier();
-
-                if (type.equals("apicalls")) {
-                    List<Expression> apicalls = ((ArrayInitializer) value.getValue()).expressions();
-                    for (Expression e : apicalls) {
-                        String a = ((StringLiteral) e).getLiteralValue();
-                        output.apicalls.add(a);
-                    }
-                }
-                else if (type.equals("types")) {
-                    List<Expression> types = ((ArrayInitializer) value.getValue()).expressions();
-                    for (Expression e : types) {
-                        String t = ((StringLiteral) e).getLiteralValue();
-                        output.types.add(t);
-                    }
-                }
-                else if (type.equals("context")) {
-                    List<Expression> context = ((ArrayInitializer) value.getValue()).expressions();
-                    for (Expression e : context) {
-                        String c = ((StringLiteral) e).getLiteralValue();
-                        output.context.add(c);
-                    }
-                }
-                else throw new RuntimeException();
+        if (binding.getName().equals("apicalls")) {
+            for (Object arg : invocation.arguments()) {
+                StringLiteral a = (StringLiteral) arg;
+                output.apicalls.add(a.getLiteralValue());
             }
-        }
+        } else if (binding.getName().equals("types")) {
+            for (Object arg : invocation.arguments()) {
+                StringLiteral a = (StringLiteral) arg;
+                output.types.add(a.getLiteralValue());
+            }
+        } else if (binding.getName().equals("context")) {
+            for (Object arg : invocation.arguments()) {
+                StringLiteral a = (StringLiteral) arg;
+                output.context.add(a.getLiteralValue());
+            }
+        } else throw new RuntimeException("Invalid evidence type: " + binding.getName());
 
         return false;
     }

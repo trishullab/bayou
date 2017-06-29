@@ -1,12 +1,10 @@
 import edu.rice.bayou.annotations.Evidence;
-import java.io.InputStreamReader;
 
-public class TestIO2 {
+public class TestIO1 {
 
-    @Evidence(types = {"BufferedReader"})
-    @Evidence(context = {"Reader"})
-    void __bayou_fill(InputStreamReader input) {
-
+    void read(String file) {
+        Evidence.apicalls("readLine");
+        Evidence.context("String");
     }   
 
 }

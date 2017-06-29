@@ -1,6 +1,7 @@
 package edu.rice.bayou.annotations;
 
-import java.lang.annotation.Repeatable;
-
-public @Repeatable(Evidences.class) @interface Evidence {
+public interface Evidence {
+    public static void apicalls(String... s) { }
+    public static void types(String... s) { }
+    public static void context(String... s) { }
 }

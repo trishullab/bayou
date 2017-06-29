@@ -2,10 +2,13 @@ import edu.rice.bayou.annotations.Evidence;
 
 public class TestCamera {
 
-    @Evidence(apicalls = {"startPreview"})
-    @Evidence(types = {"Camera"})
-    void __bayou_fill(int w, int h) {
-
+    void preview() {
+        int width = 640;
+        int height = 480;
+        {
+            Evidence.apicalls("startPreview");
+            Evidence.types("Camera");
+        }
     }   
 
 }
