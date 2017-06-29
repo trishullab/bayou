@@ -62,7 +62,7 @@ class BayesianPredictor(object):
     def generate_ast(self, psi, depth=0, in_tokens=[]):
         assert depth < MAX_AST_DEPTH
         ast = collections.OrderedDict()
-        token = in_tokens[-1] if in_tokens is not [] else 'DSubTree'
+        token = in_tokens[-1] if not in_tokens == [] else 'DSubTree'
 
         if token not in ['DAPICall', 'DBranch', 'DExcept', 'DLoop', 'DSubTree']:
             return token

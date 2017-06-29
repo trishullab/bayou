@@ -51,10 +51,10 @@
                 <goal>copy-resources</goal>
               </goals>
               <configuration>
-                <outputDirectory>../../../src/main/resources/artifacts/classes/edu/rice/bayou/annotations/</outputDirectory>
+                <outputDirectory>../../../src/main/resources/artifacts/classes/edu/rice/cs/caper/bayou/annotations/</outputDirectory>
                 <resources>
                   <resource>
-                    <directory>${basedir}/target/classes/edu/rice/bayou/annotations/</directory>
+                    <directory>${basedir}/target/classes/edu/rice/cs/caper/bayou/annotations/</directory>
                     <filtering>true</filtering>
                   </resource>
                 </resources>

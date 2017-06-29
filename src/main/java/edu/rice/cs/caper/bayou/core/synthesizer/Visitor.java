@@ -15,6 +15,9 @@ public class Visitor extends ASTVisitor {
     final Document document;
     final CompilationUnit cu;
     String synthesizedProgram;
+    protected ASTRewrite rewriter;
+    Block evidenceBlock;
+    List<Variable> currentScope;
 
     private static final Map<String,Class> primitiveToClass;
     static {
@@ -35,39 +38,37 @@ public class Visitor extends ASTVisitor {
         this.dAST = dAST;
         this.document = document;
         this.cu = cu;
+
+        this.rewriter = ASTRewrite.create(this.cu.getAST());
+        this.currentScope = new ArrayList<>();
     }
 
     @Override
-    public boolean visit(MethodDeclaration method) {
-        if (! method.getName().getIdentifier().equals("__bayou_fill"))
+    public boolean visit(MethodInvocation invocation) {
+        /* TODO: these checks are the same as in EvidenceExtractor. Make this process better. */
+        IMethodBinding binding = invocation.resolveMethodBinding();
+        if (binding == null)
+            throw new RuntimeException("Could not resolve binding. " +
+                    "Either CLASSPATH is not set correctly, or there is an invalid evidence type.");
+
+        ITypeBinding cls = binding.getDeclaringClass();
+        if (cls == null || !cls.getQualifiedName().equals("edu.rice.cs.caper.bayou.annotations.Evidence"))
             return false;
 
-        List<Variable> scope = new ArrayList<>();
-        for (Object o : method.parameters()) {
-            SingleVariableDeclaration param = (SingleVariableDeclaration) o;
-            Type t = param.getType();
-            Class type;
+        if (! (invocation.getParent().getParent() instanceof Block))
+            throw new RuntimeException("Evidence has to be given in a (empty) block.");
+        Block evidenceBlock = (Block) invocation.getParent().getParent();
+        if (this.evidenceBlock != null)
+            if (this.evidenceBlock != evidenceBlock)
+                throw new RuntimeException("Only one synthesis query at a time is supported.");
+            else return false; /* synthesis is already done */
+        this.evidenceBlock = evidenceBlock;
 
-            if (t.isSimpleType()) {
-                ITypeBinding binding = t.resolveBinding();
-                if (binding == null)
-                    continue;
-                try {
-                    type = Environment.getClass(binding.getQualifiedName());
-                } catch (ClassNotFoundException  e) {
-                    synthesizedProgram = null;
-                    return false;
-                }
-            }
-            else if (t.isPrimitiveType())
-                type = primitiveToClass.get(((PrimitiveType) t).getPrimitiveTypeCode().toString());
-            else continue;
+        String name = binding.getName();
+        if (! (name.equals("apicalls") || name.equals("types") || name.equals("context")))
+            throw new RuntimeException("Invalid evidence type: " + binding.getName());
 
-            Variable v = new Variable(param.getName().getIdentifier(), type);
-            scope.add(v);
-        }
-
-        Environment env = new Environment(method.getAST(), scope);
+        Environment env = new Environment(invocation.getAST(), currentScope);
         Block body;
         try {
             body = dAST.synthesize(env);
@@ -76,25 +77,11 @@ public class Visitor extends ASTVisitor {
             return false;
         }
 
-        try {
-            /* make rewrites to the local method body */
-            body = postprocessLocal(method.getAST(), env, body);
-            ASTRewrite rewriter = ASTRewrite.create(method.getAST());
-            rewriter.replace(method.getBody(), body, null);
+        /* make rewrites to the local method body */
+        body = postprocessLocal(invocation.getAST(), env, body);
+        rewriter.replace(evidenceBlock, body, null);
 
-            /* remove the evidence annotations */
-            List<IExtendedModifier> modifiers = method.modifiers();
-            for (IExtendedModifier m : modifiers) {
-                if (!m.isAnnotation() || !((Annotation) m).isNormalAnnotation())
-                    continue;
-                NormalAnnotation annotation = (NormalAnnotation) m;
-                IAnnotationBinding aBinding = annotation.resolveAnnotationBinding();
-                ITypeBinding binding;
-                if (aBinding == null || (binding = aBinding.getAnnotationType()) == null)
-                    continue;
-                if (binding.getQualifiedName().equals("edu.rice.bayou.annotations.Evidence"))
-                    rewriter.remove(annotation, null);
-            }
+        try {
             rewriter.rewriteAST(document, null).apply(document);
 
             /* make rewrites to the document */
@@ -165,5 +152,70 @@ public class Visitor extends ASTVisitor {
             lrw.insertLast(impDecl, null);
         }
         rewriter.rewriteAST(document, null).apply(document);
+    }
+
+    /* setup the scope of variables for synthesis */
+    @Override
+    public boolean visit(MethodDeclaration method) {
+        currentScope.clear();
+
+        /* add variables in the formal parameters */
+        for (Object o : method.parameters()) {
+            SingleVariableDeclaration param = (SingleVariableDeclaration) o;
+            Type t = param.getType();
+            Class type;
+
+            if (t.isSimpleType()) {
+                ITypeBinding binding = t.resolveBinding();
+                if (binding == null)
+                    continue;
+                try {
+                    type = Environment.getClass(binding.getQualifiedName());
+                } catch (ClassNotFoundException  e) {
+                    synthesizedProgram = null;
+                    return false;
+                }
+            }
+            else if (t.isPrimitiveType())
+                type = primitiveToClass.get(((PrimitiveType) t).getPrimitiveTypeCode().toString());
+            else continue;
+
+            Variable v = new Variable(param.getName().getIdentifier(), type);
+            currentScope.add(v);
+        }
+
+        /* add local variables declared in the (beginning of) method body */
+        Block body = method.getBody();
+        for (Object o : body.statements()) {
+            Statement stmt = (Statement) o;
+            if (! (stmt instanceof VariableDeclarationStatement))
+                break; // stop at the first non-variable declaration
+            VariableDeclarationStatement varDecl = (VariableDeclarationStatement) stmt;
+            Type t = varDecl.getType();
+            Class type;
+
+            if (t.isSimpleType()) {
+                ITypeBinding binding = t.resolveBinding();
+                if (binding == null)
+                    continue;
+                try {
+                    type = Environment.getClass(binding.getQualifiedName());
+                } catch (ClassNotFoundException  e) {
+                    synthesizedProgram = null;
+                    return false;
+                }
+            }
+            else if (t.isPrimitiveType())
+                type = primitiveToClass.get(((PrimitiveType) t).getPrimitiveTypeCode().toString());
+            else continue;
+
+            for (Object f : varDecl.fragments()) {
+                VariableDeclarationFragment frag = (VariableDeclarationFragment) f;
+                Variable v = new Variable(frag.getName().getIdentifier(), type);
+                currentScope.add(v);
+            }
+        }
+
+        return true;
     }
 }

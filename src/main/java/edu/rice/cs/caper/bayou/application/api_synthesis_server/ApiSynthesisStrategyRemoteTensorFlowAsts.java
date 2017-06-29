@@ -1,7 +1,7 @@
 package edu.rice.cs.caper.bayou.application.api_synthesis_server;
 
 ;
-import edu.rice.cs.caper.bayou.core.annotations.EvidenceExtractor;
+import edu.rice.cs.caper.bayou.core.synthesizer.EvidenceExtractor;
 import edu.rice.cs.caper.bayou.core.synthesizer.Synthesizer;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -38,7 +38,7 @@ class ApiSynthesisStrategyRemoteTensorFlowAsts implements ApiSynthesisStrategy
     private final int _maxNetworkWaitTimeMs;
 
     /**
-     * A classpath string that includes the class edu.rice.bayou.annotations.Evidence.
+     * A classpath string that includes the class edu.rice.cs.caper.bayou.annotations.Evidence.
      */
     private final String _evidenceClasspath;
 
@@ -53,7 +53,7 @@ class ApiSynthesisStrategyRemoteTensorFlowAsts implements ApiSynthesisStrategy
      *                       May not be negative.
      * @param maxNetworkWaitTimeMs The maximum amount of time to wait on a response from the tensor flow server on each
  *                             request. 0 means forever. May not be negative.
-     * @param evidenceClasspath A classpath string that includes the class edu.rice.bayou.annotations.Evidence.
+     * @param evidenceClasspath A classpath string that includes the class edu.rice.cs.caper.bayou.annotations.Evidence.
      *                          May not be null.
      * @param androidJarPath The path to android.jar. May not be null.
      */

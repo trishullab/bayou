@@ -45,7 +45,7 @@ public class ApiSynthesisHealthCheckServlet extends HttpServlet
         try
         {
 
-            String code = "import edu.rice.bayou.annotations.Evidence;\n" +
+            String code = "import edu.rice.cs.caper.bayou.annotations.Evidence;\n" +
                     "\n" +
                     "public class TestIO {\n" +
                     "\n" +
