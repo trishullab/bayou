@@ -118,7 +118,7 @@ def _generate_asts(evidence_json, predictor):
                 asts.append(ast)
                 counts.append(1)
         except AssertionError as e:
-            logging.debug("AssertionError: " + e)
+            logging.debug("AssertionError: " + str(e))
             continue
 
     for ast, count in zip(asts, counts):
