@@ -30,13 +30,7 @@ public class ApiSynthesisResultQualityFeedbackServlet extends SizeConstrainedPos
      */
     private static final Logger _logger =
             LogManager.getLogger(ApiSynthesisResultQualityFeedbackServlet.class.getName());
-
-    /**
-     * The maximum input size of the request body this servlet will allow.
-     * // TODO: have a value in config distinct from code completion
-     */
-    private static int FEEDBACK_MAX_REQUEST_BODY_SIZE_BYTES = Configuration.CodeCompletionRequestBodyMaxBytesCount;
-
+    
     /**
      * The place to store user feedback.
      */
@@ -54,7 +48,7 @@ public class ApiSynthesisResultQualityFeedbackServlet extends SizeConstrainedPos
     // public no-arg constructor for reflective construction by Jetty.
     public ApiSynthesisResultQualityFeedbackServlet()
     {
-        super(FEEDBACK_MAX_REQUEST_BODY_SIZE_BYTES, false);
+        super(Configuration.CodeCompletionRequestBodyMaxBytesCount, false);
         _logger.debug("exiting");
     }
 
