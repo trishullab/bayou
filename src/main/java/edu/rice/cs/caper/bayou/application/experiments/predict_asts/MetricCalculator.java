@@ -10,26 +10,12 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.List;
-import java.util.Set;
 
-public class ASTReader {
+public class MetricCalculator {
 
     CommandLine cmdLine;
 
-    class JSONInputData {
-        DSubTree ast;
-        List<DSubTree> out_asts;
-        String file;
-        Set<String> apicalls;
-        Set<String> types;
-        Set<String> context;
-    }
-
-    class JSONInputWrapper {
-        List<JSONInputData> programs;
-    }
-
-    public ASTReader(String[] args) {
+    public MetricCalculator(String[] args) {
         CommandLineParser parser = new DefaultParser();
         org.apache.commons.cli.Options clopts = new org.apache.commons.cli.Options();
 
@@ -56,7 +42,7 @@ public class ASTReader {
                 .hasArg()
                 .numberOfArgs(1)
                 .required()
-                .desc("metric to use: equality-ast")
+                .desc("metric to use: equality-ast jaccard-api-calls num-statements num-control-structures")
                 .build());
         opts.addOption(Option.builder("t")
                 .longOpt("top")
@@ -66,7 +52,7 @@ public class ASTReader {
                 .build());
     }
 
-    private List<JSONInputData> readData() throws IOException {
+    private List<JSONInputFormat.DataPoint> readData() throws IOException {
         RuntimeTypeAdapterFactory<DASTNode> nodeAdapter = RuntimeTypeAdapterFactory.of(DASTNode.class, "node")
                 .registerSubtype(DAPICall.class)
                 .registerSubtype(DBranch.class)
@@ -77,7 +63,7 @@ public class ASTReader {
                 .registerTypeAdapterFactory(nodeAdapter)
                 .create();
         String s = new String(Files.readAllBytes(Paths.get(cmdLine.getOptionValue("f"))));
-        JSONInputWrapper js = gson.fromJson(s, JSONInputWrapper.class);
+        JSONInputFormat.Data js = gson.fromJson(s, JSONInputFormat.Data.class);
 
         return js.programs;
     }
@@ -107,9 +93,9 @@ public class ASTReader {
                 return;
         }
 
-        List<JSONInputData> data = readData();
+        List<JSONInputFormat.DataPoint> data = readData();
         float value = 0;
-        for (JSONInputData datapoint : data) {
+        for (JSONInputFormat.DataPoint datapoint : data) {
             DSubTree originalAST = datapoint.ast;
             List<DSubTree> predictedASTs = datapoint.out_asts.subList(0,
                     Math.min(topk, datapoint.out_asts.size()));
@@ -124,7 +110,7 @@ public class ASTReader {
 
     public static void main(String args[]) {
         try {
-            new ASTReader(args).execute();
+            new MetricCalculator(args).execute();
         } catch (IOException e) {
             System.err.println("Error occurred: " + e.getMessage());
             e.printStackTrace();
