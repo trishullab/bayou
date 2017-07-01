@@ -1,6 +1,5 @@
 package edu.rice.cs.caper.bayou.application.experiments.predict_asts;
 
-
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import edu.rice.cs.caper.bayou.core.dsl.*;
@@ -10,18 +9,20 @@ import org.apache.commons.cli.*;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 public class ASTReader {
 
     CommandLine cmdLine;
 
     class JSONInputData {
-        DSubTree original_ast;
-        List<DSubTree> predicted_asts;
-        List<List<String>> given_sequences;
-        List<List<String>> unseen_sequences;
+        DSubTree ast;
+        List<DSubTree> out_asts;
+        String file;
+        Set<String> apicalls;
+        Set<String> types;
+        Set<String> context;
     }
 
     class JSONInputWrapper {
@@ -55,12 +56,17 @@ public class ASTReader {
                 .hasArg()
                 .numberOfArgs(1)
                 .required()
-                .desc("metric to use: jaccard-seqs, jaccard-bag-api, num-stmts, binary-seqs")
+                .desc("metric to use: equality-ast")
+                .build());
+        opts.addOption(Option.builder("t")
+                .longOpt("top")
+                .hasArg()
+                .numberOfArgs(1)
+                .desc("use the top-k ASTs only")
                 .build());
     }
 
-    private List<JSONInputData> readData() throws IOException
-    {
+    private List<JSONInputData> readData() throws IOException {
         RuntimeTypeAdapterFactory<DASTNode> nodeAdapter = RuntimeTypeAdapterFactory.of(DASTNode.class, "node")
                 .registerSubtype(DAPICall.class)
                 .registerSubtype(DBranch.class)
@@ -79,35 +85,41 @@ public class ASTReader {
     public void execute() throws IOException {
         if (cmdLine == null)
             return;
+        int topk = cmdLine.hasOption("t")? Integer.parseInt(cmdLine.getOptionValue("t")): 10;
+
+        Metric metric;
+        String m = cmdLine.getOptionValue("m");
+        switch (m) {
+            case "equality-ast":
+                metric = new EqualityASTMetric();
+                break;
+            case "jaccard-api-calls":
+                metric = new JaccardAPICallsMetric();
+                break;
+            case "num-control-structures":
+                metric = new NumControlStructuresMetric();
+                break;
+            case "num-statements":
+                metric = new NumStatementsMetric();
+                break;
+            default:
+                System.err.println("invalid metric: " + cmdLine.getOptionValue("m"));
+                return;
+        }
 
         List<JSONInputData> data = readData();
+        float value = 0;
         for (JSONInputData datapoint : data) {
-            DSubTree originalAST = datapoint.original_ast;
-            List<DSubTree> predictedASTs = datapoint.predicted_asts;
-            List<Sequence> givenSequences = new ArrayList<>();
-            for (List<String> calls : datapoint.given_sequences)
-                givenSequences.add(new Sequence(calls));
-            List<Sequence> unseenSequences = new ArrayList<>();
-            for (List<String> calls : datapoint.unseen_sequences)
-                unseenSequences.add(new Sequence(calls));
+            DSubTree originalAST = datapoint.ast;
+            List<DSubTree> predictedASTs = datapoint.out_asts.subList(0,
+                    Math.min(topk, datapoint.out_asts.size()));
 
-            MetricCalculator metric = null;
-            if (cmdLine.getOptionValue("m").equals("jaccard-seqs"))
-                metric = new JaccardSequencesMetric(predictedASTs, givenSequences, unseenSequences);
-            else if (cmdLine.getOptionValue("m").equals("binary-seqs"))
-                metric = new BinarySequencesMetric(predictedASTs, givenSequences, unseenSequences);
-            else if (cmdLine.getOptionValue("m").equals("jaccard-bag-api"))
-                metric = new JaccardAPICallsMetric(originalAST, predictedASTs);
-            else if (cmdLine.getOptionValue("m").equals("num-stmts"))
-                metric = new NumStatementsMetric(originalAST, predictedASTs);
-            else if (cmdLine.getOptionValue("m").equals("num-control-structs"))
-                metric = new NumControlStructuresMetric(originalAST, predictedASTs);
-            else {
-                System.err.println("invalid metric: " + cmdLine.getOptionValue("m"));
-                System.exit(1);
-            }
-            metric.doCalculation();
+            value += metric.compute(originalAST, predictedASTs);
         }
+        value /= data.size();
+        System.out.println(String.format(
+                "Average value of metric %s across %d data points: %f",
+                m, data.size(), value));
     }
 
     public static void main(String args[]) {

@@ -1,28 +1,27 @@
 package edu.rice.cs.caper.bayou.application.experiments.predict_asts;
 
-
 import edu.rice.cs.caper.bayou.core.dsl.DSubTree;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
-public class NumStatementsMetric extends MetricCalculator {
+public class NumStatementsMetric implements Metric {
 
-    /* roughly corresponds to number of lines of code */
-    public NumStatementsMetric(DSubTree originalAST, List<DSubTree> predictedASTs) {
-        super(originalAST, predictedASTs, null, null);
-    }
-
+    /** Computes the minimum ratio of the difference between the number of
+     * statements in the original vs predicted ASTs.
+     */
     @Override
-    public void doCalculation() {
+    public float compute(DSubTree originalAST, List<DSubTree> predictedASTs) {
         int original = originalAST.numStatements();
-        int diff = original;
+        List<Integer> diffs = new ArrayList<>();
+        diffs.add(original);
         for (DSubTree predictedAST : predictedASTs) {
             int predicted = predictedAST.numStatements();
-            int diff_predicted = predicted > original? predicted - original: original - predicted;
-            if (diff_predicted < diff)
-                diff = diff_predicted;
+            int diff_predicted = Math.abs(predicted - original);
+            diffs.add(diff_predicted);
         }
-        float ratio_diff = ((float) diff)/original;
-        System.out.println("Min ratio difference in number of statements: " + ratio_diff);
+        float min_diff = Collections.min(diffs);
+        return min_diff / original;
     }
 }
