@@ -11,15 +11,23 @@ import java.util.Set;
 
 public class DBranch extends DASTNode {
 
-    final String node = "DBranch";
-    final List<DAPICall> _cond;
-    final List<DASTNode> _then;
-    final List<DASTNode> _else;
+    String node = "DBranch";
+    List<DAPICall> _cond;
+    List<DASTNode> _then;
+    List<DASTNode> _else;
+
+    public DBranch() {
+        this._cond = new ArrayList<>();
+        this._then = new ArrayList<>();
+        this._else = new ArrayList<>();
+        this.node = "DBranch";
+    }
 
     public DBranch(List<DAPICall> _cond, List<DASTNode> _then, List<DASTNode> _else) {
         this._cond = _cond;
         this._then = _then;
         this._else = _else;
+        this.node = "DBranch";
     }
 
     @Override

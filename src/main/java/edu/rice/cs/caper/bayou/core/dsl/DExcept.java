@@ -9,13 +9,20 @@ import java.util.*;
 
 public class DExcept extends DASTNode {
 
-    final String node = "DExcept";
-    public List<DASTNode> _try;
-    public List<DASTNode> _catch;
+    String node = "DExcept";
+    List<DASTNode> _try;
+    List<DASTNode> _catch;
+
+    public DExcept() {
+        this._try = new ArrayList<>();
+        this._catch = new ArrayList<>();
+        this.node = "DExcept";
+    }
 
     public DExcept(List<DASTNode> _try, List<DASTNode> _catch) {
         this._try = _try;
         this._catch = _catch;
+        this.node = "DExcept";
     }
 
     @Override

@@ -13,13 +13,20 @@ import java.util.Set;
 
 public class DLoop extends DASTNode {
 
-    final String node = "DLoop";
-    final List<DAPICall> _cond;
-    final List<DASTNode> _body;
+    String node = "DLoop";
+    List<DAPICall> _cond;
+    List<DASTNode> _body;
+
+    public DLoop() {
+        this._cond = new ArrayList<>();
+        this._body = new ArrayList<>();
+        this.node = "DExcept";
+    }
 
     public DLoop(List<DAPICall> cond, List<DASTNode> _body) {
         this._cond = cond;
         this._body = _body;
+        this.node = "DLoop";
     }
 
     @Override

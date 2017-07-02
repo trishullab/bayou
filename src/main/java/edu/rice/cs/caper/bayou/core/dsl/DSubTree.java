@@ -12,15 +12,17 @@ import java.util.stream.Collectors;
 
 public class DSubTree extends DASTNode {
 
-    final String node = "DSubTree";
-    final List<DASTNode> _nodes;
+    String node = "DSubTree";
+    List<DASTNode> _nodes;
 
     public DSubTree() {
         _nodes = new ArrayList<>();
+        this.node = "DSubTree";
     }
 
     public DSubTree(List<DASTNode> _nodes) {
         this._nodes = _nodes;
+        this.node = "DSubTree";
     }
 
     public void addNode(DASTNode node) {

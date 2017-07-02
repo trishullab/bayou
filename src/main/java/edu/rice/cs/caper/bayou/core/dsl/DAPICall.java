@@ -15,22 +15,28 @@ import java.util.stream.Stream;
 public class DAPICall extends DASTNode
 {
 
-    final String node = "DAPICall";
-    final String _call;
+    String node = "DAPICall";
+    String _call;
 
     /* CAUTION: This field is only available during AST generation */
-    final transient IMethodBinding methodBinding;
-    int linenum;
+    transient IMethodBinding methodBinding;
+    transient int linenum;
     /* CAUTION: These fields are only available during synthesis (after synthesize(...) is called) */
     transient Method method;
     transient Constructor constructor;
 
     /* TODO: Add refinement types (predicates) here */
 
+    public DAPICall() {
+        this._call = "";
+        this.node = "DAPICall";
+    }
+
     public DAPICall(IMethodBinding methodBinding, int linenum) {
         this.methodBinding = methodBinding;
         this._call = getClassName() + "." + getSignature();
         this.linenum = linenum;
+        this.node = "DAPICall";
     }
 
     @Override
