@@ -20,7 +20,7 @@ public class DLoop extends DASTNode {
     public DLoop() {
         this._cond = new ArrayList<>();
         this._body = new ArrayList<>();
-        this.node = "DExcept";
+        this.node = "DLoop";
     }
 
     public DLoop(List<DAPICall> cond, List<DASTNode> _body) {
