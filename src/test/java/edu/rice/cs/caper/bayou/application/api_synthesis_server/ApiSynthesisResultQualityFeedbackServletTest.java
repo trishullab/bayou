@@ -29,7 +29,7 @@ public class ApiSynthesisResultQualityFeedbackServletTest
         body.put("isGood", true);
 
         SynthesisQualityFeedbackLogger logger = mock(SynthesisQualityFeedbackLogger.class);
-        ApiSynthesisResultQualityFeedbackServlet.decodeBodyAndLog(body.toString(), logger);
+        ApiSynthesisResultQualityFeedbackServlet.decodeBodyAndLog(body, logger);
 
         verify(logger).log(UUID.fromString(requestId), searchCode, resultCode, true);
     }

@@ -16,7 +16,7 @@
     <content url="file://$MODULE_DIR$/../../maven_3_3_9/bayou">
       <excludeFolder url="file://$MODULE_DIR$/../../maven_3_3_9/bayou/target" />
     </content>
-    <orderEntry type="jdk" jdkName="1.8" jdkType="JavaSDK" />
+    <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="library" name="Maven: com.google.code.gson:gson:2.8.0" level="project" />
     <orderEntry type="library" name="Maven: org.apache.logging.log4j:log4j-core:2.8.2" level="project" />

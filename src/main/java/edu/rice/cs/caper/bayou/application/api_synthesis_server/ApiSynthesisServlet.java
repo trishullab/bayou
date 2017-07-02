@@ -18,7 +18,7 @@ import java.util.function.Supplier;
 /**
  * A servlet for accepting api synthesis requests and returning the results produced by an alternate network endpoint.
  */
-public class ApiSynthesisServlet extends SizeConstrainedPostBodyServlet implements JsonResponseServlet
+public class ApiSynthesisServlet extends SizeConstrainedPostBodyServlet implements JsonResponseServlet, CorsAwareServlet
 {
     /**
      * Place to send logging information.
@@ -35,7 +35,7 @@ public class ApiSynthesisServlet extends SizeConstrainedPostBodyServlet implemen
      * An object for setting the response CORS headers in accordance with the configuration specified
      * allowed origins.
      */
-    private static final CorsHeaderSetter _corsHeaderSetter = new CorsHeaderSetter(Configuration.CorsAllowedOrigins);
+    CorsHeaderSetter _corsHeaderSetter = new CorsHeaderSetter(Configuration.CorsAllowedOrigins);
 
     /**
      * How requests should be fulfilled.
@@ -47,10 +47,7 @@ public class ApiSynthesisServlet extends SizeConstrainedPostBodyServlet implemen
      */
     public ApiSynthesisServlet()
     {
-        super(((Supplier<Integer>)() -> { _logger.debug("entering ApiSynthesisServlet");
-                                         return API_SYNTH_MAX_REQUEST_BODY_SIZE_BYTES; }).get(),
-                false);
-
+        super(API_SYNTH_MAX_REQUEST_BODY_SIZE_BYTES, false);
         _logger.debug("exiting");
     }
 
@@ -60,15 +57,19 @@ public class ApiSynthesisServlet extends SizeConstrainedPostBodyServlet implemen
         _logger.debug("entering");
         try
         {
+            if(req == null) throw new NullPointerException("req");
+            if(resp == null) throw new NullPointerException("resp");
+            if(body == null) throw new NullPointerException("body");
+
             doPostHelp(req, resp, body);
         }
         catch (Throwable e)
         {
             _logger.error(e.getMessage(), e);
             JSONObject responseBody = new ErrorJsonResponse("Unexpected exception during synthesis.");
-            resp.setStatus(HttpStatus.INTERNAL_SERVER_ERROR_500);
+            if(resp != null)
+                resp.setStatus(HttpStatus.INTERNAL_SERVER_ERROR_500);
             writeObjectToServletOutputStream(responseBody, resp);
-
         }
         finally
         {
@@ -81,17 +82,24 @@ public class ApiSynthesisServlet extends SizeConstrainedPostBodyServlet implemen
     {
         _logger.debug("entering");
 
-        // only allow CORS processing from origins we approve
-        boolean requestFromAllowedOrigin = _corsHeaderSetter.applyAccessControlHeaderIfAllowed(req, resp);
+        if(req == null) throw new NullPointerException("req");
+        if(resp == null) throw new NullPointerException("resp");
+        if(body == null) throw new NullPointerException("body");
+
+       /*
+        * Check that the request comes from a valid origin.  Add appropriate CORS response headers if so.
+        */
+        boolean requestFromAllowedOrigin = this.applyAccessControlHeaderIfAllowed(req, resp, _corsHeaderSetter);
 
         if(!requestFromAllowedOrigin)
         {
-            resp.setStatus(HttpStatus.FORBIDDEN_403);
-            _logger.warn("request from unauthorized origin.");
             _logger.debug("exiting");
             return;
         }
 
+        /*
+         * Assign a unique request id to the requests.
+         */
         UUID requestId = UUID.randomUUID();
         _logger.info(requestId + ": api synth request");
         _logger.trace(requestId + ": api synth request body " + body);
@@ -115,7 +123,7 @@ public class ApiSynthesisServlet extends SizeConstrainedPostBodyServlet implemen
         }
 
         /*
-         * Access the request code from the JSON message.
+         * Extract the request code from the JSON message.
          */
         String code;
         {
@@ -143,6 +151,7 @@ public class ApiSynthesisServlet extends SizeConstrainedPostBodyServlet implemen
          * Place synthesis results into a JSON string, send response, and close socket.
          */
         SuccessJsonResponse responseBody = new SuccessJsonResponse();
+        responseBody.put("requestId", requestId.toString());
         LinkedList<String> resultsCollection = new LinkedList<>(); // JSONArray ctor will not accept an Iterable.
         for(String result : results)                               // Use Collection to avoid RuntimeException in ctr.
             resultsCollection.add(result);
