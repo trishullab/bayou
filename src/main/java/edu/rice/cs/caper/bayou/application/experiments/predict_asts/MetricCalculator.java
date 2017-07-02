@@ -1,14 +1,9 @@
 package edu.rice.cs.caper.bayou.application.experiments.predict_asts;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 import edu.rice.cs.caper.bayou.core.dsl.*;
-import edu.rice.cs.caper.bayou.core.synthesizer.RuntimeTypeAdapterFactory;
 import org.apache.commons.cli.*;
 
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.List;
 
 public class MetricCalculator {
@@ -52,22 +47,6 @@ public class MetricCalculator {
                 .build());
     }
 
-    private List<JSONInputFormat.DataPoint> readData() throws IOException {
-        RuntimeTypeAdapterFactory<DASTNode> nodeAdapter = RuntimeTypeAdapterFactory.of(DASTNode.class, "node")
-                .registerSubtype(DAPICall.class)
-                .registerSubtype(DBranch.class)
-                .registerSubtype(DExcept.class)
-                .registerSubtype(DLoop.class)
-                .registerSubtype(DSubTree.class);
-        Gson gson = new GsonBuilder().serializeNulls()
-                .registerTypeAdapterFactory(nodeAdapter)
-                .create();
-        String s = new String(Files.readAllBytes(Paths.get(cmdLine.getOptionValue("f"))));
-        JSONInputFormat.Data js = gson.fromJson(s, JSONInputFormat.Data.class);
-
-        return js.programs;
-    }
-
     public void execute() throws IOException {
         if (cmdLine == null)
             return;
@@ -93,7 +72,7 @@ public class MetricCalculator {
                 return;
         }
 
-        List<JSONInputFormat.DataPoint> data = readData();
+        List<JSONInputFormat.DataPoint> data = JSONInputFormat.readData(cmdLine.getOptionValue("f"));
         float value = 0;
         for (JSONInputFormat.DataPoint datapoint : data) {
             DSubTree originalAST = datapoint.ast;
