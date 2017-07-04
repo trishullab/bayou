@@ -9,13 +9,13 @@ import json
 import argparse
 
 
-def merge(args):
+def merge(clargs):
     programs = []
-    for filename in os.listdir(args.folder[0]):
-        with open(os.path.join(args.folder[0], filename)) as f:
+    for filename in os.listdir(clargs.folder[0]):
+        with open(os.path.join(clargs.folder[0], filename)) as f:
             js = json.load(f)
         programs += (js['programs'])
-    with open(args.output_file, 'w') as f:
+    with open(clargs.output_file, 'w') as f:
         json.dump({'programs': programs}, f, indent=2)
 
 if __name__ == '__main__':
@@ -24,5 +24,5 @@ if __name__ == '__main__':
                         help='folder where all JSON files are stored')
     parser.add_argument('--output_file', type=str, required=True,
                         help='file to output merged data')
-    args = parser.parse_args()
-    merge(args)
+    clargs = parser.parse_args()
+    merge(clargs)

@@ -13,7 +13,7 @@ def split(args):
     with open(args.input_file[0]) as f:
         js = json.load(f)
     programs = js['programs']
-    n = math.ceil(len(programs) / args.splits)
+    n = int(math.ceil(len(programs) / args.splits))
     split_programs = [programs[i*n:i*n+n] for i in range(args.splits)]
     for i, programs in enumerate(split_programs):
         with open('{}-{}.json'.format(args.input_file[0][:-5], i), 'w') as f:
