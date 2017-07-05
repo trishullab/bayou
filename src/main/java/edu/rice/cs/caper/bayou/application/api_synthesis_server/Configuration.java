@@ -32,7 +32,8 @@ class Configuration
 
     static int CodeCompletionRequestBodyMaxBytesCount = MEGA_BYTES_IN_BYTES;
 
-    static final String[] CorsAllowedOrigins = new String[] { "http://www.askbayou.com", "http://askbayou.com" };
+    static final String[] CorsAllowedOrigins =
+            new String[] { "http://www.askbayou.com", "http://askbayou.com", "http://beta.askbayou.com" };
 
     static
     {
