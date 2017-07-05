@@ -37,7 +37,7 @@ public class MetricCalculator {
                 .hasArg()
                 .numberOfArgs(1)
                 .required()
-                .desc("metric to use: equality-ast jaccard-api-calls num-statements num-control-structures")
+                .desc("metric to use: equality-ast jaccard-sequences jaccard-api-calls num-statements num-control-structures")
                 .build());
         opts.addOption(Option.builder("t")
                 .longOpt("top")
@@ -57,6 +57,9 @@ public class MetricCalculator {
         switch (m) {
             case "equality-ast":
                 metric = new EqualityASTMetric();
+                break;
+            case "jaccard-sequences":
+                metric = new JaccardSequencesMetric();
                 break;
             case "jaccard-api-calls":
                 metric = new JaccardAPICallsMetric();
