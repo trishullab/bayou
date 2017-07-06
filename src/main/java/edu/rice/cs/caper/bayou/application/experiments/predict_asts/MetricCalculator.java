@@ -5,6 +5,7 @@ import org.apache.commons.cli.*;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class MetricCalculator {
 
@@ -38,6 +39,12 @@ public class MetricCalculator {
                 .numberOfArgs(1)
                 .required()
                 .desc("metric to use: equality-ast jaccard-sequences jaccard-api-calls num-statements num-control-structures")
+                .build());
+        opts.addOption(Option.builder("c")
+                .longOpt("in-corpus")
+                .hasArg()
+                .numberOfArgs(1)
+                .desc("consider 1:all programs (default), 2:only those in corpus, 3:only those NOT in corpus")
                 .build());
         opts.addOption(Option.builder("t")
                 .longOpt("top")
@@ -75,7 +82,14 @@ public class MetricCalculator {
                 return;
         }
 
+        int inCorpus = cmdLine.hasOption("c")? Integer.parseInt(cmdLine.getOptionValue("c")): 1;
+
         List<JSONInputFormat.DataPoint> data = JSONInputFormat.readData(cmdLine.getOptionValue("f"));
+        if (inCorpus == 2)
+            data = data.stream().filter(datapoint -> datapoint.in_corpus).collect(Collectors.toList());
+        else if (inCorpus == 3)
+            data = data.stream().filter(datapoint -> !datapoint.in_corpus).collect(Collectors.toList());
+
         float value = 0;
         for (JSONInputFormat.DataPoint datapoint : data) {
             DSubTree originalAST = datapoint.ast;
