@@ -11,7 +11,7 @@ import argparse
 
 def merge(clargs):
     programs = []
-    for filename in os.listdir(clargs.folder[0]):
+    for filename in sorted(os.listdir(clargs.folder[0])):
         with open(os.path.join(clargs.folder[0], filename)) as f:
             js = json.load(f)
         programs += (js['programs'])
