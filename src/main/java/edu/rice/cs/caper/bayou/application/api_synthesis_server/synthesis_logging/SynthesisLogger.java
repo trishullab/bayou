@@ -15,5 +15,5 @@ public interface SynthesisLogger
      * @param searchCode the input code of the request.
      * @param results the generated synthesis solutions for the request.
      */
-    void log(UUID requestId, String searchCode, List<String> results);
+    void log(UUID requestId, String searchCode, Iterable<String> results);
 }

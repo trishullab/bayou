@@ -1,5 +1,7 @@
 package edu.rice.cs.caper.bayou.application.api_synthesis_server;
 
+import edu.rice.cs.caper.bayou.application.api_synthesis_server.synthesis_logging.SynthesisLogger;
+import edu.rice.cs.caper.bayou.application.api_synthesis_server.synthesis_logging.SynthesisLoggerS3;
 import edu.rice.cs.caper.servlet.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -13,6 +15,8 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.LinkedList;
 import java.util.UUID;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.function.Supplier;
 
 /**
@@ -26,6 +30,11 @@ public class ApiSynthesisServlet extends SizeConstrainedPostBodyServlet implemen
     private static final Logger _logger = LogManager.getLogger(ApiSynthesisServlet.class.getName());
 
     /**
+     * Thread pool for sending synth log results to S3.
+     */
+    private static final ExecutorService _synthesisLoggerThreadPool = Executors.newFixedThreadPool(1);
+
+    /**
      * The maximum input size of the request body this servlet will allow.
      * // TODO: have a value in config distinct from code completion
      */
@@ -35,12 +44,16 @@ public class ApiSynthesisServlet extends SizeConstrainedPostBodyServlet implemen
      * An object for setting the response CORS headers in accordance with the configuration specified
      * allowed origins.
      */
-    CorsHeaderSetter _corsHeaderSetter = new CorsHeaderSetter(Configuration.CorsAllowedOrigins);
+    private CorsHeaderSetter _corsHeaderSetter = new CorsHeaderSetter(Configuration.CorsAllowedOrigins);
 
     /**
      * How requests should be fulfilled.
      */
     private final ApiSynthesisStrategy _synthesisStrategy = ApiSynthesisStrategy.fromConfig();
+
+
+    private final String _synthesisLogBucketName = Configuration.SynthesisLogBucketName;
+
 
     /**
      * Public for reflective construction by Jetty.
@@ -157,7 +170,15 @@ public class ApiSynthesisServlet extends SizeConstrainedPostBodyServlet implemen
             resultsCollection.add(result);
         responseBody.put("results", new JSONArray(resultsCollection));
         writeObjectToServletOutputStream(responseBody, resp);
+
+        /*
+         * Log result to S3.  Do in other thread so that this thread becomes available again to process client requests.
+         */
+        _synthesisLoggerThreadPool.submit(
+                () -> new SynthesisLoggerS3(_synthesisLogBucketName).log(requestId, code, results));
+
         _logger.debug("exiting");
+
     }
 
 

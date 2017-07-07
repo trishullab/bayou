@@ -46,7 +46,7 @@ public class SynthesisLoggerS3 extends S3LoggerBase implements SynthesisLogger
     }
 
     @Override
-    public void log(UUID requestId, String searchCode, List<String> results)
+    public void log(UUID requestId, String searchCode, Iterable<String> results)
     {
         _logger.debug("entering");
 
