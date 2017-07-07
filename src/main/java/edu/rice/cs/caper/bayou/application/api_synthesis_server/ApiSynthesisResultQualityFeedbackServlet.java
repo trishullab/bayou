@@ -57,6 +57,8 @@ public class ApiSynthesisResultQualityFeedbackServlet extends SizeConstrainedPos
     {
         try
         {
+	    _logger.info("feedback request");
+	
             if(req == null) throw new NullPointerException("req");
             if(resp == null) throw new NullPointerException("resp");
             if(body == null) throw new NullPointerException("body");

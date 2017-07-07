@@ -70,7 +70,7 @@ public class SynthesisQualityFeedbackLoggerS3 extends S3LoggerBase implements Sy
             logMsg = recordObj.toString(1);
         }
 
-        String objectKey = requestId.toString() + ".txt";
+        String objectKey = requestId.toString() + "_" +UUID.randomUUID() + ".txt";
         this.putToS3(objectKey, logMsg);
 
         _logger.debug("exiting");
