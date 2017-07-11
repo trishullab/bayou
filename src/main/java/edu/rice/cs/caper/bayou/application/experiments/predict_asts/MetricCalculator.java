@@ -52,6 +52,12 @@ public class MetricCalculator {
                 .numberOfArgs(1)
                 .desc("use the top-k ASTs only")
                 .build());
+        opts.addOption(Option.builder("a")
+                .longOpt("aggregate")
+                .hasArg()
+                .numberOfArgs(1)
+                .desc("aggregate metrics in each top-k: min (default), mean, stdv")
+                .build());
     }
 
     public void execute() throws IOException {
@@ -83,7 +89,7 @@ public class MetricCalculator {
         }
 
         int inCorpus = cmdLine.hasOption("c")? Integer.parseInt(cmdLine.getOptionValue("c")): 1;
-
+        String aggregate = cmdLine.hasOption("a")? cmdLine.getOptionValue("a"): "min";
         List<JSONInputFormat.DataPoint> data = JSONInputFormat.readData(cmdLine.getOptionValue("f"));
         if (inCorpus == 2)
             data = data.stream().filter(datapoint -> datapoint.in_corpus).collect(Collectors.toList());
@@ -96,12 +102,12 @@ public class MetricCalculator {
             List<DSubTree> predictedASTs = datapoint.out_asts.subList(0,
                     Math.min(topk, datapoint.out_asts.size()));
 
-            value += metric.compute(originalAST, predictedASTs);
+            value += metric.compute(originalAST, predictedASTs, aggregate);
         }
         value /= data.size();
         System.out.println(String.format(
-                "Average value of metric %s across %d data points: %f",
-                m, data.size(), value));
+                "Average metric %s across %d data points, (aggregated with %s): %f",
+                m, data.size(), aggregate, value));
     }
 
     public static void main(String args[]) {
