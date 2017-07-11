@@ -25,6 +25,7 @@ import java.io.*;
 import java.net.Socket;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
+import java.util.List;
 
 /**
  * A synthesis strategy that relies on a remote server that uses TensorFlow to create ASTs from extracted evidence.
@@ -168,15 +169,13 @@ class ApiSynthesisStrategyRemoteTensorFlowAsts implements ApiSynthesisStrategy
         }
 
         /*
-         * Synthesise results from the code and asts.
+         * Synthesise results from the code and asts and return.
          */
-        String synthesizeResult;
+        List<String> synthesizedPrograms;
         try
         {
-            ByteArrayOutputStream outAccum = new ByteArrayOutputStream();
-            new Synthesizer(new PrintStream(outAccum)).execute(code, astsJson, combinedClassPath);
-            synthesizeResult = outAccum.toString();
-            _logger.trace("synthesizeResult: " + synthesizeResult);
+            synthesizedPrograms = new Synthesizer().execute(code, astsJson, combinedClassPath);
+            _logger.trace("synthesizedPrograms: " + synthesizedPrograms);
         }
         catch (IOException e)
         {
@@ -184,13 +183,8 @@ class ApiSynthesisStrategyRemoteTensorFlowAsts implements ApiSynthesisStrategy
             throw new SynthesiseException(e);
         }
 
-
-        /*
-         * Split results into into individual solutions and return.
-         */
-        String[] results = synthesizeResult.split("/\\* --- End of application --- \\*/");
         _logger.debug("exiting");
-        return Arrays.asList(results);
+        return synthesizedPrograms;
     }
 
     /**

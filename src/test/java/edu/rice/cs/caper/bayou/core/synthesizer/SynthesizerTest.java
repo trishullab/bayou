@@ -25,6 +25,8 @@ import java.io.PrintStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.LinkedList;
+import java.util.List;
 
 public class SynthesizerTest {
 
@@ -60,16 +62,17 @@ public class SynthesizerTest {
 
 
         ByteArrayOutputStream bout = new ByteArrayOutputStream();
-        PrintStream out = new PrintStream(bout);
-        Synthesizer synthesizer = new Synthesizer(out);
+        Synthesizer synthesizer = new Synthesizer();
 
         String code = new String(Files.readAllBytes(Paths.get(String.format("%s/%s.java", testDir, test))));
         String asts = new String(Files.readAllBytes(Paths.get(String.format("%s/%s.json", testDir, test))));
 
-        synthesizer.execute(code, asts, classpath);
-        String content = new String(bout.toByteArray(), StandardCharsets.UTF_8);
+        List<String> results = synthesizer.execute(code, asts, classpath);
 
-        Assert.assertTrue(content.contains("public class")); // some code was synthesized
+        Assert.assertTrue(results.size() > 0);
+
+        for(String resultProgram : results)
+            Assert.assertTrue(resultProgram.contains("public class")); // some code was synthesized
     }
 
     @Test

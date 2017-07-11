@@ -146,7 +146,7 @@ public class DAPICall extends DASTNode
         }
     }
 
-    private Assignment synthesizeClassInstanceCreation(Environment env) {
+    private Assignment synthesizeClassInstanceCreation(Environment env) throws SynthesisException {
         AST ast = env.ast();
         ClassInstanceCreation creation = ast.newClassInstanceCreation();
 
@@ -172,7 +172,7 @@ public class DAPICall extends DASTNode
         return assignment;
     }
 
-    private ASTNode synthesizeMethodInvocation(Environment env) {
+    private ASTNode synthesizeMethodInvocation(Environment env) throws SynthesisException {
         AST ast = env.ast();
         MethodInvocation invocation = ast.newMethodInvocation();
 

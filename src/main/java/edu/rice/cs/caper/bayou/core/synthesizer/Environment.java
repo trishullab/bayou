@@ -42,15 +42,20 @@ public class Environment {
     }
 
     public Expression addVariable(Class type) {
-        return searchOrAddVariable(type, false);
+        try {
+            return searchOrAddVariable(type, false);
+        } catch (SynthesisException e) {
+            throw new Error("SynthesisException was thrown in addVariable()! This shouldn't occur.");
+        }
     }
 
-    public Expression searchOrAddVariable(Class type, boolean search) {
+    public Expression searchOrAddVariable(Class type, boolean search) throws SynthesisException {
         Expression expr;
         Enumerator enumerator = new Enumerator(ast, this);
-        if (search && (expr = enumerator.search(type)) != null) {
-            return expr;
-        }
+        if (search)
+            if ((expr = enumerator.search(type)) != null)
+                return expr;
+            else throw new SynthesisException("Could not find variable of type " + type.getName());
 
         /* construct a nice name for the variable */
         String name = "";

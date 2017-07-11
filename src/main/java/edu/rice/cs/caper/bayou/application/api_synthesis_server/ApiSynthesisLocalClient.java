@@ -49,6 +49,7 @@ class ApiSynthesisLocalClient
 	        System.out.println("\n---------- BEGIN PROGRAM  ----------");
             System.out.print(result);
         }
+        System.out.print("\n"); // don't have next console prompt start on final line of code output.
     }
 
     public static void main(String[] args) throws IOException, SynthesisError
