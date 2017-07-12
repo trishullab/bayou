@@ -22,27 +22,20 @@ There are three main modules in Bayou:
 git clone https://github.com/capergroup/bayou.git
 ```
 
-#### 2.) Install Model
+#### 2.) Install Build Tools
 
 ```
-cd bayou/tool_files/
-python3 install_model.py 
-```
-
-#### 3.) Install Build Tools
-
-```
-cd build_scripts
+cd bayou/tool_files/build_scripts
 sudo ./install_deps.sh
 ```
 
-#### 4.) Compile Bayou
+#### 3.) Compile Bayou
 
 ```
 ./build.sh
 ```
 
-#### 5.) Install Bayou Dependenices
+#### 4.) Install Bayou Dependenices
 
 ```
 cd out
@@ -50,7 +43,7 @@ chmod +x install_dependencies.sh
 sudo ./install_dependencies.sh
 ```
 
-#### 6.) Run Bayou
+#### 5.) Run Bayou
 
 ```
 chmod +x start_bayou.sh synthesize.sh
