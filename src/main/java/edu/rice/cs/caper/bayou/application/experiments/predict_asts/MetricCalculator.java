@@ -4,6 +4,7 @@ import edu.rice.cs.caper.bayou.core.dsl.*;
 import org.apache.commons.cli.*;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -96,18 +97,20 @@ public class MetricCalculator {
         else if (inCorpus == 3)
             data = data.stream().filter(datapoint -> !datapoint.in_corpus).collect(Collectors.toList());
 
-        float value = 0;
+        List<Float> values = new ArrayList<>();
         for (JSONInputFormat.DataPoint datapoint : data) {
             DSubTree originalAST = datapoint.ast;
             List<DSubTree> predictedASTs = datapoint.out_asts.subList(0,
                     Math.min(topk, datapoint.out_asts.size()));
 
-            value += metric.compute(originalAST, predictedASTs, aggregate);
+            values.add(metric.compute(originalAST, predictedASTs, aggregate));
         }
-        value /= data.size();
+
+        float average = Metric.mean(values);
+        float stdv = Metric.standardDeviation(values);
         System.out.println(String.format(
-                "Average metric %s across %d data points, (aggregated with %s): %f",
-                m, data.size(), aggregate, value));
+                "%s (%d data points, each aggregated with %s): average=%f, stdv=%f",
+                m, data.size(), aggregate, average, stdv));
     }
 
     public static void main(String args[]) {
