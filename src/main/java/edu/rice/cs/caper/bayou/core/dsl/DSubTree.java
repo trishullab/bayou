@@ -107,6 +107,14 @@ public class DSubTree extends DASTNode {
     }
 
     @Override
+    public Set<Class> exceptionsThrown(Set<String> eliminatedVars) {
+	Set<Class> ex = new HashSet<>();
+	for (DASTNode n : _nodes)
+	    ex.addAll(n.exceptionsThrown(eliminatedVars));
+	return ex;
+    }
+
+    @Override
     public boolean equals(Object o) {
         if (o == null || ! (o instanceof DSubTree))
             return false;

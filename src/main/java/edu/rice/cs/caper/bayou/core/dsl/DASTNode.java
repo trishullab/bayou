@@ -20,6 +20,8 @@ public abstract class DASTNode implements Synthesizable {
 
     public abstract Set<Class> exceptionsThrown();
 
+    public abstract Set<Class> exceptionsThrown(Set<String> eliminatedVars);
+    
     @Override
     public abstract boolean equals(Object o);
 

@@ -97,6 +97,11 @@ public class DLoop extends DASTNode {
     }
 
     @Override
+    public Set<Class> exceptionsThrown(Set<String> eliminatedVars) {
+	return this.exceptionsThrown();
+    }	
+
+    @Override
     public boolean equals(Object o) {
         if (o == null || ! (o instanceof DLoop))
             return false;

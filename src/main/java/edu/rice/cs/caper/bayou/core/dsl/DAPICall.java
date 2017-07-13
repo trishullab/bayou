@@ -17,7 +17,8 @@ public class DAPICall extends DASTNode
 
     String node = "DAPICall";
     String _call;
-
+    String retVarName = "";
+    
     /* CAUTION: This field is only available during AST generation */
     transient IMethodBinding methodBinding;
     transient int linenum;
@@ -98,6 +99,14 @@ public class DAPICall extends DASTNode
     }
 
     @Override
+    public Set<Class> exceptionsThrown(Set<String> eliminatedVars) {
+	if (!eliminatedVars.contains(this.retVarName))
+	    return this.exceptionsThrown();
+	else
+	    return new HashSet<>();
+    }
+    
+    @Override
     public boolean equals(Object o) {
         if (o == null || ! (o instanceof DAPICall))
             return false;
@@ -154,6 +163,10 @@ public class DAPICall extends DASTNode
         assignment.setRightHandSide(creation);
         assignment.setOperator(Assignment.Operator.ASSIGN);
 
+	// Record the returned variable name
+	if (ret instanceof SimpleName)
+	    this.retVarName = ret.toString();
+	
         return assignment;
     }
 

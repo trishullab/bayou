@@ -103,7 +103,7 @@ public class Visitor extends ASTVisitor {
 
     private Block postprocessLocal(AST ast, Environment env, Block body, Set<String> eliminatedVars) {
         /* add uncaught exeptions */
-        Set<Class> exceptions = dAST.exceptionsThrown();
+        Set<Class> exceptions = dAST.exceptionsThrown(eliminatedVars);
         env.imports.addAll(exceptions);
         if (! exceptions.isEmpty()) {
             TryStatement statement = ast.newTryStatement();
