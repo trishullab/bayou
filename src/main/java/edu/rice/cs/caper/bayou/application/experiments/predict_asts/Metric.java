@@ -1,8 +1,8 @@
 package edu.rice.cs.caper.bayou.application.experiments.predict_asts;
 
 import edu.rice.cs.caper.bayou.core.dsl.DSubTree;
+import org.apache.commons.math3.stat.StatUtils;
 
-import java.util.Collections;
 import java.util.List;
 
 public interface Metric {
@@ -22,27 +22,17 @@ public interface Metric {
     }
 
     static float min(List<? extends Number> values) {
-        float min = Float.MAX_VALUE;
-        for (Number v: values)
-            if (v.floatValue() < min)
-                min = v.floatValue();
-        return min;
+        double[] dValues = values.stream().mapToDouble(v -> v.floatValue()).toArray();
+        return (float) StatUtils.min(dValues);
     }
 
     static float mean(List<? extends Number> values) {
-        float average = 0;
-        for (Number v: values)
-            average += v.floatValue();
-        average /= values.size();
-        return average;
+        double[] dValues = values.stream().mapToDouble(v -> v.floatValue()).toArray();
+        return (float) StatUtils.mean(dValues);
     }
 
     static float standardDeviation(List<? extends Number> values) {
-        float average = mean(values);
-        float stdv = 0;
-        for (Number v: values)
-            stdv += Math.pow(v.floatValue() - average, 2);
-        stdv /= values.size();
-        return (float) Math.sqrt(stdv);
+        double[] dValues = values.stream().mapToDouble(v -> v.floatValue()).toArray();
+        return (float) Math.sqrt(StatUtils.variance(dValues));
     }
 }
