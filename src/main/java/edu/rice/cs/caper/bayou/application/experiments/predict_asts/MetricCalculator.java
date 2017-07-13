@@ -2,6 +2,7 @@ package edu.rice.cs.caper.bayou.application.experiments.predict_asts;
 
 import edu.rice.cs.caper.bayou.core.dsl.*;
 import org.apache.commons.cli.*;
+import org.apache.commons.math3.stat.inference.TTest;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -59,6 +60,12 @@ public class MetricCalculator {
                 .numberOfArgs(1)
                 .desc("aggregate metrics in each top-k: min (default), mean, stdv")
                 .build());
+        opts.addOption(Option.builder("p")
+                .longOpt("p-value")
+                .hasArg()
+                .numberOfArgs(1)
+                .desc("compute the p-value (Student's t-test) w.r.t. the provided DATA file")
+                .build());
     }
 
     public void execute() throws IOException {
@@ -106,11 +113,40 @@ public class MetricCalculator {
             values.add(metric.compute(originalAST, predictedASTs, aggregate));
         }
 
+        List<Float> values2 = new ArrayList<>();
+        if (cmdLine.hasOption("p")) {
+            List<JSONInputFormat.DataPoint> data2 = JSONInputFormat.readData(cmdLine.getOptionValue("p"));
+            if (inCorpus == 2)
+                data2 = data2.stream().filter(datapoint -> datapoint.in_corpus).collect(Collectors.toList());
+            else if (inCorpus == 3)
+                data2 = data2.stream().filter(datapoint -> !datapoint.in_corpus).collect(Collectors.toList());
+
+            for (JSONInputFormat.DataPoint datapoint : data2) {
+                DSubTree originalAST = datapoint.ast;
+                List<DSubTree> predictedASTs = datapoint.out_asts.subList(0,
+                        Math.min(topk, datapoint.out_asts.size()));
+
+                values2.add(metric.compute(originalAST, predictedASTs, aggregate));
+            }
+            if (values.size() != values2.size())
+                throw new Error("DATA files do not match in size. Cannot compute p-value.");
+        }
+
         float average = Metric.mean(values);
         float stdv = Metric.standardDeviation(values);
-        System.out.println(String.format(
-                "%s (%d data points, each aggregated with %s): average=%f, stdv=%f",
-                m, data.size(), aggregate, average, stdv));
+
+        if (cmdLine.hasOption("p")) {
+            double[] dValues = values.stream().mapToDouble(v -> v.floatValue()).toArray();
+            double[] dValues2 = values2.stream().mapToDouble(v -> v.floatValue()).toArray();
+            double pValue = new TTest().pairedTTest(dValues, dValues2);
+            System.out.println(String.format(
+                    "%s (%d data points, each aggregated with %s): average=%f, stdv=%f, pvalue=%e",
+                    m, data.size(), aggregate, average, stdv, pValue));
+        }
+        else
+            System.out.println(String.format(
+                    "%s (%d data points, each aggregated with %s): average=%f, stdv=%f",
+                    m, data.size(), aggregate, average, stdv));
     }
 
     public static void main(String args[]) {
