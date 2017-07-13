@@ -68,8 +68,9 @@ public class DCEOptimizor extends ASTVisitor {
 	boolean isDef = false;
 	ASTNode parent = name.getParent();
 	if (parent instanceof Assignment) {
-	    isDef = ((Assignment)parent).getLeftHandSide() == name;
-	}
+	    isDef = ((Assignment)parent).getLeftHandSide() == name
+		&& ((Assignment)parent).getRightHandSide() instanceof ClassInstanceCreation;
+	} 
 	
 	if (varName != null && stmt != null) {
 	    if (isDef)
@@ -104,6 +105,12 @@ public class DCEOptimizor extends ASTVisitor {
 	}
 	
 	return false;
+    }
+
+    @Override
+    public boolean visit(ConstructorInvocation constInvoke) {
+	System.out.println("check constructor ");
+	return true;
     }
     
     // Add variable and its parent to register map
