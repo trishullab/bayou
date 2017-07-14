@@ -38,6 +38,7 @@ public class DCEOptimizor extends ASTVisitor {
 		    // No use, then remove this def's corresponding ExpressionStatement from synthesized code block
 		    ASTNode defNode = defVals.get(0);
 		    defNode.delete();
+		    System.out.println("eliminated " + def);
 		    this.eliminatedVars.add(def);
 		}
 	    }

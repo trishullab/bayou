@@ -120,6 +120,10 @@ public class DAPICall extends DASTNode
 	else
 	    return new HashSet<>();
     }
+
+    public String getRetVarName() {
+	return this.retVarName;
+    }
     
     @Override
     public boolean equals(Object o) {

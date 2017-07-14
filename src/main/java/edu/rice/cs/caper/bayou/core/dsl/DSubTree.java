@@ -129,6 +129,13 @@ public class DSubTree extends DASTNode {
 	return ex;
     }
 
+    public void cleanupCatchClauses(Set<String> eliminatedVars) {
+	for (DASTNode n : _nodes) {
+	    if (n instanceof DExcept)
+		((DExcept)n).cleanupCatchClauses(eliminatedVars);
+	}
+    }
+    
     @Override
     public boolean equals(Object o) {
         if (o == null || ! (o instanceof DSubTree))

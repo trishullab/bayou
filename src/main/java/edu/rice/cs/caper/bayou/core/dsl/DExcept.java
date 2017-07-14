@@ -27,7 +27,8 @@ public class DExcept extends DASTNode {
     String node = "DExcept";
     List<DASTNode> _try;
     List<DASTNode> _catch;
-
+    Map exceptToClause;
+    
     public DExcept() {
         this._try = new ArrayList<>();
         this._catch = new ArrayList<>();
@@ -142,7 +143,7 @@ public class DExcept extends DASTNode {
     public TryStatement synthesize(Environment env) throws SynthesisException {
         AST ast = env.ast();
         TryStatement statement = ast.newTryStatement();
-
+	
         /* synthesize try block */
         Block tryBlock = ast.newBlock();
         Set<Class> exceptionsThrown = new HashSet<>();
@@ -182,8 +183,30 @@ public class DExcept extends DASTNode {
             catchClause.setBody(catchBlock);
             env.removeScopedVariable(exceptionVar);
             env.addImport(except);
+
+	    if (this.exceptToClause == null)
+		this.exceptToClause = new HashMap<>();
+	    this.exceptToClause.put(except, catchClause);
         }
 
         return statement;
+    }
+
+    public void cleanupCatchClauses(Set<String> eliminatedVars) {
+	Set excepts = new HashSet<>();
+	for (DASTNode tn : _try) {
+	    if (tn instanceof DAPICall) {
+		String retVarName = ((DAPICall)tn).getRetVarName();
+		if (!retVarName.equals("") && eliminatedVars.contains(retVarName))
+		    excepts.addAll(tn.exceptionsThrown());
+	    }
+	}
+	
+	for (Object obj : this.exceptToClause.keySet()) {
+	    if (excepts.contains(obj)) {
+		CatchClause catchClause = (CatchClause)this.exceptToClause.get(obj);
+		catchClause.delete();
+	    }
+	}
     }
 }
