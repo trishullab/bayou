@@ -26,7 +26,7 @@ mvn clean package
 cp target/bayou-1.0.0-jar-with-dependencies.jar $BUILD_DIR
 cp -r ../../../src/main/python $BUILD_DIR
 cp -r ../../../src/main/resources $BUILD_DIR
-cp ../../../src/main/bash/binary_release/ubuntu_16_4/*.sh $BUILD_DIR
+cp ../../../src/main/bash/binary_release/*.sh $BUILD_DIR
 cp  target/bayou-1.0.0-jar-with-dependencies.jar $BUILD_DIR
 cp -r ../../../example_inputs $BUILD_DIR
 cd $BUILD_DIR

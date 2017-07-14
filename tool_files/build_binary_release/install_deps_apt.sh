@@ -15,4 +15,4 @@
 # limitations under the License.
 
 apt-get update
-apt-get install openjdk-8-jdk maven
+apt-get install openjdk-8-jdk maven zip
