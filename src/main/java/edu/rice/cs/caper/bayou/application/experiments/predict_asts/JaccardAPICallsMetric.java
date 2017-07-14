@@ -26,7 +26,7 @@ public class JaccardAPICallsMetric implements Metric {
      * between the original and the predicted ASTs.
      */
     @Override
-    public float compute(DSubTree originalAST, List<DSubTree> predictedASTs) {
+    public float compute(DSubTree originalAST, List<DSubTree> predictedASTs, String aggregate) {
         List<Float> jaccard = new ArrayList<>();
         jaccard.add((float) 1);
         Set<DAPICall> A = originalAST.bagOfAPICalls();
@@ -45,6 +45,6 @@ public class JaccardAPICallsMetric implements Metric {
 
             jaccard.add(1 - ((float) AinterB.size()) / AunionB.size());
         }
-        return Collections.min(jaccard);
+        return Metric.aggregate(jaccard, aggregate);
     }
 }

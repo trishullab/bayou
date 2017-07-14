@@ -92,8 +92,12 @@ public class Visitor extends ASTVisitor {
             return false;
         }
 
+        // Apply dead code elimination here
+        DCEOptimizor dce = new DCEOptimizor();
+        //body = dce.apply(body);
+	
         /* make rewrites to the local method body */
-        body = postprocessLocal(invocation.getAST(), env, body);
+        body = postprocessLocal(invocation.getAST(), env, body, dce.getEliminatedVars());
         rewriter.replace(evidenceBlock, body, null);
 
         try {
@@ -112,9 +116,9 @@ public class Visitor extends ASTVisitor {
         return false;
     }
 
-    private Block postprocessLocal(AST ast, Environment env, Block body) {
+    private Block postprocessLocal(AST ast, Environment env, Block body, Set<String> eliminatedVars) {
         /* add uncaught exeptions */
-        Set<Class> exceptions = dAST.exceptionsThrown();
+        Set<Class> exceptions = dAST.exceptionsThrown(eliminatedVars);
         env.imports.addAll(exceptions);
         if (! exceptions.isEmpty()) {
             TryStatement statement = ast.newTryStatement();
@@ -138,15 +142,17 @@ public class Visitor extends ASTVisitor {
 
         /* add variable declarations */
         for (Variable var : env.mu_scope) {
-            VariableDeclarationFragment varDeclFrag = ast.newVariableDeclarationFragment();
-            varDeclFrag.setName(ast.newSimpleName(var.name));
-            VariableDeclarationStatement varDeclStmt = ast.newVariableDeclarationStatement(varDeclFrag);
-            if (var.type.isPrimitive())
-                varDeclStmt.setType(ast.newPrimitiveType(PrimitiveType.toCode(var.type.getSimpleName())));
-            else
-                varDeclStmt.setType(ast.newSimpleType(ast.newSimpleName(var.type.getSimpleName())));
-            body.statements().add(0, varDeclStmt);
-        }
+	    if (!eliminatedVars.contains(var.name)) {
+		VariableDeclarationFragment varDeclFrag = ast.newVariableDeclarationFragment();
+		varDeclFrag.setName(ast.newSimpleName(var.name));
+		VariableDeclarationStatement varDeclStmt = ast.newVariableDeclarationStatement(varDeclFrag);
+		if (var.type.isPrimitive())
+		    varDeclStmt.setType(ast.newPrimitiveType(PrimitiveType.toCode(var.type.getSimpleName())));
+		else
+		    varDeclStmt.setType(ast.newSimpleType(ast.newSimpleName(var.type.getSimpleName())));
+		body.statements().add(0, varDeclStmt);
+	    }
+	}
 
         return body;
     }

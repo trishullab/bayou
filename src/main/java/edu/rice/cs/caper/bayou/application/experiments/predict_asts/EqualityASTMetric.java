@@ -24,7 +24,7 @@ public class EqualityASTMetric implements Metric {
      * of the predicted ASTS.
      */
     @Override
-    public float compute(DSubTree originalAST, List<DSubTree> predictedASTs) {
+    public float compute(DSubTree originalAST, List<DSubTree> predictedASTs, String aggregate) {
         boolean equals = false;
         for (DSubTree predictedAST : predictedASTs) {
             if (originalAST.equals(predictedAST)) {

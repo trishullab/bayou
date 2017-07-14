@@ -27,7 +27,7 @@ public class NumStatementsMetric implements Metric {
      * statements in the original vs predicted ASTs.
      */
     @Override
-    public float compute(DSubTree originalAST, List<DSubTree> predictedASTs) {
+    public float compute(DSubTree originalAST, List<DSubTree> predictedASTs, String aggregate) {
         int original = originalAST.numStatements();
         List<Integer> diffs = new ArrayList<>();
         diffs.add(original);
@@ -36,7 +36,7 @@ public class NumStatementsMetric implements Metric {
             int diff_predicted = Math.abs(predicted - original);
             diffs.add(diff_predicted);
         }
-        float min_diff = Collections.min(diffs);
-        return min_diff / original;
+        float aggr_diff = Metric.aggregate(diffs, aggregate);
+        return aggr_diff / original;
     }
 }

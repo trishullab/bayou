@@ -114,6 +114,11 @@ public class DExcept extends DASTNode {
     }
 
     @Override
+    public Set<Class> exceptionsThrown(Set<String> eliminatedVars) {
+	return this.exceptionsThrown();
+    }
+    
+    @Override
     public boolean equals(Object o) {
         if (o == null || ! (o instanceof DExcept))
             return false;
