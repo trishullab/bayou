@@ -1,7 +1,19 @@
 import edu.rice.cs.caper.bayou.annotations.Evidence;
 
-public class TestIO_exception {
+public class TestIO {
 
+    void read(String file) {
+        Evidence.apicalls("readLine");
+    }   
+
+    /*
+    void read(String file) {
+        Evidence.apicalls("readLine");
+        Evidence.context("String");
+    }   
+    */
+
+    /*
     void readWithErrorHandling() {
         String file;
         {
@@ -9,5 +21,5 @@ public class TestIO_exception {
             Evidence.context("String");
         }
     }   
-
+    */
 }
