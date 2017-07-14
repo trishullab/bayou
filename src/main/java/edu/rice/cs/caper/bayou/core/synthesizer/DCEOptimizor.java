@@ -69,7 +69,9 @@ public class DCEOptimizor extends ASTVisitor {
 	ASTNode parent = name.getParent();
 	if (parent instanceof Assignment) {
 	    isDef = ((Assignment)parent).getLeftHandSide() == name
-		&& ((Assignment)parent).getRightHandSide() instanceof ClassInstanceCreation;
+		&& ((Assignment)parent).getRightHandSide() instanceof ClassInstanceCreation
+		&& parent.getParent() != null
+		&& parent.getParent() instanceof ExpressionStatement;
 	} 
 	
 	if (varName != null && stmt != null) {
