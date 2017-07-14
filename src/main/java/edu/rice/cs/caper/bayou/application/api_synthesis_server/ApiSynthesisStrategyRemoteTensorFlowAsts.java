@@ -132,7 +132,7 @@ class ApiSynthesisStrategyRemoteTensorFlowAsts implements ApiSynthesisStrategy
     }
 
     @Override
-    public Iterable<String> synthesise(String code) throws SynthesiseException
+    public Iterable<String> synthesise(String code) throws SynthesiseException, ParseException
     {
         _logger.debug("entering");
 
@@ -237,15 +237,10 @@ class ApiSynthesisStrategyRemoteTensorFlowAsts implements ApiSynthesisStrategy
      */
     // n.b. package static for unit testing without creation
     static String extractEvidence(String code, EvidenceExtractor extractor, String evidenceClasspath)
-            throws SynthesiseException
+            throws SynthesiseException, ParseException
     {
         _logger.debug("entering");
-        String evidence = null;
-        try {
-            evidence = extractor.execute(code, evidenceClasspath);
-        } catch (ParseException e) {
-            _logger.trace(e.getMessage());
-        }
+        String evidence = extractor.execute(code, evidenceClasspath);
         if(evidence == null)
         {
             _logger.debug("exiting");
