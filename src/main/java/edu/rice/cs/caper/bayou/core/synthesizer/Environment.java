@@ -1,3 +1,18 @@
+/*
+Copyright 2017 Rice University
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
 package edu.rice.cs.caper.bayou.core.synthesizer;
 
 import org.eclipse.jdt.core.dom.AST;
@@ -27,15 +42,20 @@ public class Environment {
     }
 
     public Expression addVariable(Class type) {
-        return searchOrAddVariable(type, false);
+        try {
+            return searchOrAddVariable(type, false);
+        } catch (SynthesisException e) {
+            throw new Error("SynthesisException was thrown in addVariable()! This shouldn't occur.");
+        }
     }
 
-    public Expression searchOrAddVariable(Class type, boolean search) {
+    public Expression searchOrAddVariable(Class type, boolean search) throws SynthesisException {
         Expression expr;
         Enumerator enumerator = new Enumerator(ast, this);
-        if (search && (expr = enumerator.search(type)) != null) {
-            return expr;
-        }
+        if (search)
+            if ((expr = enumerator.search(type)) != null)
+                return expr;
+            else throw new SynthesisException("Could not find variable of type " + type.getName());
 
         /* construct a nice name for the variable */
         String name = "";

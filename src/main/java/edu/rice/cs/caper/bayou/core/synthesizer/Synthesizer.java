@@ -1,3 +1,18 @@
+/*
+Copyright 2017 Rice University
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
 package edu.rice.cs.caper.bayou.core.synthesizer;
 
 import com.google.gson.Gson;
@@ -17,6 +32,7 @@ import java.io.PrintStream;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 
 public class Synthesizer {
@@ -26,20 +42,14 @@ public class Synthesizer {
      */
     private static final Logger _logger = LogManager.getLogger(Synthesizer.class.getName());
 
-
-    private final PrintStream _out;
-
-   // CommandLine cmdLine;
-
     static ClassLoader classLoader;
 
     class JSONInputWrapper {
         List<DSubTree> asts;
     }
 
-    public Synthesizer(PrintStream outStream)
+    public Synthesizer()
     {
-        _out = outStream;
         CommandLineParser parser = new DefaultParser();
         org.apache.commons.cli.Options clopts = new org.apache.commons.cli.Options();
 
@@ -80,7 +90,9 @@ public class Synthesizer {
         return js.asts;
     }
 
-    public void execute(String source, String astJson, String classpath) throws IOException {
+    public List<String> execute(String source, String astJson, String classpath) throws IOException {
+
+        List<String> synthesizedPrograms = new LinkedList<>();
 
         ASTParser parser = ASTParser.newParser(AST.JLS8);
         classpath = classpath == null? "" : classpath;
@@ -116,8 +128,7 @@ public class Synthesizer {
                 String program = visitor.synthesizedProgram.replaceAll("\\s", "");
                 if (! programs.contains(program)) {
                     programs.add(program);
-                    _out.println(visitor.synthesizedProgram);
-                    _out.println("/* --- End of application --- */\n\n");
+                    synthesizedPrograms.add(visitor.synthesizedProgram);
                 }
             }
             catch (Exception e)
@@ -125,6 +136,8 @@ public class Synthesizer {
                 // do nothing and try next ast
             }
         }
+
+        return synthesizedPrograms;
     }
 
 }

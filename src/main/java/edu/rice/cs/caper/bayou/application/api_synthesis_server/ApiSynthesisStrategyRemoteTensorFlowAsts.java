@@ -1,3 +1,18 @@
+/*
+Copyright 2017 Rice University
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
 package edu.rice.cs.caper.bayou.application.api_synthesis_server;
 
 ;
@@ -10,6 +25,7 @@ import java.io.*;
 import java.net.Socket;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
+import java.util.List;
 
 /**
  * A synthesis strategy that relies on a remote server that uses TensorFlow to create ASTs from extracted evidence.
@@ -153,15 +169,13 @@ class ApiSynthesisStrategyRemoteTensorFlowAsts implements ApiSynthesisStrategy
         }
 
         /*
-         * Synthesise results from the code and asts.
+         * Synthesise results from the code and asts and return.
          */
-        String synthesizeResult;
+        List<String> synthesizedPrograms;
         try
         {
-            ByteArrayOutputStream outAccum = new ByteArrayOutputStream();
-            new Synthesizer(new PrintStream(outAccum)).execute(code, astsJson, combinedClassPath);
-            synthesizeResult = outAccum.toString();
-            _logger.trace("synthesizeResult: " + synthesizeResult);
+            synthesizedPrograms = new Synthesizer().execute(code, astsJson, combinedClassPath);
+            _logger.trace("synthesizedPrograms: " + synthesizedPrograms);
         }
         catch (IOException e)
         {
@@ -169,13 +183,8 @@ class ApiSynthesisStrategyRemoteTensorFlowAsts implements ApiSynthesisStrategy
             throw new SynthesiseException(e);
         }
 
-
-        /*
-         * Split results into into individual solutions and return.
-         */
-        String[] results = synthesizeResult.split("/\\* --- End of application --- \\*/");
         _logger.debug("exiting");
-        return Arrays.asList(results);
+        return synthesizedPrograms;
     }
 
     /**
