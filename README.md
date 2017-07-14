@@ -39,9 +39,11 @@ sudo ./install_deps.sh
 
 ```
 cd out
-chmod +x install_dependencies.sh
-sudo ./install_dependencies.sh
+chmod +x install_dependencies_apt.sh
+sudo ./install_dependencies_apt.sh
 ```
+
+Or, install_dependencies_mac.sh for Macintosh.
 
 #### 5.) Run Bayou
 
