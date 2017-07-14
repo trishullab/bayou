@@ -17,8 +17,10 @@ import json
 import logging.handlers
 import os
 import socket
+from itertools import chain
 
 import tensorflow as tf
+import bayou.core.evidence
 from bayou.core.infer import BayesianPredictor
 
 TIMEOUT = 10 # seconds
@@ -100,6 +102,19 @@ def _read_bytes(byte_count, connection):
 
     return buffer
 
+
+# Include in here any conditions that dictate whether an AST should be returned or not
+def okay(js, ast):
+    calls = ast['calls']
+    apicalls = list(set(chain.from_iterable([bayou.core.evidence.APICalls.from_call(call) for call in calls])))
+    types = list(set(chain.from_iterable([bayou.core.evidence.Types.from_call(call) for call in calls])))
+    context = list(set(chain.from_iterable([bayou.core.evidence.Context.from_call(call) for call in calls])))
+
+    ev_okay = all([c in apicalls for c in js['apicalls']]) and all([t in types for t in js['types']]) \
+        and all([c in context for c in js['context']])
+    return ev_okay
+
+
 def _generate_asts(evidence_json, predictor):
     logging.debug("entering")
     js = json.loads(evidence_json) # parse evidence as a JSON string
@@ -110,8 +125,9 @@ def _generate_asts(evidence_json, predictor):
     asts, counts = [], []
     for i in range(100):
         try:
-            psi = predictor.psi_from_evidence(js)
-            ast = predictor.generate_ast(psi)
+            ast = predictor.infer(js)
+            ast['calls'] = list(set(predictor.calls_in_last_ast))
+
             if ast in asts:
                 counts[asts.index(ast)] += 1
             else:
@@ -125,8 +141,9 @@ def _generate_asts(evidence_json, predictor):
         ast['count'] = count
     asts.sort(key=lambda x: x['count'], reverse=True)
 
+    asts = [ast for ast in asts[:10] if okay(js, ast)]
     logging.debug("exiting")
-    return json.dumps({'evidences': js, 'asts': asts[:10]}, indent=2) # return all ASTs as a JSON string
+    return json.dumps({'evidences': js, 'asts': asts}, indent=2)
 
 
 if __name__ == '__main__':

@@ -33,6 +33,7 @@ class BayesianPredictor(object):
 
     def infer(self, evidences):
         psi = self.psi_from_evidence(evidences)
+        self.calls_in_last_ast = []
         return self.generate_ast(psi)
 
     def psi_random(self):
@@ -71,6 +72,7 @@ class BayesianPredictor(object):
         if node not in ['DBranch', 'DExcept', 'DLoop', 'DSubTree']:
             ast['node'] = 'DAPICall'
             ast['_call'] = node
+            self.calls_in_last_ast.append(node)
             return ast
 
         ast['node'] = node
