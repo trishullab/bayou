@@ -17,6 +17,7 @@ package edu.rice.cs.caper.bayou.application.api_synthesis_server;
 
 ;
 import edu.rice.cs.caper.bayou.core.synthesizer.EvidenceExtractor;
+import edu.rice.cs.caper.bayou.core.synthesizer.ParseException;
 import edu.rice.cs.caper.bayou.core.synthesizer.Synthesizer;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -177,7 +178,7 @@ class ApiSynthesisStrategyRemoteTensorFlowAsts implements ApiSynthesisStrategy
             synthesizedPrograms = new Synthesizer().execute(code, astsJson, combinedClassPath);
             _logger.trace("synthesizedPrograms: " + synthesizedPrograms);
         }
-        catch (IOException e)
+        catch (IOException|ParseException e)
         {
             _logger.debug("exiting");
             throw new SynthesiseException(e);
@@ -239,7 +240,12 @@ class ApiSynthesisStrategyRemoteTensorFlowAsts implements ApiSynthesisStrategy
             throws SynthesiseException
     {
         _logger.debug("entering");
-        String evidence = extractor.execute(code, evidenceClasspath);
+        String evidence = null;
+        try {
+            evidence = extractor.execute(code, evidenceClasspath);
+        } catch (ParseException e) {
+            _logger.trace(e.getMessage());
+        }
         if(evidence == null)
         {
             _logger.debug("exiting");
