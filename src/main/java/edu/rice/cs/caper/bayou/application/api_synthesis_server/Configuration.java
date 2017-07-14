@@ -47,8 +47,7 @@ class Configuration
 
     static int CodeCompletionRequestBodyMaxBytesCount = MEGA_BYTES_IN_BYTES;
 
-    static final String[] CorsAllowedOrigins =
-            new String[] { "http://www.askbayou.com", "http://askbayou.com", "http://beta.askbayou.com" };
+    static final String[] CorsAllowedOrigins;
 
     static
     {
@@ -89,5 +88,8 @@ class Configuration
         SynthesisQualityFeedbackLogBucketName = properties.getProperty("SynthesisQualityFeedbackLogBucketName");
         EvidenceClasspath = properties.getProperty("EvidenceClasspath");
         AndroidJarPath = new File(properties.getProperty("AndroidJarPath"));
+        CorsAllowedOrigins = properties.getProperty("CorsAllowedOrigins").split("\\s+"); // split by whitespace
+
+
     }
 }
