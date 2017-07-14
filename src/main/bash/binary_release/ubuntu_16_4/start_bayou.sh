@@ -23,4 +23,4 @@ java -DconfigurationFile=resources/conf/apiSynthesisServerConfig.properties -Dlo
 
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 export PYTHONPATH=python
-/usr/bin/python3 python/ast_server.py --save_dir "$SCRIPT_DIR/resources/model"
+python3 python/ast_server.py --save_dir "$SCRIPT_DIR/resources/model"
