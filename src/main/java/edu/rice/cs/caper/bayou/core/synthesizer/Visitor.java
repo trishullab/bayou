@@ -77,9 +77,9 @@ public class Visitor extends ASTVisitor {
             return false;
         }
 
-	// Apply dead code elimination here
-	DCEOptimizor dce = new DCEOptimizor();
-	body = dce.apply(body);
+        // Apply dead code elimination here
+        DCEOptimizor dce = new DCEOptimizor();
+        //body = dce.apply(body);
 	
         /* make rewrites to the local method body */
         body = postprocessLocal(invocation.getAST(), env, body, dce.getEliminatedVars());
