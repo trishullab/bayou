@@ -14,20 +14,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
-SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-BUILD_DIR="${SCRIPT_DIR}/out"
-
-rm -rf $BUILD_DIR
-mkdir $BUILD_DIR
-
-cd ../maven_3_3_9/bayou
-mvn clean package
-cp target/bayou-1.0.0-jar-with-dependencies.jar $BUILD_DIR
-cp -r ../../../src/main/python $BUILD_DIR
-cp -r ../../../src/main/resources $BUILD_DIR
-cp ../../../src/main/bash/binary_release/*.sh $BUILD_DIR
-cp  target/bayou-1.0.0-jar-with-dependencies.jar $BUILD_DIR
-cp -r ../../../example_inputs $BUILD_DIR
-cd $BUILD_DIR
-mv bayou-1.0.0-jar-with-dependencies.jar bayou-1.0.0.jar
+brew update
+brew install python3
+pip3 install 'tensorflow==1.2'
+pip3 install 'scikit-learn'
+pip3 install 'scipy'

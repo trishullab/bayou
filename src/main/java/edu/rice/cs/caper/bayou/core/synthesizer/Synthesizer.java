@@ -21,6 +21,7 @@ import edu.rice.cs.caper.bayou.core.dsl.*;
 import org.apache.commons.cli.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.eclipse.jdt.core.compiler.IProblem;
 import org.eclipse.jdt.core.dom.AST;
 import org.eclipse.jdt.core.dom.ASTParser;
 import org.eclipse.jdt.core.dom.CompilationUnit;
@@ -32,8 +33,10 @@ import java.io.PrintStream;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class Synthesizer {
 
@@ -90,7 +93,7 @@ public class Synthesizer {
         return js.asts;
     }
 
-    public List<String> execute(String source, String astJson, String classpath) throws IOException {
+    public List<String> execute(String source, String astJson, String classpath) throws IOException, ParseException {
 
         List<String> synthesizedPrograms = new LinkedList<>();
 
@@ -105,6 +108,15 @@ public class Synthesizer {
                 new String[] { "" }, new String[] { "UTF-8" }, true);
         parser.setResolveBindings(true);
         CompilationUnit cu = (CompilationUnit) parser.createAST(null);
+
+        List<IProblem> problems = Arrays.stream(cu.getProblems()).filter(p ->
+                p.isError() &&
+                        p.getID() != IProblem.PublicClassMustMatchFileName && // we use "Program.java"
+                        p.getID() != IProblem.ParameterMismatch // Evidence varargs
+        ).collect(Collectors.toList());
+        if (problems.size() > 0)
+            throw new ParseException(problems);
+
         List<DSubTree> asts = getASTsFromNN(astJson);
 
         List<URL> urlList = new ArrayList<>();

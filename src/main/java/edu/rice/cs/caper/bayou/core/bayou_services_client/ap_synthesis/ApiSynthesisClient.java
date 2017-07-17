@@ -97,7 +97,7 @@ public class ApiSynthesisClient extends JsonMsgClientBase
         JSONObject responseBodyObj;
         {
             HttpResponse response =  httpclient.execute(post);
-            if(response.getStatusLine().getStatusCode() != 200)
+            if(response.getStatusLine().getStatusCode() != 200 && response.getStatusLine().getStatusCode() != 400)
             {
                 throw new IOException("Unexpected status code: " + response.getStatusLine().getStatusCode());
             }
@@ -171,7 +171,18 @@ public class ApiSynthesisClient extends JsonMsgClientBase
          */
         if(!successValue)
         {
-            String errorMessageValue = messageBodyObj.getString("errorMessage");
+            String errorMessageValue = messageBodyObj.get("errorMessage").toString();
+            if(errorMessageValue.equals("parseException"))
+            {
+                String EXCEPTION_MESSAGE = "exceptionMessage";
+                if(messageBodyObj.has(EXCEPTION_MESSAGE))
+                {
+                    String exceptionMessage = messageBodyObj.get(EXCEPTION_MESSAGE).toString();
+                    throw new ParseError(exceptionMessage);
+                }
+
+            }
+
             _logger.debug("exiting");
             throw new SynthesisError(errorMessageValue);
         }

@@ -14,13 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-trap "exit" INT TERM # trap lines make it so taht when this script terminates the background java process does as well
-trap "kill 0" EXIT
+brew update
+brew cask install java
+brew install maven
 
-mkdir -p logs
-
-java -DconfigurationFile=resources/conf/apiSynthesisServerConfig.properties -Dlog4j.configurationFile=resources/conf/apiSynthesisServerLog4j2.xml -jar bayou-1.0.0.jar &
-
-SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-export PYTHONPATH=python
-/usr/bin/python3 python/ast_server.py --save_dir "$SCRIPT_DIR/resources/model"

@@ -62,12 +62,12 @@ public class ApiSynthesisHealthCheckServlet extends HttpServlet
 
             String code = "import edu.rice.cs.caper.bayou.annotations.Evidence;\n" +
                     "\n" +
-                    "public class TestIO {\n" +
+                    "public class TestIO1 {\n" +
                     "\n" +
-                    "    @Evidence(keywords = \"read buffered line from the file\")\n" +
-                    "    void __bayou_fill(String file) {\n" +
-                    "    }\n" +
-                    "\n" +
+                    "    // Read from a file\n" +
+                    "    void read(String file) {\n" +
+                    "        Evidence.apicalls(\"readLine\");\n" +
+                    "    }   \n" +
                     "}";
 
             Iterable<String> results = _synthesisStrategy.synthesise(code);

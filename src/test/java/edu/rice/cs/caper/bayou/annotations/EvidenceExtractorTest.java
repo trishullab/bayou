@@ -19,6 +19,7 @@ package edu.rice.cs.caper.bayou.annotations;
 import com.google.gson.Gson;
 import com.google.gson.JsonSyntaxException;
 import edu.rice.cs.caper.bayou.core.synthesizer.EvidenceExtractor;
+import edu.rice.cs.caper.bayou.core.synthesizer.ParseException;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -30,7 +31,7 @@ import java.nio.file.Paths;
 public class EvidenceExtractorTest
 {
 
-    private void testExecute(String test) throws IOException
+    private void testExecute(String test) throws IOException, ParseException
     {
         File srcFolder;
         {
@@ -71,37 +72,37 @@ public class EvidenceExtractorTest
     }
 
     @Test
-    public void testIO1() throws IOException {
+    public void testIO1() throws IOException, ParseException {
         testExecute("TestIO1");
     }
 
     @Test
-    public void testIO2() throws IOException {
+    public void testIO2() throws IOException, ParseException {
         testExecute("TestIO2");
     }
 
     @Test
-    public void testBluetooth() throws IOException {
+    public void testBluetooth() throws IOException, ParseException {
         testExecute("TestBluetooth");
     }
 
     @Test
-    public void testDialog() throws IOException {
+    public void testDialog() throws IOException, ParseException {
         testExecute("TestDialog");
     }
 
     @Test
-    public void testCamera() throws IOException {
+    public void testCamera() throws IOException, ParseException {
         testExecute("TestCamera");
     }
 
     @Test
-    public void testWifi() throws IOException {
+    public void testWifi() throws IOException, ParseException {
         testExecute("TestWifi");
     }
 
     @Test
-    public void testSpeech() throws IOException {
+    public void testSpeech() throws IOException, ParseException {
         testExecute("TestSpeech");
     }
 }

@@ -47,7 +47,9 @@ public interface JsonResponseServlet
         Logger logger = LogManager.getLogger(JsonResponseServlet.class.getName());
         logger.debug("entering");
 
-        ByteBuffer byteBuffer = UTF_8.encode(obj.toString());
+        String objAsString = obj.toString(2);
+        logger.trace("objAsString=" + objAsString);
+        ByteBuffer byteBuffer = UTF_8.encode(objAsString);
         byte[] responseBodyBytes=new byte[byteBuffer.limit()];
         byteBuffer.get(responseBodyBytes);
 
