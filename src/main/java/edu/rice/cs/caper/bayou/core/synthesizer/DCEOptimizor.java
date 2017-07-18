@@ -1,18 +1,3 @@
-/*
-Copyright 2017 Rice University
-
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-    http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-*/
 package edu.rice.cs.caper.bayou.core.synthesizer;
 
 import edu.rice.cs.caper.bayou.core.dsl.DSubTree;
@@ -41,25 +26,50 @@ public class DCEOptimizor extends ASTVisitor {
     }
 
     // Apply the optimization here
-    public Block apply(Block body) {
+    public Block apply(Block body, DSubTree dAST) {
 	// Collect defs and uses
 	collectDefUse(body);
 	
 	// Check if def has potential uses
+	ArrayList<String> tempVars = new ArrayList<String>();
 	for (String def : defs.keySet()) {
 	    List<ASTNode> defVals = defs.get(def);
 	    if (defVals.size() == 1) {
 		if (uses.get(def) == null) {
 		    // No use, then remove this def's corresponding ExpressionStatement from synthesized code block
-		    ASTNode defNode = defVals.get(0);
-		    defNode.delete();
-		    System.out.println("eliminated " + def);
-		    this.eliminatedVars.add(def);
+		    tempVars.add(def);
 		}
 	    }
 	}
+	// Clean up the infeasible elimination
+	for (String def : tempVars) {
+	    List<ASTNode> defVals = defs.get(def);
+	    ASTNode defNode = defVals.get(0);
+
+	    if (defNode.getParent() instanceof ExpressionStatement) {
+		defNode.getParent().delete();
+		this.eliminatedVars.add(def);
+	    } else if (hasLegalParent(defNode)) {
+		this.eliminatedVars.add(def);
+	    }
+	}
+	// Apply post optimizations to dAST
+	dAST.cleanupCatchClauses(this.eliminatedVars);
 	
 	return body;
+    }
+
+    protected boolean hasLegalParent(ASTNode node) {
+	node = node.getParent();
+	System.out.println("parent type: " + node.getClass().getName());
+	while (node != null && (node instanceof ClassInstanceCreation
+				|| node instanceof ParenthesizedExpression
+				|| node instanceof Assignment)) {
+	    node = node.getParent();
+	    System.out.println("parent type: " + node.getClass().getName());
+	}
+
+	return node != null && node instanceof ExpressionStatement;
     }
 
     // Collect the def and use variables
@@ -86,14 +96,14 @@ public class DCEOptimizor extends ASTVisitor {
 	if (parent instanceof Assignment) {
 	    isDef = ((Assignment)parent).getLeftHandSide() == name
 		&& ((Assignment)parent).getRightHandSide() instanceof ClassInstanceCreation
-		&& parent.getParent() != null
-		&& parent.getParent() instanceof ExpressionStatement;
+		&& parent.getParent() != null;
+	    // && parent.getParent() instanceof ExpressionStatement;
 	} 
 	
 	if (varName != null && stmt != null) {
 	    if (isDef)
 		// Add variable def
-		addToMap(varName, stmt, defs);
+		addToMap(varName, name.getParent(), defs);
 	    else
 		// Add potential use
 		addToMap(varName, stmt, uses);
