@@ -17,6 +17,7 @@ package edu.rice.cs.caper.bayou.application.api_synthesis_server;
 
 
 import edu.rice.cs.caper.bayou.core.bayou_services_client.ap_synthesis.ApiSynthesisClient;
+import edu.rice.cs.caper.bayou.core.bayou_services_client.ap_synthesis.ParseError;
 import edu.rice.cs.caper.bayou.core.bayou_services_client.ap_synthesis.SynthesisError;
 
 import java.io.IOException;
@@ -54,18 +55,29 @@ class ApiSynthesisLocalClient
 
     public static void main(String[] args) throws IOException, SynthesisError
     {
+        String code;
         if(args.length == 0)
         {
-            synthesise(_testDialog);
+            code = _testDialog;
         }
         else if(args.length == 1)
         {
-            String code = new String(Files.readAllBytes(Paths.get(args[0])));
-            synthesise(code);
+            code = new String(Files.readAllBytes(Paths.get(args[0])));
         }
         else
         {
             System.out.println("usage: java edu.rice.pliny.programs.api_synthesis_server.ApiSynthesisLocalClient [file]");
+            System.exit(0);
+            code = null;
+        }
+
+        try
+        {
+            synthesise(code);
+        }
+        catch (ParseError e)
+        {
+            System.err.println(e.getMessage());
         }
     }
 }

@@ -3,6 +3,8 @@ import android.bluetooth.BluetoothAdapter;
 
 public class TestBluetooth {
 
+    /* Get an input stream that can be used to read from
+     * the given blueooth hardware address */
     void readFromBluetooth(BluetoothAdapter adapter) {
         String address = "00:43:A8:23:10:F0";
         {

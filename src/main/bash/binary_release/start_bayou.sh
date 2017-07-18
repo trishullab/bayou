@@ -14,20 +14,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+trap "exit" INT TERM # trap lines make it so taht when this script terminates the background java process does as well
+trap "kill 0" EXIT
+
+mkdir -p logs
+
+java -DconfigurationFile=resources/conf/apiSynthesisServerConfig.properties -Dlog4j.configurationFile=resources/conf/apiSynthesisServerLog4j2.xml -jar bayou-1.0.0.jar &
 
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-BUILD_DIR="${SCRIPT_DIR}/out"
-
-rm -rf $BUILD_DIR
-mkdir $BUILD_DIR
-
-cd ../maven_3_3_9/bayou
-mvn clean package
-cp target/bayou-1.0.0-jar-with-dependencies.jar $BUILD_DIR
-cp -r ../../../src/main/python $BUILD_DIR
-cp -r ../../../src/main/resources $BUILD_DIR
-cp ../../../src/main/bash/binary_release/*.sh $BUILD_DIR
-cp  target/bayou-1.0.0-jar-with-dependencies.jar $BUILD_DIR
-cp -r ../../../example_inputs $BUILD_DIR
-cd $BUILD_DIR
-mv bayou-1.0.0-jar-with-dependencies.jar bayou-1.0.0.jar
+export PYTHONPATH=python
+python3 python/ast_server.py --save_dir "$SCRIPT_DIR/resources/model"

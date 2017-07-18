@@ -17,11 +17,13 @@ package edu.rice.cs.caper.bayou.core.synthesizer;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import org.eclipse.jdt.core.compiler.IProblem;
 import org.eclipse.jdt.core.dom.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class EvidenceExtractor extends ASTVisitor {
 
@@ -48,7 +50,7 @@ public class EvidenceExtractor extends ASTVisitor {
     Block evidenceBlock;
 
 
-    public String execute(String source, String classpath) {
+    public String execute(String source, String classpath) throws ParseException {
 
         _logger.trace("source");
         _logger.trace("classpath:" + classpath);
@@ -63,6 +65,14 @@ public class EvidenceExtractor extends ASTVisitor {
                 new String[] { "" }, new String[] { "UTF-8" }, true);
         parser.setResolveBindings(true);
         CompilationUnit cu = (CompilationUnit) parser.createAST(null);
+
+        List<IProblem> problems = Arrays.stream(cu.getProblems()).filter(p ->
+                                    p.isError() &&
+                                    p.getID() != IProblem.PublicClassMustMatchFileName && // we use "Program.java"
+                                    p.getID() != IProblem.ParameterMismatch // Evidence varargs
+                                    ).collect(Collectors.toList());
+        if (problems.size() > 0)
+            throw new ParseException(problems);
 
         Gson gson = new GsonBuilder().setPrettyPrinting().serializeNulls().create();
         cu.accept(this);

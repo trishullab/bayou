@@ -15,6 +15,8 @@ limitations under the License.
 */
 package edu.rice.cs.caper.bayou.application.api_synthesis_server;
 
+import edu.rice.cs.caper.bayou.core.synthesizer.ParseException;
+
 /**
  * A method for synthesizing code from given code.
  */
@@ -33,7 +35,7 @@ interface ApiSynthesisStrategy
         }
     }
 
-    Iterable<String> synthesise(String searchCode) throws SynthesiseException;
+    Iterable<String> synthesise(String searchCode) throws SynthesiseException, ParseException;
 
     static ApiSynthesisStrategy fromConfig()
     {

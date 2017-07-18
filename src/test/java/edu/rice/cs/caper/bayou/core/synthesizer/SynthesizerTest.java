@@ -33,7 +33,7 @@ public class SynthesizerTest {
    // String testDir = "/Users/vijay/Work/bayou/src/test/resources/synthesizer";
    // String classpath = "/Users/vijay/Work/bayou/tool_files/build_scripts/out/resources/artifacts/classes:/Users/vijay/Work/bayou/tool_files/build_scripts/out/resources/artifacts/jar/android.jar";
 
-    void testExecute(String test) throws IOException
+    void testExecute(String test) throws IOException, ParseException
     {
         File projRoot = new File(System.getProperty("user.dir")).getParentFile().getParentFile().getParentFile();
         File srcFolder = new File(projRoot.getAbsolutePath() + File.separator + "src");
@@ -76,37 +76,37 @@ public class SynthesizerTest {
     }
 
     @Test
-    public void testIO1() throws IOException {
+    public void testIO1() throws IOException, ParseException {
         testExecute("TestIO1");
     }
 
     @Test
-    public void testIO2() throws IOException {
+    public void testIO2() throws IOException, ParseException {
         testExecute("TestIO2");
     }
 
     @Test
-    public void testBluetooth() throws IOException {
+    public void testBluetooth() throws IOException, ParseException {
         testExecute("TestBluetooth");
     }
 
     @Test
-    public void testDialog() throws IOException {
+    public void testDialog() throws IOException, ParseException {
         testExecute("TestDialog");
     }
 
     @Test
-    public void testCamera() throws IOException {
+    public void testCamera() throws IOException, ParseException {
         testExecute("TestCamera");
     }
 
     @Test
-    public void testWifi() throws IOException {
+    public void testWifi() throws IOException, ParseException {
         testExecute("TestWifi");
     }
 
     @Test
-    public void testSpeech() throws IOException {
+    public void testSpeech() throws IOException, ParseException {
         testExecute("TestSpeech");
     }
 }

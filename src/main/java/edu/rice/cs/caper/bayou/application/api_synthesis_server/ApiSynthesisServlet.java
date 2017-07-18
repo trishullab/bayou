@@ -17,6 +17,7 @@ package edu.rice.cs.caper.bayou.application.api_synthesis_server;
 
 import edu.rice.cs.caper.bayou.application.api_synthesis_server.synthesis_logging.SynthesisLogger;
 import edu.rice.cs.caper.bayou.application.api_synthesis_server.synthesis_logging.SynthesisLoggerS3;
+import edu.rice.cs.caper.bayou.core.synthesizer.ParseException;
 import edu.rice.cs.caper.servlet.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -173,7 +174,20 @@ public class ApiSynthesisServlet extends SizeConstrainedPostBodyServlet implemen
         /*
          * Perform synthesis.
          */
-        Iterable<String> results = _synthesisStrategy.synthesise(code);
+        Iterable<String> results;
+        try
+        {
+            results = _synthesisStrategy.synthesise(code);
+        }
+        catch (ParseException e)
+        {
+            JSONObject responseBody = new ErrorJsonResponse("parseException");
+            responseBody.put("exceptionMessage", e.getMessage());
+            resp.setStatus(HttpStatus.BAD_REQUEST_400);
+            writeObjectToServletOutputStream(responseBody, resp);
+            _logger.debug("exiting");
+            return;
+        }
 
         /*
          * Place synthesis results into a JSON string, send response, and close socket.

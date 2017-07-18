@@ -54,6 +54,7 @@ public class CorsHeaderSetter
     CorsHeaderSetter(Set<String> allowedOrigins)
     {
         _logger.debug("entering");
+        _logger.trace("allowedOrigins:" + allowedOrigins);
         _allowedOrigins = allowedOrigins;
         _logger.debug("exiting");
     }
