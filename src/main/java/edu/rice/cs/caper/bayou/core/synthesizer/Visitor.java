@@ -58,6 +58,10 @@ public class Visitor extends ASTVisitor {
         if (! (invocation.getParent().getParent() instanceof Block))
             throw new RuntimeException("Evidence has to be given in a (empty) block.");
         Block evidenceBlock = (Block) invocation.getParent().getParent();
+
+        if (!EvidenceExtractor.isLegalEvidenceBlock(evidenceBlock))
+            throw new RuntimeException("Evidence API calls should not be mixed with other program statements.");
+
         if (this.evidenceBlock != null)
             if (this.evidenceBlock != evidenceBlock)
                 throw new RuntimeException("Only one synthesis query at a time is supported.");
