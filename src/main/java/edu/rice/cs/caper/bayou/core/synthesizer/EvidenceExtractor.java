@@ -32,8 +32,6 @@ public class EvidenceExtractor extends ASTVisitor {
      */
     private static final Logger _logger = LogManager.getLogger(EvidenceExtractor.class.getName());
 
-  //  CommandLine cmdLine;
-
     class JSONOutputWrapper {
         List<String> apicalls;
         List<String> types;
@@ -93,6 +91,10 @@ public class EvidenceExtractor extends ASTVisitor {
         if (! (invocation.getParent().getParent() instanceof Block))
             throw new RuntimeException("Evidence has to be given in a (empty) block.");
         Block evidenceBlock = (Block) invocation.getParent().getParent();
+
+        if (!isLegalEvidenceBlock(evidenceBlock))
+            throw new RuntimeException("Evidence API calls should not be mixed with other program statements.");
+
         if (this.evidenceBlock != null && this.evidenceBlock != evidenceBlock)
             throw new RuntimeException("Only one synthesis query at a time is supported.");
         this.evidenceBlock = evidenceBlock;
@@ -118,4 +120,28 @@ public class EvidenceExtractor extends ASTVisitor {
         return false;
     }
 
+    // Check if the given block contains statements that are not evidence API calls
+    static boolean isLegalEvidenceBlock(Block evidBlock) {
+        for (Object obj : evidBlock.statements()) {
+            try {
+                Statement stmt = (Statement) obj;
+                Expression expr = ((ExpressionStatement) stmt).getExpression();
+                MethodInvocation invocation = (MethodInvocation) expr;
+
+                IMethodBinding binding = invocation.resolveMethodBinding();
+                if (binding == null)
+                    throw new RuntimeException("Could not resolve binding. " +
+                            "Either CLASSPATH is not set correctly, or there is an invalid evidence type.");
+
+                ITypeBinding cls = binding.getDeclaringClass();
+                if (cls == null || !cls.getQualifiedName().equals("edu.rice.cs.caper.bayou.annotations.Evidence"))
+                    return false;
+            } catch (ClassCastException e) {
+                return false;
+            }
+        }
+
+        return true;
+    }
 }
+

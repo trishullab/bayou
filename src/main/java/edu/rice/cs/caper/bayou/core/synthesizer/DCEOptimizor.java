@@ -76,12 +76,12 @@ public class DCEOptimizor extends ASTVisitor {
 
     protected boolean hasLegalParent(ASTNode node) {
 	node = node.getParent();
-	System.out.println("parent type: " + node.getClass().getName());
+	// System.out.println("parent type: " + node.getClass().getName());
 	while (node != null && (node instanceof ClassInstanceCreation
 				|| node instanceof ParenthesizedExpression
 				|| node instanceof Assignment)) {
 	    node = node.getParent();
-	    System.out.println("parent type: " + node.getClass().getName());
+	    // System.out.println("parent type: " + node.getClass().getName());
 	}
 
 	return node != null && node instanceof ExpressionStatement;
