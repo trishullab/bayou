@@ -18,6 +18,7 @@ package edu.rice.cs.caper.bayou.application.api_synthesis_server;
 ;
 import edu.rice.cs.caper.bayou.core.synthesizer.EvidenceExtractor;
 import edu.rice.cs.caper.bayou.core.synthesizer.ParseException;
+import edu.rice.cs.caper.bayou.core.synthesizer.Parser;
 import edu.rice.cs.caper.bayou.core.synthesizer.Synthesizer;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -145,9 +146,15 @@ class ApiSynthesisStrategyRemoteTensorFlowAsts implements ApiSynthesisStrategy
         String combinedClassPath = _evidenceClasspath + File.pathSeparator + _androidJarPath.getAbsolutePath();
 
         /*
+         * Parse the program
+         */
+        Parser parser = new Parser(code, combinedClassPath);
+        parser.parse();
+
+        /*
          * Extract a description of the evidence in the search code that should guide AST results generation.
          */
-        String evidence = extractEvidence(code, new EvidenceExtractor(), combinedClassPath);
+        String evidence = extractEvidence(new EvidenceExtractor(), parser);
 
         /*
          * Contact the remote Python server and provide evidence to be fed to Tensor Flow to generate solution
@@ -173,16 +180,8 @@ class ApiSynthesisStrategyRemoteTensorFlowAsts implements ApiSynthesisStrategy
          * Synthesise results from the code and asts and return.
          */
         List<String> synthesizedPrograms;
-        try
-        {
-            synthesizedPrograms = new Synthesizer().execute(code, astsJson, combinedClassPath);
-            _logger.trace("synthesizedPrograms: " + synthesizedPrograms);
-        }
-        catch (IOException|ParseException e)
-        {
-            _logger.debug("exiting");
-            throw new SynthesiseException(e);
-        }
+        synthesizedPrograms = new Synthesizer().execute(parser, astsJson);
+        _logger.trace("synthesizedPrograms: " + synthesizedPrograms);
 
         _logger.debug("exiting");
         return synthesizedPrograms;
@@ -236,15 +235,16 @@ class ApiSynthesisStrategyRemoteTensorFlowAsts implements ApiSynthesisStrategy
      * @throws SynthesiseException if extractor.execute(code, evidenceClasspath) is null
      */
     // n.b. package static for unit testing without creation
-    static String extractEvidence(String code, EvidenceExtractor extractor, String evidenceClasspath)
+    static String extractEvidence(EvidenceExtractor extractor, Parser parser)
             throws SynthesiseException, ParseException
     {
         _logger.debug("entering");
-        String evidence = extractor.execute(code, evidenceClasspath);
+        String evidence = extractor.execute(parser);
         if(evidence == null)
         {
             _logger.debug("exiting");
-            throw new SynthesiseException("evidence may not be null.  Input was " + code);
+            throw new SynthesiseException("evidence may not be null.  Input was " +
+                    parser.getSource());
         }
         _logger.trace("evidence:" + evidence);
         _logger.debug("exiting");

@@ -20,6 +20,7 @@ import com.google.gson.Gson;
 import com.google.gson.JsonSyntaxException;
 import edu.rice.cs.caper.bayou.core.synthesizer.EvidenceExtractor;
 import edu.rice.cs.caper.bayou.core.synthesizer.ParseException;
+import edu.rice.cs.caper.bayou.core.synthesizer.Parser;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -65,7 +66,9 @@ public class EvidenceExtractorTest
                          File.separator + "synthesizer";
 
         String code = new String(Files.readAllBytes(Paths.get(String.format("%s/%s.java", testDir, test))));
-        String content = new EvidenceExtractor().execute(code, classpath);
+        Parser parser = new Parser(code, classpath);
+        parser.parse();
+        String content = new EvidenceExtractor().execute(parser);
 
         new Gson().fromJson(content, Object.class); // check valid JSON
 
