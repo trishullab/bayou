@@ -18,7 +18,6 @@ package edu.rice.cs.caper.bayou.core.synthesizer;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import edu.rice.cs.caper.bayou.core.dsl.*;
-import org.apache.commons.cli.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.eclipse.jdt.core.compiler.IProblem;
@@ -29,7 +28,6 @@ import org.eclipse.jface.text.Document;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.PrintStream;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.ArrayList;
@@ -51,32 +49,6 @@ public class Synthesizer {
         List<DSubTree> asts;
     }
 
-    public Synthesizer()
-    {
-        CommandLineParser parser = new DefaultParser();
-        org.apache.commons.cli.Options clopts = new org.apache.commons.cli.Options();
-
-        addOptions(clopts);
-
-    }
-
-    private void addOptions(org.apache.commons.cli.Options opts) {
-        opts.addOption(Option.builder("f")
-                .longOpt("input-file")
-                .hasArg()
-                .numberOfArgs(1)
-                .required()
-                .desc("input Java program")
-                .build());
-        opts.addOption(Option.builder("a")
-                .longOpt("asts-file")
-                .hasArg()
-                .numberOfArgs(1)
-                .required()
-                .desc("file containing ASTs from NN (in JSON)")
-                .build());
-    }
-
     private List<DSubTree> getASTsFromNN(String astJson) {
         RuntimeTypeAdapterFactory<DASTNode> nodeAdapter = RuntimeTypeAdapterFactory.of(DASTNode.class, "node")
                 .registerSubtype(DAPICall.class)
@@ -87,7 +59,6 @@ public class Synthesizer {
         Gson gson = new GsonBuilder().serializeNulls()
                 .registerTypeAdapterFactory(nodeAdapter)
                 .create();
-       // String s = new String(Files.readAllBytes(Paths.get(cmdLine.getOptionValue("a"))));
         JSONInputWrapper js = gson.fromJson(astJson, JSONInputWrapper.class);
 
         return js.asts;
@@ -100,7 +71,6 @@ public class Synthesizer {
         ASTParser parser = ASTParser.newParser(AST.JLS8);
         classpath = classpath == null? "" : classpath;
 
-       // String source = FileUtils.readFileToString(input, "utf-8");
         parser.setSource(source.toCharArray());
         parser.setKind(ASTParser.K_COMPILATION_UNIT);
         parser.setUnitName("Program.java");
@@ -120,8 +90,7 @@ public class Synthesizer {
         List<DSubTree> asts = getASTsFromNN(astJson);
 
         List<URL> urlList = new ArrayList<>();
-        for (String cp : classpath.split(File.pathSeparator))
-        {
+        for (String cp : classpath.split(File.pathSeparator)) {
             _logger.trace("cp: " + cp);
             urlList.add(new URL("jar:file:" + cp + "!/"));
         }
@@ -142,9 +111,7 @@ public class Synthesizer {
                     programs.add(program);
                     synthesizedPrograms.add(visitor.synthesizedProgram);
                 }
-            }
-            catch (Exception e)
-            {
+            } catch (Exception e) {
                 // do nothing and try next ast
             }
         }
