@@ -45,7 +45,6 @@ public class Visitor extends ASTVisitor {
 
     @Override
     public boolean visit(MethodInvocation invocation) {
-        /* TODO: these checks are the same as in EvidenceExtractor. Make this process better. */
         IMethodBinding binding = invocation.resolveMethodBinding();
         if (binding == null)
             throw new RuntimeException("Could not resolve binding. " +
@@ -81,9 +80,9 @@ public class Visitor extends ASTVisitor {
             return false;
         }
 
-	// Apply dead code elimination here
-	DCEOptimizor dce = new DCEOptimizor();
-	body = dce.apply(body, dAST);
+        // Apply dead code elimination here
+        DCEOptimizor dce = new DCEOptimizor();
+        body = dce.apply(body, dAST);
 	
         /* make rewrites to the local method body */
         body = postprocessLocal(invocation.getAST(), env, body, dce.getEliminatedVars());
@@ -108,7 +107,7 @@ public class Visitor extends ASTVisitor {
     private Block postprocessLocal(AST ast, Environment env, Block body, Set<String> eliminatedVars) {
         /* add uncaught exeptions */
         Set<Class> exceptions = dAST.exceptionsThrown(eliminatedVars);
-	env.imports.addAll(exceptions);
+        env.imports.addAll(exceptions);
         if (! exceptions.isEmpty()) {
             TryStatement statement = ast.newTryStatement();
             statement.setBody(body);
@@ -131,17 +130,17 @@ public class Visitor extends ASTVisitor {
 
         /* add variable declarations */
         for (Variable var : env.mu_scope) {
-	    if (!eliminatedVars.contains(var.name)) {
-		VariableDeclarationFragment varDeclFrag = ast.newVariableDeclarationFragment();
-		varDeclFrag.setName(ast.newSimpleName(var.name));
-		VariableDeclarationStatement varDeclStmt = ast.newVariableDeclarationStatement(varDeclFrag);
-		if (var.type.isPrimitive())
-		    varDeclStmt.setType(ast.newPrimitiveType(PrimitiveType.toCode(var.type.getSimpleName())));
-		else
-		    varDeclStmt.setType(ast.newSimpleType(ast.newSimpleName(var.type.getSimpleName())));
-		body.statements().add(0, varDeclStmt);
-	    }
-	}
+            if (!eliminatedVars.contains(var.name)) {
+                VariableDeclarationFragment varDeclFrag = ast.newVariableDeclarationFragment();
+                varDeclFrag.setName(ast.newSimpleName(var.name));
+                VariableDeclarationStatement varDeclStmt = ast.newVariableDeclarationStatement(varDeclFrag);
+                if (var.type.isPrimitive())
+                    varDeclStmt.setType(ast.newPrimitiveType(PrimitiveType.toCode(var.type.getSimpleName())));
+                else
+                    varDeclStmt.setType(ast.newSimpleType(ast.newSimpleName(var.type.getSimpleName())));
+                body.statements().add(0, varDeclStmt);
+            }
+        }
 
         return body;
     }
