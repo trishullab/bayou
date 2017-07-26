@@ -18,20 +18,13 @@ package edu.rice.cs.caper.bayou.core.synthesizer;
 import org.junit.Assert;
 import org.junit.Test;
 
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
-import java.io.PrintStream;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.LinkedList;
 import java.util.List;
 
 public class SynthesizerTest {
-
-   // String testDir = "/Users/vijay/Work/bayou/src/test/resources/synthesizer";
-   // String classpath = "/Users/vijay/Work/bayou/tool_files/build_scripts/out/resources/artifacts/classes:/Users/vijay/Work/bayou/tool_files/build_scripts/out/resources/artifacts/jar/android.jar";
 
     void testExecute(String test) throws IOException, ParseException
     {
@@ -61,13 +54,14 @@ public class SynthesizerTest {
                 File.separator + "synthesizer";
 
 
-        ByteArrayOutputStream bout = new ByteArrayOutputStream();
         Synthesizer synthesizer = new Synthesizer();
 
         String code = new String(Files.readAllBytes(Paths.get(String.format("%s/%s.java", testDir, test))));
         String asts = new String(Files.readAllBytes(Paths.get(String.format("%s/%s.json", testDir, test))));
 
-        List<String> results = synthesizer.execute(code, asts, classpath);
+        Parser parser = new Parser(code, classpath);
+        parser.parse();
+        List<String> results = synthesizer.execute(parser, asts);
 
         Assert.assertTrue(results.size() > 0);
 

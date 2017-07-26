@@ -27,4 +27,8 @@ public class ParseException extends Exception {
                 String.format("Line %d: %s", p.getSourceLineNumber(), p.getMessage()))
                 .collect(Collectors.toList())));
     }
+
+    public ParseException(String message) {
+        super(message);
+    }
 }
