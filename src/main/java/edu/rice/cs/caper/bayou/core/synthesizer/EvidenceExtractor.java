@@ -44,25 +44,24 @@ public class EvidenceExtractor extends ASTVisitor {
     }
 
     @Override
-    public boolean visit(MethodInvocation invocation) {
+    public boolean visit(MethodInvocation invocation) throws SynthesisException {
         IMethodBinding binding = invocation.resolveMethodBinding();
         if (binding == null)
-            throw new RuntimeException("Could not resolve binding. " +
-                "Either CLASSPATH is not set correctly, or there is an invalid evidence type.");
+            throw new SynthesisException(SynthesisException.CouldNotResolveBinding);
 
         ITypeBinding cls = binding.getDeclaringClass();
         if (cls == null || !cls.getQualifiedName().equals("edu.rice.cs.caper.bayou.annotations.Evidence"))
             return false;
 
         if (! (invocation.getParent().getParent() instanceof Block))
-            throw new RuntimeException("Evidence has to be given in a (empty) block.");
+            throw new SynthesisException(SynthesisException.EvidenceNotInBlock);
         Block evidenceBlock = (Block) invocation.getParent().getParent();
 
         if (!isLegalEvidenceBlock(evidenceBlock))
-            throw new RuntimeException("Evidence API calls should not be mixed with other program statements.");
+            throw new SynthesisException(SynthesisException.EvidenceMixedWithCode);
 
         if (this.evidenceBlock != null && this.evidenceBlock != evidenceBlock)
-            throw new RuntimeException("Only one synthesis query at a time is supported.");
+            throw new SynthesisException(SynthesisException.MoreThanOneHole);
         this.evidenceBlock = evidenceBlock;
 
         // performing casts wildly.. if any exceptions occur it's due to incorrect input format
@@ -81,7 +80,7 @@ public class EvidenceExtractor extends ASTVisitor {
                 StringLiteral a = (StringLiteral) arg;
                 output.context.add(a.getLiteralValue());
             }
-        } else throw new RuntimeException("Invalid evidence type: " + binding.getName());
+        } else throw new SynthesisException(SynthesisException.InvalidEvidenceType);
 
         return false;
     }
@@ -96,8 +95,7 @@ public class EvidenceExtractor extends ASTVisitor {
 
                 IMethodBinding binding = invocation.resolveMethodBinding();
                 if (binding == null)
-                    throw new RuntimeException("Could not resolve binding. " +
-                            "Either CLASSPATH is not set correctly, or there is an invalid evidence type.");
+                    throw new SynthesisException(SynthesisException.CouldNotResolveBinding);
 
                 ITypeBinding cls = binding.getDeclaringClass();
                 if (cls == null || !cls.getQualifiedName().equals("edu.rice.cs.caper.bayou.annotations.Evidence"))

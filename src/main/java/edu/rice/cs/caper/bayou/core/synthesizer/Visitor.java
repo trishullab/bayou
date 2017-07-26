@@ -44,41 +44,34 @@ public class Visitor extends ASTVisitor {
     }
 
     @Override
-    public boolean visit(MethodInvocation invocation) {
+    public boolean visit(MethodInvocation invocation) throws SynthesisException {
         IMethodBinding binding = invocation.resolveMethodBinding();
         if (binding == null)
-            throw new RuntimeException("Could not resolve binding. " +
-                    "Either CLASSPATH is not set correctly, or there is an invalid evidence type.");
+            throw new SynthesisException(SynthesisException.CouldNotResolveBinding);
 
         ITypeBinding cls = binding.getDeclaringClass();
         if (cls == null || !cls.getQualifiedName().equals("edu.rice.cs.caper.bayou.annotations.Evidence"))
             return false;
 
         if (! (invocation.getParent().getParent() instanceof Block))
-            throw new RuntimeException("Evidence has to be given in a (empty) block.");
+            throw new SynthesisException(SynthesisException.EvidenceNotInBlock);
         Block evidenceBlock = (Block) invocation.getParent().getParent();
 
         if (!EvidenceExtractor.isLegalEvidenceBlock(evidenceBlock))
-            throw new RuntimeException("Evidence API calls should not be mixed with other program statements.");
+            throw new SynthesisException(SynthesisException.EvidenceMixedWithCode);
 
         if (this.evidenceBlock != null)
             if (this.evidenceBlock != evidenceBlock)
-                throw new RuntimeException("Only one synthesis query at a time is supported.");
+                throw new SynthesisException(SynthesisException.MoreThanOneHole);
             else return false; /* synthesis is already done */
         this.evidenceBlock = evidenceBlock;
 
         String name = binding.getName();
         if (! (name.equals("apicalls") || name.equals("types") || name.equals("context")))
-            throw new RuntimeException("Invalid evidence type: " + binding.getName());
+            throw new SynthesisException(SynthesisException.InvalidEvidenceType);
 
         Environment env = new Environment(invocation.getAST(), currentScope);
-        Block body;
-        try {
-            body = dAST.synthesize(env);
-        } catch (SynthesisException e) {
-            synthesizedProgram = null;
-            return false;
-        }
+        Block body = dAST.synthesize(env);
 
         // Apply dead code elimination here
         DCEOptimizor dce = new DCEOptimizor();
@@ -94,9 +87,7 @@ public class Visitor extends ASTVisitor {
             /* make rewrites to the document */
             postprocessGlobal(cu.getAST(), env, document);
         } catch (BadLocationException e) {
-            System.err.println("Could not edit document for some reason.\n" + e.getMessage());
-            synthesizedProgram = null;
-            return false;
+            throw new SynthesisException(SynthesisException.CouldNotEditDocument);
         }
 
         synthesizedProgram = document.get();
@@ -165,7 +156,7 @@ public class Visitor extends ASTVisitor {
 
     /* setup the scope of variables for synthesis */
     @Override
-    public boolean visit(MethodDeclaration method) {
+    public boolean visit(MethodDeclaration method) throws SynthesisException {
         currentScope.clear();
 
         /* add variables in the formal parameters */
@@ -181,8 +172,7 @@ public class Visitor extends ASTVisitor {
                 try {
                     type = Environment.getClass(binding.getQualifiedName());
                 } catch (ClassNotFoundException  e) {
-                    synthesizedProgram = null;
-                    return false;
+                    throw new SynthesisException(SynthesisException.ClassNotFoundInLoader);
                 }
             }
             else if (t.isPrimitiveType())
@@ -210,8 +200,7 @@ public class Visitor extends ASTVisitor {
                 try {
                     type = Environment.getClass(binding.getQualifiedName());
                 } catch (ClassNotFoundException  e) {
-                    synthesizedProgram = null;
-                    return false;
+                    throw new SynthesisException(SynthesisException.ClassNotFoundInLoader);
                 }
             }
             else if (t.isPrimitiveType())

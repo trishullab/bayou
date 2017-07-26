@@ -41,12 +41,8 @@ public class Environment {
         imports = new HashSet<>();
     }
 
-    public Expression addVariable(Class type) {
-        try {
-            return searchOrAddVariable(type, false);
-        } catch (SynthesisException e) {
-            throw new Error("SynthesisException was thrown in addVariable()! This shouldn't occur.");
-        }
+    public Expression addVariable(Class type) throws SynthesisException {
+        return searchOrAddVariable(type, false);
     }
 
     public Expression searchOrAddVariable(Class type, boolean search) throws SynthesisException {
@@ -55,7 +51,7 @@ public class Environment {
         if (search)
             if ((expr = enumerator.search(type)) != null)
                 return expr;
-            else throw new SynthesisException("Could not find variable of type " + type.getName());
+            else throw new SynthesisException(SynthesisException.TypeNotFoundDuringSearch);
 
         /* construct a nice name for the variable */
         String name = "";
