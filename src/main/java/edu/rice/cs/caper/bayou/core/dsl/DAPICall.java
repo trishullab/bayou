@@ -225,14 +225,11 @@ public class DAPICall extends DASTNode
     private Executable getConstructorOrMethod() throws SynthesisException {
         String qualifiedName = _call.substring(0, _call.indexOf("("));
         String className = qualifiedName.substring(0, qualifiedName.lastIndexOf("."));
-        Class cls = null;
-        try
-        {
+        Class cls;
+        try {
             cls = Environment.getClass(className);
-        }
-        catch (ClassNotFoundException e)
-        {
-            throw new SynthesisException(e);
+        } catch (ClassNotFoundException e) {
+            throw new SynthesisException(SynthesisException.ClassNotFoundInLoader);
         }
 
         /* find the method in the class */
@@ -260,6 +257,6 @@ public class DAPICall extends DASTNode
                 return c;
         }
 
-        throw new SynthesisException("Contructor or method not found: " + qualifiedName);
+        throw new SynthesisException(SynthesisException.MethodOrConstructorNotFound);
     }
 }

@@ -67,7 +67,7 @@ public class Synthesizer {
                     programs.add(program);
                     synthesizedPrograms.add(visitor.synthesizedProgram);
                 }
-            } catch (Exception e) {
+            } catch (SynthesisException e) {
                 // do nothing and try next ast
             }
         }
