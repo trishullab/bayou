@@ -186,7 +186,7 @@ if __name__ == '__main__':
 
     if args.logs_dir is None:
         dirpath = os.path.dirname(__file__)
-        logpaths = [os.path.join(dirpath, "../logs/ast_server.log")]
+        logpaths = [os.path.join(dirpath, "../../../logs/ast_server.log")]
     else:
         logpaths = [(dir + "/ast_server.log") for dir in args.logs_dir.split(os.pathsep)]
 
