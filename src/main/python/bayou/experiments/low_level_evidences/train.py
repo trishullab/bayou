@@ -82,6 +82,8 @@ def train(clargs):
     with tf.Session() as sess:
         tf.global_variables_initializer().run()
         saver = tf.train.Saver(tf.global_variables())
+        tf.train.write_graph(sess.graph_def, clargs.save, 'model.pbtxt')
+        tf.train.write_graph(sess.graph_def, clargs.save, 'model.pb', as_text=False)
 
         # restore model
         if clargs.continue_from is not None:
