@@ -22,7 +22,7 @@ BUILD_DIR="${SCRIPT_DIR}/target"
 
 rm -rf $BUILD_DIR
 
-mvn clean package > /dev/null
+mvn clean package
 if [ $? -ne 0 ]; then
     exit
 fi
@@ -35,17 +35,20 @@ cd DATA
 
 check_and_download() {
     file=$1
+    link=$2
     if [ ! -f $file ]; then
-        echo "Downloading $file"
-        wget http://www.askbayou.com/$file
+        echo "Downloading $file..."
+        wget $link
     fi
 }
 
-check_and_download DATA-testing.json
-check_and_download DATA-testing-sampled.json
-check_and_download DATA-testing-sampled-max3.json
-check_and_download DATA-testing-sampled-max2.json
-check_and_download DATA-testing-sampled-max1.json
+echo "Downloading file list..."
+wget https://www.dropbox.com/s/z77lspu13v2akqp/android.txt -O android.txt
+while read line; do
+    file=$(echo $line | cut -f1 -d' ')
+    link=$(echo $line | cut -f2 -d' ')
+    check_and_download $file $link
+done < android.txt
 
 evidence="apicalls
 types
@@ -103,4 +106,4 @@ for metric in $metrics; do
 done
 
 cat $log
-echo "Metrics saved to $log:"
+echo "Metrics saved to $log"

@@ -30,6 +30,7 @@ def ast_quality_perf_test(clargs):
         print('Loading model...')
         predictor = BayesianPredictor(clargs.save, sess)
 
+        n = len(programs)
         for i, program in enumerate(programs):
             start = time.time()
             if not clargs.evidence == 'all':
@@ -51,6 +52,7 @@ def ast_quality_perf_test(clargs):
             program['out_asts'] = result['asts']
             latency = float('{:.2f}'.format(time.time() - start))
             program['latency'] = latency
+            print('{}/{} done'.format(i, n))
 
         if clargs.output_file is None:
             print(json.dumps({'programs': programs}, indent=2))
