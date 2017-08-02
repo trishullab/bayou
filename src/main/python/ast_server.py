@@ -115,7 +115,7 @@ def okay(js, ast):
     return ev_okay
 
 
-def _generate_asts(evidence_json, predictor):
+def _generate_asts(evidence_json, predictor, predictor_samples_count = 25):
     logging.debug("entering")
     js = json.loads(evidence_json) # parse evidence as a JSON string
 
@@ -123,7 +123,7 @@ def _generate_asts(evidence_json, predictor):
     # Generate ASTs from evidence.
     #
     asts, counts = [], []
-    for i in range(100):
+    for i in range(predictor_samples_count):
         try:
             ast = predictor.infer(js)
             ast['calls'] = list(set(predictor.calls_in_last_ast))
@@ -151,20 +151,21 @@ if __name__ == '__main__':
     # Parse command line args.
     parser = argparse.ArgumentParser()
     parser.add_argument('--save_dir', type=str, required=True,help='model directory to laod from')
-    parser.add_argument('--logs_dir', type=str, required=False, help='the directory to store log information')
+    parser.add_argument('--logs_dir', type=str, required=False, help='the directories to store log information seperated by the OS path seperator')
     args = parser.parse_args()
 
     if args.logs_dir is None:
         dirpath = os.path.dirname(__file__);
-        logpath = os.path.join(dirpath, "../logs/ast_server.log")
+        logpaths = [os.path.join(dirpath, "../logs/ast_server.log")]
     else:
-        logpath = args.logs_dir + "/ast_server.log"
+        logpaths = [(dir + "/ast_server.log") for dir in args.logs_dir.split(os.pathsep)]
 
     # Create the logger for the application.
-    logging.basicConfig(format='%(asctime)s,%(msecs)d %(levelname)-8s [%(threadName)s %(filename)s:%(lineno)d] %(message)s',
-                        datefmt='%d-%m-%Y:%H:%M:%S',
-                        level=logging.DEBUG,
-                        handlers=[logging.handlers.RotatingFileHandler(logpath, maxBytes=100000000, backupCount=9)])
+    for logpath in logpaths:
+        logging.basicConfig(format='%(asctime)s,%(msecs)d %(levelname)-8s [%(threadName)s %(filename)s:%(lineno)d] %(message)s',
+                            datefmt='%d-%m-%Y:%H:%M:%S',
+                            level=logging.DEBUG,
+                            handlers=[logging.handlers.RotatingFileHandler(logpath, maxBytes=100000000, backupCount=9) for logpath in logpaths])
 
     # Start processing requests.
     _start_server(args.save_dir)
