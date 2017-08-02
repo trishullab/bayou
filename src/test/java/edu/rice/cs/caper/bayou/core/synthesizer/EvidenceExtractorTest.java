@@ -13,15 +13,10 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-package edu.rice.cs.caper.bayou.annotations;
+package edu.rice.cs.caper.bayou.core.synthesizer;
 
 
 import com.google.gson.Gson;
-import com.google.gson.JsonSyntaxException;
-import edu.rice.cs.caper.bayou.core.synthesizer.EvidenceExtractor;
-import edu.rice.cs.caper.bayou.core.synthesizer.ParseException;
-import edu.rice.cs.caper.bayou.core.synthesizer.Parser;
-import org.junit.Assert;
 import org.junit.Test;
 
 import java.io.File;
