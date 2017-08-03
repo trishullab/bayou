@@ -27,7 +27,7 @@ public class DExcept extends DASTNode {
     String node = "DExcept";
     List<DASTNode> _try;
     List<DASTNode> _catch;
-    Map exceptToClause;
+    transient Map exceptToClause;
     
     public DExcept() {
         this._try = new ArrayList<>();
