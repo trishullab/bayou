@@ -1,4 +1,7 @@
 {
+    "api-packages": [
+        "android.bluetooth"
+    ],
     "api-classes": [
         "java.io.BufferedReader",
         "java.io.InputStreamReader",

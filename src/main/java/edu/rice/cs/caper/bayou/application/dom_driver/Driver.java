@@ -49,10 +49,9 @@ public class Driver {
         this.options = new Options(args);
     }
 
-    private CompilationUnit createCompilationUnit() throws IOException {
+    private CompilationUnit createCompilationUnit(String classpath) throws IOException {
         ASTParser parser = ASTParser.newParser(AST.JLS8);
         File input = new File(options.cmdLine.getOptionValue("input-file"));
-        String classpath = System.getenv("CLASSPATH");
 
         parser.setSource(FileUtils.readFileToString(input, "utf-8").toCharArray());
         parser.setKind(ASTParser.K_COMPILATION_UNIT);
@@ -64,8 +63,8 @@ public class Driver {
         return (CompilationUnit) parser.createAST(null);
     }
 
-    public void execute() throws IOException {
-        CompilationUnit cu = createCompilationUnit();
+    public void execute(String classpath) throws IOException {
+        CompilationUnit cu = createCompilationUnit(classpath);
         Visitor visitor = new Visitor(cu, options);
         cu.accept(visitor);
         visitor.output.close();
@@ -73,7 +72,8 @@ public class Driver {
 
 	public static void main(String args[]) {
         try {
-            new Driver(args).execute();
+            String classpath = System.getenv("CLASSPATH");
+            new Driver(args).execute(classpath);
         } catch (ParseException | IOException e) {
             System.out.println("Unexpected exception: " + e.getMessage());
         }
