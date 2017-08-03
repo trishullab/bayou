@@ -44,6 +44,9 @@ public class DOMMethodInvocation implements Handler {
         }
 
         IMethodBinding binding = invocation.resolveMethodBinding();
+        // get to the generic declaration, if this binding is an instantiation
+        while (binding != null && binding.getMethodDeclaration() != binding)
+            binding = binding.getMethodDeclaration();
         MethodDeclaration localConstructor = Utils.checkAndGetLocalMethod(binding);
         if (localConstructor != null) {
             DSubTree Tconstructor = new DOMMethodDeclaration(localConstructor).handle();

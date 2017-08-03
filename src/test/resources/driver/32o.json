@@ -1,0 +1,30 @@
+{
+  "file": "32f.java",
+  "ast": {
+    "node": "DSubTree",
+    "_nodes": [
+      {
+        "node": "DAPICall",
+        "_call": "java.util.Stack\u003cTau_E\u003e.Stack()"
+      },
+      {
+        "node": "DAPICall",
+        "_call": "java.util.Stack\u003cTau_E\u003e.push(Tau_E)"
+      },
+      {
+        "node": "DAPICall",
+        "_call": "java.util.Stack\u003cTau_E\u003e.pop()"
+      }
+    ]
+  },
+  "sequences": [
+    {
+      "calls": [
+        "java.util.Stack\u003cTau_E\u003e.Stack()",
+        "java.util.Stack\u003cTau_E\u003e.push(Tau_E)",
+        "java.util.Stack\u003cTau_E\u003e.pop()"
+      ]
+    }
+  ],
+  "javadoc": null
+}

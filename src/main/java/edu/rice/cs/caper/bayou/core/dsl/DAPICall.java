@@ -67,14 +67,18 @@ public class DAPICall extends DASTNode
     }
 
     private String getClassName() {
-        String className = methodBinding.getDeclaringClass().getQualifiedName();
-        if (className.contains("<")) /* be agnostic to generic versions */
-            className = className.substring(0, className.indexOf("<"));
+        ITypeBinding cls = methodBinding.getDeclaringClass();
+        String className = cls.getQualifiedName();
+        if (cls.isGenericType())
+            className += "<" + String.join(",", Arrays.stream(cls.getTypeParameters()).map(
+                    t -> (t.isTypeVariable()? "Tau_": "") + t.getName()
+            ).collect(Collectors.toList())) + ">";
         return className;
     }
 
     private String getSignature() {
-        Stream<String> types = Arrays.stream(methodBinding.getParameterTypes()).map(t -> t.getQualifiedName());
+        Stream<String> types = Arrays.stream(methodBinding.getParameterTypes()).map(
+                t -> (t.isTypeVariable()? "Tau_": "") + t.getQualifiedName());
         return methodBinding.getName() + "(" + String.join(",", types.collect(Collectors.toCollection(ArrayList::new))) + ")";
     }
 
