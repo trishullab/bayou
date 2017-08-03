@@ -120,6 +120,7 @@ class APICalls(Evidence):
     def from_call(call):
         split = call.split('(')[0].split('.')
         cls, name = split[-2:]
+        cls = cls.split('<')[0]  # class name might be generic but method name is never
         return [name] if not cls == name else []
 
 
@@ -163,7 +164,8 @@ class Types(Evidence):
     @staticmethod
     def from_call(call):
         split = list(reversed([q for q in call.split('(')[0].split('.')[:-1] if q[0].isupper()]))
-        return [split[1], split[0]] if len(split) > 1 else [split[0]]
+        types = [split[1], split[0]] if len(split) > 1 else [split[0]]
+        return [re.sub('<.*', r'', t) for t in types]  # ignore generic types in evidence
 
 
 class Context(Evidence):
@@ -209,7 +211,7 @@ class Context(Evidence):
         args = [arg.split('.')[-1] for arg in args]
         args = [re.sub('<.*', r'', arg) for arg in args]  # remove generics
         args = [re.sub('\[\]', r'', arg) for arg in args]  # remove array type
-        return [arg for arg in args if not arg == '']
+        return [arg for arg in args if not arg == '' and not arg.startswith('Tau_')]
 
 
 # TODO: handle Javadoc with word2vec
