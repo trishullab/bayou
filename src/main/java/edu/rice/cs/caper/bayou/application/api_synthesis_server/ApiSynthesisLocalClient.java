@@ -23,6 +23,7 @@ import edu.rice.cs.caper.bayou.core.bayou_services_client.ap_synthesis.Synthesis
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.List;
 
 class ApiSynthesisLocalClient
 {
@@ -43,9 +44,17 @@ class ApiSynthesisLocalClient
                     "\n" +
                     "}";
 
-    private static void synthesise(String code) throws IOException, SynthesisError
+    private static void synthesise(String code, Integer sampleCount) throws IOException, SynthesisError
     {
-        for(String result : new ApiSynthesisClient("localhost", Configuration.ListenPort).synthesise(code))
+        List<String> results;
+        {
+            if(sampleCount != null)
+                results = new ApiSynthesisClient("localhost", Configuration.ListenPort).synthesise(code, sampleCount);
+            else
+                results = new ApiSynthesisClient("localhost", Configuration.ListenPort).synthesise(code);
+        }
+
+        for(String result : results)
         {
 	        System.out.println("\n---------- BEGIN PROGRAM  ----------");
             System.out.print(result);
@@ -55,25 +64,35 @@ class ApiSynthesisLocalClient
 
     public static void main(String[] args) throws IOException, SynthesisError
     {
+        if(args.length >= 3)
+        {
+            System.out.println("usage: java edu.rice.pliny.programs.api_synthesis_server.ApiSynthesisLocalClient [file]");
+            System.exit(0);
+        }
+
         String code;
         if(args.length == 0)
         {
             code = _testDialog;
         }
-        else if(args.length == 1)
+        else
         {
             code = new String(Files.readAllBytes(Paths.get(args[0])));
         }
+
+        Integer sampleCount;
+        if(args.length == 2)
+        {
+            sampleCount = Integer.parseInt(args[1]);
+        }
         else
         {
-            System.out.println("usage: java edu.rice.pliny.programs.api_synthesis_server.ApiSynthesisLocalClient [file]");
-            System.exit(0);
-            code = null;
+            sampleCount = null;
         }
 
         try
         {
-            synthesise(code);
+            synthesise(code, sampleCount);
         }
         catch (ParseError e)
         {

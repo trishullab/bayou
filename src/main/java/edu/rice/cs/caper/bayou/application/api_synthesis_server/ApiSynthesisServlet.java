@@ -156,7 +156,6 @@ public class ApiSynthesisServlet extends SizeConstrainedPostBodyServlet implemen
          */
         String code;
         {
-
             final String CODE = "code";
             if (!jsonMessage.has(CODE))
             {
@@ -172,12 +171,27 @@ public class ApiSynthesisServlet extends SizeConstrainedPostBodyServlet implemen
         }
 
         /*
+         * Extract sample count from request if present
+         */
+        Integer sampleCount;
+        {
+            final String SAMPLE_COUNT = "sample count";
+            if (jsonMessage.has(SAMPLE_COUNT))
+                sampleCount = jsonMessage.getInt(SAMPLE_COUNT);
+            else
+                sampleCount = null;
+        }
+
+        /*
          * Perform synthesis.
          */
         Iterable<String> results;
         try
         {
-            results = _synthesisStrategy.synthesise(code);
+            if(sampleCount != null)
+                results = _synthesisStrategy.synthesise(code, sampleCount);
+            else
+                results = _synthesisStrategy.synthesise(code);
         }
         catch (ParseException e)
         {

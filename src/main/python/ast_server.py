@@ -64,13 +64,19 @@ def _start_server(save_dir):
                 client_socket, addr = server_socket.accept()  # await client connection
                 logging.info("connection accepted")
 
-                evidence_size_in_bytes = int.from_bytes(_read_bytes(4, client_socket), byteorder='big', signed=True) # how long is the evidence string?
-                logging.debug(evidence_size_in_bytes)
+                request_size_in_bytes = int.from_bytes(_read_bytes(4, client_socket), byteorder='big', signed=True)
+                logging.debug(request_size_in_bytes)
 
-                evidence = _read_bytes(evidence_size_in_bytes, client_socket).decode("utf-8") # read evidence string
-                logging.debug(evidence)
+                request_json = _read_bytes(request_size_in_bytes, client_socket).decode("utf-8")  # read request string
+                logging.debug(request_json)
 
-                asts = _generate_asts(evidence, predictor) # use predictor to generate ASTs JSON from evidence
+                request_dict = json.loads(request_json)  # parse request as a JSON string
+                evidence_json_str = request_dict['evidence'] # get the evidence string from the request (also JSON)
+                sample_count = request_dict.get('sample count', None)
+                if sample_count is not None:
+                    asts = _generate_asts(evidence_json_str, predictor, sample_count)
+                else:
+                    asts = _generate_asts(evidence_json_str, predictor)
                 logging.debug(asts)
 
                 _send_string_response(asts, client_socket)
@@ -115,15 +121,16 @@ def okay(js, ast):
     return ev_okay
 
 
-def _generate_asts(evidence_json, predictor, predictor_samples_count = 25):
+def _generate_asts(evidence_json, predictor, num_samples=100):
     logging.debug("entering")
+    logging.debug("num_samples: " + str(num_samples))
     js = json.loads(evidence_json) # parse evidence as a JSON string
 
     #
     # Generate ASTs from evidence.
     #
     asts, counts = [], []
-    for i in range(predictor_samples_count):
+    for i in range(num_samples):
         try:
             ast = predictor.infer(js)
             ast['calls'] = list(set(predictor.calls_in_last_ast))

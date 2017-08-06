@@ -15,6 +15,7 @@ limitations under the License.
 */
 package edu.rice.cs.caper.bayou.application.api_synthesis_server;
 
+import edu.rice.cs.caper.bayou.core.synthesizer.ParseException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -71,5 +72,11 @@ public class ApiSynthesisStrategyEcho implements ApiSynthesisStrategy
 
         _logger.debug("exiting");
         return Collections.singletonList(searchCode);
+    }
+
+    @Override
+    public Iterable<String> synthesise(String searchCode, int sampleCount) throws SynthesiseException, ParseException
+    {
+        return synthesise(searchCode);
     }
 }

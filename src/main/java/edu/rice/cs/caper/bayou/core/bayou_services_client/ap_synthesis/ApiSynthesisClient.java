@@ -75,6 +75,31 @@ public class ApiSynthesisClient extends JsonMsgClientBase
      */
     public List<String> synthesise(String code) throws IOException, SynthesisError
     {
+        return synthesizeHelp(code, null);
+    }
+
+    /**
+     * Sends an API synthesis request of the given code to the remote server and returns the solution responses
+     * from the server.
+     *
+     * If any call to read() for the server's response from the underlying socket does not complete within
+     * 30 seconds this method will throw a SocketTimeoutException.
+     *
+     * @param code the code to be examined by the remote server for synthesis. May not be null.
+     * @param sampleCount the number of model samples to perform during synthesis
+     * @return the result of the synthesis. Never null.
+     * @throws IOException if there is a problem communicating with the remote server
+     * @throws SynthesisError if a non-communication error occurs during synthesis
+     * @throws IllegalArgumentException if code is null
+     * @throws SocketTimeoutException if the server does not respond in a timely fashion
+     */
+    public List<String> synthesise(String code, int sampleCount) throws IOException, SynthesisError
+    {
+        return synthesizeHelp(code, sampleCount);
+    }
+
+    private List<String> synthesizeHelp(String code, Integer sampleCount) throws IOException, SynthesisError
+    {
         _logger.debug("entering");
 
         if(code == null)
@@ -85,6 +110,8 @@ public class ApiSynthesisClient extends JsonMsgClientBase
          */
         JSONObject requestMsg = new JSONObject();
         requestMsg.put("code", code);
+        if(sampleCount != null)
+            requestMsg.put("sample count", sampleCount);
 
         HttpClient httpclient = HttpClients.createDefault();
         HttpPost post = new HttpPost("http://" + host + ":" + port + "/apisynthesis");
