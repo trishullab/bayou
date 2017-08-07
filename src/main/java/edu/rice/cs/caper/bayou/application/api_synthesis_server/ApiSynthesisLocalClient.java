@@ -16,9 +16,9 @@ limitations under the License.
 package edu.rice.cs.caper.bayou.application.api_synthesis_server;
 
 
-import edu.rice.cs.caper.bayou.core.bayou_services_client.ap_synthesis.ApiSynthesisClient;
-import edu.rice.cs.caper.bayou.core.bayou_services_client.ap_synthesis.ParseError;
-import edu.rice.cs.caper.bayou.core.bayou_services_client.ap_synthesis.SynthesisError;
+import edu.rice.cs.caper.bayou.core.bayou_services_client.api_synthesis.ApiSynthesisClient;
+import edu.rice.cs.caper.bayou.core.bayou_services_client.api_synthesis.ParseError;
+import edu.rice.cs.caper.bayou.core.bayou_services_client.api_synthesis.SynthesisError;
 
 import java.io.IOException;
 import java.nio.file.Files;
