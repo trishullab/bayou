@@ -29,7 +29,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 
-public class EvidenceExtractorTest
+public class EvidenceExtractorAstTest
 {
 
     private void testExecute(String test) throws IOException, ParseException

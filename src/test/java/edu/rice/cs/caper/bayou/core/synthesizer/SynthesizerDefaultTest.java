@@ -25,7 +25,7 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.List;
 
-public class SynthesizerTest {
+public class SynthesizerDefaultTest {
 
    // String testDir = "/Users/vijay/Work/bayou/src/test/resources/synthesizer";
    // String classpath = "/Users/vijay/Work/bayou/tool_files/build_scripts/out/resources/artifacts/classes:/Users/vijay/Work/bayou/tool_files/build_scripts/out/resources/artifacts/jar/android.jar";
