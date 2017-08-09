@@ -74,7 +74,7 @@ public class Visitor extends ASTVisitor {
             throw new RuntimeException("Evidence has to be given in a (empty) block.");
         Block evidenceBlock = (Block) invocation.getParent().getParent();
 
-        if (!EvidenceExtractor.isLegalEvidenceBlock(evidenceBlock))
+        if (!EvidenceExtractorAst.isLegalEvidenceBlock(evidenceBlock))
             throw new RuntimeException("Evidence API calls should not be mixed with other program statements.");
 
         if (this.evidenceBlock != null)

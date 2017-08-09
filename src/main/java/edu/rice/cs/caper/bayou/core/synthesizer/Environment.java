@@ -145,7 +145,7 @@ public class Environment {
     {
         try {
 
-            return Class.forName(searchName, false, Synthesizer.classLoader);
+            return Class.forName(searchName, false, SynthesizerDefault.classLoader);
 
         } catch (ClassNotFoundException e) {
 

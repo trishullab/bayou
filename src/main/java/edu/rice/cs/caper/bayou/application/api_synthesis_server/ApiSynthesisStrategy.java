@@ -14,8 +14,9 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 package edu.rice.cs.caper.bayou.application.api_synthesis_server;
+import edu.rice.cs.caper.bayou.core.synthesizer.*;
 
-import edu.rice.cs.caper.bayou.core.synthesizer.ParseException;
+import java.io.File;
 
 /**
  * A method for synthesizing code from given code.
@@ -47,10 +48,14 @@ interface ApiSynthesisStrategy
         }
         else
         {
-           return new ApiSynthesisStrategyRemoteTensorFlowAsts("localhost", 8084,
-                                                               Configuration.SynthesizeTimeoutMs,
-                                                               Configuration.EvidenceClasspath,
-                                                               Configuration.AndroidJarPath);
+            String combinedClasspath = Configuration.EvidenceClasspath + File.pathSeparator +
+                                       Configuration.AndroidJarPath.getAbsolutePath();
+
+            EvidenceExtractor evidenceExtractor = new EvidenceExtractorAst(combinedClasspath);
+            Synthesizer synthesizer = new SynthesizerDefault(combinedClasspath);
+
+            return new ApiSynthesisStrategyRemoteTensorFlowAsts(evidenceExtractor, synthesizer, "localhost", 8084,
+                                                                Configuration.SynthesizeTimeoutMs);
         }
 
     }
