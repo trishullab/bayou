@@ -19,6 +19,7 @@ package edu.rice.cs.caper.bayou.application.api_synthesis_server;
 import edu.rice.cs.caper.bayou.core.bayou_services_client.api_synthesis.ApiSynthesisClient;
 import edu.rice.cs.caper.bayou.core.bayou_services_client.api_synthesis.ParseError;
 import edu.rice.cs.caper.bayou.core.bayou_services_client.api_synthesis.SynthesisError;
+import org.apache.commons.cli.*;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -62,14 +63,34 @@ class ApiSynthesisLocalClient
         System.out.print("\n"); // don't have next console prompt start on final line of code output.
     }
 
-    public static void main(String[] args) throws IOException, SynthesisError
+    private static final String NUM_SAMPLES = "num_samples";
+
+    private static final String HELP = "help";
+
+    public static void main(String[] args) throws IOException, SynthesisError, ParseException
     {
-        if(args.length >= 3)
+        /*
+         * Define the command line arguments for the application and parse args accordingly.
+         */
+        Options options = new Options();
+        options.addOption("s", NUM_SAMPLES, true, "the number of asts to sample from the model");
+        options.addOption(HELP, HELP, false, "print this message");
+
+        CommandLine line = new DefaultParser().parse( options, args );
+
+        /*
+         * If more arguments are given than possibly correct or the user asked for help, show help message and exit.
+         */
+        if(args.length >= 4 || line.hasOption(HELP))
         {
-            System.out.println("usage: java edu.rice.pliny.programs.api_synthesis_server.ApiSynthesisLocalClient [file]");
-            System.exit(0);
+            HelpFormatter formatter = new HelpFormatter();
+            formatter.printHelp( "synthesize.sh [OPTION]... [FILE]", options);
+            System.exit(1);
         }
 
+        /*
+         * Determine the query code to synthesize against.
+         */
         String code;
         if(args.length == 0)
         {
@@ -77,17 +98,35 @@ class ApiSynthesisLocalClient
         }
         else
         {
-            code = new String(Files.readAllBytes(Paths.get(args[0])));
+            String finalArg = args[args.length-1];
+            if(finalArg.startsWith("-"))
+            {
+                System.err.println("If command line arguments are specified, final argument must be a file path.");
+                System.exit(2);
+            }
+
+            code = new String(Files.readAllBytes(Paths.get(finalArg)));
         }
 
-        Integer sampleCount;
-        if(args.length == 2)
+        /*
+         * Determine the model sample count requrest, or null if a default should be used.
+         */
+        Integer sampleCount = null;
+        if(line.hasOption(NUM_SAMPLES) )
         {
-            sampleCount = Integer.parseInt(args[1]);
-        }
-        else
-        {
-            sampleCount = null;
+            String numSamplesString = line.getOptionValue(NUM_SAMPLES);
+            try
+            {
+                sampleCount = Integer.parseInt(numSamplesString);
+                if(sampleCount < 1)
+                    throw new NumberFormatException();
+            }
+            catch (NumberFormatException e)
+            {
+                System.err.println(NUM_SAMPLES + " must be a natural number.");
+                System.exit(3);
+            }
+
         }
 
         try
