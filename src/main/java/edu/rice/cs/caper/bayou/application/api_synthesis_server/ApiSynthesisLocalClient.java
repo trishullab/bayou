@@ -45,14 +45,14 @@ class ApiSynthesisLocalClient
                     "\n" +
                     "}";
 
-    private static void synthesise(String code, Integer sampleCount) throws IOException, SynthesisError
+    private static void synthesise(String code, Integer sampleCount, int maxProgramCount) throws IOException, SynthesisError
     {
         List<String> results;
         {
             if(sampleCount != null)
-                results = new ApiSynthesisClient("localhost", Configuration.ListenPort).synthesise(code, sampleCount);
+                results = new ApiSynthesisClient("localhost", Configuration.ListenPort).synthesise(code, maxProgramCount, sampleCount);
             else
-                results = new ApiSynthesisClient("localhost", Configuration.ListenPort).synthesise(code);
+                results = new ApiSynthesisClient("localhost", Configuration.ListenPort).synthesise(code, maxProgramCount);
         }
 
         for(String result : results)
@@ -65,6 +65,8 @@ class ApiSynthesisLocalClient
 
     private static final String NUM_SAMPLES = "num_samples";
 
+    private static final String NUM_PROGRAMS = "num_programs";
+
     private static final String HELP = "help";
 
     public static void main(String[] args) throws IOException, SynthesisError, ParseException
@@ -74,6 +76,7 @@ class ApiSynthesisLocalClient
          */
         Options options = new Options();
         options.addOption("s", NUM_SAMPLES, true, "the number of asts to sample from the model");
+        options.addOption("p", NUM_PROGRAMS, true, "the maximum number of programs to return");
         options.addOption(HELP, HELP, false, "print this message");
 
         CommandLine line = new DefaultParser().parse( options, args );
@@ -81,7 +84,7 @@ class ApiSynthesisLocalClient
         /*
          * If more arguments are given than possibly correct or the user asked for help, show help message and exit.
          */
-        if(args.length >= 4 || line.hasOption(HELP))
+        if(args.length >= 5 || line.hasOption(HELP))
         {
             HelpFormatter formatter = new HelpFormatter();
             formatter.printHelp( "synthesize.sh [OPTION]... [FILE]", options);
@@ -126,12 +129,28 @@ class ApiSynthesisLocalClient
                 System.err.println(NUM_SAMPLES + " must be a natural number.");
                 System.exit(3);
             }
+        }
 
+        int maxProgramCount = Integer.MAX_VALUE;
+        if(line.hasOption(NUM_PROGRAMS) )
+        {
+            String maxProgramCountStr = line.getOptionValue(NUM_PROGRAMS);
+            try
+            {
+                sampleCount = Integer.parseInt(maxProgramCountStr);
+                if(sampleCount < 1)
+                    throw new NumberFormatException();
+            }
+            catch (NumberFormatException e)
+            {
+                System.err.println(NUM_PROGRAMS + " must be a natural number.");
+                System.exit(4);
+            }
         }
 
         try
         {
-            synthesise(code, sampleCount);
+            synthesise(code, sampleCount, maxProgramCount);
         }
         catch (ParseError e)
         {

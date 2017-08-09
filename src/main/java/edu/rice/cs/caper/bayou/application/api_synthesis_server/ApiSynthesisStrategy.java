@@ -35,9 +35,9 @@ interface ApiSynthesisStrategy
         }
     }
 
-    Iterable<String> synthesise(String searchCode) throws SynthesiseException, ParseException;
+    Iterable<String> synthesise(String searchCode, int maxProgramCount) throws SynthesiseException, ParseException;
 
-    Iterable<String> synthesise(String searchCode, int sampleCount) throws SynthesiseException, ParseException;
+    Iterable<String> synthesise(String searchCode, int maxProgramCount, int sampleCount) throws SynthesiseException, ParseException;
 
     static ApiSynthesisStrategy fromConfig()
     {

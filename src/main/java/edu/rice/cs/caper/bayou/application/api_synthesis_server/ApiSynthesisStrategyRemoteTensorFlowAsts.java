@@ -133,18 +133,18 @@ class ApiSynthesisStrategyRemoteTensorFlowAsts implements ApiSynthesisStrategy
     }
 
     @Override
-    public Iterable<String> synthesise(String searchCode) throws SynthesiseException, ParseException
+    public Iterable<String> synthesise(String searchCode, int maxProgramCount) throws SynthesiseException, ParseException
     {
-        return synthesiseHelp(searchCode, null);
+        return synthesiseHelp(searchCode, maxProgramCount, null);
     }
 
     @Override
-    public Iterable<String> synthesise(String searchCode, int sampleCount) throws SynthesiseException, ParseException
+    public Iterable<String> synthesise(String searchCode, int maxProgramCount, int sampleCount) throws SynthesiseException, ParseException
     {
-        return synthesiseHelp(searchCode, sampleCount);
+        return synthesiseHelp(searchCode, maxProgramCount, sampleCount);
     }
 
-    private Iterable<String> synthesiseHelp(String code, Integer sampleCount) throws SynthesiseException, ParseException
+    private Iterable<String> synthesiseHelp(String code, int maxProgramCount, Integer sampleCount) throws SynthesiseException, ParseException
     {
         _logger.debug("entering");
 
@@ -175,6 +175,7 @@ class ApiSynthesisStrategyRemoteTensorFlowAsts implements ApiSynthesisStrategy
 
             JSONObject requestObj = new JSONObject();
             requestObj.put("evidence", evidence);
+            requestObj.put("max ast count", maxProgramCount);
 
             if(sampleCount != null)
                 requestObj.put("sample count", sampleCount);
@@ -197,6 +198,11 @@ class ApiSynthesisStrategyRemoteTensorFlowAsts implements ApiSynthesisStrategy
         try
         {
             synthesizedPrograms = new Synthesizer().execute(code, astsJson, combinedClassPath);
+
+            // unsure if execute always returns n output for n ast input.
+            if(synthesizedPrograms.size() > maxProgramCount)
+                synthesizedPrograms = synthesizedPrograms.subList(0, maxProgramCount);
+
             _logger.trace("synthesizedPrograms: " + synthesizedPrograms);
         }
         catch (IOException|ParseException e)

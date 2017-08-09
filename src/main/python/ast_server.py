@@ -73,10 +73,12 @@ def _start_server(save_dir):
                 request_dict = json.loads(request_json)  # parse request as a JSON string
                 evidence_json_str = request_dict['evidence'] # get the evidence string from the request (also JSON)
                 sample_count = request_dict.get('sample count', None)
+                max_ast_count = request_dict.get('max ast count')
+
                 if sample_count is not None:
-                    asts = _generate_asts(evidence_json_str, predictor, sample_count)
+                    asts = _generate_asts(evidence_json_str, predictor, num_samples=sample_count, max_ast_count=max_ast_count)
                 else:
-                    asts = _generate_asts(evidence_json_str, predictor)
+                    asts = _generate_asts(evidence_json_str, predictor, max_ast_count=max_ast_count)
                 logging.debug(asts)
 
                 _send_string_response(asts, client_socket)
@@ -121,9 +123,16 @@ def okay(js, ast):
     return ev_okay
 
 
-def _generate_asts(evidence_json, predictor, num_samples=100):
+def _generate_asts(evidence_json, predictor, num_samples=100, max_ast_count=10):
     logging.debug("entering")
     logging.debug("num_samples: " + str(num_samples))
+
+    if num_samples < 1:
+        raise ValueError("num_samples must be a natural number")
+
+    if max_ast_count < 1:
+        raise ValueError("max_asts_count must be a natural number")
+
     js = json.loads(evidence_json) # parse evidence as a JSON string
 
     #
@@ -148,9 +157,20 @@ def _generate_asts(evidence_json, predictor, num_samples=100):
         ast['count'] = count
     asts.sort(key=lambda x: x['count'], reverse=True)
 
-    asts = [ast for ast in asts[:10] if okay(js, ast)]
+    #
+    # Retain up to max_ast_count asts that pass the okay(...) filter.
+    #
+    okay_asts = []
+    i = 0
+    while i < len(asts) and len(okay_asts) < max_ast_count:
+        ast = asts[i]
+        if okay(js, ast):
+            okay_asts.append(ast)
+        i = i + 1
+
+
     logging.debug("exiting")
-    return json.dumps({'evidences': js, 'asts': asts}, indent=2)
+    return json.dumps({'evidences': js, 'asts': okay_asts}, indent=2)
 
 
 if __name__ == '__main__':

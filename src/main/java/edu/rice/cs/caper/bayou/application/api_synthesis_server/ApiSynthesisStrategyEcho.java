@@ -53,7 +53,7 @@ public class ApiSynthesisStrategyEcho implements ApiSynthesisStrategy
     }
 
     @Override
-    public Iterable<String> synthesise(String searchCode) throws SynthesiseException
+    public Iterable<String> synthesise(String searchCode, int maxProgramCount) throws SynthesiseException
     {
         _logger.debug("entering");
 
@@ -75,8 +75,8 @@ public class ApiSynthesisStrategyEcho implements ApiSynthesisStrategy
     }
 
     @Override
-    public Iterable<String> synthesise(String searchCode, int sampleCount) throws SynthesiseException, ParseException
+    public Iterable<String> synthesise(String searchCode, int maxProgramCount, int sampleCount) throws SynthesiseException, ParseException
     {
-        return synthesise(searchCode);
+        return synthesise(searchCode, maxProgramCount);
     }
 }
