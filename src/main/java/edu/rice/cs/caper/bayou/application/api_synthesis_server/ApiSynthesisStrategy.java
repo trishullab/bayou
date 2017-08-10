@@ -51,7 +51,9 @@ interface ApiSynthesisStrategy
             String combinedClasspath = Configuration.EvidenceClasspath + File.pathSeparator +
                                        Configuration.AndroidJarPath.getAbsolutePath();
 
-            EvidenceExtractor evidenceExtractor = new EvidenceExtractorAst(combinedClasspath);
+            EvidenceExtractor evidenceExtractor =
+                    source -> new EvidenceExtractorAst(combinedClasspath).extract(source);
+
             Synthesizer synthesizer = new SynthesizerDefault(combinedClasspath);
 
             return new ApiSynthesisStrategyRemoteTensorFlowAsts(evidenceExtractor, synthesizer, "localhost", 8084,
