@@ -84,7 +84,7 @@ class ApiSynthesisLocalClient
         /*
          * If more arguments are given than possibly correct or the user asked for help, show help message and exit.
          */
-        if(args.length >= 5 || line.hasOption(HELP))
+        if(args.length >= 6 || line.hasOption(HELP))
         {
             HelpFormatter formatter = new HelpFormatter();
             formatter.printHelp( "synthesize.sh [OPTION]... [FILE]", options);
@@ -137,8 +137,8 @@ class ApiSynthesisLocalClient
             String maxProgramCountStr = line.getOptionValue(NUM_PROGRAMS);
             try
             {
-                sampleCount = Integer.parseInt(maxProgramCountStr);
-                if(sampleCount < 1)
+                maxProgramCount = Integer.parseInt(maxProgramCountStr);
+                if(maxProgramCount < 1)
                     throw new NumberFormatException();
             }
             catch (NumberFormatException e)
