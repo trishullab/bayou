@@ -22,6 +22,7 @@ import org.eclipse.jetty.http.HttpStatus;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
 
 /**
  * Created by barnett on 4/7/17.
@@ -70,21 +71,36 @@ public class ApiSynthesisHealthCheckServlet extends HttpServlet
                     "    }   \n" +
                     "}";
 
-            Iterable<String> results = _synthesisStrategy.synthesise(code, 1);
+            Iterable<String> results = _synthesisStrategy.synthesise(code, 10);
 
             if (!results.iterator().hasNext())
             {
-                _logger.error("health check failed due to empty results.");
+                String msg = "health check failed due to empty results.";
+                _logger.error(msg);
                 resp.setStatus(HttpStatus.INTERNAL_SERVER_ERROR_500);
+                resp.getWriter().write(msg);
+            }
+            else
+            {
+                resp.getWriter().write("Ok.");
             }
 
-            resp.getWriter().write("Ok.");
 
         }
         catch (Throwable e)
         {
-            _logger.error("health check failed due to exception", e);
+            String msg = "health check failed due to exception";
+            _logger.error(msg, e);
             resp.setStatus(HttpStatus.INTERNAL_SERVER_ERROR_500);
+
+            try
+            {
+                resp.getWriter().write(msg);
+            }
+            catch (IOException e1)
+            {
+               // do nothing.  Will have blank message as page.
+            }
         }
 
         _logger.debug("exiting");

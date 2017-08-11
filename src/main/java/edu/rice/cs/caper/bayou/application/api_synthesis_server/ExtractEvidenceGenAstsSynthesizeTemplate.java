@@ -79,6 +79,7 @@ abstract class ExtractEvidenceGenAstsSynthesizeTemplate implements ApiSynthesisS
         List<String> synthesizedPrograms;
         try
         {
+            _logger.trace("astsJson: " + astsJson);
             synthesizedPrograms = _synthesizer.synthesize(code, astsJson);
             _logger.trace("synthesizedPrograms: " + synthesizedPrograms);
 
