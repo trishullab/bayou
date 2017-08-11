@@ -110,6 +110,7 @@ public class ApiSynthesisServlet extends SizeConstrainedPostBodyServlet implemen
             throws IOException, ApiSynthesisStrategy.SynthesiseException
     {
         _logger.debug("entering");
+        _logger.trace("body:" + body);
 
         if(req == null) throw new NullPointerException("req");
         if(resp == null) throw new NullPointerException("resp");
@@ -156,7 +157,6 @@ public class ApiSynthesisServlet extends SizeConstrainedPostBodyServlet implemen
          */
         String code;
         {
-
             final String CODE = "code";
             if (!jsonMessage.has(CODE))
             {
@@ -172,12 +172,59 @@ public class ApiSynthesisServlet extends SizeConstrainedPostBodyServlet implemen
         }
 
         /*
+         * Extract max program count from the JSON message.
+         */
+        int maxProgamCount;
+        {
+            final String MAX_PROGRAM_COUNT = "max program count";
+            if (!jsonMessage.has(MAX_PROGRAM_COUNT))
+            {
+                _logger.warn(requestId + ": JSON message has no " + MAX_PROGRAM_COUNT + " field.");
+                JSONObject responseBody = new ErrorJsonResponse("Missing parameter " + MAX_PROGRAM_COUNT);
+                resp.setStatus(HttpStatus.BAD_REQUEST_400);
+                writeObjectToServletOutputStream(responseBody, resp);
+                _logger.debug("exiting");
+                return;
+            }
+
+            try
+            {
+                maxProgamCount = jsonMessage.getInt(MAX_PROGRAM_COUNT);
+            }
+            catch (JSONException e)
+            {
+                _logger.warn(requestId + ": JSON message has non-int " + MAX_PROGRAM_COUNT + " field.");
+                JSONObject responseBody = new ErrorJsonResponse("Parameter " + MAX_PROGRAM_COUNT + " is not an int.");
+                resp.setStatus(HttpStatus.BAD_REQUEST_400);
+                writeObjectToServletOutputStream(responseBody, resp);
+                _logger.debug("exiting");
+                return;
+            }
+
+        }
+
+        /*
+         * Extract sample count from request if present
+         */
+        Integer sampleCount;
+        {
+            final String SAMPLE_COUNT = "sample count";
+            if (jsonMessage.has(SAMPLE_COUNT))
+                sampleCount = jsonMessage.getInt(SAMPLE_COUNT);
+            else
+                sampleCount = null;
+        }
+
+        /*
          * Perform synthesis.
          */
         Iterable<String> results;
         try
         {
-            results = _synthesisStrategy.synthesise(code);
+            if(sampleCount != null)
+                results = _synthesisStrategy.synthesise(code, maxProgamCount, sampleCount);
+            else
+                results = _synthesisStrategy.synthesise(code, maxProgamCount);
         }
         catch (ParseException e)
         {

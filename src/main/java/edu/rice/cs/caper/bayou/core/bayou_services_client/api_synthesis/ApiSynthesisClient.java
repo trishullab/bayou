@@ -13,7 +13,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-package edu.rice.cs.caper.bayou.core.bayou_services_client.ap_synthesis;
+package edu.rice.cs.caper.bayou.core.bayou_services_client.api_synthesis;
 
 import edu.rice.cs.caper.bayou.core.bayou_services_client.JsonMsgClientBase;
 import org.apache.commons.io.IOUtils;
@@ -67,24 +67,62 @@ public class ApiSynthesisClient extends JsonMsgClientBase
      * 30 seconds this method will throw a SocketTimeoutException.
      *
      * @param code the code to be examined by the remote server for synthesis. May not be null.
+     * @param maxProgramCount the maximum number of programs to return
      * @return the result of the synthesis. Never null.
      * @throws IOException if there is a problem communicating with the remote server
      * @throws SynthesisError if a non-communication error occurs during synthesis
      * @throws IllegalArgumentException if code is null
+     * @throws IllegalArgumentException if maxProgramCount is not a natural number
      * @throws SocketTimeoutException if the server does not respond in a timely fashion
      */
-    public List<String> synthesise(String code) throws IOException, SynthesisError
+    public List<String> synthesise(String code, int maxProgramCount) throws IOException, SynthesisError
+    {
+        return synthesizeHelp(code, maxProgramCount, null);
+    }
+
+    /**
+     * Sends an API synthesis request of the given code to the remote server and returns the solution responses
+     * from the server.
+     *
+     * If any call to read() for the server's response from the underlying socket does not complete within
+     * 30 seconds this method will throw a SocketTimeoutException.
+     *
+     * @param code the code to be examined by the remote server for synthesis. May not be null.
+     * @param sampleCount the number of model samples to perform during synthesis. Must be a natural number.
+     * @param maxProgramCount the maximum number of programs to return. Must be a natural number.
+     * @return the result of the synthesis. Never null.
+     * @throws IOException if there is a problem communicating with the remote server
+     * @throws SynthesisError if a non-communication error occurs during synthesis
+     * @throws IllegalArgumentException if code is null
+     * @throws IllegalArgumentException if maxProgramCount or sampleCount is not a natural number
+     * @throws SocketTimeoutException if the server does not respond in a timely fashion
+     */
+    public List<String> synthesise(String code, int maxProgramCount, int sampleCount) throws IOException, SynthesisError
+    {
+        return synthesizeHelp(code, maxProgramCount, sampleCount);
+    }
+
+    private List<String> synthesizeHelp(String code, int maxProgramCount, Integer sampleCount) throws IOException, SynthesisError
     {
         _logger.debug("entering");
 
         if(code == null)
             throw new IllegalArgumentException("code may not be null");
 
+        if(maxProgramCount < 1)
+            throw new IllegalArgumentException("maxProgramCount must be a natural number");
+
+        if(sampleCount != null && sampleCount < 1)
+            throw new IllegalArgumentException("sampleCount must be a natural number if non-null");
+
         /*
          * Create request and send to server.
          */
         JSONObject requestMsg = new JSONObject();
         requestMsg.put("code", code);
+        requestMsg.put("max program count", maxProgramCount);
+        if(sampleCount != null)
+            requestMsg.put("sample count", sampleCount);
 
         HttpClient httpclient = HttpClients.createDefault();
         HttpPost post = new HttpPost("http://" + host + ":" + port + "/apisynthesis");

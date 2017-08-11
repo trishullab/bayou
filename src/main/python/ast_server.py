@@ -65,14 +65,21 @@ def _start_server(save_dir):
                 client_socket, addr = server_socket.accept()  # await client connection
                 logging.info("connection accepted")
 
-                # how long is the evidence string?
-                evidence_size_in_bytes = int.from_bytes(_read_bytes(4, client_socket), byteorder='big', signed=True)
-                logging.debug(evidence_size_in_bytes)
+                request_size_in_bytes = int.from_bytes(_read_bytes(4, client_socket), byteorder='big', signed=True)
+                logging.debug(request_size_in_bytes)
 
-                evidence = _read_bytes(evidence_size_in_bytes, client_socket).decode("utf-8")  # read evidence string
-                logging.debug(evidence)
+                request_json = _read_bytes(request_size_in_bytes, client_socket).decode("utf-8")  # read request string
+                logging.debug(request_json)
 
-                asts = _generate_asts(evidence, predictor)  # use predictor to generate ASTs JSON from evidence
+                request_dict = json.loads(request_json)  # parse request as a JSON string
+                evidence_json_str = request_dict['evidence'] # get the evidence string from the request (also JSON)
+                sample_count = request_dict.get('sample count', None)
+                max_ast_count = request_dict.get('max ast count')
+
+                if sample_count is not None:
+                    asts = _generate_asts(evidence_json_str, predictor, num_samples=sample_count, max_ast_count=max_ast_count)
+                else:
+                    asts = _generate_asts(evidence_json_str, predictor, max_ast_count=max_ast_count)
                 logging.debug(asts)
 
                 _send_string_response(asts, client_socket)
@@ -120,15 +127,23 @@ def okay(js, ast):
     return ev_okay
 
 
-def _generate_asts(evidence_json, predictor):
+def _generate_asts(evidence_json, predictor, num_samples=100, max_ast_count=10):
     logging.debug("entering")
+    logging.debug("num_samples: " + str(num_samples))
+
+    if num_samples < 1:
+        raise ValueError("num_samples must be a natural number")
+
+    if max_ast_count < 1:
+        raise ValueError("max_asts_count must be a natural number")
+
     js = json.loads(evidence_json)  # parse evidence as a JSON string
 
     #
     # Generate ASTs from evidence.
     #
     asts, counts = [], []
-    for i in range(100):
+    for i in range(num_samples):
         try:
             ast = predictor.infer(js)
             ast['calls'] = list(set(predictor.calls_in_last_ast))
@@ -146,30 +161,41 @@ def _generate_asts(evidence_json, predictor):
         ast['count'] = count
     asts.sort(key=lambda x: x['count'], reverse=True)
 
-    asts = [ast for ast in asts[:10] if okay(js, ast)]
+    #
+    # Retain up to max_ast_count asts that pass the okay(...) filter.
+    #
+    okay_asts = []
+    i = 0
+    while i < len(asts) and len(okay_asts) < max_ast_count:
+        ast = asts[i]
+        if okay(js, ast):
+            okay_asts.append(ast)
+        i = i + 1
+
     logging.debug("exiting")
-    return json.dumps({'evidences': js, 'asts': asts}, indent=2)
+    return json.dumps({'evidences': js, 'asts': okay_asts}, indent=2)
 
 
 if __name__ == '__main__':
 
     # Parse command line args.
     parser = argparse.ArgumentParser()
-    parser.add_argument('--save_dir', type=str, required=True, help='model directory to load from')
-    parser.add_argument('--logs_dir', type=str, required=False, help='the directory to store log information')
+    parser.add_argument('--save_dir', type=str, required=True, help='model directory to laod from')
+    parser.add_argument('--logs_dir', type=str, required=False, help='the directories to store log information seperated by the OS path seperator')
     args = parser.parse_args()
 
     if args.logs_dir is None:
         dirpath = os.path.dirname(__file__)
-        logpath = os.path.join(dirpath, "../logs/ast_server.log")
+        logpaths = [os.path.join(dirpath, "../logs/ast_server.log")]
     else:
-        logpath = args.logs_dir + "/ast_server.log"
+        logpaths = [(dir + "/ast_server.log") for dir in args.logs_dir.split(os.pathsep)]
 
     # Create the logger for the application.
-    logging.basicConfig(format='%(asctime)s,%(msecs)d %(levelname)-8s [%(threadName)s %(filename)s:%(lineno)d] %(message)s',
-                        datefmt='%d-%m-%Y:%H:%M:%S',
-                        level=logging.DEBUG,
-                        handlers=[logging.handlers.RotatingFileHandler(logpath, maxBytes=100000000, backupCount=9)])
+    for logpath in logpaths:
+        logging.basicConfig(format='%(asctime)s,%(msecs)d %(levelname)-8s [%(threadName)s %(filename)s:%(lineno)d] %(message)s',
+                            datefmt='%d-%m-%Y:%H:%M:%S',
+                            level=logging.DEBUG,
+                            handlers=[logging.handlers.RotatingFileHandler(logpath, maxBytes=100000000, backupCount=9) for logpath in logpaths])
 
     # Start processing requests.
     _start_server(args.save_dir)

@@ -22,6 +22,7 @@ import edu.rice.cs.caper.bayou.core.synthesizer.Parser;
 import edu.rice.cs.caper.bayou.core.synthesizer.Synthesizer;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.json.JSONObject;
 
 import java.io.*;
 import java.net.Socket;
@@ -66,7 +67,7 @@ class ApiSynthesisStrategyRemoteTensorFlowAsts implements ApiSynthesisStrategy
     private final File _androidJarPath;
 
     /**
-     *  @param tensorFlowHost  The network name of the tensor flow host server. May not be null.
+     * @param tensorFlowHost  The network name of the tensor flow host server. May not be null.
      * @param tensorFlowPort The port the tensor flow host server on which connections requests are expected.
      *                       May not be negative.
      * @param maxNetworkWaitTimeMs The maximum amount of time to wait on a response from the tensor flow server on each
@@ -133,7 +134,18 @@ class ApiSynthesisStrategyRemoteTensorFlowAsts implements ApiSynthesisStrategy
     }
 
     @Override
-    public Iterable<String> synthesise(String code) throws SynthesiseException, ParseException
+    public Iterable<String> synthesise(String searchCode, int maxProgramCount) throws SynthesiseException, ParseException
+    {
+        return synthesiseHelp(searchCode, maxProgramCount, null);
+    }
+
+    @Override
+    public Iterable<String> synthesise(String searchCode, int maxProgramCount, int sampleCount) throws SynthesiseException, ParseException
+    {
+        return synthesiseHelp(searchCode, maxProgramCount, sampleCount);
+    }
+
+    private Iterable<String> synthesiseHelp(String code, int maxProgramCount, Integer sampleCount) throws SynthesiseException, ParseException
     {
         _logger.debug("entering");
 
@@ -142,6 +154,9 @@ class ApiSynthesisStrategyRemoteTensorFlowAsts implements ApiSynthesisStrategy
             _logger.debug("exiting");
             throw new NullPointerException("code");
         }
+
+        if(sampleCount != null && sampleCount < 1)
+            throw new IllegalArgumentException("sampleCount must be 1 or greater");
 
         String combinedClassPath = _evidenceClasspath + File.pathSeparator + _androidJarPath.getAbsolutePath();
 
@@ -165,7 +180,14 @@ class ApiSynthesisStrategyRemoteTensorFlowAsts implements ApiSynthesisStrategy
         {
             pyServerSocket.setSoTimeout(_maxNetworkWaitTimeMs); // only wait this long for response then throw exception
 
-            sendString(evidence, new DataOutputStream(pyServerSocket.getOutputStream()));
+            JSONObject requestObj = new JSONObject();
+            requestObj.put("evidence", evidence);
+            requestObj.put("max ast count", maxProgramCount);
+
+            if(sampleCount != null)
+                requestObj.put("sample count", sampleCount);
+
+            sendString(requestObj.toString(2), new DataOutputStream(pyServerSocket.getOutputStream()));
 
             astsJson = receiveString(pyServerSocket.getInputStream());
 	        _logger.trace("astsJson:" + astsJson);
@@ -181,6 +203,11 @@ class ApiSynthesisStrategyRemoteTensorFlowAsts implements ApiSynthesisStrategy
          */
         List<String> synthesizedPrograms;
         synthesizedPrograms = new Synthesizer().execute(parser, astsJson);
+
+        // unsure if execute always returns n output for n ast input.
+        if(synthesizedPrograms.size() > maxProgramCount)
+            synthesizedPrograms = synthesizedPrograms.subList(0, maxProgramCount);
+
         _logger.trace("synthesizedPrograms: " + synthesizedPrograms);
 
         _logger.debug("exiting");

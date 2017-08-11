@@ -70,7 +70,7 @@ public class ApiSynthesisHealthCheckServlet extends HttpServlet
                     "    }   \n" +
                     "}";
 
-            Iterable<String> results = _synthesisStrategy.synthesise(code);
+            Iterable<String> results = _synthesisStrategy.synthesise(code, 1);
 
             if (!results.iterator().hasNext())
             {
