@@ -70,6 +70,7 @@ abstract class ExtractEvidenceGenAstsSynthesizeTemplate implements ApiSynthesisS
         /*
          * Provide evidence to generate solution ASTs.
          */
+        _logger.trace("maxProgramCount: " + maxProgramCount);
         String astsJson = generateAsts(evidence, maxProgramCount, sampleCount);
 
         /*

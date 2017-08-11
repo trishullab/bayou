@@ -110,6 +110,7 @@ public class ApiSynthesisServlet extends SizeConstrainedPostBodyServlet implemen
             throws IOException, ApiSynthesisStrategy.SynthesiseException
     {
         _logger.debug("entering");
+        _logger.trace("body:" + body);
 
         if(req == null) throw new NullPointerException("req");
         if(resp == null) throw new NullPointerException("resp");
