@@ -30,4 +30,4 @@ fi
 
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 export PYTHONPATH=python
-python3 python/ast_server.py --save_dir "$SCRIPT_DIR/resources/model" --logs_dir $logs_dir
+python3 python/bayou/server/ast_server.py --save_dir "$SCRIPT_DIR/resources/model" --logs_dir $logs_dir
