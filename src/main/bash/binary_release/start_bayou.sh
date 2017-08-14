@@ -19,7 +19,8 @@ trap "kill 0" EXIT
 
 mkdir -p logs
 
-java -DconfigurationFile=resources/conf/apiSynthesisServerConfig.properties -Dlog4j.configurationFile=resources/conf/apiSynthesisServerLog4j2.xml -jar bayou-1.0.0.jar &
+BAYOU_JAR="$(ls *.jar)"
+java -DconfigurationFile=resources/conf/apiSynthesisServerConfig.properties -Dlog4j.configurationFile=resources/conf/apiSynthesisServerLog4j2.xml -jar $BAYOU_JAR &
 
 if [ $# -eq 0 ]
   then
