@@ -14,4 +14,5 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-java -Dorg.apache.logging.log4j.simplelog.StatusLogger.level=OFF -DconfigurationFile=resources/conf/apiSynthesisServerConfig.properties -cp bayou-1.0.0.jar edu.rice.cs.caper.bayou.application.api_synthesis_server.ApiSynthesisLocalClient $1 $2 $3 $4 $5
+BAYOU_JAR="$(ls *.jar)"
+java -Dorg.apache.logging.log4j.simplelog.StatusLogger.level=OFF -DconfigurationFile=resources/conf/apiSynthesisServerConfig.properties -cp $BAYOU_JAR edu.rice.cs.caper.bayou.application.api_synthesis_server.ApiSynthesisLocalClient $1 $2 $3 $4 $5

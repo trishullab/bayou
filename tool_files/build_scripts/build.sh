@@ -22,12 +22,13 @@ rm -rf $BUILD_DIR
 mkdir $BUILD_DIR
 
 cd ../maven_3_3_9/bayou
+VER="$(printf 'VERSION=${project.version}\n0\n' | mvn org.apache.maven.plugins:maven-help-plugin:2.1.1:evaluate | grep '^VERSION' | cut -c9-)" # get the project version number... e.g 1.1.0
 mvn clean package
-cp target/bayou-1.0.0-jar-with-dependencies.jar $BUILD_DIR
+cp target/bayou-$VER-jar-with-dependencies.jar $BUILD_DIR
 cp -r ../../../src/main/python $BUILD_DIR
 cp -r ../../../src/main/resources $BUILD_DIR
 cp ../../../src/main/bash/binary_release/*.sh $BUILD_DIR
-cp  target/bayou-1.0.0-jar-with-dependencies.jar $BUILD_DIR
+cp  target/bayou-$VER-jar-with-dependencies.jar $BUILD_DIR
 cp -r ../../../example_inputs $BUILD_DIR
 cd $BUILD_DIR
-mv bayou-1.0.0-jar-with-dependencies.jar bayou-1.0.0.jar
+mv bayou-$VER-jar-with-dependencies.jar bayou-$VER.jar
