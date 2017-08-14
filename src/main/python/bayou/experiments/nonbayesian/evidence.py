@@ -81,7 +81,7 @@ class APICalls(Evidence):
         return np.array(self.lda.infer(data), dtype=np.float32)
 
     def placeholder(self, config):
-        return tf.placeholder(tf.float32, [config.batch_size, self.lda.model.n_topics])
+        return tf.placeholder(tf.float32, [config.batch_size, self.lda.model.n_components])
 
     def encode(self, inputs, config):
         with tf.variable_scope('apicalls'):
@@ -109,7 +109,7 @@ class Types(Evidence):
         return np.array(self.lda.infer(data), dtype=np.float32)
 
     def placeholder(self, config):
-        return tf.placeholder(tf.float32, [config.batch_size, self.lda.model.n_topics])
+        return tf.placeholder(tf.float32, [config.batch_size, self.lda.model.n_components])
 
     def encode(self, inputs, config):
         with tf.variable_scope('types'):
@@ -136,7 +136,7 @@ class Context(Evidence):
         return np.array(self.lda.infer(data), dtype=np.float32)
 
     def placeholder(self, config):
-        return tf.placeholder(tf.float32, [config.batch_size, self.lda.model.n_topics])
+        return tf.placeholder(tf.float32, [config.batch_size, self.lda.model.n_components])
 
     def encode(self, inputs, config):
         with tf.variable_scope('context'):

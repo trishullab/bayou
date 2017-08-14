@@ -9,7 +9,7 @@ Try Bayou on your browser! Visit www.askbayou.com.
 - JDK 1.8
 - Python3 (Tested with 3.5.1)
 - [Tensorflow](https://www.tensorflow.org) (Tested with 1.2)
-- scikit-learn (Tested with 0.18.1)
+- scikit-learn (Tested with 0.19)
 
 ## Compiling and Running Bayou from Source on Ubuntu/Mac
 

@@ -19,5 +19,5 @@ brew cask install java
 brew install maven
 brew install python3
 pip3 install 'tensorflow==1.2'
-pip3 install 'scikit-learn'
+pip3 install 'scikit-learn==0.19'
 pip3 install 'scipy'

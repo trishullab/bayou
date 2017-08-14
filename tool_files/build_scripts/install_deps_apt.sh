@@ -17,5 +17,5 @@
 apt-get update
 apt-get install openjdk-8-jdk maven
 pip3 install 'tensorflow==1.2'
-pip3 install 'scikit-learn'
+pip3 install 'scikit-learn==0.19'
 pip3 install 'scipy'
