@@ -14,8 +14,23 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-apt-get update
-apt-get install openjdk-8-jre python3-pip
+OS="$(uname)"
+
+if [ $OS == "Linux" ]; then
+
+	apt-get update
+	apt-get install openjdk-8-jre python3-pip
+
+elif [ $OS == "Darwin"]; then # Darwin for Mac OS X
+
+	brew update
+	brew install python3
+	brew cask install java
+else
+	echo "Unknown OS."
+	exit
+fi
+
 pip3 install 'tensorflow==1.2'
 pip3 install 'scikit-learn==0.19'
 pip3 install 'scipy'

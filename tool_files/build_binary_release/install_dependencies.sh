@@ -14,8 +14,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+OS="$(uname)"
+
+if [ $OS -ne "Linux"]; then
+	echo "Building binary release only currently supported on Linux."
+	exit
+fi
+
 apt-get update
-apt-get install openjdk-8-jdk maven
-pip3 install 'tensorflow==1.2'
-pip3 install 'scikit-learn==0.19'
-pip3 install 'scipy'
+apt-get install openjdk-8-jdk maven zip
