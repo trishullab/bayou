@@ -21,9 +21,8 @@ git clone https://github.com/capergroup/bayou.git
 #### 2.) Install Dependencies
 ```
 cd bayou/tool_files/build_scripts
-sudo ./install_deps_apt.sh
+sudo ./install_dependencies.sh
 ```
-Or run ```install_deps_mac.sh``` for Mac (uses Homebrew).
 
 #### 3.) Compile Bayou
 ```
@@ -32,6 +31,7 @@ Or run ```install_deps_mac.sh``` for Mac (uses Homebrew).
 
 #### 4.) Run Bayou
 ```
+cd out/
 ./start_bayou.sh &
 ```
 
