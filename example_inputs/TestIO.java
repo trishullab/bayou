@@ -14,7 +14,7 @@ public class TestIO {
     void read(String file) {
         { // Provide evidence within a separate block
             // Code should call "readLine"
-            Evidence.apicalls("readLine");
+            /// call:readLine
         } // Synthesized code will replace this block
     }   
 
@@ -23,8 +23,8 @@ public class TestIO {
     // string argument given
     void read(String file) {
         {
-            Evidence.apicalls("readLine");
-            Evidence.context("String");
+            /// call:readLine
+            /// context:String
         }
     }   
     */

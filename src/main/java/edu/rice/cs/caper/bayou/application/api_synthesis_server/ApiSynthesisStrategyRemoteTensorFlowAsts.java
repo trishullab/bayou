@@ -15,7 +15,7 @@ limitations under the License.
 */
 package edu.rice.cs.caper.bayou.application.api_synthesis_server;
 
-;
+import edu.rice.cs.caper.bayou.core.lexer.ccll._1_0.*;
 import edu.rice.cs.caper.bayou.core.synthesizer.EvidenceExtractor;
 import edu.rice.cs.caper.bayou.core.synthesizer.ParseException;
 import edu.rice.cs.caper.bayou.core.synthesizer.Parser;
@@ -160,10 +160,13 @@ class ApiSynthesisStrategyRemoteTensorFlowAsts implements ApiSynthesisStrategy
 
         String combinedClassPath = _evidenceClasspath + File.pathSeparator + _androidJarPath.getAbsolutePath();
 
+        String rewrittenCode = rewriteEvidence(code);
+        _logger.trace("rewrittenCode:" + rewrittenCode);
+
         /*
          * Parse the program
          */
-        Parser parser = new Parser(code, combinedClassPath);
+        Parser parser = new Parser(rewrittenCode, combinedClassPath);
         parser.parse();
 
         /*
@@ -212,6 +215,62 @@ class ApiSynthesisStrategyRemoteTensorFlowAsts implements ApiSynthesisStrategy
 
         _logger.debug("exiting");
         return synthesizedPrograms;
+    }
+
+    // n.b. static for testing without construction
+    static String rewriteEvidence(String code)
+    {
+        StringBuilder newCode = new StringBuilder();
+
+        for(Token token :  new CcllLexerDefault().lex(code))
+        {
+            String transformedLexeme = token.getType().match(new TokenTypeCases<String>()
+            {
+                @Override
+                public String forLineComment(TokenTypeLineComment lineComment)
+                {
+                    String lexeme = token.getLexeme();
+
+                    if(!lexeme.startsWith("///") || !lexeme.contains(":"))
+                        return token.getLexeme();
+
+                    String uncommentedLexeme = lexeme.replace("///", "");
+
+                    String[] parts = uncommentedLexeme.split(":");
+
+                    if(parts.length !=2)
+                        return token.getLexeme();
+
+                    switch (parts[0].trim())
+                    {
+                        case "call":
+                            return "edu.rice.cs.caper.bayou.annotations.Evidence.apicalls(\"" +  parts[1].trim() + "\");\n";
+                        case "type":
+                            return "edu.rice.cs.caper.bayou.annotations.Evidence.types(\"" +  parts[1].trim() + "\");\n";
+                        case "context":
+                            return "edu.rice.cs.caper.bayou.annotations.Evidence.context(\"" +  parts[1].trim() + "\");\n";
+                        default:
+                    }       return token.getLexeme();
+
+                }
+
+                @Override
+                public String forOther(TokenTypeOther other)
+                {
+                    return token.getLexeme();
+                }
+
+                @Override
+                public String forString(TokenTypeString string)
+                {
+                    return token.getLexeme();
+                }
+            });
+
+            newCode.append(transformedLexeme);
+        }
+
+        return newCode.toString();
     }
 
     /**
