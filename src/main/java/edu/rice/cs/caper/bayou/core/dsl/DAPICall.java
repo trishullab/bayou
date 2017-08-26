@@ -23,6 +23,7 @@ import org.eclipse.jdt.core.dom.*;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Executable;
 import java.lang.reflect.Method;
+import java.lang.reflect.TypeVariable;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -227,14 +228,41 @@ public class DAPICall extends DASTNode
     }
 
     private Executable getConstructorOrMethod() throws SynthesisException {
+        /* get the type-erased name */
         String qualifiedName = _call.substring(0, _call.indexOf("("));
+        String[] args = _call.substring(_call.indexOf("(") + 1, _call.lastIndexOf(")")).split(",");
+
         String className = qualifiedName.substring(0, qualifiedName.lastIndexOf("."));
+        String methodName = qualifiedName.substring(qualifiedName.lastIndexOf(".") + 1);
+        String erasedClassName = className.replaceAll("<.*>", "");
         Class cls;
         try {
-            cls = Environment.getClass(className);
+            cls = Environment.getClass(erasedClassName);
         } catch (ClassNotFoundException e) {
             throw new SynthesisException(SynthesisException.ClassNotFoundInLoader);
         }
+
+        TypeVariable[] typeVars = cls.getTypeParameters();
+        List<String> erasedArgs = new ArrayList<>();
+        for (String arg : args) {
+            if (! arg.startsWith("Tau_")) {
+                erasedArgs.add(arg);
+                continue;
+            }
+            // generic type variable
+            String typeVarName = arg.substring(4);
+            TypeVariable typeVar = null;
+            for (TypeVariable t : typeVars)
+                if (t.getName().equals(typeVarName)) {
+                    typeVar = t;
+                    break;
+                }
+            if (typeVar == null)
+                throw new SynthesisException(SynthesisException.GenericTypeVariableMismatch);
+            java.lang.reflect.Type bound = typeVar.getBounds()[0]; // first bound is the class
+            erasedArgs.add(((Class) bound).getName());
+        }
+        String erasedName = erasedClassName + "." + methodName + "(" + String.join(",", erasedArgs) + ")";
 
         /* find the method in the class */
         for (Method m : cls.getMethods()) {
@@ -244,12 +272,13 @@ public class DAPICall extends DASTNode
                     name = s;
                     break;
                 }
-            if (name != null && name.replaceAll("\\$", ".").equals(_call))
+            System.out.println(name);
+            if (name != null && name.replaceAll("\\$", ".").equals(erasedName))
                 return m;
         }
 
         /* .. or the constructor */
-        String _callC = className + _call.substring(_call.indexOf("("));
+        String _callC = erasedClassName + erasedName.substring(erasedName.indexOf("("));
         for (Constructor c : cls.getConstructors()) {
             String name = null;
             for (String s : c.toString().split(" "))
