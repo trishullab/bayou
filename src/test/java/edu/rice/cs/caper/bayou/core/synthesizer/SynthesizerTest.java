@@ -65,8 +65,10 @@ public class SynthesizerTest {
 
         Assert.assertTrue(results.size() > 0);
 
-        for(String resultProgram : results)
+        for(String resultProgram : results) {
+            System.out.println(resultProgram);
             Assert.assertTrue(resultProgram.contains("public class")); // some code was synthesized
+        }
     }
 
     @Test
@@ -77,6 +79,11 @@ public class SynthesizerTest {
     @Test
     public void testIO2() throws IOException, ParseException {
         testExecute("TestIO2");
+    }
+
+    @Test
+    public void testUtil() throws IOException, ParseException {
+        testExecute("TestUtil");
     }
 
     @Test
