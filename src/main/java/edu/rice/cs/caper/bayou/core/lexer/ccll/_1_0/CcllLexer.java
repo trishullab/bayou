@@ -1,13 +1,21 @@
 package edu.rice.cs.caper.bayou.core.lexer.ccll._1_0;
 
-
 import java.util.Iterator;
 
+/**
+ * A lexer for version 1.0 of the Coarse C-Like Language.
+ */
 public interface CcllLexer
 {
-    Iterable<Token> lex(Iterable<Character> chars);
+    /**
+     * Lexes the given character sequence into tokens.
+     */
+    Iterable<Token> lex(Iterable<Character> chars) throws UnexpectedEndOfCharacters;
 
-    default Iterable<Token> lex(CharSequence sequence)
+    /**
+     * Lexes the given character sequence into tokens.
+     */
+    default Iterable<Token> lex(CharSequence sequence) throws UnexpectedEndOfCharacters
     {
         Iterable<Character> iterable = () -> new Iterator<Character>()
         {

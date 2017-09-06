@@ -11,7 +11,7 @@ public abstract class CcllLexerTests
     protected abstract CcllLexer makeLexer();
 
     @Test
-    public void testLex1()
+    public void testLexOther() throws UnexpectedEndOfCharacters
     {
         CcllLexer lexer = makeLexer();
 
@@ -28,16 +28,16 @@ public abstract class CcllLexerTests
     }
 
     @Test
-    public void testLex2()
+    public void testLexLineComment()  throws UnexpectedEndOfCharacters
     {
         CcllLexer lexer = makeLexer();
 
-        Iterator<Token> tokens = lexer.lex("// line comment").iterator();
+        Iterator<Token> tokens = lexer.lex("// line comment\n").iterator();
 
         Assert.assertTrue(tokens.hasNext());
 
         Token first = tokens.next();
-        Assert.assertEquals("// line comment", first.getLexeme());
+        Assert.assertEquals("// line comment\n", first.getLexeme());
         Assert.assertEquals(0, first.getStartIndex());
         Assert.assertTrue(first.getType() instanceof TokenTypeLineComment);
 
@@ -45,7 +45,24 @@ public abstract class CcllLexerTests
     }
 
     @Test
-    public void testLex3()
+    public void testLexBlockComment()  throws UnexpectedEndOfCharacters
+    {
+        CcllLexer lexer = makeLexer();
+
+        Iterator<Token> tokens = lexer.lex("/* block comment */").iterator();
+
+        Assert.assertTrue(tokens.hasNext());
+
+        Token first = tokens.next();
+        Assert.assertEquals("/* block comment */", first.getLexeme());
+        Assert.assertEquals(0, first.getStartIndex());
+        Assert.assertTrue(first.getType() instanceof TokenTypeBlockComment);
+
+        Assert.assertFalse(tokens.hasNext());
+    }
+
+    @Test
+    public void testLexString1() throws UnexpectedEndOfCharacters
     {
         CcllLexer lexer = makeLexer();
 
@@ -56,13 +73,13 @@ public abstract class CcllLexerTests
         Token first = tokens.next();
         Assert.assertEquals("\" string \"", first.getLexeme());
         Assert.assertEquals(0, first.getStartIndex());
-        Assert.assertTrue(first.getType() instanceof TokenTypeOther);
+        Assert.assertTrue(first.getType() instanceof TokenTypeString);
 
         Assert.assertFalse(tokens.hasNext());
     }
 
     @Test
-    public void testLex4()
+    public void testLexString2() throws UnexpectedEndOfCharacters
     {
         CcllLexer lexer = makeLexer();
 
@@ -73,13 +90,13 @@ public abstract class CcllLexerTests
         Token first = tokens.next();
         Assert.assertEquals("\" \\\"string \"", first.getLexeme());
         Assert.assertEquals(0, first.getStartIndex());
-        Assert.assertTrue(first.getType() instanceof TokenTypeOther);
+        Assert.assertTrue(first.getType() instanceof TokenTypeString);
 
         Assert.assertFalse(tokens.hasNext());
     }
 
     @Test
-    public void testLex5()
+    public void testLexOtherLineComment() throws UnexpectedEndOfCharacters
     {
         CcllLexer lexer = makeLexer();
 
@@ -101,7 +118,7 @@ public abstract class CcllLexerTests
     }
 
     @Test
-    public void testLex6()
+    public void testLexOtherLineCommentOther() throws UnexpectedEndOfCharacters
     {
         CcllLexer lexer = makeLexer();
 
@@ -128,7 +145,7 @@ public abstract class CcllLexerTests
     }
 
     @Test
-    public void testLex7()
+    public void testLexTestBluetooth() throws UnexpectedEndOfCharacters
     {
 
         String program = "import android.bluetooth.BluetoothAdapter;\n" +
@@ -188,8 +205,18 @@ public abstract class CcllLexerTests
         Assert.assertTrue(token.getType() instanceof TokenTypeLineComment);
 
         token = tokens.next();
-        Assert.assertEquals("\npublic class TestBluetooth {\n\n    /* Get an input stream that can be used to read from\n     * the given blueooth hardware address */\n    void readFromBluetooth(BluetoothAdapter adapter) {\n        ", token.getLexeme());
+        Assert.assertEquals("\npublic class TestBluetooth {\n\n    ", token.getLexeme());
         Assert.assertEquals(program.indexOf("\npublic class TestBluetooth"), token.getStartIndex());
+        Assert.assertTrue(token.getType() instanceof TokenTypeOther);
+
+        token = tokens.next();
+        Assert.assertEquals("/* Get an input stream that can be used to read from\n     * the given blueooth hardware address */", token.getLexeme());
+        Assert.assertEquals(program.indexOf("/* Get an input stream"), token.getStartIndex());
+        Assert.assertTrue(token.getType() instanceof TokenTypeBlockComment);
+
+        token = tokens.next();
+        Assert.assertEquals("\n    void readFromBluetooth(BluetoothAdapter adapter) {\n        ", token.getLexeme());
+        Assert.assertEquals(program.indexOf("\n    void readFromBluetooth"), token.getStartIndex());
         Assert.assertTrue(token.getType() instanceof TokenTypeOther);
 
         token = tokens.next();
@@ -200,8 +227,77 @@ public abstract class CcllLexerTests
         token = tokens.next();
         Assert.assertEquals("        String address = ", token.getLexeme());
         Assert.assertEquals(program.indexOf("        String address"), token.getStartIndex());
-        Assert.assertEquals(TokenTypeOther.class, token.getType().getClass());
+        Assert.assertTrue(token.getType() instanceof  TokenTypeOther);
 
+        token = tokens.next();
+        Assert.assertEquals("\"00:43:A8:23:10:F0\"", token.getLexeme());
+        Assert.assertEquals(program.indexOf("\"00:43:A8:23:10:F0\""), token.getStartIndex());
+        Assert.assertTrue(token.getType() instanceof  TokenTypeString);
+
+        token = tokens.next();
+        Assert.assertEquals(";\n\n        { ", token.getLexeme());
+        Assert.assertEquals(program.indexOf(";\n\n        { "), token.getStartIndex());
+        Assert.assertTrue(token.getType() instanceof  TokenTypeOther);
+
+        token = tokens.next();
+        Assert.assertEquals("// Provide evidence within a separate block\n", token.getLexeme());
+        Assert.assertEquals(program.indexOf("// Provide evidence"), token.getStartIndex());
+        Assert.assertTrue(token.getType() instanceof  TokenTypeLineComment);
+
+        token = tokens.next();
+        Assert.assertEquals("            ", token.getLexeme());
+        Assert.assertEquals(program.indexOf("            // Code should"), token.getStartIndex());
+        Assert.assertTrue(token.getType() instanceof  TokenTypeOther);
+
+        token = tokens.next();
+        Assert.assertEquals("// Code should call \"getInputStream\"...\n", token.getLexeme());
+        Assert.assertEquals(program.indexOf("// Code should call"), token.getStartIndex());
+        Assert.assertTrue(token.getType() instanceof  TokenTypeLineComment);
+
+        token = tokens.next();
+        Assert.assertEquals("            ", token.getLexeme());
+        Assert.assertEquals(program.indexOf("            /// getInputStream\n"), token.getStartIndex());
+        Assert.assertTrue(token.getType() instanceof  TokenTypeOther);
+
+        token = tokens.next();
+        Assert.assertEquals("/// getInputStream\n", token.getLexeme());
+        Assert.assertEquals(program.indexOf("/// getInputStream\n"), token.getStartIndex());
+        Assert.assertTrue(token.getType() instanceof  TokenTypeLineComment);
+
+        token = tokens.next();
+        Assert.assertEquals("            ", token.getLexeme());
+        Assert.assertEquals(program.indexOf("            // ...on a \"BluetoothSocket\" type\n"), token.getStartIndex());
+        Assert.assertTrue(token.getType() instanceof  TokenTypeOther);
+
+        token = tokens.next();
+        Assert.assertEquals("// ...on a \"BluetoothSocket\" type\n", token.getLexeme());
+        Assert.assertEquals(program.indexOf("// ...on a \"BluetoothSocket\" type\n"), token.getStartIndex());
+        Assert.assertTrue(token.getType() instanceof  TokenTypeLineComment);
+
+        token = tokens.next();
+        Assert.assertEquals("            ", token.getLexeme());
+        Assert.assertEquals(program.indexOf("            /// BluetoothSocket\n"), token.getStartIndex());
+        Assert.assertTrue(token.getType() instanceof  TokenTypeOther);
+
+        token = tokens.next();
+        Assert.assertEquals("/// BluetoothSocket\n", token.getLexeme());
+        Assert.assertEquals(program.indexOf("/// BluetoothSocket\n"), token.getStartIndex());
+        Assert.assertTrue(token.getType() instanceof  TokenTypeLineComment);
+
+        token = tokens.next();
+        Assert.assertEquals("        } ", token.getLexeme());
+        Assert.assertEquals(program.indexOf("        } "), token.getStartIndex());
+        Assert.assertTrue(token.getType() instanceof  TokenTypeOther);
+
+        token = tokens.next();
+        Assert.assertEquals("// Synthesized code will replace this block\n", token.getLexeme());
+        Assert.assertEquals(program.indexOf("// Synthesized code will replace this block\n"), token.getStartIndex());
+        Assert.assertTrue(token.getType() instanceof  TokenTypeLineComment);
+
+        token = tokens.next();
+        Assert.assertEquals("    }   \n\n}\n", token.getLexeme());
+        Assert.assertEquals(program.indexOf("    }   \n\n}\n"), token.getStartIndex());
+        Assert.assertTrue(token.getType() instanceof  TokenTypeOther);
 
 
     }

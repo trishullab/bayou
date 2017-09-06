@@ -8,7 +8,7 @@ public class TokenTypeLineCommentTests
     @Test
     public void testMatch()
     {
-        boolean correct =  new TokenTypeLineComment().match(new TokenTypeCases<Boolean>()
+        boolean correct =  new TokenTypeLineComment().match(new TokenTypeCases<Boolean,RuntimeException>()
         {
             @Override
             public Boolean forLineComment(TokenTypeLineComment lineComment)
@@ -24,6 +24,12 @@ public class TokenTypeLineCommentTests
 
             @Override
             public Boolean forString(TokenTypeString string)
+            {
+                return false;
+            }
+
+            @Override
+            public Boolean forBlockComment(TokenTypeBlockComment blockComment)
             {
                 return false;
             }

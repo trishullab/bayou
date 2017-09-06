@@ -160,7 +160,16 @@ class ApiSynthesisStrategyRemoteTensorFlowAsts implements ApiSynthesisStrategy
 
         String combinedClassPath = _evidenceClasspath + File.pathSeparator + _androidJarPath.getAbsolutePath();
 
-        String rewrittenCode = rewriteEvidence(code);
+        String rewrittenCode = null;
+        try
+        {
+            rewrittenCode = rewriteEvidence(code);
+        }
+        catch (UnexpectedEndOfCharacters unexpectedEndOfCharacters)
+        {
+            _logger.error(unexpectedEndOfCharacters.getMessage(), unexpectedEndOfCharacters);
+            throw new ParseException("", unexpectedEndOfCharacters);
+        }
         _logger.trace("rewrittenCode:" + rewrittenCode);
 
         /*
@@ -218,13 +227,13 @@ class ApiSynthesisStrategyRemoteTensorFlowAsts implements ApiSynthesisStrategy
     }
 
     // n.b. static for testing without construction
-    static String rewriteEvidence(String code)
+    static String rewriteEvidence(String code) throws UnexpectedEndOfCharacters
     {
         StringBuilder newCode = new StringBuilder();
 
         for(Token token :  new CcllLexerDefault().lex(code))
         {
-            String transformedLexeme = token.getType().match(new TokenTypeCases<String>()
+            String transformedLexeme = token.getType().match(new TokenTypeCases<String, RuntimeException>()
             {
                 @Override
                 public String forLineComment(TokenTypeLineComment lineComment)
@@ -262,6 +271,12 @@ class ApiSynthesisStrategyRemoteTensorFlowAsts implements ApiSynthesisStrategy
 
                 @Override
                 public String forString(TokenTypeString string)
+                {
+                    return token.getLexeme();
+                }
+
+                @Override
+                public String forBlockComment(TokenTypeBlockComment blockComment)
                 {
                     return token.getLexeme();
                 }

@@ -1,12 +1,13 @@
 package edu.rice.cs.caper.bayou.application.api_synthesis_server;
 
+import edu.rice.cs.caper.bayou.core.lexer.ccll._1_0.UnexpectedEndOfCharacters;
 import org.junit.Assert;
 import org.junit.Test;
 
 public class ApiSynthesisStrategyRemoteTensorFlowAstsTests
 {
     @Test
-    public void rewriteEvidenceTest()
+    public void rewriteEvidenceTest() throws UnexpectedEndOfCharacters
     {
         String program =
                 "import android.bluetooth.BluetoothAdapter;\n" +
