@@ -27,9 +27,10 @@ public class CcllLexerDefault implements CcllLexer
         boolean isTokenCompleted();
 
         /**
-         * The type of the token currently under construction.
+         * The type of the token currently under construction or null if no token is under construction.
          */
         TokenType getTokenType();
+
     }
 
     private class LexerStateConstructingLineComment implements LexerState
@@ -68,7 +69,7 @@ public class CcllLexerDefault implements CcllLexer
         @Override
         public void newCurrentCharacter(Character current, Character next, Character nextNext)
         {
-            if(_prev != null && current != null && _prev == '*'  && current == '/') // */ end a line comment
+            if(_prev != null && current != null && _prev == '*'  && current == '/') // */ ends a block comment
                 _isTokenCompleted = true;
 
             _prev = current;
@@ -157,21 +158,38 @@ public class CcllLexerDefault implements CcllLexer
         }
     }
 
+    private class LexerStateEndOfCharacters implements LexerState
+    {
+        @Override
+        public void newCurrentCharacter(Character current, Character next, Character nextNext)
+        {
+            if(current != null)
+                throw new IllegalArgumentException("current may only be null");
+        }
+
+        @Override
+        public boolean isTokenCompleted()
+        {
+            return true;
+        }
+
+        @Override
+        public TokenType getTokenType()
+        {
+            return null;
+        }
+    }
+
     @Override
     public Iterable<Token> lex(Iterable<Character> chars) throws UnexpectedEndOfCharacters
     {
-        Iterator<Character> charElements = chars.iterator();
-
-        if(!charElements.hasNext())
-            return Collections.emptyList();
-
-        return lexHelp(charElements);
+        return lexHelp(chars.iterator());
     }
 
     private Iterable<Token> lexHelp(Iterator<Character> chars) throws UnexpectedEndOfCharacters
     {
         if(!chars.hasNext())
-            throw new IllegalArgumentException("chars must be non-empty");
+            return Collections.emptyList();
 
         LinkedList<Token> tokensToReturn = new LinkedList<>();
 
@@ -213,57 +231,8 @@ public class CcllLexerDefault implements CcllLexer
 
         }
 
-        state.newCurrentCharacter(null, null, null); // inform state of end of stream.
-
-        /*
-         * The only token type that can be legally concluded by end of stream is Other, so assert this is the case.
-         *
-         * Restated no non-Other token can not legally be under construction when EOF is reached.
-         */
-        state.getTokenType().match(new TokenTypeCases<Void, UnexpectedEndOfCharacters>()
-        {
-            @Override
-            public Void forLineComment(TokenTypeLineComment lineComment) throws UnexpectedEndOfCharacters
-            {
-                throw new UnexpectedEndOfCharacters(); // didn't finish line comment by EOF
-            }
-
-            @Override
-            public Void forOther(TokenTypeOther other)
-            {
-                return null; // EOF can terminate an Other token
-            }
-
-            @Override
-            public Void forString(TokenTypeString string) throws UnexpectedEndOfCharacters
-            {
-                throw new UnexpectedEndOfCharacters(); // didn't finish string by EOF
-            }
-
-            @Override
-            public Void forBlockComment(TokenTypeBlockComment blockComment)  throws UnexpectedEndOfCharacters
-            {
-                throw new UnexpectedEndOfCharacters(); // didn't finish block comment by EOF
-            }
-        });
-
-        // at this point we have certified an other token is under construction. However it may or may not be an
-        // "empty" token depending on whether the last character in the stream actually concluded a non-other token
-        // for example
-        //
-        //    "an entire one line program"
-        //
-        // will have state be LexerStateConstructingOther at this point even though the entire program is a single
-        // string token.  In this case lexemeAccum will be empty
-        //
-        // On the other hand
-        //
-        //   "token 1" token2
-        //
-        // will have state be LexerStateConstructingOther at this point but lexemeAccum will be non-empty.
-        // we need to put that token in the accumulation to return.
-        if(lexemeAccum.length() > 0)
-            tokensToReturn.add(Token.make(lexemeAccum.toString(), state.getTokenType(), lexemeAccumStartIndex));
+        if(state.getTokenType() != null) // is a token under construction when we ran out of characters?
+            throw new UnexpectedEndOfCharacters();
 
         return tokensToReturn;
     }
@@ -275,16 +244,16 @@ public class CcllLexerDefault implements CcllLexer
     private LexerState nextState(Character current, Character next)
     {
         if(current == null)
-            return new LexerStateConstructingOther(); // an other token may be of length 0
-
-        if(current == '/' && next == '/')
-            return new LexerStateConstructingLineComment();
-
-        if(current == '/' && next == '*')
-            return new LexerStateConstructingBlockComment();
+            return new LexerStateEndOfCharacters();
 
         if(current == '"')
             return new LexerStateConstructingString();
+
+        if(current == '/' && next != null && next == '/')
+            return new LexerStateConstructingLineComment();
+
+        if(current == '/' && next != null && next == '*')
+            return new LexerStateConstructingBlockComment();
 
         return new LexerStateConstructingOther();
     }
