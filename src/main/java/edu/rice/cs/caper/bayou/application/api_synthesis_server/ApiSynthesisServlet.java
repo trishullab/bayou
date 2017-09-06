@@ -15,7 +15,7 @@ limitations under the License.
 */
 package edu.rice.cs.caper.bayou.application.api_synthesis_server;
 
-import edu.rice.cs.caper.bayou.application.api_synthesis_server.synthesis_logging.SynthesisLogger;
+import edu.rice.cs.caper.bayou.application.api_synthesis_server.synthesis.*;
 import edu.rice.cs.caper.bayou.application.api_synthesis_server.synthesis_logging.SynthesisLoggerS3;
 import edu.rice.cs.caper.bayou.core.synthesizer.ParseException;
 import edu.rice.cs.caper.servlet.*;
@@ -33,7 +33,6 @@ import java.util.LinkedList;
 import java.util.UUID;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.function.Supplier;
 
 /**
  * A servlet for accepting api synthesis requests and returning the results produced by an alternate network endpoint.
@@ -65,11 +64,9 @@ public class ApiSynthesisServlet extends SizeConstrainedPostBodyServlet implemen
     /**
      * How requests should be fulfilled.
      */
-    private final ApiSynthesisStrategy _synthesisStrategy = ApiSynthesisStrategy.fromConfig();
-
+    private final ApiSynthesizer _synthesisRequestProcessor;
 
     private final String _synthesisLogBucketName = Configuration.SynthesisLogBucketName;
-
 
     /**
      * Public for reflective construction by Jetty.
@@ -77,6 +74,23 @@ public class ApiSynthesisServlet extends SizeConstrainedPostBodyServlet implemen
     public ApiSynthesisServlet()
     {
         super(API_SYNTH_MAX_REQUEST_BODY_SIZE_BYTES, false);
+
+        ApiSynthesizer synthesisStrategy;
+        if(Configuration.UseSynthesizeEchoMode)
+        {
+            synthesisStrategy =  new ApiSynthesizerEcho(Configuration.EchoModeDelayMs);
+        }
+        else
+        {
+            synthesisStrategy = new ApiSynthesizerRemoteTensorFlowAsts("localhost", 8084,
+                    Configuration.SynthesizeTimeoutMs,
+                    Configuration.EvidenceClasspath,
+                    Configuration.AndroidJarPath);
+        }
+
+        _synthesisRequestProcessor = new ApiSynthesizerRewriteEvidenceDecorator(synthesisStrategy);
+
+
         _logger.debug("exiting");
     }
 
@@ -107,7 +121,7 @@ public class ApiSynthesisServlet extends SizeConstrainedPostBodyServlet implemen
     }
 
     private void doPostHelp(HttpServletRequest req, HttpServletResponse resp, String body)
-            throws IOException, ApiSynthesisStrategy.SynthesiseException
+            throws IOException, SynthesiseException
     {
         _logger.debug("entering");
         _logger.trace("body:" + body);
@@ -222,11 +236,11 @@ public class ApiSynthesisServlet extends SizeConstrainedPostBodyServlet implemen
         try
         {
             if(sampleCount != null)
-                results = _synthesisStrategy.synthesise(code, maxProgamCount, sampleCount);
+                results = _synthesisRequestProcessor.synthesise(code, maxProgamCount, sampleCount);
             else
-                results = _synthesisStrategy.synthesise(code, maxProgamCount);
+                results = _synthesisRequestProcessor.synthesise(code, maxProgamCount);
         }
-        catch (ParseException e)
+        catch (SynthesiseException e)
         {
             JSONObject responseBody = new ErrorJsonResponse("parseException");
             responseBody.put("exceptionMessage", e.getMessage());

@@ -15,6 +15,7 @@ limitations under the License.
 */
 package edu.rice.cs.caper.bayou.application.api_synthesis_server;
 
+import edu.rice.cs.caper.bayou.application.api_synthesis_server.synthesis.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.eclipse.jetty.http.HttpStatus;
@@ -36,7 +37,7 @@ public class ApiSynthesisHealthCheckServlet extends HttpServlet
     /**
      * How requests should be fulfilled.
      */
-    private final ApiSynthesisStrategy _synthesisStrategy = ApiSynthesisStrategy.fromConfig();
+    private final ApiSynthesizer _synthesisRequestProcessor;
 
 
     /**
@@ -45,6 +46,20 @@ public class ApiSynthesisHealthCheckServlet extends HttpServlet
     public ApiSynthesisHealthCheckServlet()
     {
         _logger.debug("entering");
+        ApiSynthesizer synthesisStrategy;
+        if(Configuration.UseSynthesizeEchoMode)
+        {
+            synthesisStrategy =  new ApiSynthesizerEcho(Configuration.EchoModeDelayMs);
+        }
+        else
+        {
+            synthesisStrategy = new ApiSynthesizerRemoteTensorFlowAsts("localhost", 8084,
+                    Configuration.SynthesizeTimeoutMs,
+                    Configuration.EvidenceClasspath,
+                    Configuration.AndroidJarPath);
+        }
+
+        _synthesisRequestProcessor = new ApiSynthesizerRewriteEvidenceDecorator(synthesisStrategy);
         _logger.debug("exiting");
     }
 
@@ -70,7 +85,7 @@ public class ApiSynthesisHealthCheckServlet extends HttpServlet
                     "    }   \n" +
                     "}";
 
-            Iterable<String> results = _synthesisStrategy.synthesise(code, 1);
+            Iterable<String> results = _synthesisRequestProcessor.synthesise(code, 1);
 
             if (!results.iterator().hasNext())
             {

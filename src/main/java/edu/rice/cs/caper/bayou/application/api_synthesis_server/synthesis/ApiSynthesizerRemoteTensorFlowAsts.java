@@ -13,9 +13,8 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-package edu.rice.cs.caper.bayou.application.api_synthesis_server;
+package edu.rice.cs.caper.bayou.application.api_synthesis_server.synthesis;
 
-import edu.rice.cs.caper.bayou.core.lexer.ccll._1_0.*;
 import edu.rice.cs.caper.bayou.core.synthesizer.EvidenceExtractor;
 import edu.rice.cs.caper.bayou.core.synthesizer.ParseException;
 import edu.rice.cs.caper.bayou.core.synthesizer.Parser;
@@ -27,19 +26,18 @@ import org.json.JSONObject;
 import java.io.*;
 import java.net.Socket;
 import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
 import java.util.List;
 
 /**
  * A synthesis strategy that relies on a remote server that uses TensorFlow to create ASTs from extracted evidence.
  */
-class ApiSynthesisStrategyRemoteTensorFlowAsts implements ApiSynthesisStrategy
+public class ApiSynthesizerRemoteTensorFlowAsts implements ApiSynthesizer
 {
     /**
      * Place to send logging information.
      */
     private static final Logger _logger =
-            LogManager.getLogger(ApiSynthesisStrategyRemoteTensorFlowAsts.class.getName());
+            LogManager.getLogger(ApiSynthesizerRemoteTensorFlowAsts.class.getName());
 
     /**
      * The network name of the tensor flow host server.
@@ -76,8 +74,8 @@ class ApiSynthesisStrategyRemoteTensorFlowAsts implements ApiSynthesisStrategy
      *                          May not be null.
      * @param androidJarPath The path to android.jar. May not be null.
      */
-    ApiSynthesisStrategyRemoteTensorFlowAsts(String tensorFlowHost, int tensorFlowPort, int maxNetworkWaitTimeMs,
-                                             String evidenceClasspath, File androidJarPath)
+    public ApiSynthesizerRemoteTensorFlowAsts(String tensorFlowHost, int tensorFlowPort, int maxNetworkWaitTimeMs,
+                                              String evidenceClasspath, File androidJarPath)
     {
         _androidJarPath = androidJarPath;
         _logger.debug("entering");
@@ -134,18 +132,18 @@ class ApiSynthesisStrategyRemoteTensorFlowAsts implements ApiSynthesisStrategy
     }
 
     @Override
-    public Iterable<String> synthesise(String searchCode, int maxProgramCount) throws SynthesiseException, ParseException
+    public Iterable<String> synthesise(String searchCode, int maxProgramCount) throws SynthesiseException
     {
         return synthesiseHelp(searchCode, maxProgramCount, null);
     }
 
     @Override
-    public Iterable<String> synthesise(String searchCode, int maxProgramCount, int sampleCount) throws SynthesiseException, ParseException
+    public Iterable<String> synthesise(String searchCode, int maxProgramCount, int sampleCount) throws SynthesiseException
     {
         return synthesiseHelp(searchCode, maxProgramCount, sampleCount);
     }
 
-    private Iterable<String> synthesiseHelp(String code, int maxProgramCount, Integer sampleCount) throws SynthesiseException, ParseException
+    private Iterable<String> synthesiseHelp(String code, int maxProgramCount, Integer sampleCount) throws SynthesiseException
     {
         _logger.debug("entering");
 
@@ -160,28 +158,33 @@ class ApiSynthesisStrategyRemoteTensorFlowAsts implements ApiSynthesisStrategy
 
         String combinedClassPath = _evidenceClasspath + File.pathSeparator + _androidJarPath.getAbsolutePath();
 
-        String rewrittenCode = null;
-        try
-        {
-            rewrittenCode = rewriteEvidence(code);
-        }
-        catch (UnexpectedEndOfCharacters unexpectedEndOfCharacters)
-        {
-            _logger.error(unexpectedEndOfCharacters.getMessage(), unexpectedEndOfCharacters);
-            throw new ParseException("", unexpectedEndOfCharacters);
-        }
-        _logger.trace("rewrittenCode:" + rewrittenCode);
 
         /*
          * Parse the program
          */
-        Parser parser = new Parser(rewrittenCode, combinedClassPath);
-        parser.parse();
+        Parser parser = null;
+        try
+        {
+            parser = new Parser(code, combinedClassPath);
+            parser.parse();
+        }
+        catch (ParseException e)
+        {
+            throw new SynthesiseException(e);
+        }
 
         /*
          * Extract a description of the evidence in the search code that should guide AST results generation.
          */
-        String evidence = extractEvidence(new EvidenceExtractor(), parser);
+        String evidence = null;
+        try
+        {
+            evidence = extractEvidence(new EvidenceExtractor(), parser);
+        }
+        catch (ParseException e)
+        {
+            throw new SynthesiseException(e);
+        }
 
         /*
          * Contact the remote Python server and provide evidence to be fed to Tensor Flow to generate solution
@@ -226,67 +229,6 @@ class ApiSynthesisStrategyRemoteTensorFlowAsts implements ApiSynthesisStrategy
         return synthesizedPrograms;
     }
 
-    // n.b. static for testing without construction
-    static String rewriteEvidence(String code) throws UnexpectedEndOfCharacters
-    {
-        StringBuilder newCode = new StringBuilder();
-
-        for(Token token :  new CcllLexerDefault().lex(code))
-        {
-            String transformedLexeme = token.getType().match(new TokenTypeCases<String, RuntimeException>()
-            {
-                @Override
-                public String forLineComment(TokenTypeLineComment lineComment)
-                {
-                    String lexeme = token.getLexeme();
-
-                    if(!lexeme.startsWith("///") || !lexeme.contains(":"))
-                        return token.getLexeme();
-
-                    String uncommentedLexeme = lexeme.replace("///", "");
-
-                    String[] parts = uncommentedLexeme.split(":");
-
-                    if(parts.length !=2)
-                        return token.getLexeme();
-
-                    switch (parts[0].trim())
-                    {
-                        case "call":
-                            return "edu.rice.cs.caper.bayou.annotations.Evidence.apicalls(\"" +  parts[1].trim() + "\");\n";
-                        case "type":
-                            return "edu.rice.cs.caper.bayou.annotations.Evidence.types(\"" +  parts[1].trim() + "\");\n";
-                        case "context":
-                            return "edu.rice.cs.caper.bayou.annotations.Evidence.context(\"" +  parts[1].trim() + "\");\n";
-                        default:
-                    }       return token.getLexeme();
-
-                }
-
-                @Override
-                public String forOther(TokenTypeOther other)
-                {
-                    return token.getLexeme();
-                }
-
-                @Override
-                public String forString(TokenTypeString string)
-                {
-                    return token.getLexeme();
-                }
-
-                @Override
-                public String forBlockComment(TokenTypeBlockComment blockComment)
-                {
-                    return token.getLexeme();
-                }
-            });
-
-            newCode.append(transformedLexeme);
-        }
-
-        return newCode.toString();
-    }
 
     /**
      * Reads the first 4 bytes of inputStream and interprets them as a 32-bit big endian signed integer 'length'.
