@@ -11,6 +11,15 @@ public abstract class CcllLexerTests
     protected abstract CcllLexer makeLexer();
 
     @Test
+    public void testLexEmpty() throws UnexpectedEndOfCharacters
+    {
+        CcllLexer lexer = makeLexer();
+
+        Iterator<Token> tokens = lexer.lex("").iterator();
+        Assert.assertFalse(tokens.hasNext());
+    }
+
+    @Test
     public void testLexOther() throws UnexpectedEndOfCharacters
     {
         CcllLexer lexer = makeLexer();
@@ -93,6 +102,14 @@ public abstract class CcllLexerTests
         Assert.assertTrue(first.getType() instanceof TokenTypeString);
 
         Assert.assertFalse(tokens.hasNext());
+    }
+
+    @Test(expected = UnexpectedEndOfCharacters.class)
+    public void testLexStringUnterminated() throws UnexpectedEndOfCharacters
+    {
+        CcllLexer lexer = makeLexer();
+
+        Iterator<Token> tokens = lexer.lex("\" forget to close").iterator();
     }
 
     @Test
