@@ -1,13 +1,24 @@
 package edu.rice.cs.caper.bayou.application.api_synthesis_server.synthesis;
 
 
+import edu.rice.cs.caper.bayou.core.lexer.UnexpectedEndOfCharacters;
 import edu.rice.cs.caper.bayou.core.lexer.ccll._1_0.*;
-import edu.rice.cs.caper.bayou.core.synthesizer.ParseException;
+import edu.rice.cs.caper.bayou.core.parser.evidencel._1_0.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 public class ApiSynthesizerRewriteEvidenceDecorator implements ApiSynthesizer
 {
+    private static class UnknownType extends Throwable
+    {
+        public UnknownType(String typeIdent)
+        {
+        }
+    }
+
     /**
      * Place to send application logging information.
      */
@@ -42,10 +53,10 @@ public class ApiSynthesizerRewriteEvidenceDecorator implements ApiSynthesizer
         {
             rewrittenCode = rewriteEvidence(code);
         }
-        catch (UnexpectedEndOfCharacters unexpectedEndOfCharacters)
+        catch (UnexpectedEndOfCharacters | ParseException e)
         {
-            _logger.error(unexpectedEndOfCharacters.getMessage(), unexpectedEndOfCharacters);
-            throw new SynthesiseException(unexpectedEndOfCharacters);
+            _logger.error(e.getMessage(), e);
+            throw new SynthesiseException(e);
         }
         _logger.trace("rewrittenCode:" + rewrittenCode);
 
@@ -56,40 +67,21 @@ public class ApiSynthesizerRewriteEvidenceDecorator implements ApiSynthesizer
     }
 
     // n.b. static for testing without construction
-    static String rewriteEvidence(String code) throws UnexpectedEndOfCharacters
+    static String rewriteEvidence(String code) throws ParseException, UnexpectedEndOfCharacters
     {
         StringBuilder newCode = new StringBuilder();
 
-        for(Token token :  new CcllLexerDefault().lex(code))
+        for(Token token :  CcllLexer.makeDefault().lex(code))
         {
-            String transformedLexeme = token.getType().match(new TokenTypeCases<String, RuntimeException>()
+            String transformedLexeme = token.getType().match(new TokenTypeCases<String, ParseException>()
             {
                 @Override
-                public String forLineComment(TokenTypeLineComment lineComment)
+                public String forLineComment(TokenTypeLineComment lineComment) throws ParseException
                 {
-                    String lexeme = token.getLexeme();
-
-                    if(!lexeme.startsWith("///") || !lexeme.contains(":"))
+                    if(!token.getLexeme().startsWith("///"))
                         return token.getLexeme();
 
-                    String uncommentedLexeme = lexeme.replace("///", "");
-
-                    String[] parts = uncommentedLexeme.split(":");
-
-                    if(parts.length !=2)
-                        return token.getLexeme();
-
-                    switch (parts[0].trim())
-                    {
-                        case "call":
-                            return "edu.rice.cs.caper.bayou.annotations.Evidence.apicalls(\"" +  parts[1].trim() + "\");\n";
-                        case "type":
-                            return "edu.rice.cs.caper.bayou.annotations.Evidence.types(\"" +  parts[1].trim() + "\");\n";
-                        case "context":
-                            return "edu.rice.cs.caper.bayou.annotations.Evidence.context(\"" +  parts[1].trim() + "\");\n";
-                        default:
-                    }       return token.getLexeme();
-
+                    return makeEvidenceFromComment(token.getLexeme());
                 }
 
                 @Override
@@ -116,4 +108,78 @@ public class ApiSynthesizerRewriteEvidenceDecorator implements ApiSynthesizer
 
         return newCode.toString();
     }
+
+    private static String makeEvidenceFromComment(String tripleSlashComment) throws ParseException
+    {
+        if(!tripleSlashComment.startsWith("///"))
+            throw new IllegalArgumentException("tripleSlashComment must start with ///");
+
+        String evidence = tripleSlashComment.substring(3);
+        SourceUnitNode root = EvidenceLParser.makeDefault().parse(evidence);
+
+        if(root.getElements().isEmpty())
+            return tripleSlashComment;
+
+        StringBuilder rewriteAccum = new StringBuilder();
+        for(EvidenceElement element : root.getElements())
+        {
+            List<String> args =  element.getIdentifierList().getIdentifiers().stream()
+                                                            .map(IdentifierNode::getIdentifier)
+                                                            .collect(Collectors.toList());
+
+            String evidencePrefix;
+            try
+            {
+                evidencePrefix = determineEvidenceType(element);
+            }
+            catch (UnknownType unknownType)
+            {
+                return tripleSlashComment;
+            }
+
+            rewriteAccum.append(evidencePrefix);
+            rewriteAccum.append(String.join("\", \"",args));
+            rewriteAccum.append("\");");
+
+        }
+
+        rewriteAccum.append("\n");
+        return rewriteAccum.toString();
+
+    }
+
+    private static String determineEvidenceType(EvidenceElement element) throws UnknownType
+    {
+        return element.match(new EvidenceElementCases<String, UnknownType>()
+        {
+            final String _apiCallsPrefix = "edu.rice.cs.caper.bayou.annotations.Evidence.apicalls(\"";
+
+            @Override
+            public String forWithoutTypeIdent(EvidenceElementWithoutTypeIdentifierNode evidenceElement)
+            {
+                return _apiCallsPrefix;
+            }
+
+            @Override
+            public String forWithTypeIdent(EvidenceElementWithTypeIdentifierNode evidenceElement) throws UnknownType
+            {
+                String typeIdent = evidenceElement.getTypeIdentifier().getIdentifier();
+                switch (typeIdent)
+                {
+                    case "call":
+                    case "calls":
+                        return _apiCallsPrefix;
+                    case "type":
+                    case "types":
+                        return "edu.rice.cs.caper.bayou.annotations.Evidence.types(\"";
+                    case "context":
+                        return "edu.rice.cs.caper.bayou.annotations.Evidence.context(\"";
+                    default:
+                        throw new UnknownType(typeIdent);
+                }
+            }
+        });
+    }
+
+
 }

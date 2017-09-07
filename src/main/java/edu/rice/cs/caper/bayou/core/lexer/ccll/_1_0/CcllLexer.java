@@ -1,5 +1,7 @@
 package edu.rice.cs.caper.bayou.core.lexer.ccll._1_0;
 
+import edu.rice.cs.caper.bayou.core.lexer.UnexpectedEndOfCharacters;
+
 import java.util.Iterator;
 
 /**
@@ -35,5 +37,10 @@ public interface CcllLexer
         };
 
         return lex(iterable);
+    }
+
+    public static CcllLexer makeDefault()
+    {
+        return new CcllLexerDefault();
     }
 }

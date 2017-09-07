@@ -1,5 +1,7 @@
 package edu.rice.cs.caper.bayou.core.lexer.ccll._1_0;
 
+import edu.rice.cs.caper.bayou.core.lexer.UnexpectedEndOfCharacters;
+
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -7,7 +9,7 @@ import java.util.LinkedList;
 /**
  * A simple CcllLexer implementation.
  */
-public class CcllLexerDefault implements CcllLexer
+class CcllLexerDefault implements CcllLexer
 {
     /**
      * Defines the current state of the lexer. I.e. what type of token is currently under construction.

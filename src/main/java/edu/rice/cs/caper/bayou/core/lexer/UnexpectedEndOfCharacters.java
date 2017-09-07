@@ -1,4 +1,4 @@
-package edu.rice.cs.caper.bayou.core.lexer.ccll._1_0;
+package edu.rice.cs.caper.bayou.core.lexer;
 
 /**
  * Thrown during lexing to indicate that the provided characters were exhausted before token construction was completed

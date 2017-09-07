@@ -1,5 +1,6 @@
 package edu.rice.cs.caper.bayou.core.lexer.ccll._1_0;
 
+import edu.rice.cs.caper.bayou.core.lexer.UnexpectedEndOfCharacters;
 import org.junit.Assert;
 import org.junit.Test;
 
