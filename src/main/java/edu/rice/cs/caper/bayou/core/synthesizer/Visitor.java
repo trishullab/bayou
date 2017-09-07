@@ -34,18 +34,18 @@ public class Visitor extends ASTVisitor {
     Block evidenceBlock;
     List<Variable> currentScope;
 
-    private static final Map<String,Class> primitiveToClass;
+    static final Map<PrimitiveType.Code,Class> primitiveToClass;
     static {
-        Map<String,Class> map = new HashMap<>();
-        map.put("int", int.class);
-        map.put("long", long.class);
-        map.put("double", double.class);
-        map.put("float", float.class);
-        map.put("boolean", boolean.class);
-        map.put("char", char.class);
-        map.put("byte", byte.class);
-        map.put("void", void.class);
-        map.put("short", short.class);
+        Map<PrimitiveType.Code,Class> map = new HashMap<>();
+        map.put(PrimitiveType.INT, int.class);
+        map.put(PrimitiveType.LONG, long.class);
+        map.put(PrimitiveType.DOUBLE, double.class);
+        map.put(PrimitiveType.FLOAT, float.class);
+        map.put(PrimitiveType.BOOLEAN, boolean.class);
+        map.put(PrimitiveType.CHAR, char.class);
+        map.put(PrimitiveType.BYTE, byte.class);
+        map.put(PrimitiveType.VOID, void.class);
+        map.put(PrimitiveType.SHORT, short.class);
         primitiveToClass = Collections.unmodifiableMap(map);
     }
 
@@ -140,10 +140,14 @@ public class Visitor extends ASTVisitor {
                 VariableDeclarationFragment varDeclFrag = ast.newVariableDeclarationFragment();
                 varDeclFrag.setName(ast.newSimpleName(var.name));
                 VariableDeclarationStatement varDeclStmt = ast.newVariableDeclarationStatement(varDeclFrag);
-                if (var.type.isPrimitive())
-                    varDeclStmt.setType(ast.newPrimitiveType(PrimitiveType.toCode(var.type.getSimpleName())));
-                else
-                    varDeclStmt.setType(ast.newSimpleType(ast.newSimpleName(var.type.getSimpleName())));
+                if (var.type.isPrimitiveType())
+                    varDeclStmt.setType(var.type);
+                else {
+                    Name name = ((SimpleType) var.type).getName();
+                    String simpleName = name.isSimpleName()? ((SimpleName) name).getIdentifier()
+                            : ((QualifiedName) name).getName().getIdentifier();
+                    varDeclStmt.setType(ast.newSimpleType(ast.newSimpleName(simpleName)));
+                }
                 body.statements().add(0, varDeclStmt);
             }
         }
@@ -177,24 +181,7 @@ public class Visitor extends ASTVisitor {
         /* add variables in the formal parameters */
         for (Object o : method.parameters()) {
             SingleVariableDeclaration param = (SingleVariableDeclaration) o;
-            Type t = param.getType();
-            Class type;
-
-            if (t.isSimpleType()) {
-                ITypeBinding binding = t.resolveBinding();
-                if (binding == null)
-                    continue;
-                try {
-                    type = Environment.getClass(binding.getQualifiedName());
-                } catch (ClassNotFoundException  e) {
-                    throw new SynthesisException(SynthesisException.ClassNotFoundInLoader);
-                }
-            }
-            else if (t.isPrimitiveType())
-                type = primitiveToClass.get(((PrimitiveType) t).getPrimitiveTypeCode().toString());
-            else continue;
-
-            Variable v = new Variable(param.getName().getIdentifier(), type);
+            Variable v = new Variable(param.getName().getIdentifier(), param.getType());
             currentScope.add(v);
         }
 
@@ -205,26 +192,9 @@ public class Visitor extends ASTVisitor {
             if (! (stmt instanceof VariableDeclarationStatement))
                 break; // stop at the first non-variable declaration
             VariableDeclarationStatement varDecl = (VariableDeclarationStatement) stmt;
-            Type t = varDecl.getType();
-            Class type;
-
-            if (t.isSimpleType()) {
-                ITypeBinding binding = t.resolveBinding();
-                if (binding == null)
-                    continue;
-                try {
-                    type = Environment.getClass(binding.getQualifiedName());
-                } catch (ClassNotFoundException  e) {
-                    throw new SynthesisException(SynthesisException.ClassNotFoundInLoader);
-                }
-            }
-            else if (t.isPrimitiveType())
-                type = primitiveToClass.get(((PrimitiveType) t).getPrimitiveTypeCode().toString());
-            else continue;
-
             for (Object f : varDecl.fragments()) {
                 VariableDeclarationFragment frag = (VariableDeclarationFragment) f;
-                Variable v = new Variable(frag.getName().getIdentifier(), type);
+                Variable v = new Variable(frag.getName().getIdentifier(), varDecl.getType());
                 currentScope.add(v);
             }
         }

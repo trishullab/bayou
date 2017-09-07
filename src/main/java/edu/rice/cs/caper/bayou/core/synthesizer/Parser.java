@@ -1,5 +1,6 @@
 package edu.rice.cs.caper.bayou.core.synthesizer;
 
+import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.core.compiler.IProblem;
 import org.eclipse.jdt.core.dom.AST;
 import org.eclipse.jdt.core.dom.ASTParser;
@@ -11,6 +12,7 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -49,6 +51,9 @@ public class Parser {
     public void parse() throws ParseException {
         ASTParser parser = ASTParser.newParser(AST.JLS8);
         parser.setSource(source.toCharArray());
+        Map<String, String> options = JavaCore.getOptions();
+        options.put("org.eclipse.jdt.core.compiler.source", "1.8");
+        parser.setCompilerOptions(options);
         parser.setKind(ASTParser.K_COMPILATION_UNIT);
         parser.setUnitName("Program.java");
         parser.setEnvironment(new String[] { classpath != null? classpath : "" },

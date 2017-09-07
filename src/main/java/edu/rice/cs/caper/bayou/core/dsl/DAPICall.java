@@ -272,7 +272,6 @@ public class DAPICall extends DASTNode
                     name = s;
                     break;
                 }
-            System.out.println(name);
             if (name != null && name.replaceAll("\\$", ".").equals(erasedName))
                 return m;
         }

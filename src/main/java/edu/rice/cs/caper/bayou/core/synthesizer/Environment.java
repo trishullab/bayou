@@ -15,8 +15,7 @@ limitations under the License.
 */
 package edu.rice.cs.caper.bayou.core.synthesizer;
 
-import org.eclipse.jdt.core.dom.AST;
-import org.eclipse.jdt.core.dom.Expression;
+import org.eclipse.jdt.core.dom.*;
 
 import java.util.*;
 
@@ -69,7 +68,13 @@ public class Environment {
             prettyNameCounts.put(name, 0);
 
         /* add variable to scope */
-        Variable var = new Variable(name, type);
+        Type t;
+        if (type.isPrimitive())
+            t = ast.newPrimitiveType(PrimitiveType.toCode(type.getName()));
+        else // TODO: handle generic classes
+            t = ast.newSimpleType(ast.newName(type.getCanonicalName()));
+
+        Variable var = new Variable(name, t);
         mu_scope.add(var);
 
         /* add type to imports */
@@ -79,7 +84,12 @@ public class Environment {
     }
 
     public Variable addScopedVariable(String name, Class type) {
-        Variable var = new Variable(name, type);
+        Type t;
+        if (type.isPrimitive())
+            t = ast.newPrimitiveType(PrimitiveType.toCode(type.getName()));
+        else // TODO: handle generic classes
+            t = ast.newSimpleType(ast.newSimpleName(type.getSimpleName()));
+        Variable var = new Variable(name, t);
         mu_scope.add(var);
         return var;
     }
