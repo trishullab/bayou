@@ -32,6 +32,7 @@ public class SynthesisException extends RuntimeException {
     public static final int TypeNotFoundDuringSearch = 1007;
     public static final int MethodOrConstructorNotFound = 1008;
     public static final int GenericTypeVariableMismatch = 1009;
+    public static final int InvalidKindOfType = 1010;
 
     private static final Map<Integer,String> toMessage;
     static {
@@ -56,6 +57,8 @@ public class SynthesisException extends RuntimeException {
             "Method or constructor not found in class.");
         _toMessage.put(GenericTypeVariableMismatch,
             "Generic type variable name mismatched.");
+        _toMessage.put(InvalidKindOfType,
+            "Invalid kind of type.");
         toMessage = Collections.unmodifiableMap(_toMessage);
     }
 

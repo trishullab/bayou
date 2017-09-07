@@ -54,7 +54,7 @@ public class Enumerator {
         }
 
         Class getCurrentType() {
-            return methods.isEmpty()? var.getType() : methods.get(methods.size()-1).getReturnType();
+            return methods.isEmpty()? var.getTypeAsClass() : methods.get(methods.size()-1).getReturnType();
         }
 
         int structCost() {
@@ -121,7 +121,7 @@ public class Enumerator {
         toSearch.addAll(env.mu_scope);
         sortVariablesByCost(toSearch);
         for (Variable v : toSearch)
-            if (targetType.isAssignableFrom(v.getType())) {
+            if (targetType.isAssignableFrom(v.getTypeAsClass())) {
                 expr = ast.newSimpleName(v.getName());
                 v.addRefCount();
                 break;
