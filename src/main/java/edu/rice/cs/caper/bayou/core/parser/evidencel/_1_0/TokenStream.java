@@ -39,7 +39,7 @@ class TokenStream
         else
         {
             _next = tokens.next();
-            pop(); // moves _next to _head and reads the next token to _next
+            pop(false); // moves _next to _head and reads the next token to _next
         }
     }
 
@@ -50,7 +50,13 @@ class TokenStream
      */
     Token pop()
     {
-        if(_head == null)
+      return pop(true);
+    }
+
+    //  returns and removes the next token in the stream
+    private Token pop(boolean performHeadNullCheck)
+    {
+        if(performHeadNullCheck && _head == null)
             throw new IllegalStateException();
 
         Token toReturn = _head;
