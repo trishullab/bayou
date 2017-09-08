@@ -1,0 +1,19 @@
+(***************************
+ *                         *
+ * Ccll 1.0 Grammar        *
+ *                         *
+ * (EBNF format)           *
+ *                         *
+ ***************************)
+
+(* Note: whitespace is significant in this language. *)
+
+<source-unit> ::= { LINE_COMMENT | BLOCK_COMMENT | STRING | OTHER } ;
+
+LINE_COMMENT ::= ? '//' and all following characters until and including newline ? ;
+
+BLOCK_COMMENT ::= ? '/*' and all following characters until and including '*/' ? ;
+
+STRING ::= ? '"' and all following characters until and including '"' unless preceded by '\' ? ;
+
+OTHER ::= ? any sequence of characters not fitting LINE_COMMENT, BLOCK_COMMENT, or STRING ? ;
