@@ -6,6 +6,7 @@ public interface TypeIdentifierNode
 
     static TypeIdentifierNode make(String identifier)
     {
+        //noinspection Convert2Lambda reduces readability
         return new TypeIdentifierNode()
         {
             @Override

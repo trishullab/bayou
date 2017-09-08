@@ -1,0 +1,33 @@
+(***************************
+ *                         *
+ * EvidenceL 1.0 Grammar   *
+ *                         *
+ * (EBNF format)           *
+ *                         *
+ ***************************)
+
+(* Example:
+
+call: read
+
+call: open, close
+
+dispose17()
+
+*)
+
+(* Note: white-space characters act as delimiters but are ignored by the grammar. *)
+
+<source-unit> ::= { <evidence-element> } ;
+
+<evidence-element> ::= <evidence-element-with-type-identifier> | <evidence-element-without-type-identifier> ;
+
+<evidence-element-with-type-identifier> ::= <type-identifier> | <identifier-list>;
+
+<evidence-element-without-type-identifier> ::= <identifier-list>;
+
+<type-identifier> ::= IDENTIFIER ":" ;
+
+<identifier-list> ::=  IDENTIFIER { "," IDENTIFIER } ;
+
+IDENTIFIER ::= ? any non-white-space, non-colon, non-comma character ? ;

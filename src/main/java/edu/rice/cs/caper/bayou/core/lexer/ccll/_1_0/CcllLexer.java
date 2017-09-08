@@ -39,7 +39,11 @@ public interface CcllLexer
         return lex(iterable);
     }
 
-    public static CcllLexer makeDefault()
+
+    /**
+     * @return a new CcllLexer instance.
+     */
+    static CcllLexer makeDefault()
     {
         return new CcllLexerDefault();
     }

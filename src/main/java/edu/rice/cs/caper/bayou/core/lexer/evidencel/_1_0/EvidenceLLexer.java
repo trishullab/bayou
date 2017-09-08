@@ -1,6 +1,5 @@
 package edu.rice.cs.caper.bayou.core.lexer.evidencel._1_0;
 
-
 import java.util.Iterator;
 
 public interface EvidenceLLexer

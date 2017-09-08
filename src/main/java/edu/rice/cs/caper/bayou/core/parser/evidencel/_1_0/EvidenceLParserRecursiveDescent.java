@@ -6,6 +6,9 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedList;
 
+/**
+ * A recursive descent implementation of EvidenceLParser.
+ */
 public class EvidenceLParserRecursiveDescent implements EvidenceLParser
 {
     @Override
@@ -14,6 +17,7 @@ public class EvidenceLParserRecursiveDescent implements EvidenceLParser
         return parse(new TokenStream(tokens.iterator()));
     }
 
+    // consumes tokens from tokens to create a SourceUnitNode
     private SourceUnitNode parse(TokenStream tokens) throws ParseException
     {
         if(tokens.isEmpty())
@@ -29,6 +33,7 @@ public class EvidenceLParserRecursiveDescent implements EvidenceLParser
         return SourceUnitNode.make(elements);
     }
 
+    // consumes tokens from tokens to create a EvidenceElement
     private EvidenceElement makeEvidenceElement(TokenStream tokens) throws ParseException
     {
         if(isAtStartOfTypeIdentifier(tokens))
@@ -41,13 +46,17 @@ public class EvidenceLParserRecursiveDescent implements EvidenceLParser
         }
     }
 
-    private EvidenceElement makeEvidenceElementWithoutTypeIdentifier(TokenStream tokens) throws ParseException
+    // consumes tokens from tokens to create an EvidenceElementWithoutTypeIdentifierNode
+    private EvidenceElementWithoutTypeIdentifierNode makeEvidenceElementWithoutTypeIdentifier(TokenStream tokens)
+            throws ParseException
     {
         IdentifierListNode list = makeIdentifierList(tokens);
         return EvidenceElementWithoutTypeIdentifierNode.make(list);
     }
 
-    private EvidenceElementWithTypeIdentifierNode makeEvidenceElementWithTypeIdentifier(TokenStream tokens) throws ParseException
+    // consumes tokens from tokens to create an EvidenceElementWithTypeIdentifierNode
+    private EvidenceElementWithTypeIdentifierNode makeEvidenceElementWithTypeIdentifier(TokenStream tokens)
+            throws ParseException
     {
         TypeIdentifierNode typeIdentifier = makeTypeIdentifier(tokens);
         IdentifierListNode list = makeIdentifierList(tokens);
@@ -56,6 +65,7 @@ public class EvidenceLParserRecursiveDescent implements EvidenceLParser
 
     }
 
+    // consumes tokens from tokens to create an IdentifierListNode
     private IdentifierListNode makeIdentifierList(TokenStream tokens) throws ParseException
     {
         if(tokens.isEmpty())
@@ -64,7 +74,7 @@ public class EvidenceLParserRecursiveDescent implements EvidenceLParser
         ArrayList<IdentifierNode> idents = new ArrayList<>();
         idents.add(makeIdentifierNode(tokens));
 
-        while(!tokens.isEmpty() && isComma(tokens.peek()))
+        while(!tokens.isEmpty() && tokens.peek().getType() instanceof TokenTypeComma)
         {
             tokens.pop();
             idents.add(makeIdentifierNode(tokens));
@@ -74,11 +84,7 @@ public class EvidenceLParserRecursiveDescent implements EvidenceLParser
 
     }
 
-    private boolean isComma(Token token)
-    {
-        return token.getType() instanceof TokenTypeComma;
-    }
-
+    // consumes tokens from tokens to create an IdentifierNode
     private IdentifierNode makeIdentifierNode(TokenStream tokens) throws UnexpectedEndOfTokens, UnexpectedTokenException
     {
         if(tokens.isEmpty())
@@ -108,6 +114,7 @@ public class EvidenceLParserRecursiveDescent implements EvidenceLParser
         });
     }
 
+    // consumes tokens from tokens to create a TypeIdentifierNode
     private TypeIdentifierNode makeTypeIdentifier(TokenStream tokens) throws UnexpectedEndOfTokens, UnexpectedTokenException
     {
         if(tokens.isEmpty())
@@ -124,7 +131,8 @@ public class EvidenceLParserRecursiveDescent implements EvidenceLParser
                 return second.getType().match(new TokenTypeCases<TypeIdentifierNode, UnexpectedTokenException>()
                 {
                     @Override
-                    public TypeIdentifierNode forIdentifier(TokenTypeIdentifier identifier) throws UnexpectedTokenException
+                    public TypeIdentifierNode forIdentifier(TokenTypeIdentifier identifier)
+                            throws UnexpectedTokenException
                     {
                         throw new UnexpectedTokenException(second);
                     }
@@ -157,25 +165,47 @@ public class EvidenceLParserRecursiveDescent implements EvidenceLParser
         });
     }
 
+    // tests whether at least two tokens remain and the next two are TokenTypeIdentifier TokenTypeColon
     private boolean isAtStartOfTypeIdentifier(TokenStream tokens)
     {
-        return tokens.hasNext() &&
-               tokens.lookAhead().getType().match(new TokenTypeCases<Boolean, RuntimeException>()
+        if(!tokens.hasNext()) // need two tokens to make a type ident
+            return  false;
+
+        return tokens.peek().getType().match(new TokenTypeCases<Boolean, RuntimeException>()
         {
             @Override
-            public Boolean forIdentifier(TokenTypeIdentifier identifier) throws RuntimeException
+            public Boolean forIdentifier(TokenTypeIdentifier identifier)
+            {
+                return tokens.lookAhead().getType().match(new TokenTypeCases<Boolean, RuntimeException>()
+                        {
+                            @Override
+                            public Boolean forIdentifier(TokenTypeIdentifier identifier)
+                            {
+                                return false;
+                            }
+
+                            @Override
+                            public Boolean forColon(TokenTypeColon colon)
+                            {
+                                return true;
+                            }
+
+                            @Override
+                            public Boolean forComma(TokenTypeComma comma)
+                            {
+                                return false;
+                            }
+                        });
+            }
+
+            @Override
+            public Boolean forColon(TokenTypeColon colon)
             {
                 return false;
             }
 
             @Override
-            public Boolean forColon(TokenTypeColon colon) throws RuntimeException
-            {
-                return true;
-            }
-
-            @Override
-            public Boolean forComma(TokenTypeComma comma) throws RuntimeException
+            public Boolean forComma(TokenTypeComma comma)
             {
                 return false;
             }
