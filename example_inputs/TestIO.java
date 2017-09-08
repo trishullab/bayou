@@ -23,8 +23,7 @@ public class TestIO {
     // string argument given
     void read(String file) {
         {
-            /// call:readLine
-            /// context:String
+            /// call:readLine context:String
         }
     }   
     */
@@ -35,8 +34,7 @@ public class TestIO {
     void readWithErrorHandling() {
         String file;
         {
-            Evidence.apicalls("readLine", "printStackTrace", "close");
-            Evidence.context("String");
+            /// calls: readLine, printStackTrace, close context: String
         }
     }   
     */

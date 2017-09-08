@@ -17,9 +17,9 @@ public class TestDialog {
 
         { // Provide evidence within a separate block
             // Code should call "setTitle" and "setMessage"...
-            Evidence.apicalls("setTitle", "setMessage");
+            /// calls: setTitle, setMessage
             // ...on an "AlertDialog" type
-            Evidence.types("AlertDialog");
+            /// types: AlertDialog
         } // Synthesized code will replace this block
     }   
 
