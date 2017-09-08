@@ -15,10 +15,7 @@ limitations under the License.
 */
 package edu.rice.cs.caper.bayou.core.synthesizer;
 
-import org.eclipse.jdt.core.dom.ITypeBinding;
-import org.eclipse.jdt.core.dom.PrimitiveType;
-import org.eclipse.jdt.core.dom.SimpleType;
-import org.eclipse.jdt.core.dom.Type;
+import org.eclipse.jdt.core.dom.*;
 
 public class Variable {
 
@@ -35,20 +32,37 @@ public class Variable {
         ITypeBinding binding = type.resolveBinding();
         if (type.isPrimitiveType())
             this.clazz = Visitor.primitiveToClass.get(((PrimitiveType) type).getPrimitiveTypeCode());
-        else if (binding != null) {
-            try {
-                this.clazz = Environment.getClass(binding.getQualifiedName());
-            } catch (ClassNotFoundException e) {
-                throw new SynthesisException(SynthesisException.ClassNotFoundInLoader);
-            }
-        }
         else if (type.isSimpleType()) {
-            try {
-                String t = (((SimpleType) type).getName()).getFullyQualifiedName();
-                this.clazz = Environment.getClass(t);
-            } catch (ClassNotFoundException e) {
-                throw new SynthesisException(SynthesisException.ClassNotFoundInLoader);
-            }
+            if (binding != null)
+                try {
+                    this.clazz = Environment.getClass(binding.getQualifiedName());
+                } catch (ClassNotFoundException e) {
+                    throw new SynthesisException(SynthesisException.ClassNotFoundInLoader);
+                }
+            else
+                try {
+                    String t = (((SimpleType) type).getName()).getFullyQualifiedName();
+                    this.clazz = Environment.getClass(t);
+                } catch (ClassNotFoundException e) {
+                    throw new SynthesisException(SynthesisException.ClassNotFoundInLoader);
+                }
+        }
+        else if (type.isParameterizedType()) {
+            if (binding != null)
+                try {
+                    ITypeBinding erased = binding.getErasure();
+                    this.clazz = Environment.getClass(erased.getQualifiedName());
+                } catch (ClassNotFoundException e) {
+                    throw new SynthesisException(SynthesisException.ClassNotFoundInLoader);
+                }
+            else
+                try {
+                    Type baseType = ((ParameterizedType) type).getType();
+                    String t = (((SimpleType) baseType).getName()).getFullyQualifiedName();
+                    this.clazz = Environment.getClass(t);
+                } catch (ClassNotFoundException e) {
+                    throw new SynthesisException(SynthesisException.ClassNotFoundInLoader);
+                }
         }
         else // TODO: support generic types (isParameterizedType())
             throw new SynthesisException(SynthesisException.InvalidKindOfType);
