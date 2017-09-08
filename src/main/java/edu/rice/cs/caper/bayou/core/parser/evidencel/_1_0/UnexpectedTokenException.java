@@ -13,6 +13,7 @@ public class UnexpectedTokenException extends ParseException
 
     public UnexpectedTokenException(Token offendingToken)
     {
+        super("Unexpected token " + offendingToken.getLexeme());
         OffendingToken = offendingToken;
     }
 }

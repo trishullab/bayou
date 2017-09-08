@@ -14,8 +14,11 @@ public class ApiSynthesizerRewriteEvidenceDecorator implements ApiSynthesizer
 {
     private static class UnknownType extends Throwable
     {
+        final String Type;
+
         public UnknownType(String typeIdent)
         {
+            Type = typeIdent;
         }
     }
 
@@ -134,7 +137,7 @@ public class ApiSynthesizerRewriteEvidenceDecorator implements ApiSynthesizer
             }
             catch (UnknownType unknownType)
             {
-                return tripleSlashComment;
+                throw new ParseException("unknown type "  + unknownType.Type);
             }
 
             rewriteAccum.append(evidencePrefix);
