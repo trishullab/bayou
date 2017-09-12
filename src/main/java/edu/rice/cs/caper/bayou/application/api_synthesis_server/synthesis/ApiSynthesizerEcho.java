@@ -15,14 +15,15 @@ limitations under the License.
 */
 package edu.rice.cs.caper.bayou.application.api_synthesis_server.synthesis;
 
-import edu.rice.cs.caper.bayou.core.synthesizer.ParseException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.util.Collections;
 
 /**
- * Synthesizes by returning the given searchCode after some construction figured simulated latency.
+ * Synthesizes by returning the given code exactly after some construction figured simulated latency.
+ *
+ * Useful for debugging. Not a legitimate Synthesizer.
  */
 public class ApiSynthesizerEcho implements ApiSynthesizer
 {
@@ -53,7 +54,7 @@ public class ApiSynthesizerEcho implements ApiSynthesizer
     }
 
     @Override
-    public Iterable<String> synthesise(String searchCode, int maxProgramCount) throws SynthesiseException
+    public Iterable<String> synthesise(String code, int maxProgramCount) throws SynthesiseException
     {
         _logger.debug("entering");
 
@@ -71,7 +72,7 @@ public class ApiSynthesizerEcho implements ApiSynthesizer
         }
 
         _logger.debug("exiting");
-        return Collections.singletonList(searchCode);
+        return Collections.singletonList(code);
     }
 
     @Override

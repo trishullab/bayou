@@ -138,12 +138,15 @@ public class ApiSynthesizerRemoteTensorFlowAsts implements ApiSynthesizer
     }
 
     @Override
-    public Iterable<String> synthesise(String searchCode, int maxProgramCount, int sampleCount) throws SynthesiseException
+    public Iterable<String> synthesise(String searchCode, int maxProgramCount, int sampleCount)
+            throws SynthesiseException
     {
         return synthesiseHelp(searchCode, maxProgramCount, sampleCount);
     }
 
-    private Iterable<String> synthesiseHelp(String code, int maxProgramCount, Integer sampleCount) throws SynthesiseException
+    // sampleCount of null means don't send a sampleCount key in the request message.  Means use default sample count.
+    private Iterable<String> synthesiseHelp(String code, int maxProgramCount, Integer sampleCount)
+            throws SynthesiseException
     {
         _logger.debug("entering");
 
@@ -158,11 +161,10 @@ public class ApiSynthesizerRemoteTensorFlowAsts implements ApiSynthesizer
 
         String combinedClassPath = _evidenceClasspath + File.pathSeparator + _androidJarPath.getAbsolutePath();
 
-
         /*
-         * Parse the program
+         * Parse the program.
          */
-        Parser parser = null;
+        Parser parser;
         try
         {
             parser = new Parser(code, combinedClassPath);
@@ -176,7 +178,7 @@ public class ApiSynthesizerRemoteTensorFlowAsts implements ApiSynthesizer
         /*
          * Extract a description of the evidence in the search code that should guide AST results generation.
          */
-        String evidence = null;
+        String evidence;
         try
         {
             evidence = extractEvidence(new EvidenceExtractor(), parser);
@@ -219,8 +221,7 @@ public class ApiSynthesizerRemoteTensorFlowAsts implements ApiSynthesizer
         List<String> synthesizedPrograms;
         synthesizedPrograms = new Synthesizer().execute(parser, astsJson);
 
-        // unsure if execute always returns n output for n ast input.
-        if(synthesizedPrograms.size() > maxProgramCount)
+        if(synthesizedPrograms.size() > maxProgramCount) // unsure if execute always returns n output for n ast inputs.
             synthesizedPrograms = synthesizedPrograms.subList(0, maxProgramCount);
 
         _logger.trace("synthesizedPrograms: " + synthesizedPrograms);
