@@ -58,6 +58,9 @@ public class ApiSynthesizerRewriteEvidenceDecorator implements ApiSynthesizer
      */
     public ApiSynthesizerRewriteEvidenceDecorator(ApiSynthesizer synthesisStrategy)
     {
+        if(synthesisStrategy == null)
+            throw new NullPointerException("synthesisStrategy");
+
         _synthesizer = synthesisStrategy;
     }
 
@@ -149,7 +152,7 @@ public class ApiSynthesizerRewriteEvidenceDecorator implements ApiSynthesizer
 
     // attempt to determine the corresponding edu.rice.cs.caper.bayou.annotations.Evidence call from the
     // /// short hand notation.
-    private static String makeEvidenceFromComment(String tripleSlashComment) throws ParseException
+    static String makeEvidenceFromComment(String tripleSlashComment) throws ParseException
     {
         if(!tripleSlashComment.startsWith("///"))
             throw new IllegalArgumentException("tripleSlashComment must start with ///");

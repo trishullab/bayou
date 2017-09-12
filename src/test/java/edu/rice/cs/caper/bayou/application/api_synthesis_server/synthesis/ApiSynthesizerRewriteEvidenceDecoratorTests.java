@@ -5,8 +5,67 @@ import edu.rice.cs.caper.bayou.core.parser.evidencel._1_0.ParseException;
 import org.junit.Assert;
 import org.junit.Test;
 
+import java.util.Arrays;
+import java.util.Collections;
+
 public class ApiSynthesizerRewriteEvidenceDecoratorTests
 {
+    class ApiSynthesizerJustReturn implements ApiSynthesizer
+    {
+
+        @Override
+        public Iterable<String> synthesise(String code, int maxProgramCount) throws SynthesiseException
+        {
+            return Collections.singletonList(code);
+        }
+
+        @Override
+        public Iterable<String> synthesise(String code, int maxProgramCount, int sampleCount) throws SynthesiseException
+        {
+            return Collections.singletonList(code);
+        }
+    }
+
+    @Test(expected = NullPointerException.class)
+    public void testConstruction()
+    {
+        new ApiSynthesizerRewriteEvidenceDecorator(null);
+    }
+
+    @Test
+    public void testSynthesize1() throws SynthesiseException
+    {
+        testSynthesizeHelp("nothing", "nothing");
+    }
+
+    @Test
+    public void testSynthesize2() throws SynthesiseException
+    {
+        String program = "preable /// foo\n afterword";
+        String correct = "preable edu.rice.cs.caper.bayou.annotations.Evidence.apicalls(\"foo\");\n afterword";
+
+        testSynthesizeHelp(program, correct);
+    }
+
+    @Test(expected = SynthesiseException.class)
+    public void testSynthesizeNoIdent() throws SynthesiseException
+    {
+        ApiSynthesizerJustReturn inner = new ApiSynthesizerJustReturn();
+        new ApiSynthesizerRewriteEvidenceDecorator(inner).synthesise("/// dog,", 1).iterator().next();
+    }
+
+    private void testSynthesizeHelp(String program, String correct) throws SynthesiseException
+    {
+        ApiSynthesizerJustReturn inner = new ApiSynthesizerJustReturn();
+
+        String result = new ApiSynthesizerRewriteEvidenceDecorator(inner).synthesise(program, 1).iterator().next();
+        Assert.assertEquals(correct, result);
+
+        result = new ApiSynthesizerRewriteEvidenceDecorator(inner).synthesise(program, 1, 1).iterator().next();
+        Assert.assertEquals(correct, result);
+    }
+
+
     @Test
     public void rewriteEvidenceBluetooth() throws UnexpectedEndOfCharacters, ParseException
     {
@@ -466,4 +525,94 @@ public class ApiSynthesizerRewriteEvidenceDecoratorTests
 
         Assert.assertEquals(correct, result);
     }
+
+    @Test
+    public void testMakeEvidenceFromCommentCall() throws ParseException
+    {
+        String result = ApiSynthesizerRewriteEvidenceDecorator.makeEvidenceFromComment("/// call: foo");
+
+        Assert.assertEquals("edu.rice.cs.caper.bayou.annotations.Evidence.apicalls(\"foo\");\n", result);
+    }
+
+    @Test
+    public void testMakeEvidenceFromCommentCalls1() throws ParseException
+    {
+        String result = ApiSynthesizerRewriteEvidenceDecorator.makeEvidenceFromComment("/// calls: foo");
+
+        Assert.assertEquals("edu.rice.cs.caper.bayou.annotations.Evidence.apicalls(\"foo\");\n", result);
+    }
+
+    @Test
+    public void testMakeEvidenceFromCommentCalls2() throws ParseException
+    {
+        String result = ApiSynthesizerRewriteEvidenceDecorator.makeEvidenceFromComment("/// calls: foo, bar");
+
+        Assert.assertEquals("edu.rice.cs.caper.bayou.annotations.Evidence.apicalls(\"foo\", \"bar\");\n", result);
+    }
+
+    @Test
+    public void testMakeEvidenceFromCommentType() throws ParseException
+    {
+        String result = ApiSynthesizerRewriteEvidenceDecorator.makeEvidenceFromComment("/// type: foo");
+
+        Assert.assertEquals("edu.rice.cs.caper.bayou.annotations.Evidence.types(\"foo\");\n", result);
+    }
+
+    @Test
+    public void testMakeEvidenceFromCommentTypes1() throws ParseException
+    {
+        String result = ApiSynthesizerRewriteEvidenceDecorator.makeEvidenceFromComment("/// types: foo");
+
+        Assert.assertEquals("edu.rice.cs.caper.bayou.annotations.Evidence.types(\"foo\");\n", result);
+    }
+
+    @Test
+    public void testMakeEvidenceFromCommentTypes2() throws ParseException
+    {
+        String result = ApiSynthesizerRewriteEvidenceDecorator.makeEvidenceFromComment("/// types: foo, bar");
+
+        Assert.assertEquals("edu.rice.cs.caper.bayou.annotations.Evidence.types(\"foo\", \"bar\");\n", result);
+    }
+
+    @Test
+    public void testMakeEvidenceFromCommentContext() throws ParseException
+    {
+        String result = ApiSynthesizerRewriteEvidenceDecorator.makeEvidenceFromComment("/// context: foo");
+
+        Assert.assertEquals("edu.rice.cs.caper.bayou.annotations.Evidence.context(\"foo\");\n", result);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testMakeEvidenceFromCommentEmpty() throws ParseException
+    {
+        ApiSynthesizerRewriteEvidenceDecorator.makeEvidenceFromComment("");
+    }
+
+    @Test(expected = ParseException.class)
+    public void testMakeEvidenceFromCommentMissingIdent1() throws ParseException
+    {
+        ApiSynthesizerRewriteEvidenceDecorator.makeEvidenceFromComment("/// calls:");
+    }
+
+    @Test(expected = ParseException.class)
+    public void testMakeEvidenceFromCommentMissingIdent2() throws ParseException
+    {
+        ApiSynthesizerRewriteEvidenceDecorator.makeEvidenceFromComment("/// foo,");
+    }
+
+    @Test(expected = ParseException.class)
+    public void testMakeEvidenceFromCommentUknownType() throws ParseException
+    {
+        ApiSynthesizerRewriteEvidenceDecorator.makeEvidenceFromComment("/// unknown: foo");
+    }
+
+    @Test
+    public void testMakeEvidenceFromCommentJustSlashes() throws ParseException
+    {
+        String result = ApiSynthesizerRewriteEvidenceDecorator.makeEvidenceFromComment("///");
+
+        Assert.assertEquals("///", result);
+    }
+
+
 }
