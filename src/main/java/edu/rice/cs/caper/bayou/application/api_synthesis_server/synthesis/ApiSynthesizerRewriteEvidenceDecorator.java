@@ -215,12 +215,10 @@ public class ApiSynthesizerRewriteEvidenceDecorator implements ApiSynthesizer
     {
         return element.match(new EvidenceElementCases<String, UnknownType>()
         {
-            final String _apiCallsPrefix = "edu.rice.cs.caper.bayou.annotations.Evidence.apicalls(\"";
-
             @Override
             public String forWithoutTypeIdent(EvidenceElementWithoutTypeIdentifierNode evidenceElement)
             {
-                return _apiCallsPrefix;
+                return "edu.rice.cs.caper.bayou.annotations.Evidence.freeform(\"";
             }
 
             @Override
@@ -231,7 +229,7 @@ public class ApiSynthesizerRewriteEvidenceDecorator implements ApiSynthesizer
                 {
                     case "call":
                     case "calls":
-                        return _apiCallsPrefix;
+                        return "edu.rice.cs.caper.bayou.annotations.Evidence.apicalls(\"";
                     case "type":
                     case "types":
                         return "edu.rice.cs.caper.bayou.annotations.Evidence.types(\"";

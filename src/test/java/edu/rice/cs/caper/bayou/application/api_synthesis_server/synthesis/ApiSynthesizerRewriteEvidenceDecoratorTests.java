@@ -42,7 +42,7 @@ public class ApiSynthesizerRewriteEvidenceDecoratorTests
     public void testSynthesize2() throws SynthesiseException
     {
         String program = "preable /// foo\n afterword";
-        String correct = "preable edu.rice.cs.caper.bayou.annotations.Evidence.apicalls(\"foo\");\n afterword";
+        String correct = "preable edu.rice.cs.caper.bayou.annotations.Evidence.freeform(\"foo\");\n afterword";
 
         testSynthesizeHelp(program, correct);
     }
@@ -524,6 +524,22 @@ public class ApiSynthesizerRewriteEvidenceDecoratorTests
                         "}\n";
 
         Assert.assertEquals(correct, result);
+    }
+
+    @Test
+    public void testMakeEvidenceFromCommentFreeform() throws ParseException
+    {
+        String result = ApiSynthesizerRewriteEvidenceDecorator.makeEvidenceFromComment("/// foo");
+
+        Assert.assertEquals("edu.rice.cs.caper.bayou.annotations.Evidence.freeform(\"foo\");\n", result);
+    }
+
+    @Test
+    public void testMakeEvidenceFromCommentFreeform2() throws ParseException
+    {
+        String result = ApiSynthesizerRewriteEvidenceDecorator.makeEvidenceFromComment("/// foo, bar");
+
+        Assert.assertEquals("edu.rice.cs.caper.bayou.annotations.Evidence.freeform(\"foo\", \"bar\");\n", result);
     }
 
     @Test
