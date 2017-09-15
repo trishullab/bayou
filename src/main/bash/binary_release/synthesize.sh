@@ -14,5 +14,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-BAYOU_JAR="$(ls *.jar)"
-java -Dorg.apache.logging.log4j.simplelog.StatusLogger.level=OFF -DconfigurationFile=resources/conf/apiSynthesisServerConfig.properties -cp $BAYOU_JAR edu.rice.cs.caper.bayou.application.api_synthesis_server.ApiSynthesisLocalClient $1 $2 $3 $4 $5
+SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+BAYOU_JAR="$(ls $SCRIPT_DIR/*.jar)"
+java -Dorg.apache.logging.log4j.simplelog.StatusLogger.level=OFF -DconfigurationFile=$SCRIPT_DIR/resources/conf/apiSynthesisServerConfig.properties -cp $BAYOU_JAR edu.rice.cs.caper.bayou.application.api_synthesis_server.ApiSynthesisLocalClient $1 $2 $3 $4 $5
