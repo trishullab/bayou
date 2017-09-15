@@ -17,18 +17,20 @@
 trap "exit" INT TERM # trap lines make it so taht when this script terminates the background java process does as well
 trap "kill 0" EXIT
 
-mkdir -p logs
+SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
-BAYOU_JAR="$(ls *.jar)"
-java -DconfigurationFile=resources/conf/apiSynthesisServerConfig.properties -Dlog4j.configurationFile=resources/conf/apiSynthesisServerLog4j2.xml -jar $BAYOU_JAR &
+BAYOU_JAR="$(ls $SCRIPT_DIR/*.jar)"
+cd $SCRIPT_DIR # log4j treats config paths relataive to current directory.  we need this so logs is next to the jar file and not the directory from where the script is being run
+java -DconfigurationFile=$SCRIPT_DIR/resources/conf/apiSynthesisServerConfig.properties -Dlog4j.configurationFile=$SCRIPT_DIR/resources/conf/apiSynthesisServerLog4j2.xml -jar $BAYOU_JAR &
 
 if [ $# -eq 0 ]
   then
-    logs_dir="logs"
+    LOGS_DIR=$SCRIPT_DIR/logs
   else
-    logs_dir=$1
+    LOGS_DIR=$1
 fi
 
-SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-export PYTHONPATH=python
-python3 python/bayou/server/ast_server.py --save_dir "$SCRIPT_DIR/resources/model" --logs_dir $logs_dir
+mkdir -p "$LOGS_DIR"
+
+export PYTHONPATH=$SCRIPT_DIR/python
+python3 $SCRIPT_DIR/python/bayou/server/ast_server.py --save_dir "$SCRIPT_DIR/resources/model" --logs_dir "$LOGS_DIR"
