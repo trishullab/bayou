@@ -19,19 +19,10 @@ rm -rf $SCRIPT_DIR/tmp
 mkdir $SCRIPT_DIR/tmp
 
 
+$SCRIPT_DIR/../build_scripts/build.sh
+
 cd ../maven_3_3_9/bayou
-VER="$(printf 'VERSION=${project.version}\n0\n' | mvn org.apache.maven.plugins:maven-help-plugin:2.1.1:evaluate | grep '^VERSION' | cut -c9-)" # get the project version number... e.g. 1.1.0
-mvn clean package
-cp target/bayou-$VER-jar-with-dependencies.jar $SCRIPT_DIR/tmp
-cp -r ../../../src/main/python $SCRIPT_DIR/tmp
-cp -r ../../../src/main/resources $SCRIPT_DIR/tmp
-cp ../../../src/main/bash/binary_release/*.sh $SCRIPT_DIR/tmp
-cp -r target/bayou-$VER-jar-with-dependencies.jar $SCRIPT_DIR/tmp
-cp -r ../../../doc/external/example_inputs $SCRIPT_DIR/tmp
-cd $SCRIPT_DIR/tmp
-mv bayou-$VER-jar-with-dependencies.jar bayou-$VER.jar
+VER="$(printf 'VERSION=${project.version}\n0\n' | mvn org.apache.maven.plugins:maven-help-plugin:2.1.1:evaluate | grep '^VERSION' | cut -c9-)" # get the project version number... e.g 1.1.0 mvn clean package
+cd $SCRIPT_DIR/../build_scripts/out/
+zip -r $SCRIPT_DIR/bayou-$VER.zip *
 
-zip -r bayou-$VER.zip *
-mv bayou-$VER.zip $SCRIPT_DIR
-
-rm -rf $SCRIPT_DIR/tmp
