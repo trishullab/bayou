@@ -1,5 +1,3 @@
-import edu.rice.cs.caper.bayou.annotations.Evidence;
-
 // Bayou supports three types of evidence:
 // 1. apicalls - API methods the code should invoke
 // 2. types - datatypes of objects which invoke API methods
@@ -16,9 +14,9 @@ public class TestCamera {
 
         { // Provide evidence within a separate block
             // Code should call "startPreview"...
-            Evidence.apicalls("startPreview");
+            /// call:startPreview
             // ...and use an "int" as argument
-            Evidence.context("int");
+            /// context:int
         } // Synthesized code will replace this block
     }   
 

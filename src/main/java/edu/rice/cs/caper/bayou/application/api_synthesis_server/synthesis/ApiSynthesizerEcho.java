@@ -13,23 +13,24 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-package edu.rice.cs.caper.bayou.application.api_synthesis_server;
+package edu.rice.cs.caper.bayou.application.api_synthesis_server.synthesis;
 
-import edu.rice.cs.caper.bayou.core.synthesizer.ParseException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.util.Collections;
 
 /**
- * Synthesizes by returning the given searchCode after some construction figured simulated latency.
+ * Synthesizes by returning the given code exactly after some construction figured simulated latency.
+ *
+ * Useful for debugging. Not a legitimate Synthesizer.
  */
-public class ApiSynthesisStrategyEcho implements ApiSynthesisStrategy
+public class ApiSynthesizerEcho implements ApiSynthesizer
 {
     /**
      * Place to send logging information.
      */
-    private static final Logger _logger = LogManager.getLogger(ApiSynthesisStrategyEcho.class.getName());
+    private static final Logger _logger = LogManager.getLogger(ApiSynthesizerEcho.class.getName());
 
     /**
      * How long to sleep in synthesise before returning a result.  Must be >=0.
@@ -40,7 +41,7 @@ public class ApiSynthesisStrategyEcho implements ApiSynthesisStrategy
      * @param delayMs How long to sleep in each invocation of synthesise(...) before returning.  Must be >=0.
      * @throws IllegalArgumentException if delayMs < 0.
      */
-    public ApiSynthesisStrategyEcho(long delayMs)
+    public ApiSynthesizerEcho(long delayMs)
     {
         _logger.debug("entering");
 
@@ -53,7 +54,7 @@ public class ApiSynthesisStrategyEcho implements ApiSynthesisStrategy
     }
 
     @Override
-    public Iterable<String> synthesise(String searchCode, int maxProgramCount) throws SynthesiseException
+    public Iterable<String> synthesise(String code, int maxProgramCount) throws SynthesiseException
     {
         _logger.debug("entering");
 
@@ -71,11 +72,11 @@ public class ApiSynthesisStrategyEcho implements ApiSynthesisStrategy
         }
 
         _logger.debug("exiting");
-        return Collections.singletonList(searchCode);
+        return Collections.singletonList(code);
     }
 
     @Override
-    public Iterable<String> synthesise(String searchCode, int maxProgramCount, int sampleCount) throws SynthesiseException, ParseException
+    public Iterable<String> synthesise(String searchCode, int maxProgramCount, int sampleCount) throws SynthesiseException
     {
         return synthesise(searchCode, maxProgramCount);
     }

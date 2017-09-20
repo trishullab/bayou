@@ -13,9 +13,8 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-package edu.rice.cs.caper.bayou.application.api_synthesis_server;
+package edu.rice.cs.caper.bayou.application.api_synthesis_server.synthesis;
 
-;
 import edu.rice.cs.caper.bayou.core.synthesizer.EvidenceExtractor;
 import edu.rice.cs.caper.bayou.core.synthesizer.ParseException;
 import edu.rice.cs.caper.bayou.core.synthesizer.Parser;
@@ -27,19 +26,18 @@ import org.json.JSONObject;
 import java.io.*;
 import java.net.Socket;
 import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
 import java.util.List;
 
 /**
  * A synthesis strategy that relies on a remote server that uses TensorFlow to create ASTs from extracted evidence.
  */
-class ApiSynthesisStrategyRemoteTensorFlowAsts implements ApiSynthesisStrategy
+public class ApiSynthesizerRemoteTensorFlowAsts implements ApiSynthesizer
 {
     /**
      * Place to send logging information.
      */
     private static final Logger _logger =
-            LogManager.getLogger(ApiSynthesisStrategyRemoteTensorFlowAsts.class.getName());
+            LogManager.getLogger(ApiSynthesizerRemoteTensorFlowAsts.class.getName());
 
     /**
      * The network name of the tensor flow host server.
@@ -76,8 +74,8 @@ class ApiSynthesisStrategyRemoteTensorFlowAsts implements ApiSynthesisStrategy
      *                          May not be null.
      * @param androidJarPath The path to android.jar. May not be null.
      */
-    ApiSynthesisStrategyRemoteTensorFlowAsts(String tensorFlowHost, int tensorFlowPort, int maxNetworkWaitTimeMs,
-                                             String evidenceClasspath, File androidJarPath)
+    public ApiSynthesizerRemoteTensorFlowAsts(String tensorFlowHost, int tensorFlowPort, int maxNetworkWaitTimeMs,
+                                              String evidenceClasspath, File androidJarPath)
     {
         _androidJarPath = androidJarPath;
         _logger.debug("entering");
@@ -134,18 +132,21 @@ class ApiSynthesisStrategyRemoteTensorFlowAsts implements ApiSynthesisStrategy
     }
 
     @Override
-    public Iterable<String> synthesise(String searchCode, int maxProgramCount) throws SynthesiseException, ParseException
+    public Iterable<String> synthesise(String searchCode, int maxProgramCount) throws SynthesiseException
     {
         return synthesiseHelp(searchCode, maxProgramCount, null);
     }
 
     @Override
-    public Iterable<String> synthesise(String searchCode, int maxProgramCount, int sampleCount) throws SynthesiseException, ParseException
+    public Iterable<String> synthesise(String searchCode, int maxProgramCount, int sampleCount)
+            throws SynthesiseException
     {
         return synthesiseHelp(searchCode, maxProgramCount, sampleCount);
     }
 
-    private Iterable<String> synthesiseHelp(String code, int maxProgramCount, Integer sampleCount) throws SynthesiseException, ParseException
+    // sampleCount of null means don't send a sampleCount key in the request message.  Means use default sample count.
+    private Iterable<String> synthesiseHelp(String code, int maxProgramCount, Integer sampleCount)
+            throws SynthesiseException
     {
         _logger.debug("entering");
 
@@ -161,15 +162,31 @@ class ApiSynthesisStrategyRemoteTensorFlowAsts implements ApiSynthesisStrategy
         String combinedClassPath = _evidenceClasspath + File.pathSeparator + _androidJarPath.getAbsolutePath();
 
         /*
-         * Parse the program
+         * Parse the program.
          */
-        Parser parser = new Parser(code, combinedClassPath);
-        parser.parse();
+        Parser parser;
+        try
+        {
+            parser = new Parser(code, combinedClassPath);
+            parser.parse();
+        }
+        catch (ParseException e)
+        {
+            throw new SynthesiseException(e);
+        }
 
         /*
          * Extract a description of the evidence in the search code that should guide AST results generation.
          */
-        String evidence = extractEvidence(new EvidenceExtractor(), parser);
+        String evidence;
+        try
+        {
+            evidence = extractEvidence(new EvidenceExtractor(), parser);
+        }
+        catch (ParseException e)
+        {
+            throw new SynthesiseException(e);
+        }
 
         /*
          * Contact the remote Python server and provide evidence to be fed to Tensor Flow to generate solution
@@ -204,8 +221,7 @@ class ApiSynthesisStrategyRemoteTensorFlowAsts implements ApiSynthesisStrategy
         List<String> synthesizedPrograms;
         synthesizedPrograms = new Synthesizer().execute(parser, astsJson);
 
-        // unsure if execute always returns n output for n ast input.
-        if(synthesizedPrograms.size() > maxProgramCount)
+        if(synthesizedPrograms.size() > maxProgramCount) // unsure if execute always returns n output for n ast inputs.
             synthesizedPrograms = synthesizedPrograms.subList(0, maxProgramCount);
 
         _logger.trace("synthesizedPrograms: " + synthesizedPrograms);
@@ -213,6 +229,7 @@ class ApiSynthesisStrategyRemoteTensorFlowAsts implements ApiSynthesisStrategy
         _logger.debug("exiting");
         return synthesizedPrograms;
     }
+
 
     /**
      * Reads the first 4 bytes of inputStream and interprets them as a 32-bit big endian signed integer 'length'.

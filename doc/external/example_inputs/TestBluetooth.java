@@ -1,4 +1,3 @@
-import edu.rice.cs.caper.bayou.annotations.Evidence;
 import android.bluetooth.BluetoothAdapter;
 
 // Bayou supports three types of evidence:
@@ -16,9 +15,9 @@ public class TestBluetooth {
 
         { // Provide evidence within a separate block
             // Code should call "getInputStream"...
-            Evidence.apicalls("getInputStream");
+            /// call:getInputStream
             // ...on a "BluetoothSocket" type
-            Evidence.types("BluetoothSocket");
+            /// type:BluetoothSocket
         } // Synthesized code will replace this block
     }   
 

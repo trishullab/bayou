@@ -12,9 +12,9 @@ public class TestWifi {
     void scan(WifiManager manager) {
         { // Provide evidence within a separate block
             // Code should call "startScan"...
-            Evidence.apicalls("startScan");
+            /// call:startScan
             // ...on a "WifiManager" type
-            Evidence.types("WifiManager");
+            /// type:WifiManager
         } // Synthesized code will replace this block
 
     }   

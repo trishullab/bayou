@@ -14,9 +14,9 @@ public class TestSpeech {
     void speechRecognition(Context context, Intent intent, RecognitionListener listener) {
         { // Provide evidence within a separate block
             // Code should make API calls on "SpeechRecognizer"...
-            Evidence.types("SpeechRecognizer");
+            /// type:SpeechRecognizer
             // ...and use a "Context" as argument
-            Evidence.context("Context");
+            /// context:Context
         } // Synthesized code will replace this block
     }   
 
