@@ -140,14 +140,18 @@ public class Visitor extends ASTVisitor {
                 VariableDeclarationFragment varDeclFrag = ast.newVariableDeclarationFragment();
                 varDeclFrag.setName(ast.newSimpleName(var.name));
                 VariableDeclarationStatement varDeclStmt = ast.newVariableDeclarationStatement(varDeclFrag);
-                if (var.type.isPrimitiveType())
-                    varDeclStmt.setType(var.type);
-                else {
-                    Name name = ((SimpleType) var.type).getName();
+                if (var.getType().T().isPrimitiveType())
+                    varDeclStmt.setType(var.type.T());
+                else if (var.getType().T().isSimpleType()) {
+                    Name name = ((SimpleType) var.type.T()).getName();
                     String simpleName = name.isSimpleName()? ((SimpleName) name).getIdentifier()
                             : ((QualifiedName) name).getName().getIdentifier();
                     varDeclStmt.setType(ast.newSimpleType(ast.newSimpleName(simpleName)));
                 }
+                else if (var.getType().T().isParameterizedType()) {
+                    varDeclStmt.setType((org.eclipse.jdt.core.dom.Type) ASTNode.copySubtree(ast, var.getType().T()));
+                }
+                else throw new SynthesisException(SynthesisException.InvalidKindOfType);
                 body.statements().add(0, varDeclStmt);
             }
         }
@@ -181,7 +185,7 @@ public class Visitor extends ASTVisitor {
         /* add variables in the formal parameters */
         for (Object o : method.parameters()) {
             SingleVariableDeclaration param = (SingleVariableDeclaration) o;
-            Variable v = new Variable(param.getName().getIdentifier(), param.getType());
+            Variable v = new Variable(param.getName().getIdentifier(), new Type(param.getType()));
             currentScope.add(v);
         }
 
@@ -194,7 +198,7 @@ public class Visitor extends ASTVisitor {
             VariableDeclarationStatement varDecl = (VariableDeclarationStatement) stmt;
             for (Object f : varDecl.fragments()) {
                 VariableDeclarationFragment frag = (VariableDeclarationFragment) f;
-                Variable v = new Variable(frag.getName().getIdentifier(), varDecl.getType());
+                Variable v = new Variable(frag.getName().getIdentifier(), new Type(varDecl.getType()));
                 currentScope.add(v);
             }
         }

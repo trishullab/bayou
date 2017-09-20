@@ -16,8 +16,8 @@ limitations under the License.
 package edu.rice.cs.caper.bayou.core.dsl;
 
 
-import edu.rice.cs.caper.bayou.core.synthesizer.Environment;
-import edu.rice.cs.caper.bayou.core.synthesizer.SynthesisException;
+import edu.rice.cs.caper.bayou.core.synthesizer.*;
+import edu.rice.cs.caper.bayou.core.synthesizer.Type;
 import org.eclipse.jdt.core.dom.*;
 
 import java.lang.reflect.Constructor;
@@ -169,28 +169,30 @@ public class DAPICall extends DASTNode
         ClassInstanceCreation creation = ast.newClassInstanceCreation();
 
         /* constructor type */
-        SimpleType t = ast.newSimpleType(ast.newName(constructor.getDeclaringClass().getSimpleName()));
-        creation.setType(t);
+        Type type = new Type(constructor.getDeclaringClass());
+        type.concretizeType(env);
+        creation.setType(type.T());
 
         /* constructor arguments */
-        for (Class type : constructor.getParameterTypes()) {
-            Expression arg = env.searchOrAddVariable(type, true);
-            creation.arguments().add(arg);
+        for (java.lang.reflect.Type gType : constructor.getGenericParameterTypes()) {
+            Type argType = type.getConcretization(gType);
+            TypedExpression arg = env.search(argType);
+            creation.arguments().add(arg.getExpression());
         }
 
         /* constructor return object */
-        Expression ret = env.searchOrAddVariable(constructor.getDeclaringClass(), false);
+        TypedExpression ret = env.addVariable(type);
 
         /* the assignment */
         Assignment assignment = ast.newAssignment();
-        assignment.setLeftHandSide(ret);
+        assignment.setLeftHandSide(ret.getExpression());
         assignment.setRightHandSide(creation);
         assignment.setOperator(Assignment.Operator.ASSIGN);
 
         // Record the returned variable name
-        if (ret instanceof SimpleName)
-            this.retVarName = ret.toString();
-	
+        if (ret.getExpression() instanceof SimpleName)
+            this.retVarName = ret.getExpression().toString();
+
         return assignment;
     }
 
@@ -203,24 +205,26 @@ public class DAPICall extends DASTNode
         invocation.setName(metName);
 
         /* object on which method is invoked */
-        Expression object = env.searchOrAddVariable(method.getDeclaringClass(), true);
-        invocation.setExpression(object);
+        TypedExpression object = env.search(new Type(method.getDeclaringClass()));
+        invocation.setExpression(object.getExpression());
 
-        /* method arguments */
-        for (Class type : method.getParameterTypes()) {
-            Expression arg = env.searchOrAddVariable(type, true);
-            invocation.arguments().add(arg);
+        /* concretizeType method argument types using the above object and search for them */
+        for (java.lang.reflect.Type gType : method.getGenericParameterTypes()) {
+            Type argType = object.getType().getConcretization(gType);
+            TypedExpression arg = env.search(argType);
+            invocation.arguments().add(arg.getExpression());
         }
 
         if (method.getReturnType().equals(void.class))
             return invocation;
 
         /* method return value */
-        Expression ret = env.searchOrAddVariable(method.getReturnType(), false);
+        Type retType = object.getType().getConcretization(method.getGenericReturnType());
+        TypedExpression ret = env.addVariable(retType);
 
         /* the assignment */
         Assignment assignment = ast.newAssignment();
-        assignment.setLeftHandSide(ret);
+        assignment.setLeftHandSide(ret.getExpression());
         assignment.setRightHandSide(invocation);
         assignment.setOperator(Assignment.Operator.ASSIGN);
 
@@ -235,12 +239,7 @@ public class DAPICall extends DASTNode
         String className = qualifiedName.substring(0, qualifiedName.lastIndexOf("."));
         String methodName = qualifiedName.substring(qualifiedName.lastIndexOf(".") + 1);
         String erasedClassName = className.replaceAll("<.*>", "");
-        Class cls;
-        try {
-            cls = Environment.getClass(erasedClassName);
-        } catch (ClassNotFoundException e) {
-            throw new SynthesisException(SynthesisException.ClassNotFoundInLoader);
-        }
+        Class cls = Environment.getClass(erasedClassName);
 
         TypeVariable[] typeVars = cls.getTypeParameters();
         List<String> erasedArgs = new ArrayList<>();

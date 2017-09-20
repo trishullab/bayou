@@ -17,8 +17,8 @@ package edu.rice.cs.caper.bayou.core.dsl;
 
 
 import edu.rice.cs.caper.bayou.application.dom_driver.Visitor;
-import edu.rice.cs.caper.bayou.core.synthesizer.Environment;
-import edu.rice.cs.caper.bayou.core.synthesizer.SynthesisException;
+import edu.rice.cs.caper.bayou.core.synthesizer.*;
+import edu.rice.cs.caper.bayou.core.synthesizer.Type;
 import org.eclipse.jdt.core.dom.*;
 
 import java.util.ArrayList;
@@ -162,7 +162,10 @@ public class DLoop extends DASTNode {
         }
         switch (clauses.size()) {
             case 0:
-                Expression var = env.searchOrAddVariable(boolean.class, true);
+                Expression var = env.search(
+                        new Type(ast.newPrimitiveType(PrimitiveType.toCode("boolean")), boolean.class)
+                ).getExpression();
+
                 statement.setExpression(var);
                 break;
             case 1:

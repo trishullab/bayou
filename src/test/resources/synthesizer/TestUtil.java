@@ -1,4 +1,5 @@
 import edu.rice.cs.caper.bayou.annotations.Evidence;
+import java.util.HashMap;
 
 // Bayou supports three types of evidence:
 // 1. apicalls - API methods the code should invoke
@@ -11,7 +12,7 @@ public class TestUtil {
     // program at a time, so please comment out the rest.
 
     /* Store a key value pair in a map */
-    void store(String key, String value) {
+    void store(HashMap<Integer,String> map, Integer key, String value) {
         { // Provide evidence within a separate block
             // Code should call "put"
             Evidence.apicalls("put");

@@ -40,55 +40,39 @@ public class Environment {
         imports = new HashSet<>();
     }
 
-    public Expression addVariable(Class type) throws SynthesisException {
-        return searchOrAddVariable(type, false);
-    }
-
-    public Expression searchOrAddVariable(Class type, boolean search) throws SynthesisException {
-        Expression expr;
-        Enumerator enumerator = new Enumerator(ast, this);
-        if (search)
-            if ((expr = enumerator.search(type)) != null)
-                return expr;
-            else throw new SynthesisException(SynthesisException.TypeNotFoundDuringSearch);
-
+    public TypedExpression addVariable(Type type) {
         /* construct a nice name for the variable */
-        String name = "";
-        if (type.isPrimitive())
-            name = type.getName().substring(0,1);
-        else
-            for (Character c : type.getName().toCharArray())
-                if (Character.isUpperCase(c))
-                    name += Character.toLowerCase(c);
-        if (prettyNameCounts.containsKey(name)) {
-            prettyNameCounts.put(name, prettyNameCounts.get(name)+1);
-            name += prettyNameCounts.get(name);
-        }
-        else
-            prettyNameCounts.put(name, 0);
+        String name = getPrettyName(type);
 
         /* add variable to scope */
-        Type t;
-        if (type.isPrimitive())
-            t = ast.newPrimitiveType(PrimitiveType.toCode(type.getName()));
-        else // TODO: handle generic classes
-            t = ast.newSimpleType(ast.newName(type.getCanonicalName()));
-
-        Variable var = new Variable(name, t);
+        Variable var = new Variable(name, type);
         mu_scope.add(var);
 
         /* add type to imports */
-        imports.add(type);
+        imports.add(type.C());
 
-        return ast.newSimpleName(var.getName());
+        return new TypedExpression(ast.newSimpleName(var.getName()), type);
     }
 
-    public Variable addScopedVariable(String name, Class type) {
+    public Type searchType() {
+        Enumerator enumerator = new Enumerator(ast, this);
+        return enumerator.searchType();
+    }
+
+    public TypedExpression search(Type type) throws SynthesisException {
+        Enumerator enumerator = new Enumerator(ast, this);
+        TypedExpression tExpr = enumerator.search(type);
+        if (tExpr == null)
+            throw new SynthesisException(SynthesisException.TypeNotFoundDuringSearch);
+        return tExpr;
+    }
+
+    public Variable addScopedVariable(String name, Class cls) {
         Type t;
-        if (type.isPrimitive())
-            t = ast.newPrimitiveType(PrimitiveType.toCode(type.getName()));
-        else // TODO: handle generic classes
-            t = ast.newSimpleType(ast.newSimpleName(type.getSimpleName()));
+        if (cls.isPrimitive())
+            t = new Type(ast.newPrimitiveType(PrimitiveType.toCode(cls.getName())), cls);
+        else
+            t = new Type(ast.newSimpleType(ast.newSimpleName(cls.getSimpleName())), cls);
         Variable var = new Variable(name, t);
         mu_scope.add(var);
         return var;
@@ -118,57 +102,42 @@ public class Environment {
      *
      * @param name the fully qualified class name to search for
      * @return the Class representation of name (or an attempted alternate) if found
-     * @throws ClassNotFoundException if no classes with the name search name or its variations are found.
      */
-    public static Class getClass(String name) throws ClassNotFoundException
-    {
-        return getClassHelp(name, name);
-    }
-
-    /**
-     * Attempts to find the Class representation of the given fully qualified <code>searchName</code> from
-     * <code>Synthesizer.classLoader</code>.
-     *
-     * If no such class is found and the given searchName contains the character '.', a new search name will
-     * be generated replacing the final '.' with a '$' and this method recurses.  As such, if the given searchName
-     * is
-     *     foo.bar.baz
-     *
-     * then this method will effectively search for the following classes in order until one (or none) is found:
-     *
-     *     foo.bar.baz
-     *     foo.bar$baz
-     *     foo$bar$baz
-     *     << throws ClassNotFoundException of originalName >>
-     *
-     * @param searchName the fully qualified class name to search for
-     * @param originalName  if no variations of searchName are found, the name reported in the exception message
-     *                      of ClassNotFoundException
-     * @return the Class representation of searchName (or an attempted alternate) if found
-     * @throws ClassNotFoundException if no classes with the name search name or its variations are found.
-     */
-    private static Class getClassHelp(String searchName, String originalName) throws ClassNotFoundException
-    {
+    public static Class getClass(String name) {
         try {
-
-            return Class.forName(searchName, false, Synthesizer.classLoader);
-
+            return Class.forName(name, false, Synthesizer.classLoader);
         } catch (ClassNotFoundException e) {
-
-            int lastDotIndex = searchName.lastIndexOf('.');
-            if(lastDotIndex == -1) {
-                throw new ClassNotFoundException(originalName);
-            }
-
+            int lastDotIndex = name.lastIndexOf('.');
+            if (lastDotIndex == -1)
+                throw new SynthesisException(SynthesisException.ClassNotFoundInLoader);
             String possibleInnerClassName =
-                    new StringBuilder(searchName).replace(lastDotIndex, lastDotIndex+1, "$").toString();
-
-            return getClassHelp(possibleInnerClassName, originalName);
-
+                    new StringBuilder(name).replace(lastDotIndex, lastDotIndex+1, "$").toString();
+            return getClass(possibleInnerClassName);
         }
     }
 
     public void addImport(Class c) {
         imports.add(c);
+    }
+
+    String getPrettyName(Type type) {
+        String name;
+        if (type.C().isPrimitive())
+            name = type.C().getSimpleName().substring(0, 1);
+        else {
+            name = "";
+            for (Character c : type.C().getName().toCharArray())
+                if (Character.isUpperCase(c))
+                    name += Character.toLowerCase(c);
+        }
+
+        if (prettyNameCounts.containsKey(name)) {
+            prettyNameCounts.put(name, prettyNameCounts.get(name)+1);
+            name += prettyNameCounts.get(name);
+        }
+        else
+            prettyNameCounts.put(name, 0);
+
+        return name;
     }
 }
