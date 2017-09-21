@@ -1,0 +1,5 @@
+{
+  "test type": "shell command",
+  "command" : "grep -r -L Copyright ../../../src/ | grep -v .json | grep -v /__init__.py | grep -v /.gitignore| grep -v /src/main/resources/model/ | grep -v /README.md | grep -v /src/main/resources/artifacts/",
+  "expect stdout": "\n"
+}

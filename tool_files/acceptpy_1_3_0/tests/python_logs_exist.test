@@ -1,0 +1,5 @@
+{
+  "test type": "shell command",
+  "command" : "grep INFO ../out/logs/ast_server.log",
+  "expect stdout contains": "INFO"
+}

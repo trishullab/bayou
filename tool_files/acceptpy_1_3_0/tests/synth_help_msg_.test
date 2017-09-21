@@ -1,0 +1,5 @@
+{
+  "test type": "shell command",
+  "command" : "../out/synthesize.sh --help",
+  "expect stdout": "usage: synthesize.sh [OPTION]... [FILE]\n -help,--help              print this message\n -p,--num_programs <arg>   the maximum number of programs to return\n -s,--num_samples <arg>    the number of asts to sample from the model\n"
+}
