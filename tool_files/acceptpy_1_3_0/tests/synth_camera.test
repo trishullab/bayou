@@ -1,5 +1,5 @@
 {
   "test type": "shell command",
-  "command" : "../out/synthesize.sh -p 5 ../out/example_inputs/TestCamera.java",
+  "command" : "../out/synthesize.sh ../out/example_inputs/TestCamera.java",
   "expect stdout contains": "BEGIN PROGRAM"
 }
