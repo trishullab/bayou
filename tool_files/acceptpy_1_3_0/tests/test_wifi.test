@@ -1,5 +1,0 @@
-{
-  "test type": "shell command",
-  "command" : "../../build_scripts/out/synthesize.sh ../../build_scripts/out/example_inputs/TestWifi.java",
-  "expect stdout contains": "BEGIN PROGRAM"
-}

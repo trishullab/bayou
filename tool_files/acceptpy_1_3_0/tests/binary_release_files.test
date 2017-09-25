@@ -1,0 +1,5 @@
+{
+  "test type": "shell command",
+  "command" : "find ../../build_binary_release/out/ -maxdepth 1 -name bayou-*.jar -o -name example_inputs -o -name install_dependencies.sh -o -name python -o -name resources -o -name start_bayou.sh -o -name synthesize.sh | wc -l",
+  "expect stdout": "7\n"
+}

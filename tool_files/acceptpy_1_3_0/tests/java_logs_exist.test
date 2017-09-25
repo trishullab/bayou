@@ -1,0 +1,5 @@
+{
+  "test type": "shell command",
+  "command" : "grep INFO ../out/logs/ApiSynthesisServer.log",
+  "expect stdout contains": "INFO"
+}
