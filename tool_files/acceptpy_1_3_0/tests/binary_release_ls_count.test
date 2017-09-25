@@ -1,5 +1,5 @@
 {
   "test type": "shell command",
-  "command" : "ls -a -I logs ../../build_binary_release/out/ | wc -l",
+  "command" : "ls -a -I logs ../out/ | wc -l",
   "expect stdout": "9\n"
 }
