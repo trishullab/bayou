@@ -144,8 +144,10 @@ public class DLoop extends DASTNode {
         /* synthesize the condition */
         List<Expression> clauses = new ArrayList<>();
         for (DAPICall call : _cond) {
-            /* this cast is safe (unless NN has gone crazy) because a call that returns void cannot be in condition */
-            Assignment assignment = (Assignment) call.synthesize(env);
+            ASTNode synth = call.synthesize(env);
+            if (! (synth instanceof Assignment)) /* a call that returns void cannot be in condition */
+                throw new SynthesisException(SynthesisException.MalformedASTFromNN);
+            Assignment assignment = (Assignment) synth;
             if (call.method == null || (!call.method.getReturnType().equals(Boolean.class) &&
                     !call.method.getReturnType().equals(boolean.class))) {
                 ParenthesizedExpression pAssignment = ast.newParenthesizedExpression();

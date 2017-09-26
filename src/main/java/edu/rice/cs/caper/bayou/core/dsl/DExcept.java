@@ -28,7 +28,7 @@ public class DExcept extends DASTNode {
     List<DASTNode> _try;
     List<DASTNode> _catch;
     transient Map exceptToClause;
-    
+
     public DExcept() {
         this._try = new ArrayList<>();
         this._catch = new ArrayList<>();
@@ -116,9 +116,9 @@ public class DExcept extends DASTNode {
 
     @Override
     public Set<Class> exceptionsThrown(Set<String> eliminatedVars) {
-	return this.exceptionsThrown();
+        return this.exceptionsThrown();
     }
-    
+
     @Override
     public boolean equals(Object o) {
         if (o == null || ! (o instanceof DExcept))
@@ -160,6 +160,12 @@ public class DExcept extends DASTNode {
         List<Class> exceptionsThrown_ = new ArrayList<>(exceptionsThrown);
         exceptionsThrown_.sort((Class e1, Class e2) -> e1.isAssignableFrom(e2)? 1: -1);
 
+        if (this.exceptToClause == null)
+            this.exceptToClause = new HashMap<>();
+
+        if (exceptionsThrown_.isEmpty()) /* at least one exception must be thrown in try block */
+            throw new SynthesisException(SynthesisException.MalformedASTFromNN);
+
         /* synthesize catch clause body */
         for (Class except : exceptionsThrown_) {
             CatchClause catchClause = ast.newCatchClause();
@@ -184,29 +190,27 @@ public class DExcept extends DASTNode {
             env.removeScopedVariable(exceptionVar);
             env.addImport(except);
 
-	    if (this.exceptToClause == null)
-		this.exceptToClause = new HashMap<>();
-	    this.exceptToClause.put(except, catchClause);
+            this.exceptToClause.put(except, catchClause);
         }
 
         return statement;
     }
 
     public void cleanupCatchClauses(Set<String> eliminatedVars) {
-	Set excepts = new HashSet<>();
-	for (DASTNode tn : _try) {
-	    if (tn instanceof DAPICall) {
-		String retVarName = ((DAPICall)tn).getRetVarName();
-		if (!retVarName.equals("") && eliminatedVars.contains(retVarName))
-		    excepts.addAll(tn.exceptionsThrown());
-	    }
-	}
-	
-	for (Object obj : this.exceptToClause.keySet()) {
-	    if (excepts.contains(obj)) {
-		CatchClause catchClause = (CatchClause)this.exceptToClause.get(obj);
-		catchClause.delete();
-	    }
-	}
+        Set excepts = new HashSet<>();
+        for (DASTNode tn : _try) {
+            if (tn instanceof DAPICall) {
+                String retVarName = ((DAPICall)tn).getRetVarName();
+                if (!retVarName.equals("") && eliminatedVars.contains(retVarName))
+                    excepts.addAll(tn.exceptionsThrown());
+            }
+        }
+
+        for (Object obj : this.exceptToClause.keySet()) {
+            if (excepts.contains(obj)) {
+                CatchClause catchClause = (CatchClause)this.exceptToClause.get(obj);
+                catchClause.delete();
+            }
+        }
     }
 }

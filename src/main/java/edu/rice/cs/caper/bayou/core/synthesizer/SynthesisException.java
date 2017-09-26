@@ -33,6 +33,7 @@ public class SynthesisException extends RuntimeException {
     public static final int MethodOrConstructorNotFound = 1008;
     public static final int GenericTypeVariableMismatch = 1009;
     public static final int InvalidKindOfType = 1010;
+    public static final int MalformedASTFromNN = 1011;
 
     private static final Map<Integer,String> toMessage;
     static {
@@ -59,6 +60,8 @@ public class SynthesisException extends RuntimeException {
             "Generic type variable name mismatched.");
         _toMessage.put(InvalidKindOfType,
             "Invalid kind of type.");
+        _toMessage.put(MalformedASTFromNN,
+                "Malformed AST predicted by neural network.");
         toMessage = Collections.unmodifiableMap(_toMessage);
     }
 
