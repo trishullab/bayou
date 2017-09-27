@@ -198,6 +198,7 @@ public class ApiSynthesizerRemoteTensorFlowAsts implements ApiSynthesizer
             pyServerSocket.setSoTimeout(_maxNetworkWaitTimeMs); // only wait this long for response then throw exception
 
             JSONObject requestObj = new JSONObject();
+            requestObj.put("request type", "generate asts");
             requestObj.put("evidence", evidence);
             requestObj.put("max ast count", maxProgramCount);
 
