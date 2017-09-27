@@ -15,18 +15,6 @@
 # limitations under the License.
 
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-OUT_DIR=$SCRIPT_DIR/out
 
-rm -rf $OUT_DIR
-
-$SCRIPT_DIR/../build_binary_release/build.sh
-unzip -d $OUT_DIR ../build_binary_release/bayou-*.zip
-
-$OUT_DIR/start_bayou.sh &
-sleep 30
-python3 accept.py tests/
-$OUT_DIR/stop_bayou.sh
-
-sleep 5
-rm -rf $OUT_DIR
-
+export PYTHONPATH=$SCRIPT_DIR/python
+python3 $SCRIPT_DIR/python/bayou/server/stop_ast_server.py

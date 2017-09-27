@@ -60,7 +60,8 @@ def _start_server(save_dir):
         #     to the client.
         # 7.) Transmit the bytes of the string from step 5)
         #
-        while True:
+        seen_shutdown_msg = False
+        while not seen_shutdown_msg:
             try:
                 client_socket, addr = server_socket.accept()  # await client connection
                 logging.info("connection accepted")
@@ -72,25 +73,41 @@ def _start_server(save_dir):
                 logging.debug(request_json)
 
                 request_dict = json.loads(request_json)  # parse request as a JSON string
-                evidence_json_str = request_dict['evidence'] # get the evidence string from the request (also JSON)
-                sample_count = request_dict.get('sample count', None)
-                max_ast_count = request_dict.get('max ast count')
 
-                if sample_count is not None:
-                    asts = _generate_asts(evidence_json_str, predictor, num_samples=sample_count, max_ast_count=max_ast_count)
-                else:
-                    asts = _generate_asts(evidence_json_str, predictor, max_ast_count=max_ast_count)
-                logging.debug(asts)
+                request_type = request_dict['request type'] 
 
-                _send_string_response(asts, client_socket)
+                if request_type == 'generate asts':
+                    _handle_generate_asts_request(request_dict, client_socket, predictor)
+                elif request_type == 'shutdown':
+                    seen_shutdown_msg = True;
+
                 client_socket.close()
             except Exception as e:
                 try:
                     logging.exception(str(e))
                     _send_string_response(json.dumps({'evidences': [], 'asts': []}, indent=2), client_socket)
                     client_socket.close()
-                except Exception as e1:
+                except Exception:
                     pass
+
+        server_socket.shutdown(socket.SHUT_RDWR)
+        server_socket.close()
+
+
+def _handle_generate_asts_request(request_dict, client_socket, predictor):
+
+    evidence_json_str = request_dict['evidence']  # get the evidence string from the request (also JSON)
+    sample_count = request_dict.get('sample count', None)
+    max_ast_count = request_dict.get('max ast count')
+
+    if sample_count is not None:
+        asts = _generate_asts(evidence_json_str, predictor, num_samples=sample_count, max_ast_count=max_ast_count)
+    else:
+        asts = _generate_asts(evidence_json_str, predictor, max_ast_count=max_ast_count)
+    logging.debug(asts)
+
+    _send_string_response(asts, client_socket)
+
 
 
 def _send_string_response(string, client_socket):

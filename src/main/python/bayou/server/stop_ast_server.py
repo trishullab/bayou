@@ -1,5 +1,3 @@
-#!/bin/bash
-
 # Copyright 2017 Rice University
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,19 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-OUT_DIR=$SCRIPT_DIR/out
+import socket
 
-rm -rf $OUT_DIR
+if __name__ == '__main__':
 
-$SCRIPT_DIR/../build_binary_release/build.sh
-unzip -d $OUT_DIR ../build_binary_release/bayou-*.zip
-
-$OUT_DIR/start_bayou.sh &
-sleep 30
-python3 accept.py tests/
-$OUT_DIR/stop_bayou.sh
-
-sleep 5
-rm -rf $OUT_DIR
-
+    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    s.connect(("localhost", 8084))
+    msg = '{ "request type" : "shutdown" }'
+    s.send(bytes([0,0,0,len(msg)])) # send 4 bytes encoding the length of msg in utf-8
+    s.send(bytes(msg.encode("utf-8"))) #send msg as as utf-8 bytes
