@@ -43,6 +43,8 @@ def extract_evidence(clargs):
         types = list(set(chain.from_iterable([bayou.core.evidence.Types.from_call(call) for call in calls])))
         context = list(set(chain.from_iterable([bayou.core.evidence.Context.from_call(call) for call in calls])))
 
+        types += context  # merging types and context together
+
         if clargs.num_samples == 0:
             program['apicalls'] = apicalls
             program['types'] = types
@@ -65,6 +67,7 @@ def extract_evidence(clargs):
     with open(clargs.output_file[0], 'w') as f:
         json.dump({'programs': programs}, fp=f, indent=2)
     print('done')
+
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(formatter_class=argparse.RawDescriptionHelpFormatter,
