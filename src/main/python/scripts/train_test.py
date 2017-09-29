@@ -55,6 +55,7 @@ def split(clargs):
     with message('Dumping testing data into DATA-testing.json'), open('DATA-testing.json', 'w') as f:
         json.dump({'programs': testing}, fp=f, indent=2)
 
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument('input_file', type=str, nargs=1,

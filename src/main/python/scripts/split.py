@@ -33,6 +33,7 @@ def split(args):
         with open('{}-{}.json'.format(args.input_file[0][:-5], i), 'w') as f:
             json.dump({'programs': programs}, f, indent=2)
 
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('input_file', type=str, nargs=1,

@@ -86,6 +86,7 @@ def remove_generics_sequences(seqs):
         for j, call in enumerate(seq['calls']):
             seq['calls'][j] = remove_generics_call(call)
 
+
 if not len(sys.argv) == 3:
     print('Usage: remove_generics.py <DATA.json> <DATA-output.json>')
     sys.exit(1)

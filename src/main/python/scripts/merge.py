@@ -32,6 +32,7 @@ def merge(clargs):
     with open(clargs.output_file, 'w') as f:
         json.dump({'programs': programs}, f, indent=2)
 
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('folder', type=str, nargs=1,
