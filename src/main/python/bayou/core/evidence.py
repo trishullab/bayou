@@ -17,6 +17,7 @@ import numpy as np
 import os
 import re
 import json
+import itertools
 
 from bayou.core.utils import CONFIG_ENCODER, C0, UNK
 from bayou.lda.model import LDA
@@ -44,6 +45,8 @@ class Evidence(object):
                 e = Types()
             elif name == 'context':
                 e = Context()
+            elif name == 'keywords':
+                e = Keywords()
             # javadoc_(No.)
             elif name[:7] == 'javadoc':
                 order = name[-1:]
@@ -212,6 +215,57 @@ class Context(Evidence):
         args = [re.sub('<.*', r'', arg) for arg in args]  # remove generics
         args = [re.sub('\[\]', r'', arg) for arg in args]  # remove array type
         return [arg for arg in args if not arg == '' and not arg.startswith('Tau_')]
+
+
+class Keywords(Evidence):
+
+    def load_embedding(self, save_dir):
+        embed_save_dir = os.path.join(save_dir, 'embed_keywords')
+        self.lda = LDA(from_file=os.path.join(embed_save_dir, 'model.pkl'))
+
+    def read_data_point(self, program):
+        keywords = program['keywords'] if 'keywords' in program else []
+        return list(set(keywords))
+
+    def wrangle(self, data):
+        return np.array(self.lda.infer(data), dtype=np.float32)
+
+    def placeholder(self, config):
+        return tf.placeholder(tf.float32, [config.batch_size, self.lda.model.n_components])
+
+    def exists(self, inputs):
+        return tf.not_equal(tf.count_nonzero(inputs, axis=1), 0)
+
+    def init_sigma(self, config):
+        with tf.variable_scope('keywords'):
+            self.sigma = tf.get_variable('sigma', [])
+
+    def encode(self, inputs, config):
+        with tf.variable_scope('keywords'):
+            encoding = tf.layers.dense(inputs, self.units)
+            w = tf.get_variable('w', [self.units, config.latent_size])
+            b = tf.get_variable('b', [config.latent_size])
+            latent_encoding = tf.nn.xw_plus_b(encoding, w, b)
+            return latent_encoding
+
+    def evidence_loss(self, psi, encoding, config):
+        sigma_sq = tf.square(self.sigma)
+        loss = 0.5 * (config.latent_size * tf.log(2 * np.pi * sigma_sq + 1e-10)
+                      + tf.square(encoding - psi) / sigma_sq)
+        return loss
+
+    @staticmethod
+    def split_camel(s):
+        s = re.sub('(.)([A-Z][a-z]+)', r'\1#\2', s)  # UC followed by LC
+        s = re.sub('([a-z0-9])([A-Z])', r'\1#\2', s)  # LC followed by UC
+        return s.split('#')
+
+    @staticmethod
+    def from_call(call):
+        qualified = call.split('(')[0]
+        qualified = re.sub('<.*>', '', qualified).split('.')  # remove generics for keywords
+        kws = list(itertools.chain.from_iterable([Keywords.split_camel(s) for s in qualified]))
+        return [kw.lower() for kw in kws]
 
 
 # TODO: handle Javadoc with word2vec

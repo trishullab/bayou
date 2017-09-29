@@ -23,6 +23,11 @@
             "tile": 1
         },
         {
+            "name": "keywords",
+            "units": 32,
+            "tile": 1
+        },
+        {
             "name": "javadoc_0",
             "units": 32,
             "tile": 1,
