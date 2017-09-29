@@ -20,5 +20,5 @@ public class Evidence {
     public static void apicalls(String... s) { }
     public static void types(String... s) { }
     public static void context(String... s) { }
-    public static void freeform(String... s) { }
+    public static void keywords(String... s) { }
 }

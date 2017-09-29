@@ -218,7 +218,7 @@ public class ApiSynthesizerRewriteEvidenceDecorator implements ApiSynthesizer
             @Override
             public String forWithoutTypeIdent(EvidenceElementWithoutTypeIdentifierNode evidenceElement)
             {
-                return "edu.rice.cs.caper.bayou.annotations.Evidence.freeform(\"";
+                return "edu.rice.cs.caper.bayou.annotations.Evidence.keywords(\"";
             }
 
             @Override
