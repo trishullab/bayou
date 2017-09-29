@@ -16,13 +16,14 @@
 
 OS="$(uname)"
 
-if [ $OS == "Linux" ]; then
+if [ $OS == "Linux" ]
+then
 
 	apt-get update
 	apt-get install openjdk-8-jre python3-pip
 
-elif [ $OS == "Darwin"]; then # Darwin for Mac OS X
-
+elif [ $OS == "Darwin" ] # Darwin for Mac OS X
+then
 	brew update
 	brew install python3
 	brew cask install java

@@ -16,13 +16,14 @@
 
 OS="$(uname)"
 
-if [ $OS == "Linux" ]; then
+if [ $OS == "Linux" ]
+then
 
 	apt-get update
 	apt-get install openjdk-8-jdk maven
 
-elif [$OS == "Darwin"]; then # Darwin for Mac OS X
-
+elif [ $OS == "Darwin" ] # Darwin for Mac OS X
+then
 	brew update
 	brew cask install java
 	brew install maven
