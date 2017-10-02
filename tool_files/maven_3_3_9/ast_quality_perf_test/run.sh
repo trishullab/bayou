@@ -62,7 +62,7 @@ sampled-max1"
 echo "Starting inference query processes..."
 for ev in $evidence; do
     if [ ! -f DATA-$ev.json ]; then
-        python3 $BUILD_DIR/python/bayou/test/ast_quality_perf_test.py DATA-testing.json \
+        python3 -u $BUILD_DIR/python/bayou/test/ast_quality_perf_test.py DATA-testing.json \
             --save $BUILD_DIR/resources/model \
             --evidence $ev \
             --output_file DATA-$ev.json &
@@ -72,7 +72,7 @@ for ev in $evidence; do
 done
 for ev in $all; do
     if [ ! -f DATA-$ev.json ]; then
-        python3 $BUILD_DIR/python/bayou/test/ast_quality_perf_test.py DATA-testing-$ev.json \
+        python3 -u $BUILD_DIR/python/bayou/test/ast_quality_perf_test.py DATA-testing-$ev.json \
             --save $BUILD_DIR/resources/model \
             --evidence all \
             --output_file DATA-$ev.json &
