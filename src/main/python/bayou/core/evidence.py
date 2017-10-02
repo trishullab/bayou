@@ -107,7 +107,7 @@ class APICalls(Evidence):
 
     def encode(self, inputs, config):
         with tf.variable_scope('apicalls'):
-            encoding = tf.layers.dense(inputs, self.units)
+            encoding = tf.layers.dense(inputs, self.units, activation=tf.nn.tanh)
             w = tf.get_variable('w', [self.units, config.latent_size])
             b = tf.get_variable('b', [config.latent_size])
             latent_encoding = tf.nn.xw_plus_b(encoding, w, b)
@@ -152,7 +152,7 @@ class Types(Evidence):
 
     def encode(self, inputs, config):
         with tf.variable_scope('types'):
-            encoding = tf.layers.dense(inputs, self.units)
+            encoding = tf.layers.dense(inputs, self.units, activation=tf.nn.tanh)
             w = tf.get_variable('w', [self.units, config.latent_size])
             b = tf.get_variable('b', [config.latent_size])
             latent_encoding = tf.nn.xw_plus_b(encoding, w, b)
@@ -196,7 +196,7 @@ class Context(Evidence):
 
     def encode(self, inputs, config):
         with tf.variable_scope('context'):
-            encoding = tf.layers.dense(inputs, self.units)
+            encoding = tf.layers.dense(inputs, self.units, activation=tf.nn.tanh)
             w = tf.get_variable('w', [self.units, config.latent_size])
             b = tf.get_variable('b', [config.latent_size])
             latent_encoding = tf.nn.xw_plus_b(encoding, w, b)
@@ -242,7 +242,7 @@ class Keywords(Evidence):
 
     def encode(self, inputs, config):
         with tf.variable_scope('keywords'):
-            encoding = tf.layers.dense(inputs, self.units)
+            encoding = tf.layers.dense(inputs, self.units, activation=tf.nn.tanh)
             w = tf.get_variable('w', [self.units, config.latent_size])
             b = tf.get_variable('b', [config.latent_size])
             latent_encoding = tf.nn.xw_plus_b(encoding, w, b)
