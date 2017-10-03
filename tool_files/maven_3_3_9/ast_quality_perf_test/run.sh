@@ -65,7 +65,7 @@ for ev in $evidence; do
         python3 -u $BUILD_DIR/python/bayou/test/ast_quality_perf_test.py DATA-testing.json \
             --save $BUILD_DIR/resources/model \
             --evidence $ev \
-            --output_file DATA-$ev.json &
+            --output_file DATA-$ev.json 2>&1 &
     else
         echo "Using the DATA-$ev.json that already exists. Remove it if you want to re-compute ASTs."
     fi
@@ -75,7 +75,7 @@ for ev in $all; do
         python3 -u $BUILD_DIR/python/bayou/test/ast_quality_perf_test.py DATA-testing-$ev.json \
             --save $BUILD_DIR/resources/model \
             --evidence all \
-            --output_file DATA-$ev.json &
+            --output_file DATA-$ev.json 2>&1 &
     else
         echo "Using the DATA-$ev.json that already exists. Remove it if you want to re-compute ASTs."
     fi
