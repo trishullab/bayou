@@ -13,7 +13,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-package edu.rice.cs.caper.bayou.application.api_synthesis_server;
+package edu.rice.cs.caper.bayou.application.api_synthesis_server.servlet;
 import static org.mockito.Mockito.*;
 
 import edu.rice.cs.caper.bayou.application.api_synthesis_server.synthesis_logging.SynthesisQualityFeedbackLogger;
@@ -27,7 +27,7 @@ public class ApiSynthesisResultQualityFeedbackServletTest
     @Test(expected = NullPointerException.class)
     public void testDecodeBodyAndLogNullLogger()
     {
-        ApiSynthesisResultQualityFeedbackServlet.decodeBodyAndLog(null, null);
+        ApiSynthesisResultQualityFeedbackServlet.decodeRequestBodyAndLog(null, null);
     }
 
     @Test
@@ -44,7 +44,7 @@ public class ApiSynthesisResultQualityFeedbackServletTest
         body.put("isGood", true);
 
         SynthesisQualityFeedbackLogger logger = mock(SynthesisQualityFeedbackLogger.class);
-        ApiSynthesisResultQualityFeedbackServlet.decodeBodyAndLog(body, logger);
+        ApiSynthesisResultQualityFeedbackServlet.decodeRequestBodyAndLog(body, logger);
 
         verify(logger).log(UUID.fromString(requestId), searchCode, resultCode, true);
     }

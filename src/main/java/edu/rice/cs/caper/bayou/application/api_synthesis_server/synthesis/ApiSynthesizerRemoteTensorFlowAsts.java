@@ -19,14 +19,24 @@ import edu.rice.cs.caper.bayou.core.synthesizer.EvidenceExtractor;
 import edu.rice.cs.caper.bayou.core.synthesizer.ParseException;
 import edu.rice.cs.caper.bayou.core.synthesizer.Parser;
 import edu.rice.cs.caper.bayou.core.synthesizer.Synthesizer;
+import edu.rice.cs.caper.programming.ContentString;
+import edu.rice.cs.caper.programming.numbers.NatNum32;
+import org.apache.commons.io.IOUtils;
+import org.apache.http.HttpEntity;
+import org.apache.http.HttpResponse;
+import org.apache.http.client.config.RequestConfig;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.entity.StringEntity;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.json.JSONObject;
 
 import java.io.*;
-import java.net.Socket;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
+import java.util.concurrent.*;
 
 /**
  * A synthesis strategy that relies on a remote server that uses TensorFlow to create ASTs from extracted evidence.
@@ -36,28 +46,33 @@ public class ApiSynthesizerRemoteTensorFlowAsts implements ApiSynthesizer
     /**
      * Place to send logging information.
      */
-    private static final Logger _logger =
-            LogManager.getLogger(ApiSynthesizerRemoteTensorFlowAsts.class.getName());
+    private static final Logger _logger = LogManager.getLogger(ApiSynthesizerRemoteTensorFlowAsts.class.getName());
+
+    /**
+     * A pool wrapping a single thread used to perform the work of sending requests to the remote server.
+     * Work done in separate thread so we can issue a timeout for the whole operation as per _maxNetworkWaitTimeMs.
+     */
+    private final ExecutorService _sendRequestPool = Executors.newFixedThreadPool(1);
 
     /**
      * The network name of the tensor flow host server.
      */
-    private final String _tensorFlowHost;
+    private final ContentString _tensorFlowHost;
 
     /**
      * The port the tensor flow host server on which connections requests are expected.
      */
-    private final int _tensorFlowPort;
+    private final NatNum32 _tensorFlowPort;
 
     /**
-     * The maximum amount of time to wait on a response from the tensor flow server on each request.
+     * The max time in milliseconds to wait for a response from the remote server.
      */
-    private final int _maxNetworkWaitTimeMs;
+    private final NatNum32 _maxNetworkWaitTimeMs;
 
     /**
      * A classpath string that includes the class edu.rice.cs.caper.bayou.annotations.Evidence.
      */
-    private final String _evidenceClasspath;
+    private final ContentString _evidenceClasspath;
 
     /**
      * The path to android.jar.
@@ -68,40 +83,23 @@ public class ApiSynthesizerRemoteTensorFlowAsts implements ApiSynthesizer
      * @param tensorFlowHost  The network name of the tensor flow host server. May not be null.
      * @param tensorFlowPort The port the tensor flow host server on which connections requests are expected.
      *                       May not be negative.
-     * @param maxNetworkWaitTimeMs The maximum amount of time to wait on a response from the tensor flow server on each
- *                             request. 0 means forever. May not be negative.
+     * @param maxNetworkWaitTimeMs The max time in milliseconds to wait for a response from the tensor flow host.
      * @param evidenceClasspath A classpath string that includes the class edu.rice.cs.caper.bayou.annotations.Evidence.
      *                          May not be null.
      * @param androidJarPath The path to android.jar. May not be null.
      */
-    public ApiSynthesizerRemoteTensorFlowAsts(String tensorFlowHost, int tensorFlowPort, int maxNetworkWaitTimeMs,
-                                              String evidenceClasspath, File androidJarPath)
+    public ApiSynthesizerRemoteTensorFlowAsts(ContentString tensorFlowHost, NatNum32 tensorFlowPort,
+                                              NatNum32 maxNetworkWaitTimeMs, ContentString evidenceClasspath,
+                                              File androidJarPath)
     {
-        _androidJarPath = androidJarPath;
         _logger.debug("entering");
+
+        _androidJarPath = androidJarPath;
 
         if(tensorFlowHost == null)
         {
             _logger.debug("exiting");
             throw new NullPointerException("tensorFlowHost");
-        }
-
-        if(tensorFlowHost.trim().equals(""))
-        {
-            _logger.debug("exiting");
-            throw new IllegalArgumentException("tensorFlowHost must be nonempty and contain non-whitespace characters");
-        }
-
-        if(tensorFlowPort < 0)
-        {
-            _logger.debug("exiting");
-            throw new IllegalArgumentException("tensorFlowPort may not be negative");
-        }
-
-        if(maxNetworkWaitTimeMs < 0)
-        {
-            _logger.debug("exiting");
-            throw new IllegalArgumentException("tensorFlowPort may not be negative");
         }
 
         if(evidenceClasspath == null)
@@ -132,23 +130,40 @@ public class ApiSynthesizerRemoteTensorFlowAsts implements ApiSynthesizer
     }
 
     @Override
-    public Iterable<String> synthesise(String searchCode, int maxProgramCount) throws SynthesiseException
+    public Iterable<String> synthesise(String searchCode, NatNum32 maxProgramCount) throws SynthesiseException
     {
         return synthesiseHelp(searchCode, maxProgramCount, null);
     }
 
     @Override
-    public Iterable<String> synthesise(String searchCode, int maxProgramCount, int sampleCount)
+    public Iterable<String> synthesise(String searchCode, NatNum32 maxProgramCount, NatNum32 sampleCount)
             throws SynthesiseException
     {
+        _logger.debug("entering");
+
+        if(sampleCount == null)
+        {
+            _logger.debug("exiting");
+            throw new NullPointerException("sampleCount");
+        }
+
         return synthesiseHelp(searchCode, maxProgramCount, sampleCount);
     }
 
     // sampleCount of null means don't send a sampleCount key in the request message.  Means use default sample count.
-    private Iterable<String> synthesiseHelp(String code, int maxProgramCount, Integer sampleCount)
+    private Iterable<String> synthesiseHelp(String code, NatNum32 maxProgramCount, NatNum32 sampleCount)
             throws SynthesiseException
     {
         _logger.debug("entering");
+
+        /*
+         * Check parameters.
+         */
+        if(maxProgramCount == null)
+        {
+            _logger.debug("exiting");
+            throw new NullPointerException("maxProgramCount");
+        }
 
         if(code == null)
         {
@@ -156,17 +171,13 @@ public class ApiSynthesizerRemoteTensorFlowAsts implements ApiSynthesizer
             throw new NullPointerException("code");
         }
 
-        if(sampleCount != null && sampleCount < 1)
-            throw new IllegalArgumentException("sampleCount must be 1 or greater");
-
-        String combinedClassPath = _evidenceClasspath + File.pathSeparator + _androidJarPath.getAbsolutePath();
-
         /*
          * Parse the program.
          */
         Parser parser;
         try
         {
+            String combinedClassPath = _evidenceClasspath + File.pathSeparator + _androidJarPath.getAbsolutePath();
             parser = new Parser(code, combinedClassPath);
             parser.parse();
         }
@@ -192,29 +203,8 @@ public class ApiSynthesizerRemoteTensorFlowAsts implements ApiSynthesizer
          * Contact the remote Python server and provide evidence to be fed to Tensor Flow to generate solution
          * ASTs.
          */
-        String astsJson;
-        try(Socket pyServerSocket = new Socket(_tensorFlowHost, _tensorFlowPort))
-        {
-            pyServerSocket.setSoTimeout(_maxNetworkWaitTimeMs); // only wait this long for response then throw exception
-
-            JSONObject requestObj = new JSONObject();
-            requestObj.put("request type", "generate asts");
-            requestObj.put("evidence", evidence);
-            requestObj.put("max ast count", maxProgramCount);
-
-            if(sampleCount != null)
-                requestObj.put("sample count", sampleCount);
-
-            sendString(requestObj.toString(2), new DataOutputStream(pyServerSocket.getOutputStream()));
-
-            astsJson = receiveString(pyServerSocket.getInputStream());
-	        _logger.trace("astsJson:" + astsJson);
-        }
-        catch (IOException e)
-        {
-            _logger.debug("exiting");
-            throw new SynthesiseException(e);
-        }
+        String astsJson = sendGenerateAstRequest(evidence, maxProgramCount, sampleCount);
+        _logger.trace("astsJson:" + astsJson);
 
         /*
          * Synthesise results from the code and asts and return.
@@ -222,65 +212,94 @@ public class ApiSynthesizerRemoteTensorFlowAsts implements ApiSynthesizer
         List<String> synthesizedPrograms;
         synthesizedPrograms = new Synthesizer().execute(parser, astsJson);
 
-        if(synthesizedPrograms.size() > maxProgramCount) // unsure if execute always returns n output for n ast inputs.
-            synthesizedPrograms = synthesizedPrograms.subList(0, maxProgramCount);
+        if(synthesizedPrograms.size() > maxProgramCount.AsInt) // unsure if execute always returns n output for n ast inputs.
+            synthesizedPrograms = synthesizedPrograms.subList(0, maxProgramCount.AsInt);
 
         _logger.trace("synthesizedPrograms: " + synthesizedPrograms);
-
         _logger.debug("exiting");
         return synthesizedPrograms;
     }
 
-
-    /**
-     * Reads the first 4 bytes of inputStream and interprets them as a 32-bit big endian signed integer 'length'.
-     * Reads the next 'length' bytes from inputStream and returns them as a UTF-8 encoded string.
-     *
-     * @param inputStream the source of bytes
-     * @return the string form of the n+4 bytes
-     * @throws IOException if there is a problem reading from the stream.
-     */
-    // n.b. package static for unit testing without creation
-    static String receiveString(InputStream inputStream) throws IOException
+    // sampleCount of null means don't send a sampleCount key in the request message.  Means use default sample count.
+    private String sendGenerateAstRequest(String evidence, NatNum32 maxProgramCount, NatNum32 sampleCount)
+            throws SynthesiseException
     {
         _logger.debug("entering");
-        byte[] responseBytes;
+
+        /*
+         * Check parameters.
+         */
+        if(evidence == null)
         {
-            DataInputStream dis = new DataInputStream(inputStream);
-            int numResponseBytes = dis.readInt();
-            responseBytes = new byte[numResponseBytes];
-            dis.readFully(responseBytes);
+            _logger.debug("exiting");
+            throw new NullPointerException("evidence");
         }
 
-        _logger.debug("exiting");
-        return new String(responseBytes, StandardCharsets.UTF_8);
+        if(maxProgramCount == null)
+        {
+            _logger.debug("exiting");
+            throw new NullPointerException("maxProgramCount");
+        }
 
-    }
+        /*
+         * Send request to the server asynchronously so we can wait a defined time for a response.
+         */
+        Future<String> responseBody = _sendRequestPool.submit(() ->
+        {
+           RequestConfig config = RequestConfig.custom().setConnectTimeout(_maxNetworkWaitTimeMs.AsInt)
+                                                        .setSocketTimeout(_maxNetworkWaitTimeMs.AsInt).build();
 
-    /**
-     * Gets the byte representation of string in UTF-8 encoding, sends the length of the byte encoding across
-     * outputStream via writeInt(...), and then sends the byte representation via write(byte[]).
-     *
-     * @param string the string to send
-     * @param outputStream the destination of string
-     * @throws IOException if there is a problem sending the string
-     */
-    // n.b. package static for unit testing without creation
-    static void sendString(String string, DataOutput outputStream) throws IOException
-    {
-        _logger.debug("entering");
-        byte[] stringBytes = string.getBytes(StandardCharsets.UTF_8);
-        outputStream.writeInt(stringBytes.length);
-        outputStream.write(stringBytes);
-        _logger.debug("exiting");
+           try(CloseableHttpClient httpclient = HttpClientBuilder.create().setDefaultRequestConfig(config).build())
+           {
+               JSONObject requestObj = new JSONObject();
+               requestObj.put("request type", "generate asts");
+               requestObj.put("evidence", evidence);
+               requestObj.put("max ast count", maxProgramCount.AsInt);
+
+               if(sampleCount != null)
+                   requestObj.put("sample count", sampleCount);
+
+               HttpPost httppost = new HttpPost("http://" + _tensorFlowHost + ":" + _tensorFlowPort);
+               httppost.setEntity(new StringEntity(requestObj.toString(2)));
+
+               HttpResponse response = httpclient.execute(httppost);
+               int responseStatusCode = response.getStatusLine().getStatusCode();
+
+               if (responseStatusCode != 200)
+                   throw new IOException("Unexpected http response code: " + responseStatusCode);
+
+               HttpEntity entity = response.getEntity();
+
+               if (entity == null)
+                   throw new IOException("Expected response body.");
+
+
+               return IOUtils.toString(entity.getContent(), "UTF-8");
+           }
+        });
+
+        /*
+         * Wait at most _maxNetworkWaitTimeMs ms for response and return response (or exception on timeout).
+         */
+        try
+        {
+            String value = responseBody.get((long)_maxNetworkWaitTimeMs.AsInt, TimeUnit.MILLISECONDS);
+            _logger.debug("exiting");
+            return value;
+        }
+        catch (InterruptedException | ExecutionException | TimeoutException  e)
+        {
+            _logger.debug("exiting");
+            throw new SynthesiseException(e);
+        }
+
     }
 
     /**
      * @return extractor.execute(code, evidenceClasspath) if value is non-null.
      * @throws SynthesiseException if extractor.execute(code, evidenceClasspath) is null
      */
-    // n.b. package static for unit testing without creation
-    static String extractEvidence(EvidenceExtractor extractor, Parser parser)
+    private static String extractEvidence(EvidenceExtractor extractor, Parser parser)
             throws SynthesiseException, ParseException
     {
         _logger.debug("entering");

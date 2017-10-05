@@ -13,7 +13,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-package edu.rice.cs.caper.bayou.application.api_synthesis_server;
+package edu.rice.cs.caper.bayou.application.api_synthesis_server.servlet;
 
 import edu.rice.cs.caper.servlet.CorsHeaderSetter;
 import org.apache.logging.log4j.LogManager;
@@ -39,9 +39,6 @@ interface CorsAwareServlet
     default boolean applyAccessControlHeaderIfAllowed(HttpServletRequest req, HttpServletResponse resp,
                                                       CorsHeaderSetter corsHeaderSetter)
     {
-        /*
-         * Place to send logging information.
-         */
         Logger _logger = LogManager.getLogger(CorsAwareServlet.class.getName());
         _logger.debug("entering");
 

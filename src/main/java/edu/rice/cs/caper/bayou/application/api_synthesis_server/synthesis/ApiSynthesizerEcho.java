@@ -15,6 +15,7 @@ limitations under the License.
 */
 package edu.rice.cs.caper.bayou.application.api_synthesis_server.synthesis;
 
+import edu.rice.cs.caper.programming.numbers.NatNum32;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -54,7 +55,7 @@ public class ApiSynthesizerEcho implements ApiSynthesizer
     }
 
     @Override
-    public Iterable<String> synthesise(String code, int maxProgramCount) throws SynthesiseException
+    public Iterable<String> synthesise(String code, NatNum32 maxProgramCount) throws SynthesiseException
     {
         _logger.debug("entering");
 
@@ -76,7 +77,8 @@ public class ApiSynthesizerEcho implements ApiSynthesizer
     }
 
     @Override
-    public Iterable<String> synthesise(String searchCode, int maxProgramCount, int sampleCount) throws SynthesiseException
+    public Iterable<String> synthesise(String searchCode, NatNum32 maxProgramCount, NatNum32 sampleCount)
+            throws SynthesiseException
     {
         return synthesise(searchCode, maxProgramCount);
     }

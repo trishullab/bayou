@@ -15,6 +15,7 @@ limitations under the License.
 */
 package edu.rice.cs.caper.servlet;
 
+import edu.rice.cs.caper.programming.numbers.NatNum32;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.eclipse.jetty.http.HttpStatus;
@@ -27,7 +28,7 @@ import java.io.IOException;
 import java.nio.charset.Charset;
 
 /**
- * Optional base class for servlets that process POST requests but only tolerate a maximum number of bytes in the
+ * Optional base class for servlet that process POST requests but only tolerate a maximum number of bytes in the
  * request body. If larger requests are sent to the servlet, the servlet will respond with a JSON error message
  * as the body of the response.
  */
@@ -46,7 +47,7 @@ public abstract class SizeConstrainedPostBodyServlet extends HttpServlet
     /**
      * The maximum number of request body body bytes the handler will allow without responding with an error.
      */
-    private final int _requestBodyMaxByteCount;
+    private final NatNum32 _requestBodyMaxByteCount;
 
     /**
      * Whether an error response should be generated if the request contains no body.
@@ -58,7 +59,7 @@ public abstract class SizeConstrainedPostBodyServlet extends HttpServlet
      *                                responding with an error.
      * @param allowEmptyBody Whether an error response should be generated if the request contains no body.
      */
-    public SizeConstrainedPostBodyServlet(int requestBodyMaxByteCount, boolean allowEmptyBody)
+    public SizeConstrainedPostBodyServlet(NatNum32 requestBodyMaxByteCount, boolean allowEmptyBody)
     {
         _logger.debug("entering");
         _requestBodyMaxByteCount = requestBodyMaxByteCount;
@@ -102,7 +103,7 @@ public abstract class SizeConstrainedPostBodyServlet extends HttpServlet
         /*
          * Read up to _requestBodyMaxByteCount bytes from request body and store in bodyBytes
          */
-        byte[] bodyBytes = new byte[_requestBodyMaxByteCount];
+        byte[] bodyBytes = new byte[_requestBodyMaxByteCount.AsInt];
         int totalRequestBytesRead = 0;
         do
         {
@@ -149,7 +150,7 @@ public abstract class SizeConstrainedPostBodyServlet extends HttpServlet
             _logger.debug("exiting");
         }
 
-        if(totalRequestBytesRead == _requestBodyMaxByteCount && bytesRemainOutsideBodyBytes)
+        if(totalRequestBytesRead == _requestBodyMaxByteCount.AsInt && bytesRemainOutsideBodyBytes)
         {
             String errorMessage = "Request body too large. Max " + _requestBodyMaxByteCount + " bytes.";
             _logger.warn(errorMessage);
@@ -209,8 +210,9 @@ public abstract class SizeConstrainedPostBodyServlet extends HttpServlet
      *
      * @param req the request
      * @param resp the response
-     * @param body the body of the request
+     * @param requestBody the body of the request
      * @throws IOException if an error occurs processing the request
      */
-    protected abstract void doPost(HttpServletRequest req, HttpServletResponse resp, String body) throws IOException;
+    protected abstract void doPost(HttpServletRequest req, HttpServletResponse resp, String requestBody)
+            throws IOException;
 }

@@ -16,85 +16,17 @@ import argparse
 import json
 import logging.handlers
 import os
-import socket
+import sys
 from itertools import chain
+from threading import Timer
+
+from flask import request, Response, Flask
 
 import tensorflow as tf
 import bayou.core.evidence
 from bayou.core.infer import BayesianPredictor
 
-TIMEOUT = 10  # seconds
-
-
-def _start_server(save_dir):
-    logging.debug("entering")
-
-    with tf.Session() as sess:
-        logging.info("loading model")
-
-        print("===================================")
-        print("    Loading Model. Please Wait.    ")
-        print("===================================")
-
-        predictor = BayesianPredictor(save_dir, sess)  # create a predictor that can generates ASTs from evidence
-
-        #
-        # Create a socket listening to localhost:8084
-        #
-        server_socket = socket.socket()
-        server_socket.bind(('localhost', 8084))
-        server_socket.listen(20)
-        logging.info("server listening")
-
-        print("===================================")
-        print("            Bayou Ready            ")
-        print("===================================")
-
-        #
-        # 1.) Wait for an incoming client connection.
-        # 2.) Read the first 4 bytes sent and interpret as a signed 32-bit big-endian integer.
-        # 3.) Read the next k bytes specified by the integer and interpret as UTF-8 "evidence" string.
-        # 4.) Generate a collection of ASTs in JSON form via serve(...) using the evidence.
-        # 5.) Encode the JSON as a UTF-8 string.
-        # 6.) Transmit the number of bytes used for the encoded string of step 5) as a signed 32-bit big-endian integer
-        #     to the client.
-        # 7.) Transmit the bytes of the string from step 5)
-        #
-        seen_shutdown_msg = False
-        while not seen_shutdown_msg:
-            try:
-                client_socket, addr = server_socket.accept()  # await client connection
-                logging.info("connection accepted")
-
-                request_size_in_bytes = int.from_bytes(_read_bytes(4, client_socket), byteorder='big', signed=True)
-                logging.debug(request_size_in_bytes)
-
-                request_json = _read_bytes(request_size_in_bytes, client_socket).decode("utf-8")  # read request string
-                logging.debug(request_json)
-
-                request_dict = json.loads(request_json)  # parse request as a JSON string
-
-                request_type = request_dict['request type'] 
-
-                if request_type == 'generate asts':
-                    _handle_generate_asts_request(request_dict, client_socket, predictor)
-                elif request_type == 'shutdown':
-                    seen_shutdown_msg = True;
-
-                client_socket.close()
-            except Exception as e:
-                try:
-                    logging.exception(str(e))
-                    _send_string_response(json.dumps({'evidences': [], 'asts': []}, indent=2), client_socket)
-                    client_socket.close()
-                except Exception:
-                    pass
-
-        server_socket.shutdown(socket.SHUT_RDWR)
-        server_socket.close()
-
-
-def _handle_generate_asts_request(request_dict, client_socket, predictor):
+def _handle_generate_asts_request(request_dict, predictor):
 
     evidence_json_str = request_dict['evidence']  # get the evidence string from the request (also JSON)
     sample_count = request_dict.get('sample count', None)
@@ -105,8 +37,7 @@ def _handle_generate_asts_request(request_dict, client_socket, predictor):
     else:
         asts = _generate_asts(evidence_json_str, predictor, max_ast_count=max_ast_count)
     logging.debug(asts)
-
-    _send_string_response(asts, client_socket)
+    return asts
 
 
 
@@ -146,7 +77,7 @@ def okay(js, ast):
 
 def _generate_asts(evidence_json, predictor, num_samples=100, max_ast_count=10):
     logging.debug("entering")
-    logging.debug("num_samples: " + str(num_samples))
+    logging.debug("num_samples:" + str(num_samples))
 
     if num_samples < 1:
         raise ValueError("num_samples must be a natural number")
@@ -192,6 +123,27 @@ def _generate_asts(evidence_json, predictor, num_samples=100, max_ast_count=10):
     logging.debug("exiting")
     return json.dumps({'evidences': js, 'asts': okay_asts}, indent=2)
 
+def handle_http_request(predictor):
+
+    request_json = request.data.decode("utf-8")  # read request string
+    logging.debug("request_json:" + request_json)
+    request_dict = json.loads(request_json)  # parse request as a JSON string
+
+    request_type = request_dict['request type']
+
+    if request_type == 'generate asts':
+        asts = _handle_generate_asts_request(request_dict, predictor)
+        return Response(asts, mimetype="application/json")
+    elif request_type == 'shutdown':
+        shutdown()
+
+    return Response("")
+
+def shutdown():
+    print("===================================")
+    print("            Bayou Stopping         ")
+    print("===================================")
+    os._exit(0)
 
 if __name__ == '__main__':
 
@@ -215,4 +167,23 @@ if __name__ == '__main__':
                             handlers=[logging.handlers.RotatingFileHandler(logpath, maxBytes=100000000, backupCount=9) for logpath in logpaths])
 
     # Start processing requests.
-    _start_server(args.save_dir)
+
+    logging.debug("entering")
+
+    http_server = Flask(__name__)
+
+    with tf.Session() as sess:
+        logging.info("loading model")
+
+        print("===================================")
+        print("    Loading Model. Please Wait.    ")
+        print("===================================")
+
+        predictor = BayesianPredictor(args.save_dir, sess)  # create a predictor that can generates ASTs from evidence
+
+        print("===================================")
+        print("            Bayou Ready            ")
+        print("===================================")
+        http_server.add_url_rule("/", "index", lambda: handle_http_request(predictor), methods=['POST'])
+        http_server.run(host='127.0.0.1', port=8084)
+        shutdown()
