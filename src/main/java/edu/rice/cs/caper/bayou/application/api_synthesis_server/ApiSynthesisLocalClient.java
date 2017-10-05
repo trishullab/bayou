@@ -49,10 +49,11 @@ class ApiSynthesisLocalClient
     {
         List<String> results;
         {
+            ApiSynthesisClient client = new ApiSynthesisClient("localhost", Configuration.ListenPort.AsInt);
             if(sampleCount != null)
-                results = new ApiSynthesisClient("localhost", Configuration.ListenPort).synthesise(code, maxProgramCount, sampleCount);
+                results = client.synthesise(code, maxProgramCount, sampleCount);
             else
-                results = new ApiSynthesisClient("localhost", Configuration.ListenPort).synthesise(code, maxProgramCount);
+                results = client.synthesise(code, maxProgramCount);
         }
 
         for(String result : results)

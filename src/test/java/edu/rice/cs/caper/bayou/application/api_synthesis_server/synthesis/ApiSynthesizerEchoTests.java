@@ -15,11 +15,13 @@ limitations under the License.
 */
 package edu.rice.cs.caper.bayou.application.api_synthesis_server.synthesis;
 
+import edu.rice.cs.caper.programming.numbers.NatNum32;
 import org.junit.Assert;
 import org.junit.Test;
 
 public class ApiSynthesizerEchoTests
 {
+    private static final NatNum32 ONE = new NatNum32(1);
 
     @Test(expected = IllegalArgumentException.class)
     public void testConstructionNegativeDelay() throws SynthesiseException
@@ -31,7 +33,7 @@ public class ApiSynthesizerEchoTests
     @Test
     public void testSynthesise1() throws SynthesiseException
     {
-        String result = new ApiSynthesizerEcho(50).synthesise("code", 1).iterator().next();
+        String result = new ApiSynthesizerEcho(50).synthesise("code", ONE).iterator().next();
 
         Assert.assertEquals("code", result);
     }
@@ -39,7 +41,7 @@ public class ApiSynthesizerEchoTests
     @Test
     public void testSynthesise2() throws SynthesiseException
     {
-        String result = new ApiSynthesizerEcho(50).synthesise("code", 1, 3).iterator().next();
+        String result = new ApiSynthesizerEcho(50).synthesise("code", ONE, ONE).iterator().next();
 
         Assert.assertEquals("code", result);
     }

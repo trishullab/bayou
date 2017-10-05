@@ -13,9 +13,10 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-package edu.rice.cs.caper.bayou.application.api_synthesis_server;
+package edu.rice.cs.caper.bayou.application.api_synthesis_server.servlet;
 
 import edu.rice.cs.caper.bayou.application.api_synthesis_server.synthesis.*;
+import edu.rice.cs.caper.programming.numbers.NatNum32;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.eclipse.jetty.http.HttpStatus;
@@ -25,7 +26,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 /**
- * Created by barnett on 4/7/17.
+ * When a HTTP GET is received, synthesize a small program to ensure no major errors occur.
  */
 public class ApiSynthesisHealthCheckServlet extends HttpServlet
 {
@@ -39,27 +40,13 @@ public class ApiSynthesisHealthCheckServlet extends HttpServlet
      */
     private final ApiSynthesizer _synthesisRequestProcessor;
 
-
     /**
      * Public so Jetty can instantiate.
      */
     public ApiSynthesisHealthCheckServlet()
     {
         _logger.debug("entering");
-        ApiSynthesizer synthesisStrategy;
-        if(Configuration.UseSynthesizeEchoMode)
-        {
-            synthesisStrategy =  new ApiSynthesizerEcho(Configuration.EchoModeDelayMs);
-        }
-        else
-        {
-            synthesisStrategy = new ApiSynthesizerRemoteTensorFlowAsts("localhost", 8084,
-                    Configuration.SynthesizeTimeoutMs,
-                    Configuration.EvidenceClasspath,
-                    Configuration.AndroidJarPath);
-        }
-
-        _synthesisRequestProcessor = new ApiSynthesizerRewriteEvidenceDecorator(synthesisStrategy);
+        _synthesisRequestProcessor = ApiSynthesizerFactory.makeFromConfig();
         _logger.debug("exiting");
     }
 
@@ -85,7 +72,7 @@ public class ApiSynthesisHealthCheckServlet extends HttpServlet
                     "    }   \n" +
                     "}";
 
-            Iterable<String> results = _synthesisRequestProcessor.synthesise(code, 1);
+            Iterable<String> results = _synthesisRequestProcessor.synthesise(code, new NatNum32(1));
 
             if (!results.iterator().hasNext())
             {

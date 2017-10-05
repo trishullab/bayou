@@ -15,6 +15,9 @@ limitations under the License.
 */
 package edu.rice.cs.caper.bayou.application.api_synthesis_server;
 
+import edu.rice.cs.caper.programming.ContentString;
+import edu.rice.cs.caper.programming.numbers.NatNum32;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -23,31 +26,29 @@ import java.util.Properties;
 /**
  * Configuration options for the Api Synthesis Server application.
  */
-class Configuration
+public class Configuration
 {
-    static final int RequestProcessingThreadPoolSize;
+    static final NatNum32 ListenPort;
 
-    static final int ListenPort;
+    public static final NatNum32 SynthesizeTimeoutMs;
 
-    static final int SynthesizeTimeoutMs;
+    public static final boolean UseSynthesizeEchoMode;
 
-    static final boolean UseSynthesizeEchoMode;
+    public static final long EchoModeDelayMs;
 
-    static final long EchoModeDelayMs;
+    public static final String SynthesisLogBucketName;
 
-    static final String SynthesisLogBucketName;
+    public static final String SynthesisQualityFeedbackLogBucketName;
 
-    static final String SynthesisQualityFeedbackLogBucketName;
+    public static final ContentString EvidenceClasspath;
 
-    static final String EvidenceClasspath;
-
-    static final File AndroidJarPath;
+    public static final File AndroidJarPath;
 
     private static final int MEGA_BYTES_IN_BYTES = 1000000;
 
-    static int CodeCompletionRequestBodyMaxBytesCount = MEGA_BYTES_IN_BYTES;
+    public static NatNum32 CodeCompletionRequestBodyMaxBytesCount = new NatNum32(MEGA_BYTES_IN_BYTES);
 
-    static final String[] CorsAllowedOrigins;
+    public static final String[] CorsAllowedOrigins;
 
     static
     {
@@ -79,14 +80,13 @@ class Configuration
             }
         }
 
-        RequestProcessingThreadPoolSize = Integer.parseInt(properties.getProperty("RequestProcessingThreadPoolSize"));
-        ListenPort= Integer.parseInt(properties.getProperty("ListenPort"));
-        SynthesizeTimeoutMs = Integer.parseInt(properties.getProperty("SynthesizeTimeoutMs"));
+        ListenPort= NatNum32.parse(properties.getProperty("ListenPort"));
+        SynthesizeTimeoutMs = NatNum32.parse(properties.getProperty("SynthesizeTimeoutMs"));
         UseSynthesizeEchoMode = Boolean.parseBoolean(properties.getProperty("UseSynthesizeEchoMode"));
         EchoModeDelayMs = Long.parseLong(properties.getProperty("EchoModeDelayMs"));
         SynthesisLogBucketName = properties.getProperty("SynthesisLogBucketName");
         SynthesisQualityFeedbackLogBucketName = properties.getProperty("SynthesisQualityFeedbackLogBucketName");
-        EvidenceClasspath = properties.getProperty("EvidenceClasspath");
+        EvidenceClasspath = new ContentString(properties.getProperty("EvidenceClasspath"));
         AndroidJarPath = new File(properties.getProperty("AndroidJarPath"));
         CorsAllowedOrigins = properties.getProperty("CorsAllowedOrigins").split("\\s+"); // split by whitespace
 

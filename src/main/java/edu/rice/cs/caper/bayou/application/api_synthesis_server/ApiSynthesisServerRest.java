@@ -15,6 +15,10 @@ limitations under the License.
 */
 package edu.rice.cs.caper.bayou.application.api_synthesis_server;
 
+import edu.rice.cs.caper.bayou.application.api_synthesis_server.servlet.ApiSynthesisHealthCheckServlet;
+import edu.rice.cs.caper.bayou.application.api_synthesis_server.servlet.ApiSynthesisResultQualityFeedbackServlet;
+import edu.rice.cs.caper.bayou.application.api_synthesis_server.servlet.ApiSynthesisServlet;
+import edu.rice.cs.caper.programming.numbers.NatNum32;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.eclipse.jetty.server.Connector;
@@ -24,12 +28,18 @@ import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.servlet.ServletHandler;
 
 /**
- * Created by barnett on 6/5/17.
+ * A REST server that accepts requests to synthesize holes in a given program when provided with API evidence of
+ * the code completion for the hole.
  */
 class ApiSynthesisServerRest
 {
+    /**
+     * Indicates an error occurred when starting the server.
+     */
     class StartErrorException extends Exception
     {
+        StartErrorException(String message) { super(message); }
+
         StartErrorException(Throwable throwable)
         {
             super(throwable);
@@ -44,19 +54,42 @@ class ApiSynthesisServerRest
     /**
      * The port on which to listen for incoming http connections.
      */
-    private static final int _httpListenPort = Configuration.ListenPort;
+    private static final NatNum32 _httpListenPort = Configuration.ListenPort;
 
     /**
      * That maximum supported size of the body of a HTTP code completion request.
      */
-    private static int _codeCompletionRequestBodyMaxBytesCount = Configuration.CodeCompletionRequestBodyMaxBytesCount;
+    private static NatNum32 _codeCompletionRequestBodyMaxBytesCount =
+            Configuration.CodeCompletionRequestBodyMaxBytesCount;
 
+    /**
+     * Track whether start has been called.
+     */
+    private boolean _startCalled = false;
+
+    /**
+     * Starts the server. Returns immediately. May only be called once.
+     * @throws StartErrorException if there is a problem starting the server or this invocation of start is not the
+     *                             first.
+     */
+    // we don't allow start to be called twice just because the HTTP listen port should still be in use from the
+    // first start call since we have no stop action currently.
     void start() throws StartErrorException
     {
+        _logger.debug("entering");
+
+        if(_startCalled)
+        {
+            _logger.debug("exiting");
+            throw new StartErrorException("Already started");
+        }
+
+        _startCalled = true;
+
         /*
          * Create and configure the HTTP server.
          */
-        Server server = new Server(_httpListenPort);
+        Server server = new Server(_httpListenPort.AsInt);
         {
             // Pattern as per https://www.eclipse.org/jetty/documentation/9.4.x/embedding-jetty.html
             ServletHandler handler = new ServletHandler();
@@ -72,7 +105,7 @@ class ApiSynthesisServerRest
             handler.addServletWithMapping(ApiSynthesisHealthCheckServlet.class, "/apisynthesishealth");
 
             /*
-             * Code completion requests are sent via POST to CodeCompletionServletStartCompletion, however,
+             * Code completion requests are sent via POST to ApiSynthesisServlet, however,
              * the site URL for the page that sends those POST requests can house that request body as a query parameter
              * for bookmarking.  That bookmarked URL then becomes the referrer of the POST request. As such there is a
              * relationship between the required header buffer size for this server and the allowed body size.
@@ -82,7 +115,7 @@ class ApiSynthesisServerRest
             for (Connector c : server.getConnectors())
             {
                 HttpConfiguration config = c.getConnectionFactory(HttpConnectionFactory.class).getHttpConfiguration();
-                config.setRequestHeaderSize(_codeCompletionRequestBodyMaxBytesCount);
+                config.setRequestHeaderSize(_codeCompletionRequestBodyMaxBytesCount.AsInt);
             }
         }
 
@@ -91,12 +124,14 @@ class ApiSynthesisServerRest
          */
         try
         {
-            server.start();
+            server.start(); // returns immediately
             _logger.info("Started HTTP server on port " + _httpListenPort);
         }
         catch (Throwable e)
         {
             throw new StartErrorException(e);
         }
+
+        _logger.debug("exiting");
     }
 }

@@ -12,12 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import socket
+import requests
 
 if __name__ == '__main__':
-
-    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    s.connect(("localhost", 8084))
-    msg = '{ "request type" : "shutdown" }'
-    s.send(bytes([0,0,0,len(msg)])) # send 4 bytes encoding the length of msg in utf-8
-    s.send(bytes(msg.encode("utf-8"))) #send msg as as utf-8 bytes
+    try:
+        requests.post("http://127.0.0.1:8084", data='{ "request type" : "shutdown" }')
+    except Exception as e:
+        if 'Remote end closed connection without response' not in str(e):
+            raise e

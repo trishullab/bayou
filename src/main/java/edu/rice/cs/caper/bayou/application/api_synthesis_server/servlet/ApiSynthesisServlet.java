@@ -13,11 +13,12 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-package edu.rice.cs.caper.bayou.application.api_synthesis_server;
+package edu.rice.cs.caper.bayou.application.api_synthesis_server.servlet;
 
+import edu.rice.cs.caper.bayou.application.api_synthesis_server.Configuration;
 import edu.rice.cs.caper.bayou.application.api_synthesis_server.synthesis.*;
 import edu.rice.cs.caper.bayou.application.api_synthesis_server.synthesis_logging.SynthesisLoggerS3;
-import edu.rice.cs.caper.bayou.core.synthesizer.ParseException;
+import edu.rice.cs.caper.programming.numbers.NatNum32;
 import edu.rice.cs.caper.servlet.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -35,7 +36,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 /**
- * A servlet for accepting api synthesis requests and returning the results produced by an alternate network endpoint.
+ * A servlet for accepting api synthesis requests and returning synthesis results.
  */
 public class ApiSynthesisServlet extends SizeConstrainedPostBodyServlet implements JsonResponseServlet, CorsAwareServlet
 {
@@ -53,7 +54,7 @@ public class ApiSynthesisServlet extends SizeConstrainedPostBodyServlet implemen
      * The maximum input size of the request body this servlet will allow.
      * // TODO: have a value in config distinct from code completion
      */
-    private static int API_SYNTH_MAX_REQUEST_BODY_SIZE_BYTES = Configuration.CodeCompletionRequestBodyMaxBytesCount;
+    private static NatNum32 API_SYNTH_MAX_REQUEST_BODY_SIZE_BYTES = Configuration.CodeCompletionRequestBodyMaxBytesCount;
 
     /**
      * An object for setting the response CORS headers in accordance with the configuration specified
@@ -66,6 +67,9 @@ public class ApiSynthesisServlet extends SizeConstrainedPostBodyServlet implemen
      */
     private final ApiSynthesizer _synthesisRequestProcessor;
 
+    /*
+     * The name of the S3 bucket in which to store synth log messages.
+     */
     private final String _synthesisLogBucketName = Configuration.SynthesisLogBucketName;
 
     /**
@@ -75,36 +79,18 @@ public class ApiSynthesisServlet extends SizeConstrainedPostBodyServlet implemen
     {
         super(API_SYNTH_MAX_REQUEST_BODY_SIZE_BYTES, false);
 
-        ApiSynthesizer synthesisStrategy;
-        if(Configuration.UseSynthesizeEchoMode)
-        {
-            synthesisStrategy =  new ApiSynthesizerEcho(Configuration.EchoModeDelayMs);
-        }
-        else
-        {
-            synthesisStrategy = new ApiSynthesizerRemoteTensorFlowAsts("localhost", 8084,
-                    Configuration.SynthesizeTimeoutMs,
-                    Configuration.EvidenceClasspath,
-                    Configuration.AndroidJarPath);
-        }
-
+        ApiSynthesizer synthesisStrategy = ApiSynthesizerFactory.makeFromConfig();
         _synthesisRequestProcessor = new ApiSynthesizerRewriteEvidenceDecorator(synthesisStrategy);
-
-
         _logger.debug("exiting");
     }
 
     @Override
-    protected void doPost(HttpServletRequest req, HttpServletResponse resp, String body) throws IOException
+    protected void doPost(HttpServletRequest req, HttpServletResponse resp, String requestBody) throws IOException
     {
         _logger.debug("entering");
         try
         {
-            if(req == null) throw new NullPointerException("req");
-            if(resp == null) throw new NullPointerException("resp");
-            if(body == null) throw new NullPointerException("body");
-
-            doPostHelp(req, resp, body);
+            doPostHelp(req, resp, requestBody);
         }
         catch (Throwable e)
         {
@@ -120,15 +106,33 @@ public class ApiSynthesisServlet extends SizeConstrainedPostBodyServlet implemen
         }
     }
 
-    private void doPostHelp(HttpServletRequest req, HttpServletResponse resp, String body)
+    private void doPostHelp(HttpServletRequest req, HttpServletResponse resp, String requestBody)
             throws IOException, SynthesiseException
     {
         _logger.debug("entering");
-        _logger.trace("body:" + body);
+        _logger.info("api synthesis request");
+        _logger.trace("body:" + requestBody);
 
-        if(req == null) throw new NullPointerException("req");
-        if(resp == null) throw new NullPointerException("resp");
-        if(body == null) throw new NullPointerException("body");
+        /*
+         * Check inputs.
+         */
+        if(req == null)
+        {
+            _logger.debug("exiting");
+            throw new NullPointerException("req");
+        }
+
+        if(resp == null)
+        {
+            _logger.debug("exiting");
+            throw new NullPointerException("resp");
+        }
+
+        if(requestBody == null)
+        {
+            _logger.debug("exiting");
+            throw new NullPointerException("requestBody");
+        }
 
        /*
         * Check that the request comes from a valid origin.  Add appropriate CORS response headers if so.
@@ -146,7 +150,7 @@ public class ApiSynthesisServlet extends SizeConstrainedPostBodyServlet implemen
          */
         UUID requestId = UUID.randomUUID();
         _logger.info(requestId + ": api synth request");
-        _logger.trace(requestId + ": api synth request body " + body);
+        _logger.trace(requestId + ": api synth request body " + requestBody);
 
         /*
          * Parse message into a JSON object.
@@ -154,7 +158,7 @@ public class ApiSynthesisServlet extends SizeConstrainedPostBodyServlet implemen
         JSONObject jsonMessage;
         try
         {
-            jsonMessage = new JSONObject(body);
+            jsonMessage = new JSONObject(requestBody);
         }
         catch (JSONException e)
         {
@@ -188,7 +192,7 @@ public class ApiSynthesisServlet extends SizeConstrainedPostBodyServlet implemen
         /*
          * Extract max program count from the JSON message.
          */
-        int maxProgamCount;
+        NatNum32 maxProgamCount;
         {
             final String MAX_PROGRAM_COUNT = "max program count";
             if (!jsonMessage.has(MAX_PROGRAM_COUNT))
@@ -203,7 +207,7 @@ public class ApiSynthesisServlet extends SizeConstrainedPostBodyServlet implemen
 
             try
             {
-                maxProgamCount = jsonMessage.getInt(MAX_PROGRAM_COUNT);
+                maxProgamCount = new NatNum32(jsonMessage.getInt(MAX_PROGRAM_COUNT));
             }
             catch (JSONException e)
             {
@@ -220,11 +224,11 @@ public class ApiSynthesisServlet extends SizeConstrainedPostBodyServlet implemen
         /*
          * Extract sample count from request if present
          */
-        Integer sampleCount;
+        NatNum32 sampleCount;
         {
             final String SAMPLE_COUNT = "sample count";
             if (jsonMessage.has(SAMPLE_COUNT))
-                sampleCount = jsonMessage.getInt(SAMPLE_COUNT);
+                sampleCount = new NatNum32(jsonMessage.getInt(SAMPLE_COUNT));
             else
                 sampleCount = null;
         }
@@ -251,7 +255,7 @@ public class ApiSynthesisServlet extends SizeConstrainedPostBodyServlet implemen
         }
 
         /*
-         * Place synthesis results into a JSON string, send response, and close socket.
+         * Place synthesis results into a JSON string and send response.
          */
         SuccessJsonResponse responseBody = new SuccessJsonResponse();
         responseBody.put("requestId", requestId.toString());

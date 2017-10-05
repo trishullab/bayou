@@ -13,15 +13,15 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-package edu.rice.cs.caper.bayou.application.api_synthesis_server;
+package edu.rice.cs.caper.bayou.application.api_synthesis_server.servlet;
 
+import edu.rice.cs.caper.bayou.application.api_synthesis_server.Configuration;
 import edu.rice.cs.caper.bayou.application.api_synthesis_server.synthesis_logging.SynthesisQualityFeedbackLogger;
 import edu.rice.cs.caper.bayou.application.api_synthesis_server.synthesis_logging.SynthesisQualityFeedbackLoggerS3;
 import edu.rice.cs.caper.servlet.CorsHeaderSetter;
 import edu.rice.cs.caper.servlet.ErrorJsonResponse;
 import edu.rice.cs.caper.servlet.JsonResponseServlet;
 import edu.rice.cs.caper.servlet.SizeConstrainedPostBodyServlet;
-import org.apache.commons.lang3.ObjectUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.eclipse.jetty.http.HttpStatus;
@@ -59,8 +59,9 @@ public class ApiSynthesisResultQualityFeedbackServlet extends SizeConstrainedPos
      */
     private CorsHeaderSetter _corsHeaderSetter = new CorsHeaderSetter(Configuration.CorsAllowedOrigins);
 
-
-    // public no-arg constructor for reflective construction by Jetty.
+    /**
+     * Public so Jetty can instantiate.
+     */
     public ApiSynthesisResultQualityFeedbackServlet()
     {
         super(Configuration.CodeCompletionRequestBodyMaxBytesCount, false);
@@ -68,17 +69,33 @@ public class ApiSynthesisResultQualityFeedbackServlet extends SizeConstrainedPos
     }
 
     @Override
-    protected void doPost(HttpServletRequest req, HttpServletResponse resp, String body) throws IOException
+    protected void doPost(HttpServletRequest req, HttpServletResponse resp, String requestBody) throws IOException
     {
         try
         {
-	    _logger.info("feedback request");
-	
-            if(req == null) throw new NullPointerException("req");
-            if(resp == null) throw new NullPointerException("resp");
-            if(body == null) throw new NullPointerException("body");
-
             _logger.debug("entering");
+	        _logger.info("feedback request");
+
+	        /*
+	         * Check parameters
+	         */
+            if(req == null)
+            {
+                _logger.debug("exiting");
+                throw new NullPointerException("req");
+            }
+
+            if(resp == null)
+            {
+                _logger.debug("exiting");
+                throw new NullPointerException("resp");
+            }
+
+            if(requestBody == null)
+            {
+                _logger.debug("exiting");
+                throw new NullPointerException("requestBody");
+            }
 
             /*
              * Check that the request comes from a valid origin.  Add appropriate CORS response headers if so.
@@ -96,7 +113,7 @@ public class ApiSynthesisResultQualityFeedbackServlet extends SizeConstrainedPos
             JSONObject jsonMessage;
             try
             {
-                jsonMessage = new JSONObject(body);
+                jsonMessage = new JSONObject(requestBody);
             }
             catch (JSONException e)
             {
@@ -106,7 +123,8 @@ public class ApiSynthesisResultQualityFeedbackServlet extends SizeConstrainedPos
                 _logger.debug("exiting");
                 return;
             }
-            decodeBodyAndLog(jsonMessage, _feedbackLogger);
+
+            decodeRequestBodyAndLog(jsonMessage, _feedbackLogger);
 
         }
         catch (Throwable e)
@@ -124,20 +142,20 @@ public class ApiSynthesisResultQualityFeedbackServlet extends SizeConstrainedPos
     }
 
     // static for no-construction unit testing
-    static void decodeBodyAndLog(JSONObject body, SynthesisQualityFeedbackLogger logger)
+    static void decodeRequestBodyAndLog(JSONObject requestBody, SynthesisQualityFeedbackLogger logger)
     {
         _logger.debug("entering");
 
-        if(body == null)
+        if(requestBody == null)
         {
             _logger.debug("exiting");
-            throw new NullPointerException("body");
+            throw new NullPointerException("requestBody");
         }
 
-        UUID requestId = UUID.fromString(body.getString("requestId"));
-        String searchCode = body.getString("searchCode");
-        String resultCode = body.getString("resultCode");
-        boolean isGood = body.getBoolean("isGood");
+        UUID requestId = UUID.fromString(requestBody.getString("requestId"));
+        String searchCode = requestBody.getString("searchCode");
+        String resultCode = requestBody.getString("resultCode");
+        boolean isGood = requestBody.getBoolean("isGood");
 
         logger.log(requestId, searchCode, resultCode, isGood);
 
