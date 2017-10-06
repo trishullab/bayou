@@ -16,16 +16,33 @@ import argparse
 import json
 import logging.handlers
 import os
-import sys
 from itertools import chain
-from threading import Timer
-
 from flask import request, Response, Flask
 
 import tensorflow as tf
 import bayou.core.evidence
 from bayou.core.infer import BayesianPredictor
 
+
+# called when a POST request is sent to the server for AST generation
+def _handle_http_request(predictor):
+
+    request_json = request.data.decode("utf-8")  # read request string
+    logging.debug("request_json:" + request_json)
+    request_dict = json.loads(request_json)  # parse request as a JSON string
+
+    request_type = request_dict['request type']
+
+    if request_type == 'generate asts':
+        asts = _handle_generate_asts_request(request_dict, predictor)
+        return Response(asts, mimetype="application/json")
+    elif request_type == 'shutdown':
+        _shutdown()  # does not return
+
+    return Response("")
+
+
+# handle an asts generation request by generating asts
 def _handle_generate_asts_request(request_dict, predictor):
 
     evidence_json_str = request_dict['evidence']  # get the evidence string from the request (also JSON)
@@ -38,42 +55,6 @@ def _handle_generate_asts_request(request_dict, predictor):
         asts = _generate_asts(evidence_json_str, predictor, max_ast_count=max_ast_count)
     logging.debug(asts)
     return asts
-
-
-
-def _send_string_response(string, client_socket):
-    string_bytes = bytearray()
-    string_bytes.extend(string.encode("utf-8"))  # get the UTF-8 encoded bytes of the ASTs JSON
-
-    client_socket.sendall(len(string_bytes).to_bytes(4, byteorder='big', signed=True))  # send result length
-    client_socket.sendall(string_bytes)  # send result
-
-
-def _read_bytes(byte_count, connection):
-    """ read the next byte_count bytes from connection and return the results as a byte array """
-    num_left_to_read = byte_count
-    buffer = bytearray(byte_count)
-    view = memoryview(buffer)
-    while num_left_to_read > 0:
-        num_bytes_read = connection.recv_into(view, num_left_to_read)
-        # on next loop start writing bytes at the next empty position in buffer, not at start of buffer
-        view = view[num_bytes_read:]
-        num_left_to_read -= num_bytes_read
-
-    return buffer
-
-
-# Include in here any conditions that dictate whether an AST should be returned or not
-def okay(js, ast):
-    calls = ast['calls']
-    apicalls = list(set(chain.from_iterable([bayou.core.evidence.APICalls.from_call(call) for call in calls])))
-    types = list(set(chain.from_iterable([bayou.core.evidence.Types.from_call(call) for call in calls])))
-    context = list(set(chain.from_iterable([bayou.core.evidence.Context.from_call(call) for call in calls])))
-    keywords = list(set(chain.from_iterable([bayou.core.evidence.Keywords.from_call(call) for call in calls])))
-
-    ev_okay = all([c in apicalls for c in js['apicalls']]) and all([t in types for t in js['types']]) \
-        and all([c in context for c in js['context']]) and all([k in keywords for k in js['keywords']])
-    return ev_okay
 
 
 def _generate_asts(evidence_json, predictor, num_samples=100, max_ast_count=10):
@@ -117,62 +98,64 @@ def _generate_asts(evidence_json, predictor, num_samples=100, max_ast_count=10):
     i = 0
     while i < len(asts) and len(okay_asts) < max_ast_count:
         ast = asts[i]
-        if okay(js, ast):
+        if _okay(js, ast):
             okay_asts.append(ast)
         i = i + 1
 
     logging.debug("exiting")
     return json.dumps({'evidences': js, 'asts': okay_asts}, indent=2)
 
-def handle_http_request(predictor):
 
-    request_json = request.data.decode("utf-8")  # read request string
-    logging.debug("request_json:" + request_json)
-    request_dict = json.loads(request_json)  # parse request as a JSON string
+# Include in here any conditions that dictate whether an AST should be returned or not
+def _okay(js, ast):
+    calls = ast['calls']
+    apicalls = list(set(chain.from_iterable([bayou.core.evidence.APICalls.from_call(call) for call in calls])))
+    types = list(set(chain.from_iterable([bayou.core.evidence.Types.from_call(call) for call in calls])))
+    context = list(set(chain.from_iterable([bayou.core.evidence.Context.from_call(call) for call in calls])))
 
-    request_type = request_dict['request type']
+    ev_okay = all([c in apicalls for c in js['apicalls']]) and all([t in types for t in js['types']]) \
+        and all([c in context for c in js['context']])
+    return ev_okay
 
-    if request_type == 'generate asts':
-        asts = _handle_generate_asts_request(request_dict, predictor)
-        return Response(asts, mimetype="application/json")
-    elif request_type == 'shutdown':
-        shutdown()
 
-    return Response("")
-
-def shutdown():
+# terminates the Python process. Does not return.
+def _shutdown():
     print("===================================")
     print("            Bayou Stopping         ")
     print("===================================")
     os._exit(0)
+
 
 if __name__ == '__main__':
 
     # Parse command line args.
     parser = argparse.ArgumentParser()
     parser.add_argument('--save_dir', type=str, required=True, help='model directory to laod from')
-    parser.add_argument('--logs_dir', type=str, required=False, help='the directories to store log information seperated by the OS path seperator')
+    parser.add_argument('--logs_dir', type=str, required=False, help='the directories to store log information '
+                                                                     'separated by the OS path separator')
     args = parser.parse_args()
 
     if args.logs_dir is None:
-        dirpath = os.path.dirname(__file__)
-        logpaths = [os.path.join(dirpath, "../../../logs/ast_server.log")]
+        dir_path = os.path.dirname(__file__)
+        log_paths = [os.path.join(dir_path, "../../../logs/ast_server.log")]
     else:
-        logpaths = [(dir + "/ast_server.log") for dir in args.logs_dir.split(os.pathsep)]
+        log_paths = [(dir + "/ast_server.log") for dir in args.logs_dir.split(os.pathsep)]
 
     # Create the logger for the application.
-    for logpath in logpaths:
-        logging.basicConfig(format='%(asctime)s,%(msecs)d %(levelname)-8s [%(threadName)s %(filename)s:%(lineno)d] %(message)s',
-                            datefmt='%d-%m-%Y:%H:%M:%S',
-                            level=logging.DEBUG,
-                            handlers=[logging.handlers.RotatingFileHandler(logpath, maxBytes=100000000, backupCount=9) for logpath in logpaths])
+    logging.basicConfig(
+        format='%(asctime)s,%(msecs)d %(levelname)-8s [%(threadName)s %(filename)s:%(lineno)d] %(message)s',
+        datefmt='%d-%m-%Y:%H:%M:%S',
+        level=logging.DEBUG,
+        handlers=[logging.handlers.RotatingFileHandler(log_path, maxBytes=100000000, backupCount=9) for log_path in
+                  log_paths])
 
-    # Start processing requests.
 
-    logging.debug("entering")
+    logging.debug("entering") # can't move line up in program because logger not configured until this point
 
+    # Set up HTTP server, but do no start it (yet).
     http_server = Flask(__name__)
 
+    # Load model and start processing any sent requests.
     with tf.Session() as sess:
         logging.info("loading model")
 
@@ -180,11 +163,13 @@ if __name__ == '__main__':
         print("    Loading Model. Please Wait.    ")
         print("===================================")
 
-        predictor = BayesianPredictor(args.save_dir, sess)  # create a predictor that can generates ASTs from evidence
+        bp = BayesianPredictor(args.save_dir, sess)  # create a predictor that can generates ASTs from evidence
+
+        # route POST requests to / to handle_http_request
+        http_server.add_url_rule("/", "index", lambda: _handle_http_request(bp), methods=['POST'])
 
         print("===================================")
         print("            Bayou Ready            ")
         print("===================================")
-        http_server.add_url_rule("/", "index", lambda: handle_http_request(predictor), methods=['POST'])
-        http_server.run(host='127.0.0.1', port=8084)
-        shutdown()
+        http_server.run(host='127.0.0.1', port=8084)  # does not return
+        _shutdown()  # we don't shut down flask directly, but if for some reason it ever stops go ahead and stop Bayou
