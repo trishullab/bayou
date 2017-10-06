@@ -18,5 +18,7 @@ if __name__ == '__main__':
     try:
         requests.post("http://127.0.0.1:8084", data='{ "request type" : "shutdown" }')
     except Exception as e:
-        if 'Remote end closed connection without response' not in str(e):
+        if 'Remote end closed connection without response' in str(e):  # msg results in server process termination
+            pass                                                       # so don't expect response
+        else:
             raise e
