@@ -1,5 +1,7 @@
 package edu.rice.cs.caper.bayou.application.dom_driver;
 
+import com.google.common.collect.HashMultiset;
+import com.google.common.collect.Multiset;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.eclipse.jdt.core.dom.*;
@@ -10,9 +12,7 @@ import java.util.*;
  * This class extracts the Abstract Skeleton Feature
  */
 public class CFGFeature extends SourceFeature {
-    public static final String FEATURE_NAME = "CFG";
-
-    private String[] nodes;
+    private List<CFGNode> nodes;
     private CFG cfg;
     private String dot;
     private static final Logger logger = LogManager.getLogger(CFGFeature.class.getName());
@@ -20,6 +20,7 @@ public class CFGFeature extends SourceFeature {
 
     private void cfg_to_dot() {
         this.idmap = new HashMap<>();
+        this.nodes = new ArrayList<>();
         Set<Integer> visited = new HashSet<>();
 
         StringBuilder result = new StringBuilder();
@@ -34,6 +35,9 @@ public class CFGFeature extends SourceFeature {
 
             if(!this.idmap.containsKey(front.node)) {
                 id = this.idmap.size();
+                assert(id == this.nodes.size());
+                this.nodes.add(front);
+
                 this.idmap.put(front.node, id);
                 String label = front.node.toString().replace("\n", "\t").replace("\"", "\\\"");
                 result.append("  node_" + id + " [label = \"" + label + "\"];\n");
@@ -50,6 +54,8 @@ public class CFGFeature extends SourceFeature {
 
                 if(!this.idmap.containsKey(c.node)) {
                     cid = this.idmap.size();
+                    assert(cid == this.nodes.size());
+                    this.nodes.add(c);
                     this.idmap.put(c.node, cid);
                     String label = c.node.toString().replace("\n", "\t").replace("\"", "\\\"");
                     result.append("  node_" + cid + " [label = \"" + label + "\"];\n");
@@ -79,7 +85,7 @@ public class CFGFeature extends SourceFeature {
     public boolean equals(Object other) {
         return other instanceof CFGFeature &&
                 ((CFGFeature) other).cfg.equals(this.cfg) &&
-                Arrays.equals(((CFGFeature) other).nodes, this.nodes) &&
+                (((CFGFeature) other).nodes.equals(this.nodes)) &&
                 super.equals(other);
     }
 
@@ -210,6 +216,7 @@ public class CFGFeature extends SourceFeature {
         CFG graph = new CFG();
         WhileStatement wstmt;
         List<Statement> new_body;
+        Block wbody;
         for(Statement stmt : slist) {
             switch(stmt.getNodeType()) {
                 case ASTNode.WHILE_STATEMENT:
@@ -221,21 +228,34 @@ public class CFGFeature extends SourceFeature {
                 case ASTNode.ENHANCED_FOR_STATEMENT:
                     EnhancedForStatement efstmt = (EnhancedForStatement) stmt;
                     wstmt = method.getAST().newWhileStatement();
+
+                    InfixExpression test_expr = wstmt.getAST().newInfixExpression();
+                    test_expr.setLeftOperand((Expression) ASTNode.copySubtree(wstmt.getAST(), efstmt.getParameter().getName()));
+                    test_expr.setOperator(InfixExpression.Operator.EQUALS);
+                    test_expr.setRightOperand(wstmt.getAST().newNullLiteral());
+                    wstmt.setExpression((Expression) ASTNode.copySubtree(wstmt.getAST(), test_expr));
+
                     new_body = new ArrayList<>();
 
                     // create the variable and ignore the init. We are just generating CFG. No need to preserve
                     // semantic
                     VariableDeclarationFragment vdfrag = wstmt.getAST().newVariableDeclarationFragment();
-                    vdfrag.setName(efstmt.getParameter().getName());
+                    vdfrag.setName((SimpleName) ASTNode.copySubtree(wstmt.getAST(), efstmt.getParameter().getName()));
                     VariableDeclarationStatement vstmt = wstmt.getAST().newVariableDeclarationStatement(vdfrag);
                     new_body.add(vstmt);
 
                     // add the rest of the body
                     if(efstmt.getBody().getNodeType() == ASTNode.BLOCK) {
-                        new_body.addAll(((Block) efstmt.getBody()).statements());
+                        List copied_stmt = ASTNode.copySubtrees(wstmt.getAST(), ((Block) efstmt.getBody()).statements());
+                        new_body.addAll(copied_stmt);
                     } else {
-                        new_body.add(efstmt.getBody());
+                        new_body.add((Statement) ASTNode.copySubtree(wstmt.getAST(), efstmt.getBody()));
                     }
+
+                    wbody = wstmt.getAST().newBlock();
+                    wbody.statements().addAll(new_body);
+                    // set the new body
+                    wstmt.setBody(wbody);
 
                     handle_while(graph, wstmt, method);
                     break;
@@ -249,7 +269,9 @@ public class CFGFeature extends SourceFeature {
 
                     // add the init into the CFG
                     for(Expression init : init_list) {
-                        ExpressionStatement init_stmt = wstmt.getAST().newExpressionStatement(init);
+                        System.out.println(init.toString());
+                        Expression copied_init = (Expression) ASTNode.copySubtree(wstmt.getAST(), init);
+                        ExpressionStatement init_stmt = wstmt.getAST().newExpressionStatement(copied_init);
                         graph.add_end(new CFGNode(init_stmt));
                     }
 
@@ -258,20 +280,22 @@ public class CFGFeature extends SourceFeature {
 
                     // handle the body and the updates first
                     if(fstmt.getBody().getNodeType() == ASTNode.BLOCK) {
-                        new_body.addAll(((Block) fstmt.getBody()).statements());
+                        List copied_stmts = ASTNode.copySubtrees(wstmt.getAST(), ((Block) fstmt.getBody()).statements());
+                        new_body.addAll(copied_stmts);
                     } else {
-                        new_body.add(fstmt.getBody());
+                        new_body.add((Statement) ASTNode.copySubtree(wstmt.getAST(), fstmt.getBody()));
                     }
                     // add the updates into the for body
                     for(Expression u : update_list) {
-                        ExpressionStatement update_stmt = wstmt.getAST().newExpressionStatement(u);
+                        Expression copied_u = (Expression) ASTNode.copySubtree(wstmt.getAST(), u);
+                        ExpressionStatement update_stmt = wstmt.getAST().newExpressionStatement(copied_u);
                         new_body.add(update_stmt);
                     }
 
-                    Block wbody = wstmt.getAST().newBlock();
+                    wbody = wstmt.getAST().newBlock();
                     wbody.statements().addAll(new_body);
                     // set the test expressions
-                    wstmt.setExpression(fstmt.getExpression());
+                    wstmt.setExpression((Expression) ASTNode.copySubtree(wstmt.getAST(), fstmt.getExpression()));
 
                     // set the new body
                     wstmt.setBody(wbody);
@@ -294,30 +318,103 @@ public class CFGFeature extends SourceFeature {
         return graph;
     }
 
-    /**
-     * Generate a subgraph of size k starting at node_id using bfs
-     */
-    public List<Integer> gen_subgraph_bfs(int node_id, int k) {
-        CFGFeature.logger.debug("Generating subgraphs using BFS with k = {} ...", k);
-        if(this.nodes.length == 0) {
-            CFGFeature.logger.debug("Empty body.");
-            return new ArrayList<>();
+    private int gen_subgraph_helper(CFGNode start, int k, boolean bfs) {
+        Map<ASTNode, Integer> visited = new HashMap<>();
+        boolean[][] mat = new boolean[k][k];
+        Deque<CFGNode> deq = new LinkedList<>();
+        deq.add(start);
+
+        while(!deq.isEmpty()) {
+            CFGNode front;
+            if(bfs) {
+                front = deq.poll();
+            } else {
+                front = deq.pop();
+            }
+            if(visited.containsKey(front.node) && visited.get(front.node) < 0) {
+                continue;
+            }
+
+            int id;
+            if(visited.containsKey(front.node)) {
+                id = visited.get(front.node);
+            } else {
+                id = visited.size();
+            }
+            visited.put(front.node, -id);
+            if(Math.abs(id) >= k) {
+                continue;
+            }
+
+            for(CFGNode c : front.children) {
+                int cid;
+                if(visited.containsKey(c.node)) {
+                    cid = visited.get(c.node);
+                } else {
+                    cid = visited.size();
+                    visited.put(c.node, cid);
+                }
+                if(Math.abs(cid) < k) {
+                    mat[Math.abs(id)][Math.abs(cid)] = true;
+                    if(bfs) {
+                        deq.add(c);
+                    } else {
+                        deq.push(c);
+                    }
+                }
+            }
         }
-        CFGFeature.logger.debug("Done generating CFG feature.");
-        return null;
+        int result = 0;
+
+        for(int i = 0; i < k; ++i) {
+            for(int j = 0; j < k; ++j) {
+                int r;
+                if(mat[i][j]) {
+                    r = 1;
+                } else {
+                    r = 0;
+                }
+                System.out.print(r + " ");
+            }
+            System.out.println();
+        }
+        System.out.println();
+
+        Iterator it = visited.entrySet().iterator();
+        while(it.hasNext()) {
+            Map.Entry pair = (Map.Entry) it.next();
+            System.out.println(pair.getKey().toString().replace("\n", " ") + " : " + pair.getValue());
+        }
+
+        for(int i = 0; i < k; ++i) {
+            for(int j = 0; j < k; ++j) {
+                if(mat[i][j]) {
+                    result |= (1 << i * j + j);
+                }
+            }
+        }
+        return result;
     }
 
     /**
-     * Generate a subgraph of size k starting at node_id using dfs
+     * Generate a subgraph of size k starting at node_id using bfs
      */
-    public List<Integer> gen_subgraph_dfs(int node_id, int k) {
-        CFGFeature.logger.debug("Generating subgraphs using DFS with k = {} ...", k);
-        if(this.nodes.length == 0) {
+    public Multiset<Integer> gen_subgraph(int k, boolean bfs) {
+        Multiset<Integer> result = HashMultiset.create();
+        CFGFeature.logger.debug("Generating subgraphs using BFS with k = {} ...", k);
+        if(this.nodes.size() == 0) {
             CFGFeature.logger.debug("Empty body.");
-            return new ArrayList<>();
+            return result;
         }
+        for (CFGNode node : this.nodes) {
+            System.out.println(node.node.toString());
+            int code = this.gen_subgraph_helper(node, k, bfs);
+            System.out.println("code : " + code + "\n\n");
+            result.add(code);
+        }
+
         CFGFeature.logger.debug("Done generating CFG feature.");
-        return null;
+        return result;
     }
 
     /**
@@ -333,11 +430,6 @@ public class CFGFeature extends SourceFeature {
     static class CFGNode {
         ASTNode node;
         List<CFGNode> children;
-
-        public CFGNode(ASTNode n, List<CFGNode> c) {
-            this.node = n;
-            this.children = c;
-        }
 
         CFGNode(ASTNode n) {
             this.node = n;

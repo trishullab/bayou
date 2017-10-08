@@ -15,6 +15,7 @@ limitations under the License.
 */
 package edu.rice.cs.caper.bayou.application.dom_driver;
 
+import com.google.common.collect.Multiset;
 import org.apache.commons.cli.ParseException;
 import org.eclipse.jdt.core.dom.*;
 import org.junit.Test;
@@ -58,7 +59,7 @@ public class FeatureTest {
         String testDir = srcFolder.getAbsolutePath() + File.separator + "test" + File.separator + "resources" +
             File.separator + "driver";
 
-        String test_filename = "cfg6.java";
+        String test_filename = "cfg7.java";
         String src = read_file(testDir + File.separator + test_filename);
 
         ASTParser parser = ASTParser.newParser(AST.JLS3);
@@ -72,6 +73,8 @@ public class FeatureTest {
             @Override
             public boolean visit(MethodDeclaration method) {
                 CFGFeature feature = new CFGFeature(method);
+                Multiset<Integer> set = feature.gen_subgraph(4, true);
+                System.out.println(set.toString());
                 return false;
             }
         });
