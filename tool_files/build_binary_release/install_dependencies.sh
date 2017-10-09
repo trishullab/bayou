@@ -21,5 +21,8 @@ if [ $OS -ne "Linux"]; then
 	exit
 fi
 
+SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+$SCRIPT_DIR/../build_scripts/install_dependencies.sh # build_scripts/build.sh is a substep so ensure all deps met for that script
+
 apt-get update
-apt-get install openjdk-8-jdk maven zip
+apt-get install maven zip
