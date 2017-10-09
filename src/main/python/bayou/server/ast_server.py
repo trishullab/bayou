@@ -138,9 +138,10 @@ def okay(js, ast):
     apicalls = list(set(chain.from_iterable([bayou.core.evidence.APICalls.from_call(call) for call in calls])))
     types = list(set(chain.from_iterable([bayou.core.evidence.Types.from_call(call) for call in calls])))
     context = list(set(chain.from_iterable([bayou.core.evidence.Context.from_call(call) for call in calls])))
+    keywords = list(set(chain.from_iterable([bayou.core.evidence.Keywords.from_call(call) for call in calls])))
 
     ev_okay = all([c in apicalls for c in js['apicalls']]) and all([t in types for t in js['types']]) \
-        and all([c in context for c in js['context']])
+        and all([c in context for c in js['context']]) and all([k in keywords for k in js['keywords']])
     return ev_okay
 
 
