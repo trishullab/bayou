@@ -1,19 +1,17 @@
 import edu.rice.cs.caper.bayou.annotations.Evidence;
-import android.net.wifi.WifiManager;
 
 // Bayou supports two types of evidence:
 // 1. apicalls - API methods the code should invoke
 // 2. types - datatypes of objects which invoke API methods
 
-public class TestWifi {
+public class TestIO {
 
-    /* Start a wi-fi scan using the given manager */
-    void scan(WifiManager manager) {
+    /* Read from a file */
+    void read(String file) {
         { // Provide evidence within a separate block
-            // Code should call "startScan" and use "WifiManager"
-            /// call:startScan type:WifiManager
+            // Code should call "readLine" and catch exceptions
+            // with printStackTrace
+            /// calls:readLine, printStackTrace
         } // Synthesized code will replace this block
-
     }   
-
 }

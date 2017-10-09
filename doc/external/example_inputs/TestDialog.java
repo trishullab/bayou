@@ -1,10 +1,9 @@
 import edu.rice.cs.caper.bayou.annotations.Evidence;
 import android.content.Context;
 
-// Bayou supports three types of evidence:
+// Bayou supports two types of evidence:
 // 1. apicalls - API methods the code should invoke
 // 2. types - datatypes of objects which invoke API methods
-// 3. context - datatypes of variables that the code should use
 
 public class TestDialog {
 
@@ -18,7 +17,7 @@ public class TestDialog {
         { // Provide evidence within a separate block
             // Code should call "setTitle" and "setMessage"...
             /// calls: setTitle, setMessage
-            // ...on an "AlertDialog" type
+            // ...and use an "AlertDialog" type
             /// types: AlertDialog
         } // Synthesized code will replace this block
     }   

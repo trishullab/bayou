@@ -1,41 +1,16 @@
 import edu.rice.cs.caper.bayou.annotations.Evidence;
 
-// Bayou supports three types of evidence:
+// Bayou supports two types of evidence:
 // 1. apicalls - API methods the code should invoke
 // 2. types - datatypes of objects which invoke API methods
-// 3. context - datatypes of variables that the code should use
 
 public class TestIO {
-
-    // NOTE: Bayou only supports one synthesis task in a given
-    // program at a time, so please comment out the rest.
 
     /* Read from a file */
     void read(String file) {
         { // Provide evidence within a separate block
-            // Code should call "readLine"
-            /// call:readLine
+            // Code should call "readLine" and use the FileReader type
+            /// call:readLine type:FileReader
         } // Synthesized code will replace this block
     }   
-
-    /*
-    // Read from a file, more specifically using the
-    // string argument given
-    void read(String file) {
-        {
-            /// call:readLine context:String
-        }
-    }   
-    */
-
-    /*
-    // Read from the file, performing exception handling
-    // properly by printing the stack trace
-    void readWithErrorHandling() {
-        String file;
-        {
-            /// calls: readLine, printStackTrace, close context: String
-        }
-    }   
-    */
 }
