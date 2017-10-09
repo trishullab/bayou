@@ -111,7 +111,7 @@ class APICalls(Evidence):
             for i in range(self.max_num):
                 inp = tf.slice(inputs, [0, i, 0], [config.batch_size, 1, self.vocab_size])
                 inp = tf.reshape(inp, [-1, self.vocab_size])
-                encoding = tf.layers.dense(inp, self.units)
+                encoding = tf.layers.dense(inp, self.units, activation=tf.nn.tanh)
                 w = tf.get_variable('w{}'.format(i), [self.units, config.latent_size])
                 b = tf.get_variable('b{}'.format(i), [config.latent_size])
                 latent_encoding += tf.nn.xw_plus_b(encoding, w, b)
@@ -167,7 +167,7 @@ class Types(Evidence):
             for i in range(self.max_num):
                 inp = tf.slice(inputs, [0, i, 0], [config.batch_size, 1, self.vocab_size])
                 inp = tf.reshape(inp, [-1, self.vocab_size])
-                encoding = tf.layers.dense(inp, self.units)
+                encoding = tf.layers.dense(inp, self.units, activation=tf.nn.tanh)
                 w = tf.get_variable('w{}'.format(i), [self.units, config.latent_size])
                 b = tf.get_variable('b{}'.format(i), [config.latent_size])
                 latent_encoding += tf.nn.xw_plus_b(encoding, w, b)
@@ -222,7 +222,7 @@ class Context(Evidence):
             for i in range(self.max_num):
                 inp = tf.slice(inputs, [0, i, 0], [config.batch_size, 1, self.vocab_size])
                 inp = tf.reshape(inp, [-1, self.vocab_size])
-                encoding = tf.layers.dense(inp, self.units)
+                encoding = tf.layers.dense(inp, self.units, activation=tf.nn.tanh)
                 w = tf.get_variable('w{}'.format(i), [self.units, config.latent_size])
                 b = tf.get_variable('b{}'.format(i), [config.latent_size])
                 latent_encoding += tf.nn.xw_plus_b(encoding, w, b)
