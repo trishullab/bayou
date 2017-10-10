@@ -142,6 +142,7 @@ def train(clargs):
                    avg_generation / config.num_batches,
                    avg_loss / config.num_batches))
 
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(formatter_class=argparse.RawDescriptionHelpFormatter,
                                      description=textwrap.dedent(HELP))
