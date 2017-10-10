@@ -78,7 +78,7 @@ def train(clargs):
 
     with tf.Session() as sess:
         tf.global_variables_initializer().run()
-        saver = tf.train.Saver(tf.global_variables())
+        saver = tf.train.Saver(tf.global_variables(), max_to_keep=None)
         tf.train.write_graph(sess.graph_def, clargs.save, 'model.pbtxt')
         tf.train.write_graph(sess.graph_def, clargs.save, 'model.pb', as_text=False)
 
