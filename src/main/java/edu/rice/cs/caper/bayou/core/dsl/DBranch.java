@@ -158,8 +158,12 @@ public class DBranch extends DASTNode {
         /* synthesize the condition */
         List<Expression> clauses = new ArrayList<>();
         for (DAPICall call : _cond) {
-            /* this cast is safe (unless NN has gone crazy) because a call that returns void cannot be in condition */
-            Assignment assignment = (Assignment) call.synthesize(env);
+            ASTNode synth = call.synthesize(env);
+            if (! (synth instanceof Assignment)) /* a call that returns void cannot be in condition */
+                throw new SynthesisException(SynthesisException.MalformedASTFromNN);
+            Assignment assignment = (Assignment) synth;
+
+            // if the method does not return a boolean, add != null or != 0 to the condition
             if (call.method == null || (!call.method.getReturnType().equals(Boolean.class) &&
                                         !call.method.getReturnType().equals(boolean.class))) {
                 ParenthesizedExpression pAssignment = ast.newParenthesizedExpression();
@@ -167,7 +171,10 @@ public class DBranch extends DASTNode {
                 InfixExpression notEqualsNull = ast.newInfixExpression();
                 notEqualsNull.setLeftOperand(pAssignment);
                 notEqualsNull.setOperator(InfixExpression.Operator.NOT_EQUALS);
-                notEqualsNull.setRightOperand(ast.newNullLiteral());
+                if (call.method != null && call.method.getReturnType().isPrimitive())
+                    notEqualsNull.setRightOperand(ast.newNumberLiteral("0")); // primitive but not boolean
+                else // some object
+                    notEqualsNull.setRightOperand(ast.newNullLiteral());
 
                 clauses.add(notEqualsNull);
             }
