@@ -85,7 +85,7 @@ public class EvidenceExtractor extends ASTVisitor {
         } else if (binding.getName().equals("keywords")) {
             for (Object arg : invocation.arguments()) {
                 StringLiteral a = (StringLiteral) arg;
-                output.keywords.add(a.getLiteralValue());
+                output.keywords.add(a.getLiteralValue().toLowerCase());
             }
         } else throw new SynthesisException(SynthesisException.InvalidEvidenceType);
 
