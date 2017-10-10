@@ -70,7 +70,7 @@ def train(clargs):
 
     with tf.Session() as sess:
         tf.global_variables_initializer().run()
-        saver = tf.train.Saver(tf.global_variables())
+        saver = tf.train.Saver(tf.global_variables(), max_to_keep=None)
         tf.train.write_graph(sess.graph_def, clargs.save, 'model.pbtxt')
         tf.train.write_graph(sess.graph_def, clargs.save, 'model.pb', as_text=False)
 
@@ -105,7 +105,7 @@ def train(clargs):
                           (step, config.num_epochs * config.num_batches, i,
                            np.mean(loss),
                            end - start))
-            checkpoint_dir = os.path.join(clargs.save, 'model.ckpt')
+            checkpoint_dir = os.path.join(clargs.save, 'model{}.ckpt'.format(i))
             saver.save(sess, checkpoint_dir)
             print('Model checkpointed: {}. Average for epoch loss: {:.3f}'.format
                   (checkpoint_dir,

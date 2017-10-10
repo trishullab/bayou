@@ -129,7 +129,7 @@ def train(clargs):
                            np.mean(mean),
                            np.mean(covariance),
                            end - start))
-            checkpoint_dir = os.path.join(clargs.save, 'model.ckpt')
+            checkpoint_dir = os.path.join(clargs.save, 'model{}.ckpt'.format(i))
             saver.save(sess, checkpoint_dir)
             print('Model checkpointed: {}. Average for epoch evidence: {:.3f}, latent: {:.3f}, '
                   'generation: {:.3f}, loss: {:.3f}'.format
