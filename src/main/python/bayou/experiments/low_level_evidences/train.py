@@ -54,6 +54,12 @@ Config options should be given as a JSON file (see config.json for example):
             "units": 32,                  | Size of the encoder hidden state
             "max_num": 10,                | Maximum number of this type of evidence
             "tile": 1                     | Repeat the encoding n times (to boost its signal)
+        },                                |
+        {                                 |
+            "name": "keywords",           | Name of evidence ("keywords")
+            "units": 64,                  | Size of the encoder hidden state
+            "max_num": 10,                | Maximum number of this type of evidence
+            "tile": 1                     | Repeat the encoding n times (to boost its signal)
         }                                 |
     ],                                    |
     "decoder": {                          | Provide parameters for the decoder here

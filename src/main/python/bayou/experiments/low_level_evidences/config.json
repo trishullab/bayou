@@ -24,6 +24,12 @@
             "units": 64,
             "max_num": 1,
             "tile": 1
+        },
+        {
+            "name": "keywords",
+            "units": 64,
+            "max_num": 1,
+            "tile": 1
         }
     ],
     "decoder": {
