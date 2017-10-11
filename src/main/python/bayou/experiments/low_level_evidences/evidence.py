@@ -91,7 +91,7 @@ class APICalls(Evidence):
         for i, apicalls in enumerate(data):
             for j, c in enumerate(apicalls):
                 if c in self.vocab:
-                    wrangled[i, j, self.vocab[c]] = 1
+                    wrangled[i, 0, self.vocab[c]] = 1
         return wrangled
 
     def placeholder(self, config):
@@ -147,7 +147,7 @@ class Types(Evidence):
         for i, types in enumerate(data):
             for j, t in enumerate(types):
                 if t in self.vocab:
-                    wrangled[i, j, self.vocab[t]] = 1
+                    wrangled[i, 0, self.vocab[t]] = 1
         return wrangled
 
     def placeholder(self, config):
@@ -202,7 +202,7 @@ class Context(Evidence):
         for i, context in enumerate(data):
             for j, c in enumerate(context):
                 if c in self.vocab:
-                    wrangled[i, j, self.vocab[c]] = 1
+                    wrangled[i, 0, self.vocab[c]] = 1
         return wrangled
 
     def placeholder(self, config):

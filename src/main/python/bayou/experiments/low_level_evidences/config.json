@@ -10,19 +10,19 @@
         {
             "name": "apicalls",
             "units": 128,
-            "max_num": 10,
+            "max_num": 1,
             "tile": 1
         },
         {
             "name": "types",
             "units": 64,
-            "max_num": 10,
+            "max_num": 1,
             "tile": 1
         },
         {
             "name": "context",
             "units": 64,
-            "max_num": 10,
+            "max_num": 1,
             "tile": 1
         }
     ],
