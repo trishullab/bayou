@@ -59,7 +59,7 @@ public class FeatureTest {
         String testDir = srcFolder.getAbsolutePath() + File.separator + "test" + File.separator + "resources" +
             File.separator + "driver";
 
-        String test_filename = "cfg8.java";
+        String test_filename = "skeleton1.java";
         String src = read_file(testDir + File.separator + test_filename);
 
         ASTParser parser = ASTParser.newParser(AST.JLS3);
@@ -75,6 +75,9 @@ public class FeatureTest {
                 CFGFeature feature = new CFGFeature(method);
                 Multiset<Integer> set = feature.gen_subgraph(4, true);
                 System.out.println(set.toString());
+
+                SkeletonFeature sf = new SkeletonFeature(method);
+                System.out.println(sf.toString());
                 return false;
             }
         });

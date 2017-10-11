@@ -40,6 +40,7 @@ public class SkeletonFeature extends SourceFeature {
         switch (n.TYPE) {
             case SkeletonNode.COND : return true;
             case SkeletonNode.LOOP : return true;
+            case SkeletonNode.OP : return true;
             case SkeletonNode.SEQ :
                 return ((Seq) n).children.stream().anyMatch(SkeletonFeature::is_interesting);
             default: return false;
@@ -75,41 +76,75 @@ public class SkeletonFeature extends SourceFeature {
             }
         } else if(s.getNodeType() == ASTNode.DO_STATEMENT) {
             SkeletonFeature.logger.debug("This is a do statement.");
-            SkeletonNode child = SkeletonFeature.gen_skeleton(((DoStatement) s).getBody());
-            SkeletonFeature.logger.debug("child = {}", child.toString());
-            if(SkeletonFeature.is_interesting(child)) {
-                SkeletonFeature.logger.debug("Interesting child.");
-                return new Loop(child);
-            } else {
-                SkeletonFeature.logger.debug("No interesting child.");
-                return new Loop(Empty.ONLY);
+            DoStatement dstmt = (DoStatement) s;
+            List<SkeletonNode> children = new ArrayList<>();
+
+            // check the body
+            children.add(SkeletonFeature.gen_skeleton(dstmt.getBody()));
+            children.addAll(SkeletonFeature.get_op(dstmt.getExpression()));
+
+            SkeletonFeature.logger.debug("children = {}", children.toString());
+
+            // filter by interestingness
+            List<SkeletonNode> valid_children = children
+                .stream()
+                .filter(SkeletonFeature::is_interesting)
+                .collect(Collectors.toList());
+            SkeletonFeature.logger.debug("interesting children = {}", valid_children);
+
+            if(valid_children.isEmpty()) {
+                valid_children.add(Empty.ONLY);
             }
+            return new Loop(valid_children);
         } else if(s.getNodeType() == ASTNode.ENHANCED_FOR_STATEMENT) {
             SkeletonFeature.logger.debug("This is an enhanced for statement.");
             SkeletonNode child = SkeletonFeature.gen_skeleton(((EnhancedForStatement) s).getBody());
             SkeletonFeature.logger.debug("child = {}", child.toString());
+
+            List<SkeletonNode> c = new ArrayList<>();
             if(SkeletonFeature.is_interesting(child)) {
                 SkeletonFeature.logger.debug("Interesting child.");
-                return new Loop(child);
+                c.add(child);
             } else {
                 SkeletonFeature.logger.debug("No interesting child.");
-                return new Loop(Empty.ONLY);
+                c.add(Empty.ONLY);
             }
+
+            return new Loop(c);
         } else if(s.getNodeType() == ASTNode.FOR_STATEMENT) {
             SkeletonFeature.logger.debug("This is a for statement.");
-            SkeletonNode child = SkeletonFeature.gen_skeleton(((ForStatement) s).getBody());
-            SkeletonFeature.logger.debug("child = {}", child.toString());
-            if(SkeletonFeature.is_interesting(child)) {
-                SkeletonFeature.logger.debug("Interesting child.");
-                return new Loop(child);
-            } else {
-                SkeletonFeature.logger.debug("No interesting child.");
-                return new Loop(Empty.ONLY);
+            ForStatement fstmt = (ForStatement) s;
+            List<SkeletonNode> children = new ArrayList<>();
+
+            // check the inits and updates
+            for(int i = 0; i < fstmt.initializers().size(); ++i) {
+                children.addAll(SkeletonFeature.get_op((ASTNode) fstmt.initializers().get(i)));
             }
+            children.add(SkeletonFeature.gen_skeleton(((ForStatement) s).getBody()));
+            for(int i = 0; i < fstmt.updaters().size(); ++i) {
+                children.addAll(SkeletonFeature.get_op((ASTNode) fstmt.updaters().get(i)));
+            }
+
+            SkeletonFeature.logger.debug("children = {}", children.toString());
+
+            // filter by interestingness
+            List<SkeletonNode> valid_children = children
+                .stream()
+                .filter(SkeletonFeature::is_interesting)
+                .collect(Collectors.toList());
+            SkeletonFeature.logger.debug("interesting children = {}", valid_children);
+
+            if(valid_children.isEmpty()) {
+                valid_children.add(Empty.ONLY);
+            }
+            return new Loop(valid_children);
         } else if(s.getNodeType() == ASTNode.IF_STATEMENT) {
             SkeletonFeature.logger.debug("This is an if statement.");
             IfStatement ifs = (IfStatement) s;
-            List<SkeletonNode> children = new ArrayList<>(2);
+            List<SkeletonNode> children = new ArrayList<>();
+
+            // check the test expression
+            children.addAll(SkeletonFeature.get_op(ifs.getExpression()));
 
             // check then branch
             SkeletonFeature.logger.debug("Looking at then branch.");
@@ -155,17 +190,60 @@ public class SkeletonFeature extends SourceFeature {
             return Empty.ONLY;
         } else if(s.getNodeType() == ASTNode.WHILE_STATEMENT) {
             SkeletonFeature.logger.debug("This is a while statement.");
-            SkeletonNode child = SkeletonFeature.gen_skeleton(((WhileStatement) s).getBody());
-            SkeletonFeature.logger.debug("child = {}", child);
-            if(SkeletonFeature.is_interesting(child)) {
-                SkeletonFeature.logger.debug("Interesting child.");
-                return new Loop(child);
-            } else {
-                SkeletonFeature.logger.debug("No interesting child.");
-                return new Loop(Empty.ONLY);
+
+            // get all children together
+            List<SkeletonNode> children = new ArrayList<>();
+            WhileStatement wstmt = (WhileStatement) s;
+            children.addAll(SkeletonFeature.get_op(wstmt.getExpression()));
+            children.add(SkeletonFeature.gen_skeleton(((WhileStatement) s).getBody()));
+            SkeletonFeature.logger.debug("children = {}", children);
+
+            // filter by interestingness
+            List<SkeletonNode> valid_children = children
+                .stream()
+                .filter(SkeletonFeature::is_interesting)
+                .collect(Collectors.toList());
+            SkeletonFeature.logger.debug("interesting children = {}", valid_children);
+
+            if(valid_children.isEmpty()) {
+                valid_children.add(Empty.ONLY);
             }
+            return new Loop(valid_children);
         }
         return Empty.ONLY;
+    }
+
+    /**
+     * Get all the interesting operations in this ast node
+     */
+    private static List<SkeletonNode> get_op(ASTNode node) {
+        List<SkeletonNode> result = new ArrayList<>();
+        node.accept(new ASTVisitor() {
+            @Override
+            public boolean visit(InfixExpression expr) {
+                expr.getLeftOperand().accept(this);
+                if(!expr.getOperator().equals(InfixExpression.Operator.EQUALS)) {
+                    result.add(new Op(expr.getOperator().toString()));
+                }
+                expr.getRightOperand().accept(this);
+                return true;
+            }
+
+            @Override
+            public boolean visit(PrefixExpression expr) {
+                result.add(new Op(expr.getOperator().toString()));
+                expr.getOperand().accept(this);
+                return true;
+            }
+
+            @Override
+            public boolean visit(PostfixExpression expr) {
+                result.add(new Op(expr.getOperator().toString()));
+                expr.getOperand().accept(this);
+                return super.visit(expr);
+            }
+        });
+        return result;
     }
 
     public SkeletonFeature(MethodDeclaration input) {
@@ -207,6 +285,10 @@ public class SkeletonFeature extends SourceFeature {
         return children;
     }
 
+    static private String readOp() throws Exception {
+        return sexpr_scanner.nextOp();
+    }
+
     /**
      * This is the helper function used to read skeleton s expressions
      */
@@ -224,7 +306,7 @@ public class SkeletonFeature extends SourceFeature {
 
         // read car
         SkeletonNode node;
-        String atom = sexpr_scanner.nextAtom();
+        String atom = sexpr_scanner.nextWord();
         sexpr_scanner.skipSpace();
         switch(atom) {
             case "cond":
@@ -234,7 +316,10 @@ public class SkeletonFeature extends SourceFeature {
                 node = new Seq(readSExprList());
                 break;
             case "loop":
-                node = new Loop(readSExpr());
+                node = new Loop(readSExprList());
+                break;
+            case "op":
+                node = new Op(readOp());
                 break;
             default:
                 throw new SkeletonFeatureException("Unknown atom: " + atom);
@@ -273,9 +358,19 @@ public class SkeletonFeature extends SourceFeature {
             return c;
         }
 
-        public String nextAtom() throws IOException {
+        public String nextWord() throws IOException {
             StringBuilder builder = new StringBuilder();
             while(Character.isAlphabetic(this.peekChar())) {
+                builder.append((char) this.nextChar());
+            }
+            return builder.toString();
+        }
+
+        public String nextOp() throws IOException {
+            StringBuilder builder = new StringBuilder();
+            char p = (char) this.peekChar();
+            while(p == '+' || p == '-' || p == '*' || p == '/' ||
+                  p == '>' || p == '<' || p == '=') {
                 builder.append((char) this.nextChar());
             }
             return builder.toString();
@@ -291,6 +386,7 @@ public class SkeletonFeature extends SourceFeature {
         static public final int SEQ = 1;
         static public final int LOOP = 2;
         static public final int EMPTY = 3;
+        static public final int OP = 4;
         public int TYPE = -1;
     }
     public static class Cond extends SkeletonNode {
@@ -346,8 +442,8 @@ public class SkeletonFeature extends SourceFeature {
         }
     }
     public static class Loop extends SkeletonNode {
-        public SkeletonNode child;
-        public Loop(SkeletonNode c) {this.child = c; this.TYPE = SkeletonNode.LOOP;}
+        public List<SkeletonNode> children;
+        public Loop(List<SkeletonNode> c) {this.children = c; this.TYPE = SkeletonNode.LOOP;}
 
         @Override
         public boolean equals(Object o) {
@@ -355,12 +451,37 @@ public class SkeletonFeature extends SourceFeature {
                 return false;
             }
             Loop other_loop = (Loop) o;
-            return this.child.equals(other_loop.child);
+            return this.children.equals(other_loop.children);
         }
 
         @Override
         public String toString() {
-            return "(loop " + this.child.toString() + ")";
+            StringBuilder result = new StringBuilder();
+            result.append("(loop ");
+            for(SkeletonNode c : this.children) {
+                result.append(c.toString());
+            }
+            result.append(")");
+            return result.toString();
+        }
+    }
+
+    public static class Op extends SkeletonNode {
+        public String operation;
+        public Op(String o) {this.operation = o; this.TYPE = SkeletonNode.OP;}
+
+        @Override
+        public boolean equals(Object o) {
+            if(!(o instanceof Op)) {
+                return false;
+            }
+            Op other_op = (Op) o;
+            return this.operation.equals(other_op.operation);
+        }
+
+        @Override
+        public String toString() {
+            return this.operation;
         }
     }
     public static class Empty extends SkeletonNode {

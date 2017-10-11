@@ -276,7 +276,6 @@ public class CFGFeature extends SourceFeature {
 
                     // add the init into the CFG
                     for(Expression init : init_list) {
-                        System.out.println(init.toString());
                         Expression copied_init = (Expression) ASTNode.copySubtree(wstmt.getAST(), init);
                         ExpressionStatement init_stmt = wstmt.getAST().newExpressionStatement(copied_init);
                         graph.add_end(new CFGNode(init_stmt));
@@ -387,6 +386,7 @@ public class CFGFeature extends SourceFeature {
         }
         int result = 0;
 
+        /*
         for(int i = 0; i < k; ++i) {
             for(int j = 0; j < k; ++j) {
                 int r;
@@ -405,6 +405,7 @@ public class CFGFeature extends SourceFeature {
             Map.Entry pair = (Map.Entry) o;
             System.out.println(pair.getKey().toString().replace("\n", " ") + " : " + pair.getValue());
         }
+        */
 
         for(int i = 0; i < k; ++i) {
             for(int j = 0; j < k; ++j) {
@@ -427,9 +428,9 @@ public class CFGFeature extends SourceFeature {
             return result;
         }
         for (CFGNode node : this.nodes) {
-            System.out.println(node.node.toString());
+            // System.out.println(node.node.toString());
             int code = this.gen_subgraph_helper(node, k, bfs);
-            System.out.println("code : " + code + "\n\n");
+            // System.out.println("code : " + code + "\n\n");
             result.add(code);
         }
 
@@ -444,7 +445,7 @@ public class CFGFeature extends SourceFeature {
         CFGFeature.logger.debug("Creating CFG feature object...");
         this.cfg = this.gen_cfg(input.getBody().statements(), input);
         this.cfg_to_dot();
-        System.out.println(this.dot);
+        // System.out.println(this.dot);
     }
 
     static class CFGNode {

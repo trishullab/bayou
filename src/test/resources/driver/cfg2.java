@@ -23,10 +23,14 @@ import java.io.File;
 class Main {
   public main() {
     System.out.println("Foo.");
-    if(true) {
-      System.out.println("Foo");
+    if(b1) {
+      System.out.println("Foo1");
+    } else if(b2) {
+      System.out.println("Foo2");
+    } else if(b3) {
+      System.out.println("Foo3");
     } else {
-      System.out.println("bar");
+      System.out.println("foo4");
     }
   }
 }
