@@ -59,7 +59,7 @@ public class FeatureTest {
         String testDir = srcFolder.getAbsolutePath() + File.separator + "test" + File.separator + "resources" +
             File.separator + "driver";
 
-        String test_filename = "cfg7.java";
+        String test_filename = "cfg8.java";
         String src = read_file(testDir + File.separator + test_filename);
 
         ASTParser parser = ASTParser.newParser(AST.JLS3);

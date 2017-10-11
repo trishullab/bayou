@@ -16,10 +16,9 @@ public class CFGFeature extends SourceFeature {
     private CFG cfg;
     private String dot;
     private static final Logger logger = LogManager.getLogger(CFGFeature.class.getName());
-    private Map<ASTNode, Integer> idmap;
 
     private void cfg_to_dot() {
-        this.idmap = new HashMap<>();
+        Map<ASTNode, Integer> idmap = new HashMap<>();
         this.nodes = new ArrayList<>();
         Set<Integer> visited = new HashSet<>();
 
@@ -33,16 +32,20 @@ public class CFGFeature extends SourceFeature {
             CFGNode front = queue.poll();
             int id;
 
-            if(!this.idmap.containsKey(front.node)) {
-                id = this.idmap.size();
+            if(!idmap.containsKey(front.node)) {
+                id = idmap.size();
                 assert(id == this.nodes.size());
                 this.nodes.add(front);
 
-                this.idmap.put(front.node, id);
+                idmap.put(front.node, id);
                 String label = front.node.toString().replace("\n", "\t").replace("\"", "\\\"");
-                result.append("  node_" + id + " [label = \"" + label + "\"];\n");
+                result.append("  node_");
+                result.append(id);
+                result.append(" [label = \"");
+                result.append(label);
+                result.append("\"];\n");
             } else {
-                id = this.idmap.get(front.node);
+                id = idmap.get(front.node);
             }
             if(visited.contains(id)) {
                 continue;
@@ -52,33 +55,33 @@ public class CFGFeature extends SourceFeature {
             for(CFGNode c : front.children) {
                 int cid;
 
-                if(!this.idmap.containsKey(c.node)) {
-                    cid = this.idmap.size();
+                if(!idmap.containsKey(c.node)) {
+                    cid = idmap.size();
                     assert(cid == this.nodes.size());
                     this.nodes.add(c);
-                    this.idmap.put(c.node, cid);
+                    idmap.put(c.node, cid);
                     String label = c.node.toString().replace("\n", "\t").replace("\"", "\\\"");
-                    result.append("  node_" + cid + " [label = \"" + label + "\"];\n");
+                    result.append("  node_");
+                    result.append(cid);
+                    result.append(" [label = \"");
+                    result.append(label);
+                    result.append("\"];\n");
                 } else {
-                    cid = this.idmap.get(c.node);
+                    cid = idmap.get(c.node);
                 }
 
-                result.append("  node_" + id + " -> " + "node_" + cid + ";\n");
+                result.append("  node_");
+                result.append(id);
+                result.append(" -> ");
+                result.append("node_");
+                result.append(cid);
+                result.append(";\n");
                 queue.add(c);
             }
         }
 
         result.append("}\n");
         this.dot = result.toString();
-    }
-
-    private int get_id(ASTNode node) {
-        if(this.idmap.containsKey(node)) {
-            return this.idmap.get(node);
-        }
-        int id = this.idmap.size();
-        this.idmap.put(node, id);
-        return id;
     }
 
     @Override
@@ -152,13 +155,15 @@ public class CFGFeature extends SourceFeature {
 
             // handle the else branch
             CFG else_cfg;
+            List<Statement> stmt_list;
             if(ifs.getElseStatement().getNodeType() == ASTNode.BLOCK) {
-                List<Statement> stmt_list = ((Block) ifs.getElseStatement()).statements();
-                else_cfg = this.gen_cfg(stmt_list, method);
+                stmt_list = ((Block) ifs.getElseStatement()).statements();
             } else {
-                else_cfg = new CFG();
-                else_cfg.add_end(new CFGNode(ifs.getElseStatement()));
+                stmt_list = new ArrayList<>();
+                stmt_list.add(ifs.getElseStatement());
             }
+
+            else_cfg = this.gen_cfg(stmt_list, method);
 
             test.children.add(then_cfg.start);
             test.children.add(else_cfg.start);
@@ -184,21 +189,22 @@ public class CFGFeature extends SourceFeature {
 
         if(scase.isDefault()) {
             // default. Get the rest of the statements
-            b.statements().addAll(ss.subList(index + 1, ss.size()));
+            b.statements().addAll(ASTNode.copySubtrees(b.getAST(), ss.subList(index + 1, ss.size())));
             return b;
         } else {
             IfStatement new_if = method.getAST().newIfStatement();
 
             // set up the condition
             InfixExpression test_expr = new_if.getAST().newInfixExpression();
-            test_expr.setLeftOperand(test);
+            test_expr.setLeftOperand((Expression) ASTNode.copySubtree(new_if.getAST(), test));
             test_expr.setOperator(InfixExpression.Operator.EQUALS);
-            test_expr.setRightOperand(scase.getExpression());
+            test_expr.setRightOperand((Expression) ASTNode.copySubtree(new_if.getAST(), scase.getExpression()));
             new_if.setExpression(test_expr);
 
             int i = index + 1;
             while(i < ss.size() && ss.get(i).getNodeType() != ASTNode.SWITCH_CASE) {
-                b.statements().add(ss.get(i));
+                b.statements().add(ASTNode.copySubtree(b.getAST(), ss.get(i)));
+                ++i;
             }
 
             new_if.setThenStatement(b);
@@ -216,6 +222,7 @@ public class CFGFeature extends SourceFeature {
         CFG graph = new CFG();
         WhileStatement wstmt;
         List<Statement> new_body;
+        Statement last_stmt = null;
         Block wbody;
         for(Statement stmt : slist) {
             switch(stmt.getNodeType()) {
@@ -311,9 +318,23 @@ public class CFGFeature extends SourceFeature {
                     handle_cond(graph, ifs, method);
                     break;
                 default:
+                    // we only want basic blocks
+                    /*
+                    if(last_stmt == null ||
+                        last_stmt.getNodeType() == ASTNode.WHILE_STATEMENT ||
+                        last_stmt.getNodeType() == ASTNode.DO_STATEMENT ||
+                        last_stmt.getNodeType() == ASTNode.ENHANCED_FOR_STATEMENT ||
+                        last_stmt.getNodeType() == ASTNode.FOR_STATEMENT ||
+                        last_stmt.getNodeType() == ASTNode.IF_STATEMENT ||
+                        last_stmt.getNodeType() == ASTNode.SWITCH_CASE ||
+                        last_stmt.getNodeType() == ASTNode.SWITCH_STATEMENT) {
+                        graph.add_end(new CFGNode(stmt));
+                    }
+                    */
                     graph.add_end(new CFGNode(stmt));
                     break;
             }
+            last_stmt = stmt;
         }
         return graph;
     }
@@ -380,9 +401,8 @@ public class CFGFeature extends SourceFeature {
         }
         System.out.println();
 
-        Iterator it = visited.entrySet().iterator();
-        while(it.hasNext()) {
-            Map.Entry pair = (Map.Entry) it.next();
+        for (Object o : visited.entrySet()) {
+            Map.Entry pair = (Map.Entry) o;
             System.out.println(pair.getKey().toString().replace("\n", " ") + " : " + pair.getValue());
         }
 
