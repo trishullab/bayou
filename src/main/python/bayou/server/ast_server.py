@@ -21,7 +21,7 @@ from flask import request, Response, Flask
 
 import tensorflow as tf
 import bayou.core.evidence
-from bayou.core.infer import BayesianPredictor
+from bayou.experiments.low_level_evidences.infer import BayesianPredictor
 
 
 # called when a POST request is sent to the server for AST generation
