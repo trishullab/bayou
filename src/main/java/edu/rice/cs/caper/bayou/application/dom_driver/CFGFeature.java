@@ -300,8 +300,13 @@ public class CFGFeature extends SourceFeature {
 
                     wbody = wstmt.getAST().newBlock();
                     wbody.statements().addAll(new_body);
+
                     // set the test expressions
-                    wstmt.setExpression((Expression) ASTNode.copySubtree(wstmt.getAST(), fstmt.getExpression()));
+                    if(fstmt.getExpression() != null) {
+                        wstmt.setExpression((Expression) ASTNode.copySubtree(wstmt.getAST(), fstmt.getExpression()));
+                    } else {
+                        wstmt.setExpression(wstmt.getAST().newBooleanLiteral(true));
+                    }
 
                     // set the new body
                     wstmt.setBody(wbody);
@@ -443,9 +448,14 @@ public class CFGFeature extends SourceFeature {
      */
     public CFGFeature(MethodDeclaration input) {
         CFGFeature.logger.debug("Creating CFG feature object...");
-        this.cfg = this.gen_cfg(input.getBody().statements(), input);
-        this.cfg_to_dot();
-        // System.out.println(this.dot);
+        List stmt_list = input.getBody().statements();
+        if(!stmt_list.isEmpty()) {
+            this.cfg = this.gen_cfg(input.getBody().statements(), input);
+            this.cfg_to_dot();
+        } else {
+            this.cfg = null;
+            this.nodes = new ArrayList<>();
+        }
     }
 
     static class CFGNode {
