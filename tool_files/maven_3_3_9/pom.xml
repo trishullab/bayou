@@ -84,10 +84,5 @@
           <artifactId>commons-math3</artifactId>
           <version>3.6.1</version>
       </dependency>
-      <dependency>
-          <groupId>com.google.guava</groupId>
-          <artifactId>guava</artifactId>
-          <version>23.1-jre</version>
-      </dependency>
   </dependencies>
 </project>
