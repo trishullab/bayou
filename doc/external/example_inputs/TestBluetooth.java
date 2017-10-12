@@ -1,9 +1,8 @@
 import android.bluetooth.BluetoothAdapter;
 
-// Bayou supports three types of evidence:
+// Bayou supports two types of evidence:
 // 1. apicalls - API methods the code should invoke
 // 2. types - datatypes of objects which invoke API methods
-// 3. context - datatypes of variables that the code should use
 
 public class TestBluetooth {
 
@@ -14,10 +13,9 @@ public class TestBluetooth {
         String address = "00:43:A8:23:10:F0";
 
         { // Provide evidence within a separate block
-            // Code should call "getInputStream"...
-            /// call:getInputStream
-            // ...on a "BluetoothSocket" type
-            /// type:BluetoothSocket
+            // Code should call "getInputStream"
+            // and use the "BluetoothSocket' type
+            /// call:getInputStream type:BluetoothSocket
         } // Synthesized code will replace this block
     }   
 

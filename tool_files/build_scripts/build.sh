@@ -18,15 +18,23 @@
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 BUILD_DIR="${SCRIPT_DIR}/out"
 
+cat $SCRIPT_DIR/../../src/main/resources/model/model67.ckpt.data-00000-of-00001.part.* > $SCRIPT_DIR/../../src/main/resources/model/model67.ckpt.data-00000-of-00001
+
 rm -rf $BUILD_DIR
 mkdir $BUILD_DIR
 
 cd ../maven_3_3_9/bayou
 VER="$(printf 'VERSION=${project.version}\n0\n' | mvn org.apache.maven.plugins:maven-help-plugin:2.1.1:evaluate | grep '^VERSION' | cut -c9-)" # get the project version number... e.g 1.1.0
-mvn clean package
+
+# do copy of Evidence.class between compile and package phase so unit tests run in 2nd phase apply to new class file 
+mvn clean compile
+cp target/classes/edu/rice/cs/caper/bayou/annotations/Evidence.class ../../../src/main/resources/artifacts/classes/edu/rice/cs/caper/bayou/annotations/Evidence.class
+mvn package
+
 cp target/bayou-$VER-jar-with-dependencies.jar $BUILD_DIR
 cp -r ../../../src/main/python $BUILD_DIR
 cp -r ../../../src/main/resources $BUILD_DIR
+rm $BUILD_DIR/resources/model/*part*
 cp ../../../src/main/bash/binary_release/*.sh $BUILD_DIR
 cp  target/bayou-$VER-jar-with-dependencies.jar $BUILD_DIR
 cp -r ../../../doc/external/example_inputs $BUILD_DIR

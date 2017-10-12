@@ -1,3 +1,3 @@
 #!/bin/bash
 
-time echo -e '\x00''\x00''\x00''\x59' { \"apicalls\": [ \"setTitle\", \"setMessage\" ], \"types\": [ \"AlertDialog\" ], \"context\": [] } | nc 127.0.0.1 8084
+time curl -H "Content-Type: application/json"  -d '{ "request type" : "generate asts", "max ast count" : 1  , "evidence": "{\"apicalls\": [ \"setTitle\", \"setMessage\" ], \"types\": [ \"AlertDialog\" ], \"context\": [], \"keywords\": []}" }' http://localhost:8084/

@@ -16,6 +16,8 @@ limitations under the License.
 package edu.rice.cs.caper.bayou.application.api_synthesis_server.synthesis;
 
 
+import edu.rice.cs.caper.programming.numbers.NatNum32;
+
 /**
  * A method for taking code decorated with evidence of non-present api calls and completing the code with
  * those api calls.
@@ -30,7 +32,7 @@ public interface ApiSynthesizer
      * @return copies of the given code with different possible replacements of the evidence with api calls
      * @throws SynthesiseException if an error occurs in trying to synthesize the code completions
      */
-    Iterable<String> synthesise(String code, int maxProgramCount) throws SynthesiseException;
+    Iterable<String> synthesise(String code, NatNum32 maxProgramCount) throws SynthesiseException;
 
     /**
      * Takes the given code containing evidence an replaces the evidence with corresponding api calls.
@@ -41,5 +43,5 @@ public interface ApiSynthesizer
      * @return copies of the given code with different possible replacements of the evidence with api calls
      * @throws SynthesiseException if an error occurs in trying to synthesize the code completions
      */
-    Iterable<String> synthesise(String code, int maxProgramCount, int sampleCount) throws SynthesiseException;
+    Iterable<String> synthesise(String code, NatNum32 maxProgramCount, NatNum32 sampleCount) throws SynthesiseException;
 }

@@ -38,6 +38,23 @@ public class Environment {
         mu_scope = new ArrayList<>();
         prettyNameCounts = new HashMap<>();
         imports = new HashSet<>();
+
+        // initialize pretty name counts with variables in scope
+        for (Variable v : scope) {
+            int lastCharIdx = -1;
+            for (int i = 0; i < v.name.length(); i++)
+                if (! Character.isDigit(v.name.charAt(i)))
+                    lastCharIdx = i;
+            lastCharIdx += 1;
+            String prettyName = v.name.substring(0, lastCharIdx);
+            if (lastCharIdx == v.name.length()) {
+                prettyNameCounts.put(prettyName, 0);
+                continue;
+            }
+            Integer num = Integer.parseInt(v.name.substring(lastCharIdx));
+            boolean exists = prettyNameCounts.containsKey(prettyName);
+            prettyNameCounts.put(prettyName, exists? Math.max(prettyNameCounts.get(prettyName), num): num);
+        }
     }
 
     public TypedExpression addVariable(Type type) {

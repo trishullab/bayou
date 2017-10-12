@@ -2,7 +2,7 @@
     "latent_size": 32,
     "batch_size": 50,
     "num_epochs": 100,
-    "learning_rate": 0.002,
+    "learning_rate": 0.0002,
     "print_step": 1,
     "alpha": 0.001,
     "beta": 1e-05,

@@ -17,6 +17,7 @@ import numpy as np
 import os
 import re
 import json
+import itertools
 from collections import Counter
 
 from bayou.experiments.low_level_evidences.utils import CONFIG_ENCODER, CONFIG_INFER, C0, UNK
@@ -43,6 +44,8 @@ class Evidence(object):
                 e = Types()
             elif name == 'context':
                 e = Context()
+            elif name == 'keywords':
+                e = Keywords()
             else:
                 raise TypeError('Invalid evidence name: {}'.format(name))
             e.init_config(evidence, chars_vocab)
@@ -91,7 +94,7 @@ class APICalls(Evidence):
         for i, apicalls in enumerate(data):
             for j, c in enumerate(apicalls):
                 if c in self.vocab:
-                    wrangled[i, j, self.vocab[c]] = 1
+                    wrangled[i, 0, self.vocab[c]] = 1
         return wrangled
 
     def placeholder(self, config):
@@ -111,7 +114,7 @@ class APICalls(Evidence):
             for i in range(self.max_num):
                 inp = tf.slice(inputs, [0, i, 0], [config.batch_size, 1, self.vocab_size])
                 inp = tf.reshape(inp, [-1, self.vocab_size])
-                encoding = tf.layers.dense(inp, self.units)
+                encoding = tf.layers.dense(inp, self.units, activation=tf.nn.tanh)
                 w = tf.get_variable('w{}'.format(i), [self.units, config.latent_size])
                 b = tf.get_variable('b{}'.format(i), [config.latent_size])
                 latent_encoding += tf.nn.xw_plus_b(encoding, w, b)
@@ -147,7 +150,7 @@ class Types(Evidence):
         for i, types in enumerate(data):
             for j, t in enumerate(types):
                 if t in self.vocab:
-                    wrangled[i, j, self.vocab[t]] = 1
+                    wrangled[i, 0, self.vocab[t]] = 1
         return wrangled
 
     def placeholder(self, config):
@@ -167,7 +170,7 @@ class Types(Evidence):
             for i in range(self.max_num):
                 inp = tf.slice(inputs, [0, i, 0], [config.batch_size, 1, self.vocab_size])
                 inp = tf.reshape(inp, [-1, self.vocab_size])
-                encoding = tf.layers.dense(inp, self.units)
+                encoding = tf.layers.dense(inp, self.units, activation=tf.nn.tanh)
                 w = tf.get_variable('w{}'.format(i), [self.units, config.latent_size])
                 b = tf.get_variable('b{}'.format(i), [config.latent_size])
                 latent_encoding += tf.nn.xw_plus_b(encoding, w, b)
@@ -202,7 +205,7 @@ class Context(Evidence):
         for i, context in enumerate(data):
             for j, c in enumerate(context):
                 if c in self.vocab:
-                    wrangled[i, j, self.vocab[c]] = 1
+                    wrangled[i, 0, self.vocab[c]] = 1
         return wrangled
 
     def placeholder(self, config):
@@ -222,7 +225,7 @@ class Context(Evidence):
             for i in range(self.max_num):
                 inp = tf.slice(inputs, [0, i, 0], [config.batch_size, 1, self.vocab_size])
                 inp = tf.reshape(inp, [-1, self.vocab_size])
-                encoding = tf.layers.dense(inp, self.units)
+                encoding = tf.layers.dense(inp, self.units, activation=tf.nn.tanh)
                 w = tf.get_variable('w{}'.format(i), [self.units, config.latent_size])
                 b = tf.get_variable('b{}'.format(i), [config.latent_size])
                 latent_encoding += tf.nn.xw_plus_b(encoding, w, b)
@@ -241,6 +244,69 @@ class Context(Evidence):
         args = [re.sub('<.*', r'', arg) for arg in args]  # remove generics
         args = [re.sub('\[\]', r'', arg) for arg in args]  # remove array type
         return [arg for arg in args if not arg == '']
+
+
+class Keywords(Evidence):
+
+    def read_data_point(self, program):
+        keywords = program['keywords'] if 'keywords' in program else []
+        return list(set(keywords))
+
+    def set_chars_vocab(self, data):
+        counts = Counter([c for keywords in data for c in keywords])
+        self.chars = sorted(counts.keys(), key=lambda w: counts[w], reverse=True)
+        self.vocab = dict(zip(self.chars, range(len(self.chars))))
+        self.vocab_size = len(self.vocab)
+
+    def wrangle(self, data):
+        wrangled = np.zeros((len(data), self.max_num, self.vocab_size), dtype=np.int32)
+        for i, keywords in enumerate(data):
+            for j, k in enumerate(keywords):
+                if k in self.vocab:
+                    wrangled[i, 0, self.vocab[k]] = 1
+        return wrangled
+
+    def placeholder(self, config):
+        return tf.placeholder(tf.float32, [config.batch_size, self.max_num, self.vocab_size])
+
+    def exists(self, inputs):
+        i = tf.reduce_sum(inputs, axis=2)
+        return tf.not_equal(tf.count_nonzero(i, axis=1), 0)
+
+    def init_sigma(self, config):
+        with tf.variable_scope('keywords'):
+            self.sigma = tf.get_variable('sigma', [])
+
+    def encode(self, inputs, config):
+        with tf.variable_scope('keywords'):
+            latent_encoding = tf.zeros([config.batch_size, config.latent_size])
+            for i in range(self.max_num):
+                inp = tf.slice(inputs, [0, i, 0], [config.batch_size, 1, self.vocab_size])
+                inp = tf.reshape(inp, [-1, self.vocab_size])
+                encoding = tf.layers.dense(inp, self.units, activation=tf.nn.tanh)
+                w = tf.get_variable('w{}'.format(i), [self.units, config.latent_size])
+                b = tf.get_variable('b{}'.format(i), [config.latent_size])
+                latent_encoding += tf.nn.xw_plus_b(encoding, w, b)
+            return latent_encoding
+
+    def evidence_loss(self, psi, encoding, config):
+        sigma_sq = tf.square(self.sigma)
+        loss = 0.5 * (config.latent_size * tf.log(2 * np.pi * sigma_sq + 1e-10)
+                      + tf.square(encoding - psi) / sigma_sq)
+        return loss
+
+    @staticmethod
+    def split_camel(s):
+        s = re.sub('(.)([A-Z][a-z]+)', r'\1#\2', s)  # UC followed by LC
+        s = re.sub('([a-z0-9])([A-Z])', r'\1#\2', s)  # LC followed by UC
+        return s.split('#')
+
+    @staticmethod
+    def from_call(call):
+        qualified = call.split('(')[0]
+        qualified = re.sub('<.*>', '', qualified).split('.')  # remove generics for keywords
+        kws = list(itertools.chain.from_iterable([Keywords.split_camel(s) for s in qualified]))
+        return [kw.lower() for kw in kws]
 
 
 # TODO: handle Javadoc with word2vec

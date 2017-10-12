@@ -17,6 +17,7 @@ package edu.rice.cs.caper.bayou.application.api_synthesis_server.synthesis;
 
 import edu.rice.cs.caper.bayou.core.lexer.UnexpectedEndOfCharacters;
 import edu.rice.cs.caper.bayou.core.parser.evidencel._1_0.ParseException;
+import edu.rice.cs.caper.programming.numbers.NatNum32;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -25,17 +26,20 @@ import java.util.Collections;
 
 public class ApiSynthesizerRewriteEvidenceDecoratorTests
 {
+    private static final NatNum32 ONE = new NatNum32(1);
+
     class ApiSynthesizerJustReturn implements ApiSynthesizer
     {
 
         @Override
-        public Iterable<String> synthesise(String code, int maxProgramCount) throws SynthesiseException
+        public Iterable<String> synthesise(String code, NatNum32 maxProgramCount) throws SynthesiseException
         {
             return Collections.singletonList(code);
         }
 
         @Override
-        public Iterable<String> synthesise(String code, int maxProgramCount, int sampleCount) throws SynthesiseException
+        public Iterable<String> synthesise(String code, NatNum32 maxProgramCount, NatNum32 sampleCount)
+                throws SynthesiseException
         {
             return Collections.singletonList(code);
         }
@@ -66,17 +70,17 @@ public class ApiSynthesizerRewriteEvidenceDecoratorTests
     public void testSynthesizeNoIdent() throws SynthesiseException
     {
         ApiSynthesizerJustReturn inner = new ApiSynthesizerJustReturn();
-        new ApiSynthesizerRewriteEvidenceDecorator(inner).synthesise("/// dog,", 1).iterator().next();
+        new ApiSynthesizerRewriteEvidenceDecorator(inner).synthesise("/// dog,", ONE).iterator().next();
     }
 
     private void testSynthesizeHelp(String program, String correct) throws SynthesiseException
     {
         ApiSynthesizerJustReturn inner = new ApiSynthesizerJustReturn();
 
-        String result = new ApiSynthesizerRewriteEvidenceDecorator(inner).synthesise(program, 1).iterator().next();
+        String result = new ApiSynthesizerRewriteEvidenceDecorator(inner).synthesise(program, ONE).iterator().next();
         Assert.assertEquals(correct, result);
 
-        result = new ApiSynthesizerRewriteEvidenceDecorator(inner).synthesise(program, 1, 1).iterator().next();
+        result = new ApiSynthesizerRewriteEvidenceDecorator(inner).synthesise(program, ONE, ONE).iterator().next();
         Assert.assertEquals(correct, result);
     }
 

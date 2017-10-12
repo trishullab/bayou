@@ -1,7 +1,6 @@
-// Bayou supports three types of evidence:
+// Bayou supports two types of evidence:
 // 1. apicalls - API methods the code should invoke
 // 2. types - datatypes of objects which invoke API methods
-// 3. context - datatypes of variables that the code should use
 
 public class TestCamera {
 
@@ -13,10 +12,8 @@ public class TestCamera {
         int height = 480;
 
         { // Provide evidence within a separate block
-            // Code should call "startPreview"...
-            /// call:startPreview
-            // ...and use an "int" as argument
-            /// context:int
+            // Code should call "startPreview" and use "Camera"
+            /// call:startPreview type:Camera
         } // Synthesized code will replace this block
     }   
 

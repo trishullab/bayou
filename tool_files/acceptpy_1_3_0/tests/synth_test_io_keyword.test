@@ -1,0 +1,5 @@
+{
+  "test type": "shell command",
+  "command" : "../out/synthesize.sh synth_test_io_keyword.java",
+  "expect stdout contains": "BEGIN PROGRAM"
+}

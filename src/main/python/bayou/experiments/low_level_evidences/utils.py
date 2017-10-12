@@ -127,6 +127,7 @@ def extract_evidence(clargs):
         json.dump({'programs': programs}, fp=f, indent=2)
     print('done')
 
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(formatter_class=argparse.RawDescriptionHelpFormatter,
                                      description=HELP)
