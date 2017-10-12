@@ -22,6 +22,7 @@ from flask import request, Response, Flask
 import tensorflow as tf
 import bayou.core.evidence
 from bayou.experiments.low_level_evidences.infer import BayesianPredictor
+from bayou.experiments.low_level_evidences.evidence import Keywords
 
 
 # called when a POST request is sent to the server for AST generation
@@ -72,6 +73,13 @@ def _generate_asts(evidence_json: str, predictor, num_samples: int=100, max_ast_
 
     js = json.loads(evidence_json)  # parse evidence as a JSON string
 
+    # enhance keywords evidence from others
+    keywords = [Keywords.split_camel(c) for c in js['apicalls']] + \
+               [Keywords.split_camel(t) for t in js['types']] + \
+               [Keywords.split_camel(c) for c in js['context']]
+    keywords = [kw.lower() for kw in list(chain.from_iterable(keywords))]
+    js['keywords'] = list(set(js['keywords'] + keywords))
+
     #
     # Generate ASTs from evidence.
     #
@@ -115,10 +123,9 @@ def _okay(js, ast):
     apicalls = list(set(chain.from_iterable([bayou.core.evidence.APICalls.from_call(call) for call in calls])))
     types = list(set(chain.from_iterable([bayou.core.evidence.Types.from_call(call) for call in calls])))
     context = list(set(chain.from_iterable([bayou.core.evidence.Context.from_call(call) for call in calls])))
-    keywords = list(set(chain.from_iterable([bayou.core.evidence.Keywords.from_call(call) for call in calls])))
 
     ev_okay = all([c in apicalls for c in js['apicalls']]) and all([t in types for t in js['types']]) \
-        and all([c in context for c in js['context']]) and all([k in keywords for k in js['keywords']])
+        and all([c in context for c in js['context']])
     return ev_okay
 
 

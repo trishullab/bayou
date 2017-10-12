@@ -15,7 +15,6 @@ limitations under the License.
 */
 package edu.rice.cs.caper.bayou.application.dom_driver;
 
-import com.google.common.collect.Multiset;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import edu.rice.cs.caper.bayou.core.dsl.DASTNode;
@@ -50,27 +49,12 @@ public class Visitor extends ASTVisitor {
         DSubTree ast;
         List<Sequence> sequences;
         String javadoc;
-        List<String> skeletons;
-        List<Multiset<Integer>> cfg3_bfs;
-        List<Multiset<Integer>> cfg4_bfs;
-        List<Multiset<Integer>> cfg3_dfs;
-        List<Multiset<Integer>> cfg4_dfs;
 
-        public JSONOutputWrapper(String file, DSubTree ast, List<Sequence> sequences, String javadoc,
-                                 List<String> skeletons,
-                                 List<Multiset<Integer>> cfgs3_bfs,
-                                 List<Multiset<Integer>> cfgs4_bfs,
-                                 List<Multiset<Integer>> cfgs3_dfs,
-                                 List<Multiset<Integer>> cfgs4_dfs) {
+        public JSONOutputWrapper(String file, DSubTree ast, List<Sequence> sequences, String javadoc) {
             this.file = file;
             this.ast = ast;
             this.sequences = sequences;
             this.javadoc = javadoc;
-            this.skeletons = skeletons;
-            this.cfg3_bfs = cfgs3_bfs;
-            this.cfg4_bfs = cfgs4_bfs;
-            this.cfg3_dfs = cfgs3_dfs;
-            this.cfg4_dfs = cfgs4_dfs;
         }
     }
 
@@ -100,23 +84,6 @@ public class Visitor extends ASTVisitor {
             allMethods.addAll(Arrays.asList(cls.getMethods()));
         List<MethodDeclaration> constructors = allMethods.stream().filter(m -> m.isConstructor()).collect(Collectors.toList());
         List<MethodDeclaration> publicMethods = allMethods.stream().filter(m -> !m.isConstructor() && Modifier.isPublic(m.getModifiers())).collect(Collectors.toList());
-
-        List<String> skeletons = new ArrayList<>();
-        List<Multiset<Integer>> cfg3_bfs = new ArrayList<>();
-        List<Multiset<Integer>> cfg4_bfs = new ArrayList<>();
-        List<Multiset<Integer>> cfg3_dfs = new ArrayList<>();
-        List<Multiset<Integer>> cfg4_dfs = new ArrayList<>();
-        for(MethodDeclaration m : allMethods) {
-            DecoratedSkeletonFeature skeleton = new DecoratedSkeletonFeature(m);
-            skeletons.add(skeleton.toString());
-
-            CFGFeature cfg = new CFGFeature(m);
-            cfg3_bfs.add(cfg.gen_subgraph(3, true));
-            cfg4_bfs.add(cfg.gen_subgraph(4, true));
-            cfg3_dfs.add(cfg.gen_subgraph(3, false));
-            cfg4_dfs.add(cfg.gen_subgraph(4, false));
-        }
-
 
         Set<Pair<DSubTree, String>> astsWithJavadoc = new HashSet<>();
         if (!constructors.isEmpty() && !publicMethods.isEmpty()) {
@@ -151,8 +118,7 @@ public class Visitor extends ASTVisitor {
                 astDoc.getLeft().updateSequences(sequences, options.MAX_SEQS, options.MAX_SEQ_LENGTH);
                 List<Sequence> uniqSequences = new ArrayList<>(new HashSet<>(sequences));
                 if (okToPrintAST(uniqSequences))
-                    printJson(astDoc.getLeft(), uniqSequences, astDoc.getRight(),
-                        skeletons, cfg3_bfs, cfg4_bfs, cfg3_dfs, cfg4_dfs);
+                    printJson(astDoc.getLeft(), uniqSequences, astDoc.getRight());
             } catch (DASTNode.TooManySequencesException e) {
                 System.err.println("Too many sequences from AST");
             } catch (DASTNode.TooLongSequenceException e) {
@@ -163,15 +129,9 @@ public class Visitor extends ASTVisitor {
     }
 
     boolean first = true;
-    private void printJson(DSubTree ast, List<Sequence> sequences, String javadoc,
-                           List<String> skeletons,
-                           List<Multiset<Integer>> cfg3_bfs,
-                           List<Multiset<Integer>> cfg4_bfs,
-                           List<Multiset<Integer>> cfg3_dfs,
-                           List<Multiset<Integer>> cfg4_dfs) {
+    private void printJson(DSubTree ast, List<Sequence> sequences, String javadoc) {
         String file = options.cmdLine.getOptionValue("input-file");
-        JSONOutputWrapper out = new JSONOutputWrapper(file, ast, sequences, javadoc,
-            skeletons, cfg3_bfs, cfg4_bfs, cfg3_dfs, cfg4_dfs);
+        JSONOutputWrapper out = new JSONOutputWrapper(file, ast, sequences, javadoc);
         output.write(first? "" : ",\n");
         output.write(gson.toJson(out));
         output.flush();
