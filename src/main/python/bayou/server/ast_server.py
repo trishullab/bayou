@@ -22,6 +22,7 @@ from flask import request, Response, Flask
 import tensorflow as tf
 import bayou.core.evidence
 from bayou.experiments.low_level_evidences.infer import BayesianPredictor
+from bayou.experiments.low_level_evidences.evidence import Keywords
 
 
 # called when a POST request is sent to the server for AST generation
@@ -71,6 +72,13 @@ def _generate_asts(evidence_json: str, predictor, num_samples: int=100, max_ast_
         raise ValueError("max_asts_count must be a natural number")
 
     js = json.loads(evidence_json)  # parse evidence as a JSON string
+
+    # enhance keywords evidence from others
+    keywords = [Keywords.split_camel(c) for c in js['apicalls']] + \
+               [Keywords.split_camel(t) for t in js['types']] + \
+               [Keywords.split_camel(c) for c in js['context']]
+    keywords = [kw.lower() for kw in list(chain.from_iterable(keywords))]
+    js['keywords'] = list(set(js['keywords'] + keywords))
 
     #
     # Generate ASTs from evidence.
