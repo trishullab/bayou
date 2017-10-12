@@ -76,7 +76,7 @@ public class FeatureTest {
                 Multiset<Integer> set = feature.gen_subgraph(4, true);
                 System.out.println(set.toString());
 
-                SkeletonFeature sf = new SkeletonFeature(method);
+                DecoratedSkeletonFeature sf = new DecoratedSkeletonFeature(method);
                 System.out.println(sf.toString());
                 return false;
             }
