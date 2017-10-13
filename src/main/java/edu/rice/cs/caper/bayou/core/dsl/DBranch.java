@@ -206,7 +206,9 @@ public class DBranch extends DASTNode {
                 statement.setExpression(expr);
         }
 
-        /* synthesize then and else body */
+        /* synthesize then and else body in separate scopes */
+        List<Scope> scopes = new ArrayList<>(); // will contain then and else scopes
+        env.pushScope();
         Block thenBlock = ast.newBlock();
         for (DASTNode dNode : _then) {
             ASTNode aNode = dNode.synthesize(env);
@@ -216,7 +218,9 @@ public class DBranch extends DASTNode {
                 thenBlock.statements().add(ast.newExpressionStatement((Expression) aNode));
         }
         statement.setThenStatement(thenBlock);
+        scopes.add(env.popScope());
 
+        env.pushScope();
         Block elseBlock = ast.newBlock();
         for (DASTNode dNode : _else) {
             ASTNode aNode = dNode.synthesize(env);
@@ -226,6 +230,9 @@ public class DBranch extends DASTNode {
                 elseBlock.statements().add(ast.newExpressionStatement((Expression) aNode));
         }
         statement.setElseStatement(elseBlock);
+        scopes.add(env.popScope());
+
+        env.getScope().join(scopes);
 
         return statement;
     }

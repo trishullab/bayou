@@ -193,7 +193,8 @@ public class DLoop extends DASTNode {
                 statement.setExpression(expr);
         }
 
-        /* synthesize the body */
+        /* synthesize the body under a new scope */
+        env.pushScope();
         Block body = ast.newBlock();
         for (DASTNode dNode : _body) {
             ASTNode aNode = dNode.synthesize(env);
@@ -203,6 +204,12 @@ public class DLoop extends DASTNode {
                 body.statements().add(ast.newExpressionStatement((Expression) aNode));
         }
         statement.setBody(body);
+
+        /* join with parent scope itself (the "sub-scope" of a loop if condition was false) */
+        List<Scope> scopes = new ArrayList<>();
+        scopes.add(env.popScope());
+        scopes.add(new Scope(env.getScope()));
+        env.getScope().join(scopes);
 
         return statement;
     }

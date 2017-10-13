@@ -15,9 +15,8 @@ limitations under the License.
 */
 package edu.rice.cs.caper.bayou.core.dsl;
 
-import edu.rice.cs.caper.bayou.core.synthesizer.Environment;
-import edu.rice.cs.caper.bayou.core.synthesizer.SynthesisException;
-import edu.rice.cs.caper.bayou.core.synthesizer.Variable;
+import edu.rice.cs.caper.bayou.core.synthesizer.*;
+import edu.rice.cs.caper.bayou.core.synthesizer.Type;
 import org.eclipse.jdt.core.dom.*;
 
 import java.util.*;
@@ -167,16 +166,22 @@ public class DExcept extends DASTNode {
             throw new SynthesisException(SynthesisException.MalformedASTFromNN);
 
         /* synthesize catch clause body */
+        List<Scope> scopes = new ArrayList<>();
         for (Class except : exceptionsThrown_) {
             CatchClause catchClause = ast.newCatchClause();
+
+            /* push a new scope with the catch(... e) variable */
+            env.pushScope();
+            Type type = new Type(except);
+            type.concretizeType(env); // shouldn't be a generic type
+            SimpleName name = (SimpleName) env.addVariable(type, false).getExpression();
 
             /* synthesize catch clause exception types */
             SingleVariableDeclaration ex = ast.newSingleVariableDeclaration();
             ex.setType(ast.newSimpleType(ast.newName(except.getSimpleName())));
-            ex.setName(ast.newSimpleName("_e"));
+            ex.setName(name);
             catchClause.setException(ex);
             statement.catchClauses().add(catchClause);
-            Variable exceptionVar = env.addScopedVariable("_e", except);
 
             Block catchBlock = ast.newBlock();
             for (DASTNode dNode : _catch) {
@@ -187,12 +192,13 @@ public class DExcept extends DASTNode {
                     catchBlock.statements().add(ast.newExpressionStatement((Expression) aNode));
             }
             catchClause.setBody(catchBlock);
-            env.removeScopedVariable(exceptionVar);
+            scopes.add(env.popScope());
             env.addImport(except);
 
             this.exceptToClause.put(except, catchClause);
         }
 
+        env.getScope().join(scopes);
         return statement;
     }
 
