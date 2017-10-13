@@ -23,6 +23,7 @@ public class Environment {
 
     private final Stack<Scope> scopes;
     Set<Class> imports;
+    Set<Variable> newFormals;
     final AST ast;
 
     public AST ast() {
@@ -34,17 +35,20 @@ public class Environment {
         this.scopes = new Stack<>();
         this.scopes.push(new Scope(variables));
         imports = new HashSet<>();
+        newFormals = new HashSet<>();
     }
 
     public TypedExpression addVariable(Type type) {
-        return addVariable(type, true);
+        return addVariable(type, true, false);
     }
 
-    public TypedExpression addVariable(Type type, boolean join) {
+    public TypedExpression addVariable(Type type, boolean join, boolean addToFormals) {
         /* add variable to scope */
         Variable var = scopes.peek().addVariable(type);
         if (! join)
             var.doNotJoin();
+        if (addToFormals)
+            newFormals.add(var);
 
         /* add type to imports */
         imports.add(type.C());

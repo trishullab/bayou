@@ -33,6 +33,7 @@ public class Visitor extends ASTVisitor {
     protected ASTRewrite rewriter;
     Block evidenceBlock;
     List<Variable> currentScope;
+    MethodDeclaration method;
 
     static final Map<PrimitiveType.Code,Class> primitiveToClass;
     static {
@@ -99,6 +100,9 @@ public class Visitor extends ASTVisitor {
         try {
             rewriter.rewriteAST(document, null).apply(document);
 
+            /* make rewrites to the method */
+            postprocessMethod(method.getAST(), env, document, dce.getEliminatedVars());
+
             /* make rewrites to the document */
             postprocessGlobal(cu.getAST(), env, document);
         } catch (BadLocationException e) {
@@ -138,7 +142,7 @@ public class Visitor extends ASTVisitor {
         Set<Variable> toDeclare = env.getScope().getVariables();
         toDeclare.addAll(env.getScope().getPhantomVariables());
         for (Variable var : toDeclare) {
-            if (!eliminatedVars.contains(var.name) && !var.isUserVar()) {
+            if (!eliminatedVars.contains(var.name) && !var.isUserVar() && !env.newFormals.contains(var)) {
                 VariableDeclarationFragment varDeclFrag = ast.newVariableDeclarationFragment();
                 varDeclFrag.setName(ast.newSimpleName(var.name));
                 VariableDeclarationStatement varDeclStmt = ast.newVariableDeclarationStatement(varDeclFrag);
@@ -159,6 +163,33 @@ public class Visitor extends ASTVisitor {
         }
 
         return body;
+    }
+
+    private void postprocessMethod(AST ast, Environment env, Document document, Set<String> eliminatedVars)
+            throws BadLocationException {
+        ASTRewrite rewriter = ASTRewrite.create(ast);
+        ListRewrite lrw = rewriter.getListRewrite(method, MethodDeclaration.PARAMETERS_PROPERTY);
+        for (Variable var : env.newFormals) {
+            if (eliminatedVars.contains(var.name))
+                continue;
+            SingleVariableDeclaration varDecl = ast.newSingleVariableDeclaration();
+            if (var.getType().T().isPrimitiveType())
+                varDecl.setType(var.type.T());
+            else if (var.getType().T().isSimpleType()) {
+                Name name = ((SimpleType) var.type.T()).getName();
+                String simpleName = name.isSimpleName()? ((SimpleName) name).getIdentifier()
+                        : ((QualifiedName) name).getName().getIdentifier();
+                varDecl.setType(ast.newSimpleType(ast.newSimpleName(simpleName)));
+            }
+            else if (var.getType().T().isParameterizedType()) {
+                varDecl.setType((org.eclipse.jdt.core.dom.Type) ASTNode.copySubtree(ast, var.getType().T()));
+            }
+            else throw new SynthesisException(SynthesisException.InvalidKindOfType);
+
+            varDecl.setName(ast.newSimpleName(var.name));
+            lrw.insertLast(varDecl, null);
+        }
+        rewriter.rewriteAST(document, null).apply(document);
     }
 
     private void postprocessGlobal(AST ast, Environment env, Document document)
@@ -183,6 +214,7 @@ public class Visitor extends ASTVisitor {
     @Override
     public boolean visit(MethodDeclaration method) throws SynthesisException {
         currentScope.clear();
+        this.method = method;
 
         /* add variables in the formal parameters */
         for (Object o : method.parameters()) {

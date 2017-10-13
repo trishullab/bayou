@@ -130,13 +130,12 @@ public class Enumerator {
                 return new TypedExpression(ast.newSimpleName(v.getName()), v.getType());
             }
 
-        /* check if this is a functional interface */
-        if (isFunctionalInterface(targetType))
-            return new TypedExpression(createAnonymousClass(targetType), targetType);
-
-        /* could not pick variable, so concretize target type and resort to enumerative search */
+        /* DO NOT ENUMERATE -- we are assuming a fixed environment where all types are
+         * provided. If a variable of a required type is not found, concretize the type,
+         * add the variable to the formal parameters, and use its name here.
+         */
         targetType.concretizeType(env);
-        return enumerate(targetType, argDepth, toSearch);
+        return env.addVariable(targetType, false, true);
     }
 
     private TypedExpression enumerate(Type targetType, int argDepth, List<Variable> toSearch) {
@@ -284,22 +283,18 @@ public class Enumerator {
     }
 
     private void sortTypesByCost(List<Type> types) {
-        Collections.shuffle(types);
         types.sort(Comparator.comparingInt(t -> t.refCount));
     }
 
     private void sortConstructorsByCost(List<Constructor> constructors) {
-        Collections.shuffle(constructors);
         constructors.sort(Comparator.comparingInt(c -> c.getParameterTypes().length));
     }
 
     private void sortMethodsByCost(List<Method> methods) {
-        Collections.shuffle(methods);
         methods.sort(Comparator.comparingInt(c -> c.getParameterTypes().length));
     }
 
     private void sortExecutablesByCost(List<Executable> exes) {
-        Collections.shuffle(exes);
         exes.sort(Comparator.comparingInt(e -> e.getParameterTypes().length));
     }
 
