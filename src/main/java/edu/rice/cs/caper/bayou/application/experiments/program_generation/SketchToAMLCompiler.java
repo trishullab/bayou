@@ -22,6 +22,7 @@ import edu.rice.cs.caper.bayou.core.synthesizer.Parser;
 import edu.rice.cs.caper.bayou.core.synthesizer.Synthesizer;
 
 import java.io.BufferedWriter;
+import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -39,8 +40,8 @@ public class SketchToAMLCompiler {
                     "    }\n" +
                     "}\n";
 
-    List<String> compile(String sketches) throws ParseException {
-        Parser parser = new Parser(source, System.getProperty("java.class.path"));
+    List<String> compile(String sketches, String classpath) throws ParseException {
+        Parser parser = new Parser(source, classpath);
         parser.parse();
 
         Synthesizer synthesizer = new Synthesizer();
@@ -51,17 +52,41 @@ public class SketchToAMLCompiler {
         List<JSONInputFormat.DataPoint> programs = JSONInputFormat.readData(datafile);
         List<String> amlPrograms = new ArrayList<>();
         Gson gson = new GsonBuilder().setPrettyPrinting().serializeNulls().create();
+
+        // setup the classpath
+        File projRoot = new File(System.getProperty("user.dir")).getParentFile().getParentFile().getParentFile();
+        File srcFolder = new File(projRoot.getAbsolutePath() + File.separator + "src");
+        File mainResourcesFolder = new File(srcFolder.getAbsolutePath() + File.separator + "main" + File.separator +
+                "resources");
+
+        File artifactsFolder = new File(mainResourcesFolder + File.separator + "artifacts");
+        File classesFolder = new File(artifactsFolder.getAbsolutePath() + File.separator + "classes");
+        File androidJar = new File(artifactsFolder.getAbsolutePath() + File.separator + "jar" + File.separator +
+                "android.jar");
+
+        if(!classesFolder.exists())
+            throw new IllegalStateException();
+
+        if(!androidJar.exists())
+            throw new IllegalStateException();
+
+        String classpath = classesFolder.getAbsolutePath() + File.pathSeparator + androidJar.getAbsolutePath();
+
+        // compile each program in data
         int i = 0;
         for (JSONInputFormat.DataPoint program : programs) {
             List<String> output;
             i++;
             try {
-                output = compile("{ \"asts\": [" + gson.toJson(program.ast) + "]}");
-                if (output.size() != 1)
+                output = compile("{ \"asts\": [" + gson.toJson(program.ast) + "]}", classpath);
+                if (output.size() != 1) {
                     amlPrograms.add("ERROR");
-                else
+                    System.out.println(String.format("ERROR %d/%d", i, programs.size()));
+                }
+                else {
                     amlPrograms.add(output.get(0));
-                System.out.println(String.format("done %d/%d", i, programs.size()));
+                    System.out.println(String.format("done %d/%d", i, programs.size()));
+                }
             } catch (RuntimeException e) {
                 amlPrograms.add("ERROR");
                 System.out.println(String.format("ERROR %d/%d", i, programs.size()));
