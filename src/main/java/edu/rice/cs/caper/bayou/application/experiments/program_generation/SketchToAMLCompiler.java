@@ -53,13 +53,19 @@ public class SketchToAMLCompiler {
         Gson gson = new GsonBuilder().setPrettyPrinting().serializeNulls().create();
         int i = 0;
         for (JSONInputFormat.DataPoint program : programs) {
-            List<String> output = compile("{ \"asts\": [" + gson.toJson(program.ast) + "]}");
-            if (output.size() != 1)
-                amlPrograms.add("ERROR");
-            else
-                amlPrograms.add(output.get(0));
+            List<String> output;
             i++;
-            System.out.println(String.format("done %d/%d", i, programs.size()));
+            try {
+                output = compile("{ \"asts\": [" + gson.toJson(program.ast) + "]}");
+                if (output.size() != 1)
+                    amlPrograms.add("ERROR");
+                else
+                    amlPrograms.add(output.get(0));
+                System.out.println(String.format("done %d/%d", i, programs.size()));
+            } catch (RuntimeException e) {
+                amlPrograms.add("ERROR");
+                System.out.println(String.format("ERROR %d/%d", i, programs.size()));
+            }
         }
 
         BufferedWriter bw = new BufferedWriter(new FileWriter(outfile));
