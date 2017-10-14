@@ -32,7 +32,7 @@ public class SketchToAMLCompiler {
     String source =
                     "import edu.rice.cs.caper.bayou.annotations.Evidence;\n" +
                     "public class Test {\n" +
-                    "    void toSynthesize(String dummy) {\n" +
+                    "    void toSynthesize(String userInput) {\n" +
                     "        {\n" +
                     "            Evidence.apicalls(\"this is just a marker\");\n" +
                     "        }\n" +
