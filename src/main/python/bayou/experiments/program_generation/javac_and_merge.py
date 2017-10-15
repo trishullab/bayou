@@ -37,7 +37,7 @@ def javac_and_merge(clargs):
 
     print('Writing to {}...'.format(clargs.output_file))
     with open(clargs.output_file, 'w') as f:
-        json.dump(programs, fp=f, indent=2)
+        json.dump({'programs': programs}, fp=f, indent=2)
     print('done')
 
 
