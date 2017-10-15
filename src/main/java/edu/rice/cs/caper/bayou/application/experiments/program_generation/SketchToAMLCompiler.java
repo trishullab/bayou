@@ -94,7 +94,7 @@ public class SketchToAMLCompiler {
         }
 
         BufferedWriter bw = new BufferedWriter(new FileWriter(outfile));
-        bw.write("{ \"programs\": [\n" + gson.toJson(amlPrograms) + "\n]}");
+        bw.write("{ \"programs\": " + gson.toJson(amlPrograms) + "}");
         bw.close();
     }
 
