@@ -28,7 +28,7 @@ def javac_and_merge(clargs):
     assert m == n, 'Data sizes do not match: {} and {}'.format(m, n)
 
     for i, (program, program_aml) in enumerate(zip(programs, programs_aml)):
-        if program_aml == 'ERROR' or compile_javac(program_aml):
+        if program_aml == 'ERROR' or compile_javac(program_aml, clargs.classpath):
             program['aml'] = program_aml
             print('done {}/{}'.format(i, m))
         else:
@@ -41,11 +41,14 @@ def javac_and_merge(clargs):
     print('done')
 
 
-def compile_javac(aml):
+def compile_javac(aml, classpath=None):
     with open('Test.java', 'w') as f:
         f.write(aml)
     try:
-        subprocess.check_call(['javac', 'Test.java'], timeout=30)
+        if classpath is None:
+            subprocess.check_call(['javac', 'Test.java'], timeout=30)
+        else:
+            subprocess.check_call(['javac', '-cp', classpath, 'Test.java'], timeout=30)
         return True
     except (subprocess.CalledProcessError, subprocess.TimeoutExpired):
         return False
@@ -59,5 +62,7 @@ if __name__ == '__main__':
                         help='main DATA.json file to merge the AML programs with')
     parser.add_argument('--output_file', type=str, required=True,
                         help='file to output merged data')
+    parser.add_argument('--classpath', type=str, default=None,
+                        help='classpath for the javac process')
     clargs = parser.parse_args()
     javac_and_merge(clargs)
