@@ -13,7 +13,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-package edu.rice.cs.caper.bayou.application.experiments.program_generation;
+package edu.rice.cs.caper.bayou.application.experiments.program_generation.sketch_to_aml_compiler;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;

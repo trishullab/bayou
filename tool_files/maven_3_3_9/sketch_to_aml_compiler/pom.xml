@@ -30,7 +30,7 @@
                     <archive>
                         <manifest>
                             <addClasspath>true</addClasspath>
-                            <mainClass>edu.rice.cs.caper.bayou.application.experiments.program_generation.SketchToAMLCompiler</mainClass>
+                            <mainClass>edu.rice.cs.caper.bayou.application.experiments.program_generation.sketch_to_aml_compiler.SketchToAMLCompiler</mainClass>
                         </manifest>
                     </archive>
                     <descriptorRefs>
