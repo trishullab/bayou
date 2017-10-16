@@ -194,12 +194,12 @@ public class DBranch extends DASTNode {
             default:
                 InfixExpression expr = ast.newInfixExpression();
                 expr.setLeftOperand(clauses.get(0));
-                expr.setOperator(InfixExpression.Operator.AND);
+                expr.setOperator(InfixExpression.Operator.CONDITIONAL_AND);
                 expr.setRightOperand(clauses.get(1));
                 for (int i = 2; i < clauses.size(); i++) {
                     InfixExpression joined = ast.newInfixExpression();
                     joined.setLeftOperand(expr);
-                    joined.setOperator(InfixExpression.Operator.AND);
+                    joined.setOperator(InfixExpression.Operator.CONDITIONAL_AND);
                     joined.setRightOperand(clauses.get(i));
                     expr = joined;
                 }
