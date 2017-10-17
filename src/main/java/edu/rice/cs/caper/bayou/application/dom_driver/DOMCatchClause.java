@@ -16,19 +16,42 @@ limitations under the License.
 package edu.rice.cs.caper.bayou.application.dom_driver;
 
 
+import com.google.gson.annotations.Expose;
 import edu.rice.cs.caper.bayou.core.dsl.DSubTree;
 import org.eclipse.jdt.core.dom.CatchClause;
+import org.eclipse.jdt.core.dom.SimpleName;
+import org.eclipse.jdt.core.dom.SimpleType;
 
-public class DOMCatchClause implements Handler {
+public class DOMCatchClause extends DOMNode implements Handler {
 
     final CatchClause clause;
 
+    @Expose
+    final String node = "DOMCatchClause";
+
+    @Expose
+    final DOMType _type;
+
+    @Expose
+    final String _variable; // terminal
+
+    @Expose
+    final DOMBlock _body;
+
     public DOMCatchClause(CatchClause clause) {
         this.clause = clause;
+        this._type = new DOMType(clause.getException().getType()).handleAML();
+        this._variable = clause.getException().getName().getIdentifier();
+        this._body = new DOMBlock(clause.getBody()).handleAML();
     }
 
     @Override
     public DSubTree handle() {
         return new DOMBlock(clause.getBody()).handle();
+    }
+
+    @Override
+    public DOMCatchClause handleAML() {
+        return this;
     }
 }

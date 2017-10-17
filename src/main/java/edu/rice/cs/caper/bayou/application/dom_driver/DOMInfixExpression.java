@@ -15,15 +15,31 @@ limitations under the License.
 */
 package edu.rice.cs.caper.bayou.application.dom_driver;
 
+import com.google.gson.annotations.Expose;
 import edu.rice.cs.caper.bayou.core.dsl.DSubTree;
 import org.eclipse.jdt.core.dom.InfixExpression;
 
-public class DOMInfixExpression implements Handler {
+public class DOMInfixExpression extends DOMExpression implements Handler {
 
     final InfixExpression expr;
 
+    @Expose
+    final String node = "DOMInfixExpression";
+
+    @Expose
+    DOMExpression _left;
+
+    @Expose
+    DOMExpression _right;
+
+    @Expose
+    String _operator; // terminal
+
     public DOMInfixExpression(InfixExpression expr) {
         this.expr = expr;
+        this._left = new DOMExpression(expr.getLeftOperand()).handleAML();
+        this._right = new DOMExpression(expr.getRightOperand()).handleAML();
+        this._operator = expr.getOperator().toString();
     }
 
     @Override
@@ -37,5 +53,10 @@ public class DOMInfixExpression implements Handler {
         tree.addNodes(Tright.getNodes());
 
         return tree;
+    }
+
+    @Override
+    public DOMInfixExpression handleAML() {
+        return this;
     }
 }

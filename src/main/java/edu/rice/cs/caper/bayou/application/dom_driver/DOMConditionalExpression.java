@@ -16,16 +16,32 @@ limitations under the License.
 package edu.rice.cs.caper.bayou.application.dom_driver;
 
 
+import com.google.gson.annotations.Expose;
 import edu.rice.cs.caper.bayou.core.dsl.DBranch;
 import edu.rice.cs.caper.bayou.core.dsl.DSubTree;
 import org.eclipse.jdt.core.dom.ConditionalExpression;
 
-public class DOMConditionalExpression implements Handler {
+public class DOMConditionalExpression extends DOMExpression implements Handler {
 
     final ConditionalExpression expression;
 
+    @Expose
+    final String node = "DOMConditionalExpression";
+
+    @Expose
+    final DOMExpression _cond;
+
+    @Expose
+    final DOMExpression _then;
+
+    @Expose
+    final DOMExpression _else;
+
     public DOMConditionalExpression(ConditionalExpression expression) {
         this.expression = expression;
+        this._cond = new DOMExpression(expression.getExpression()).handleAML();
+        this._then = new DOMExpression(expression.getThenExpression()).handleAML();
+        this._else = new DOMExpression(expression.getElseExpression()).handleAML();
     }
 
     @Override
@@ -48,5 +64,10 @@ public class DOMConditionalExpression implements Handler {
             tree.addNodes(Telse.getNodes());
         }
         return tree;
+    }
+
+    @Override
+    public DOMConditionalExpression handleAML() {
+        return this;
     }
 }

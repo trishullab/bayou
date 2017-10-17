@@ -16,17 +16,45 @@ limitations under the License.
 package edu.rice.cs.caper.bayou.application.dom_driver;
 
 
+import com.google.gson.annotations.Expose;
 import edu.rice.cs.caper.bayou.core.dsl.DLoop;
 import edu.rice.cs.caper.bayou.core.dsl.DSubTree;
 import org.eclipse.jdt.core.dom.Expression;
 import org.eclipse.jdt.core.dom.ForStatement;
 
-public class DOMForStatement implements Handler {
+import java.util.ArrayList;
+import java.util.List;
+
+public class DOMForStatement extends DOMStatement implements Handler {
 
     final ForStatement statement;
 
+    @Expose
+    final String node = "DOMForStatement";
+
+    @Expose
+    final List<DOMExpression> _init;
+
+    @Expose
+    final DOMExpression _cond;
+
+    @Expose
+    final List<DOMExpression> _update;
+
+    @Expose
+    final DOMStatement _body;
+
     public DOMForStatement(ForStatement statement) {
         this.statement = statement;
+        this._init = new ArrayList<>();
+        for (Object o : statement.initializers())
+            _init.add(new DOMExpression((Expression) o).handleAML());
+        this._cond = statement.getExpression() != null?
+                new DOMExpression(statement.getExpression()).handleAML() : null;
+        this._update = new ArrayList<>();
+        for (Object o : statement.updaters())
+            _update.add(new DOMExpression((Expression) o).handleAML());
+        this._body = new DOMStatement(statement.getBody()).handleAML();
     }
 
     @Override
@@ -55,5 +83,10 @@ public class DOMForStatement implements Handler {
         }
 
         return tree;
+    }
+
+    @Override
+    public DOMForStatement handleAML() {
+        return this;
     }
 }

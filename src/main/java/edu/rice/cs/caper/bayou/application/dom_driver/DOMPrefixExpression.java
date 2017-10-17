@@ -16,19 +16,36 @@ limitations under the License.
 package edu.rice.cs.caper.bayou.application.dom_driver;
 
 
+import com.google.gson.annotations.Expose;
 import edu.rice.cs.caper.bayou.core.dsl.DSubTree;
 import org.eclipse.jdt.core.dom.PrefixExpression;
 
-public class DOMPrefixExpression implements Handler {
+public class DOMPrefixExpression extends DOMExpression implements Handler {
 
     final PrefixExpression expression;
 
+    @Expose
+    final String node = "DOMPrefixExpression";
+
+    @Expose
+    final DOMExpression _expression;
+
+    @Expose
+    final String _operator;
+
     public DOMPrefixExpression(PrefixExpression expression) {
         this.expression = expression;
+        this._expression = new DOMExpression(expression.getOperand()).handleAML();
+        this._operator = expression.getOperator().toString();
     }
 
     @Override
     public DSubTree handle() {
         return new DOMExpression(expression.getOperand()).handle();
+    }
+
+    @Override
+    public DOMPrefixExpression handleAML() {
+        return this;
     }
 }

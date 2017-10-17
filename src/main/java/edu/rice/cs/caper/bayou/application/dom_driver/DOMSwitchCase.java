@@ -15,15 +15,24 @@ limitations under the License.
 */
 package edu.rice.cs.caper.bayou.application.dom_driver;
 
+import com.google.gson.annotations.Expose;
 import edu.rice.cs.caper.bayou.core.dsl.DSubTree;
 import org.eclipse.jdt.core.dom.SwitchCase;
 
-public class DOMSwitchCase implements Handler {
+public class DOMSwitchCase extends DOMStatement implements Handler {
 
     final SwitchCase statement;
 
+    @Expose
+    final String node = "DOMSwitchCase";
+
+    @Expose
+    final DOMExpression _expression;
+
     public DOMSwitchCase(SwitchCase statement) {
         this.statement = statement;
+        this._expression = statement.getExpression() != null?
+                new DOMExpression(statement.getExpression()).handleAML() : null;
     }
 
     @Override
@@ -33,6 +42,11 @@ public class DOMSwitchCase implements Handler {
         DSubTree tree = new DSubTree();
 
         return tree;
+    }
+
+    @Override
+    public DOMSwitchCase handleAML() {
+        return this;
     }
 }
 

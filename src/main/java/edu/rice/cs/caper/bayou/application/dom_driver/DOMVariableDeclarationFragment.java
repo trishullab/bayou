@@ -15,19 +15,37 @@ limitations under the License.
 */
 package edu.rice.cs.caper.bayou.application.dom_driver;
 
+import com.google.gson.annotations.Expose;
 import edu.rice.cs.caper.bayou.core.dsl.DSubTree;
 import org.eclipse.jdt.core.dom.VariableDeclarationFragment;
 
-public class DOMVariableDeclarationFragment implements Handler {
+public class DOMVariableDeclarationFragment extends DOMNode implements Handler {
 
     final VariableDeclarationFragment fragment;
 
+    @Expose
+    final String node = "DOMVariableDeclarationFragment";
+
+    @Expose
+    final String _name; // terminal
+
+    @Expose
+    final DOMExpression _initializer;
+
     public DOMVariableDeclarationFragment(VariableDeclarationFragment fragment) {
         this.fragment = fragment;
+        this._name = fragment.getName().getIdentifier();
+        this._initializer = fragment.getInitializer() != null?
+                new DOMExpression(fragment.getInitializer()).handleAML() : null;
     }
 
     @Override
     public DSubTree handle() {
         return new DOMExpression(fragment.getInitializer()).handle();
+    }
+
+    @Override
+    public DOMVariableDeclarationFragment handleAML() {
+        return this;
     }
 }

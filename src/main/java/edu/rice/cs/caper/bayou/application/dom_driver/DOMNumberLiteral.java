@@ -16,31 +16,22 @@ limitations under the License.
 package edu.rice.cs.caper.bayou.application.dom_driver;
 
 import com.google.gson.annotations.Expose;
-import edu.rice.cs.caper.bayou.core.dsl.DSubTree;
-import org.eclipse.jdt.core.dom.LabeledStatement;
+import org.eclipse.jdt.core.dom.NumberLiteral;
 
-public class DOMLabeledStatement extends DOMStatement implements Handler {
-
-    final LabeledStatement statement;
+public class DOMNumberLiteral extends DOMExpression {
 
     @Expose
-    final String node = "DOMLabeledStatement";
+    final String node = "DOMNumberLiteral";
 
     @Expose
-    final DOMStatement _statement;
+    final String _value;
 
-    public DOMLabeledStatement(LabeledStatement statement) {
-        this.statement = statement;
-        this._statement = new DOMStatement(statement.getBody()).handleAML();
+    public DOMNumberLiteral(NumberLiteral number) {
+        this._value = number.getToken();
     }
 
     @Override
-    public DSubTree handle() {
-        return new DOMStatement(statement.getBody()).handle();
-    }
-
-    @Override
-    public DOMLabeledStatement handleAML() {
+    public DOMNumberLiteral handleAML() {
         return this;
     }
 }

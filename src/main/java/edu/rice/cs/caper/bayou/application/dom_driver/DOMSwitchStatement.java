@@ -17,13 +17,14 @@ package edu.rice.cs.caper.bayou.application.dom_driver;
 
 import java.util.*;
 
+import com.google.gson.annotations.Expose;
 import edu.rice.cs.caper.bayou.core.dsl.DASTNode;
 import edu.rice.cs.caper.bayou.core.dsl.DBranch;
 import edu.rice.cs.caper.bayou.core.dsl.DSubTree;
 import org.eclipse.jdt.core.dom.Statement;
 import org.eclipse.jdt.core.dom.SwitchStatement;
 
-public class DOMSwitchStatement implements Handler {
+public class DOMSwitchStatement extends DOMStatement implements Handler {
 
     final SwitchStatement statement;
 
@@ -33,9 +34,21 @@ public class DOMSwitchStatement implements Handler {
     ArrayList<List<DASTNode>> bodies = new ArrayList<List<DASTNode>>();
     ArrayList<Integer> nodeType = new ArrayList<Integer>();
 
+    @Expose
+    final String node = "DOMSwitchStatement";
+
+    @Expose
+    final DOMExpression _expression;
+
+    @Expose
+    final List<DOMStatement> _statements;
 
     public DOMSwitchStatement(SwitchStatement statement) {
         this.statement = statement;
+        this._expression = new DOMExpression(statement.getExpression()).handleAML();
+        this._statements = new ArrayList<>();
+        for (Object o : statement.statements())
+            this._statements.add(new DOMStatement((Statement) o).handleAML());
     }
 
 
@@ -98,6 +111,11 @@ public class DOMSwitchStatement implements Handler {
 
 
         return tree;
+    }
+
+    @Override
+    public DOMSwitchStatement handleAML() {
+        return this;
     }
 }
 

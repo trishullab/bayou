@@ -16,19 +16,33 @@ limitations under the License.
 package edu.rice.cs.caper.bayou.application.dom_driver;
 
 
+import com.google.gson.annotations.Expose;
 import edu.rice.cs.caper.bayou.core.dsl.DAPICall;
 import edu.rice.cs.caper.bayou.core.dsl.DSubTree;
-import org.eclipse.jdt.core.dom.ClassInstanceCreation;
-import org.eclipse.jdt.core.dom.Expression;
-import org.eclipse.jdt.core.dom.IMethodBinding;
-import org.eclipse.jdt.core.dom.MethodDeclaration;
+import org.eclipse.jdt.core.dom.*;
 
-public class DOMClassInstanceCreation implements Handler {
+import java.util.ArrayList;
+import java.util.List;
+
+public class DOMClassInstanceCreation extends DOMExpression implements Handler {
 
     final ClassInstanceCreation creation;
 
+    @Expose
+    final String node = "DOMClassInstanceCreation";
+
+    @Expose
+    final DOMType _type;
+
+    @Expose
+    final List<DOMExpression> _arguments;
+
     public DOMClassInstanceCreation(ClassInstanceCreation creation) {
         this.creation = creation;
+        this._type = new DOMType(creation.getType()).handleAML();
+        this._arguments = new ArrayList<>();
+        for (Object o : creation.arguments())
+            this._arguments.add(new DOMExpression((Expression) o).handleAML());
     }
 
     @Override
@@ -56,5 +70,10 @@ public class DOMClassInstanceCreation implements Handler {
         else if (Utils.isRelevantCall(binding))
             tree.addNode(new DAPICall(binding, Visitor.V().getLineNumber(creation)));
         return tree;
+    }
+
+    @Override
+    public DOMClassInstanceCreation handleAML() {
+        return this;
     }
 }

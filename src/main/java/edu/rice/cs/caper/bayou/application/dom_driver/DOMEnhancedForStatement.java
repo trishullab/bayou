@@ -16,15 +16,27 @@ limitations under the License.
 package edu.rice.cs.caper.bayou.application.dom_driver;
 
 
+import com.google.gson.annotations.Expose;
 import edu.rice.cs.caper.bayou.core.dsl.DSubTree;
 import org.eclipse.jdt.core.dom.EnhancedForStatement;
 
-public class DOMEnhancedForStatement implements Handler {
+public class DOMEnhancedForStatement extends DOMStatement implements Handler {
 
     final EnhancedForStatement statement;
 
+    @Expose
+    final String node = "DOMEnhancedForStatement";
+
+    @Expose
+    final DOMExpression _cond;
+
+    @Expose
+    final DOMStatement _body;
+
     public DOMEnhancedForStatement(EnhancedForStatement statement) {
         this.statement = statement;
+        this._cond = new DOMExpression(statement.getExpression()).handleAML();
+        this._body = new DOMStatement(statement.getBody()).handleAML();
     }
 
     /* TODO: handle this properly, by creating a call to Iterator.hasNext() and next() in a loop */
@@ -39,5 +51,10 @@ public class DOMEnhancedForStatement implements Handler {
         tree.addNodes(Tbody.getNodes());
 
         return tree;
+    }
+
+    @Override
+    public DOMEnhancedForStatement handleAML() {
+        return this;
     }
 }

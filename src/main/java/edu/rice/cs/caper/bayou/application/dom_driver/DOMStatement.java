@@ -18,9 +18,13 @@ package edu.rice.cs.caper.bayou.application.dom_driver;
 import edu.rice.cs.caper.bayou.core.dsl.DSubTree;
 import org.eclipse.jdt.core.dom.*;
 
-public class DOMStatement implements Handler {
+public class DOMStatement extends DOMNode implements Handler {
 
     final Statement statement;
+
+    public DOMStatement() { // only used by AML for other DOM classes to inherit this
+        this.statement = null;
+    }
 
     public DOMStatement(Statement statement) {
         this.statement = statement;
@@ -58,5 +62,41 @@ public class DOMStatement implements Handler {
             return new DOMLabeledStatement((LabeledStatement) statement).handle();
 
         return new DSubTree();
+    }
+
+    @Override
+    public DOMStatement handleAML() {
+        if (statement == null)
+            return null;
+        if (statement instanceof Block)
+            return new DOMBlock((Block) statement);
+        if (statement instanceof ExpressionStatement)
+            return new DOMExpressionStatement((ExpressionStatement) statement);
+        if (statement instanceof IfStatement)
+            return new DOMIfStatement((IfStatement) statement);
+        if (statement instanceof SwitchStatement)
+            return new DOMSwitchStatement((SwitchStatement) statement);
+        if (statement instanceof SwitchCase)
+            return new DOMSwitchCase((SwitchCase) statement);
+        if (statement instanceof DoStatement)
+            return new DOMDoStatement((DoStatement) statement);
+        if (statement instanceof ForStatement)
+            return new DOMForStatement((ForStatement) statement);
+        if (statement instanceof EnhancedForStatement)
+            return new DOMEnhancedForStatement((EnhancedForStatement) statement);
+        if (statement instanceof WhileStatement)
+            return new DOMWhileStatement((WhileStatement) statement);
+        if (statement instanceof TryStatement)
+            return new DOMTryStatement((TryStatement) statement);
+        if (statement instanceof VariableDeclarationStatement)
+            return new DOMVariableDeclarationStatement((VariableDeclarationStatement) statement);
+        if (statement instanceof SynchronizedStatement)
+            return new DOMSynchronizedStatement((SynchronizedStatement) statement);
+        if (statement instanceof ReturnStatement)
+            return new DOMReturnStatement((ReturnStatement) statement);
+        if (statement instanceof LabeledStatement)
+            return new DOMLabeledStatement((LabeledStatement) statement);
+
+        throw new IllegalArgumentException("Unsupported statement type: " + statement);
     }
 }

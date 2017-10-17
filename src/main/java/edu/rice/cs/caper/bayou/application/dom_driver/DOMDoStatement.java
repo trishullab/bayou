@@ -16,16 +16,28 @@ limitations under the License.
 package edu.rice.cs.caper.bayou.application.dom_driver;
 
 
+import com.google.gson.annotations.Expose;
 import edu.rice.cs.caper.bayou.core.dsl.DLoop;
 import edu.rice.cs.caper.bayou.core.dsl.DSubTree;
 import org.eclipse.jdt.core.dom.DoStatement;
 
-public class DOMDoStatement implements Handler {
+public class DOMDoStatement extends DOMStatement implements Handler {
 
     final DoStatement statement;
 
+    @Expose
+    final String node = "DOMDoStatement";
+
+    @Expose
+    final DOMExpression _cond;
+
+    @Expose
+    final DOMStatement _body;
+
     public DOMDoStatement(DoStatement statement) {
         this.statement = statement;
+        this._cond = new DOMExpression(statement.getExpression()).handleAML();
+        this._body = new DOMStatement(statement.getBody()).handleAML();
     }
 
     @Override
@@ -47,5 +59,10 @@ public class DOMDoStatement implements Handler {
         }
 
         return tree;
+    }
+
+    @Override
+    public DOMDoStatement handleAML() {
+        return this;
     }
 }

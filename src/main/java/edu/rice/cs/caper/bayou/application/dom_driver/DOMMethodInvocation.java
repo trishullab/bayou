@@ -15,6 +15,7 @@ limitations under the License.
 */
 package edu.rice.cs.caper.bayou.application.dom_driver;
 
+import com.google.gson.annotations.Expose;
 import edu.rice.cs.caper.bayou.core.dsl.DAPICall;
 import edu.rice.cs.caper.bayou.core.dsl.DSubTree;
 import org.eclipse.jdt.core.dom.Expression;
@@ -22,12 +23,33 @@ import org.eclipse.jdt.core.dom.IMethodBinding;
 import org.eclipse.jdt.core.dom.MethodDeclaration;
 import org.eclipse.jdt.core.dom.MethodInvocation;
 
-public class DOMMethodInvocation implements Handler {
+import java.util.ArrayList;
+import java.util.List;
+
+public class DOMMethodInvocation extends DOMExpression implements Handler {
 
     final MethodInvocation invocation;
 
+    @Expose
+    final String node = "DOMMethodInvocation";
+
+    @Expose
+    final DOMExpression _expression;
+
+    @Expose
+    final String _name; // terminal
+
+    @Expose
+    final List<DOMExpression> _arguments;
+
     public DOMMethodInvocation(MethodInvocation invocation) {
         this.invocation = invocation;
+        this._expression = invocation.getExpression() != null?
+                new DOMExpression(invocation.getExpression()).handleAML() : null;
+        this._name = invocation.getName().getFullyQualifiedName();
+        this._arguments = new ArrayList<>();
+        for (Object o : invocation.arguments())
+            _arguments.add(new DOMExpression((Expression) o).handleAML());
     }
 
     @Override
@@ -55,6 +77,11 @@ public class DOMMethodInvocation implements Handler {
         else if (Utils.isRelevantCall(binding))
             tree.addNode(new DAPICall(binding, Visitor.V().getLineNumber(invocation)));
         return tree;
+    }
+
+    @Override
+    public DOMMethodInvocation handleAML() {
+        return this;
     }
 }
 

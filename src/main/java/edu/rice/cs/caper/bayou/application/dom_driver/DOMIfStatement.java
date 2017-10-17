@@ -15,16 +15,33 @@ limitations under the License.
 */
 package edu.rice.cs.caper.bayou.application.dom_driver;
 
+import com.google.gson.annotations.Expose;
 import edu.rice.cs.caper.bayou.core.dsl.DBranch;
 import edu.rice.cs.caper.bayou.core.dsl.DSubTree;
 import org.eclipse.jdt.core.dom.IfStatement;
 
-public class DOMIfStatement implements Handler {
+public class DOMIfStatement extends DOMStatement implements Handler {
 
     final IfStatement statement;
 
+    @Expose
+    final String node = "DOMIfStatement";
+
+    @Expose
+    final DOMExpression _cond;
+
+    @Expose
+    final DOMStatement _then;
+
+    @Expose
+    final DOMStatement _else;
+
     public DOMIfStatement(IfStatement statement) {
         this.statement = statement;
+        this._cond = new DOMExpression(statement.getExpression()).handleAML();
+        this._then = new DOMStatement(statement.getThenStatement()).handleAML();
+        this._else = statement.getElseStatement() != null?
+                new DOMStatement(statement.getElseStatement()).handleAML() : null;
     }
 
     @Override
@@ -47,5 +64,10 @@ public class DOMIfStatement implements Handler {
             tree.addNodes(Telse.getNodes());
         }
         return tree;
+    }
+
+    @Override
+    public DOMIfStatement handleAML() {
+        return this;
     }
 }

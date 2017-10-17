@@ -15,19 +15,32 @@ limitations under the License.
 */
 package edu.rice.cs.caper.bayou.application.dom_driver;
 
+import com.google.gson.annotations.Expose;
 import edu.rice.cs.caper.bayou.core.dsl.DSubTree;
 import org.eclipse.jdt.core.dom.ParenthesizedExpression;
 
-public class DOMParenthesizedExpression implements Handler {
+public class DOMParenthesizedExpression extends DOMExpression implements Handler {
 
     final ParenthesizedExpression expression;
 
+    @Expose
+    final String node = "DOMParenthesizedExpression";
+
+    @Expose
+    final DOMExpression _expression;
+
     public DOMParenthesizedExpression(ParenthesizedExpression expression) {
         this.expression = expression;
+        this._expression = new DOMExpression(expression.getExpression()).handleAML();
     }
 
     @Override
     public DSubTree handle() {
         return new DOMExpression(expression.getExpression()).handle();
+    }
+
+    @Override
+    public DOMParenthesizedExpression handleAML() {
+        return this;
     }
 }

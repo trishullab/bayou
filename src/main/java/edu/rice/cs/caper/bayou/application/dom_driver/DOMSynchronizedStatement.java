@@ -15,15 +15,27 @@ limitations under the License.
 */
 package edu.rice.cs.caper.bayou.application.dom_driver;
 
+import com.google.gson.annotations.Expose;
 import edu.rice.cs.caper.bayou.core.dsl.DSubTree;
 import org.eclipse.jdt.core.dom.SynchronizedStatement;
 
-public class DOMSynchronizedStatement implements Handler {
+public class DOMSynchronizedStatement extends DOMStatement implements Handler {
 
     final SynchronizedStatement statement;
 
+    @Expose
+    final String node = "DOMSynchronizedStatement";
+
+    @Expose
+    final DOMExpression _expression;
+
+    @Expose
+    final DOMBlock _statement;
+
     public DOMSynchronizedStatement(SynchronizedStatement statement) {
         this.statement = statement;
+        this._expression = new DOMExpression(statement.getExpression()).handleAML();
+        this._statement = new DOMBlock(statement.getBody()).handleAML();
     }
 
     @Override
@@ -37,5 +49,10 @@ public class DOMSynchronizedStatement implements Handler {
         tree.addNodes(Tbody.getNodes());
 
         return tree;
+    }
+
+    @Override
+    public DOMSynchronizedStatement handleAML() {
+        return this;
     }
 }

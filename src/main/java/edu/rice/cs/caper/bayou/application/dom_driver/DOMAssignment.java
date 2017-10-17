@@ -15,19 +15,37 @@ limitations under the License.
 */
 package edu.rice.cs.caper.bayou.application.dom_driver;
 
+import com.google.gson.annotations.Expose;
 import edu.rice.cs.caper.bayou.core.dsl.DSubTree;
 import org.eclipse.jdt.core.dom.Assignment;
 
-public class DOMAssignment implements Handler {
+public class DOMAssignment extends DOMExpression implements Handler {
 
     final Assignment assignment;
 
+    @Expose
+    final String node = "DOMAssignment";
+
+    @Expose
+    final DOMExpression _lhs;
+
+    @Expose
+    final DOMExpression _rhs;
+
     public DOMAssignment(Assignment assignment) {
         this.assignment = assignment;
+        this._lhs = new DOMExpression(assignment.getLeftHandSide()).handleAML();
+        this._rhs = new DOMExpression(assignment.getRightHandSide()).handleAML();
+        // operator not needed in AML because it will always be =
     }
 
     @Override
     public DSubTree handle() {
         return new DOMExpression(assignment.getRightHandSide()).handle();
+    }
+
+    @Override
+    public DOMAssignment handleAML() {
+        return this;
     }
 }

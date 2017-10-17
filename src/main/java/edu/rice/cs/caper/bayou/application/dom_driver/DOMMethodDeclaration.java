@@ -15,19 +15,33 @@ limitations under the License.
 */
 package edu.rice.cs.caper.bayou.application.dom_driver;
 
+import com.google.gson.annotations.Expose;
 import edu.rice.cs.caper.bayou.core.dsl.DSubTree;
 import org.eclipse.jdt.core.dom.MethodDeclaration;
 
-public class DOMMethodDeclaration implements Handler {
+public class DOMMethodDeclaration extends DOMNode implements Handler {
 
     final MethodDeclaration method;
 
+    @Expose
+    final String node = "DOMMethodDeclaration";
+
+    @Expose
+    final DOMBlock _body;
+
     public DOMMethodDeclaration(MethodDeclaration method) {
         this.method = method;
+        this._body = method.getBody() != null?
+                new DOMBlock(method.getBody()).handleAML() : null;
     }
 
     @Override
     public DSubTree handle() {
         return new DOMBlock(method.getBody()).handle();
+    }
+
+    @Override
+    public DOMMethodDeclaration handleAML() {
+        return this;
     }
 }

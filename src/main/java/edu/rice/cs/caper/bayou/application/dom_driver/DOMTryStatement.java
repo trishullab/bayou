@@ -15,17 +15,39 @@ limitations under the License.
 */
 package edu.rice.cs.caper.bayou.application.dom_driver;
 
+import com.google.gson.annotations.Expose;
 import edu.rice.cs.caper.bayou.core.dsl.DExcept;
 import edu.rice.cs.caper.bayou.core.dsl.DSubTree;
 import org.eclipse.jdt.core.dom.CatchClause;
 import org.eclipse.jdt.core.dom.TryStatement;
 
-public class DOMTryStatement implements Handler {
+import java.util.ArrayList;
+import java.util.List;
+
+public class DOMTryStatement extends DOMStatement implements Handler {
 
     final TryStatement statement;
 
+    @Expose
+    final String node = "DOMTryStatement";
+
+    @Expose
+    final DOMBlock _body;
+
+    @Expose
+    final List<DOMCatchClause> _clauses;
+
+    @Expose
+    final DOMBlock _finally;
+
     public DOMTryStatement(TryStatement statement) {
         this.statement = statement;
+        this._body = new DOMBlock(statement.getBody()).handleAML();
+        this._clauses = new ArrayList<>();
+        for (Object o : statement.catchClauses())
+            _clauses.add(new DOMCatchClause((CatchClause) o).handleAML());
+        this._finally = statement.getFinally() != null?
+                new DOMBlock(statement.getFinally()).handleAML() : null;
     }
 
     @Override
@@ -54,5 +76,10 @@ public class DOMTryStatement implements Handler {
         tree.addNodes(Tfinally.getNodes());
 
         return tree;
+    }
+
+    @Override
+    public DOMTryStatement handleAML() {
+        return this;
     }
 }

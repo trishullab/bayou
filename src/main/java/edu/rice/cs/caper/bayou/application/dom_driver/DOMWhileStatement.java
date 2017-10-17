@@ -15,16 +15,28 @@ limitations under the License.
 */
 package edu.rice.cs.caper.bayou.application.dom_driver;
 
+import com.google.gson.annotations.Expose;
 import edu.rice.cs.caper.bayou.core.dsl.DLoop;
 import edu.rice.cs.caper.bayou.core.dsl.DSubTree;
 import org.eclipse.jdt.core.dom.WhileStatement;
 
-public class DOMWhileStatement implements Handler {
+public class DOMWhileStatement extends DOMStatement implements Handler {
 
     final WhileStatement statement;
 
+    @Expose
+    final String node = "DOMWhileStatement";
+
+    @Expose
+    final DOMExpression _cond;
+
+    @Expose
+    final DOMStatement _body;
+
     public DOMWhileStatement(WhileStatement statement) {
         this.statement = statement;
+        this._cond = new DOMExpression(statement.getExpression()).handleAML();
+        this._body = new DOMStatement(statement.getBody()).handleAML();
     }
 
     @Override
@@ -45,5 +57,10 @@ public class DOMWhileStatement implements Handler {
         }
 
         return tree;
+    }
+
+    @Override
+    public DOMWhileStatement handleAML() {
+        return this;
     }
 }

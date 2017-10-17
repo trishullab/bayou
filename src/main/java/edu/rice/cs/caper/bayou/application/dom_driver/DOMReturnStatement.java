@@ -15,19 +15,33 @@ limitations under the License.
 */
 package edu.rice.cs.caper.bayou.application.dom_driver;
 
+import com.google.gson.annotations.Expose;
 import edu.rice.cs.caper.bayou.core.dsl.DSubTree;
 import org.eclipse.jdt.core.dom.ReturnStatement;
 
-public class DOMReturnStatement implements Handler {
+public class DOMReturnStatement extends DOMStatement implements Handler {
 
     final ReturnStatement statement;
 
+    @Expose
+    final String node = "DOMReturnStatement";
+
+    @Expose
+    final DOMExpression _expression;
+
     public DOMReturnStatement(ReturnStatement statement) {
         this.statement = statement;
+        this._expression = statement.getExpression() != null?
+                new DOMExpression(statement.getExpression()).handleAML() : null;
     }
 
     @Override
     public DSubTree handle() {
         return new DOMExpression(statement.getExpression()).handle();
+    }
+
+    @Override
+    public DOMReturnStatement handleAML() {
+        return this;
     }
 }

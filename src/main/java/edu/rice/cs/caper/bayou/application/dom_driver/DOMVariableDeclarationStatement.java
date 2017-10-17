@@ -15,16 +15,33 @@ limitations under the License.
 */
 package edu.rice.cs.caper.bayou.application.dom_driver;
 
+import com.google.gson.annotations.Expose;
 import edu.rice.cs.caper.bayou.core.dsl.DSubTree;
 import org.eclipse.jdt.core.dom.VariableDeclarationFragment;
 import org.eclipse.jdt.core.dom.VariableDeclarationStatement;
 
-public class DOMVariableDeclarationStatement implements Handler {
+import java.util.ArrayList;
+import java.util.List;
+
+public class DOMVariableDeclarationStatement extends DOMStatement implements Handler {
 
     final VariableDeclarationStatement statement;
 
+    @Expose
+    final String node = "DOMVariableDeclarationStatement";
+
+    @Expose
+    final DOMType _type;
+
+    @Expose
+    final List<DOMVariableDeclarationFragment> _fragments;
+
     public DOMVariableDeclarationStatement(VariableDeclarationStatement statement) {
         this.statement = statement;
+        this._type = new DOMType(statement.getType()).handleAML();
+        this._fragments = new ArrayList<>();
+        for (Object o : statement.fragments())
+            _fragments.add(new DOMVariableDeclarationFragment((VariableDeclarationFragment) o).handleAML());
     }
 
     @Override
@@ -37,5 +54,10 @@ public class DOMVariableDeclarationStatement implements Handler {
         }
 
         return tree;
+    }
+
+    @Override
+    public DOMVariableDeclarationStatement handleAML() {
+        return this;
     }
 }

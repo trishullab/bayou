@@ -19,9 +19,13 @@ package edu.rice.cs.caper.bayou.application.dom_driver;
 import edu.rice.cs.caper.bayou.core.dsl.DSubTree;
 import org.eclipse.jdt.core.dom.*;
 
-public class DOMExpression implements Handler {
+public class DOMExpression extends DOMNode implements Handler {
 
     final Expression expression;
+
+    public DOMExpression() { // only used by AML for other DOM classes to inherit this
+        this.expression = null;
+    }
 
     public DOMExpression(Expression expression) {
         this.expression = expression;
@@ -47,5 +51,35 @@ public class DOMExpression implements Handler {
             return new DOMParenthesizedExpression((ParenthesizedExpression) expression).handle();
 
         return new DSubTree();
+    }
+
+    @Override
+    public DOMExpression handleAML() {
+        if (expression == null)
+            return null;
+        if (expression instanceof MethodInvocation)
+            return new DOMMethodInvocation((MethodInvocation) expression);
+        if (expression instanceof ClassInstanceCreation)
+            return new DOMClassInstanceCreation((ClassInstanceCreation) expression);
+        if (expression instanceof InfixExpression)
+            return new DOMInfixExpression((InfixExpression) expression);
+        if (expression instanceof PrefixExpression)
+            return new DOMPrefixExpression((PrefixExpression) expression);
+        if (expression instanceof ConditionalExpression)
+            return new DOMConditionalExpression((ConditionalExpression) expression);
+        if (expression instanceof VariableDeclarationExpression)
+            return new DOMVariableDeclarationExpression((VariableDeclarationExpression) expression);
+        if (expression instanceof Assignment)
+            return new DOMAssignment((Assignment) expression);
+        if (expression instanceof ParenthesizedExpression)
+            return new DOMParenthesizedExpression((ParenthesizedExpression) expression);
+        if (expression instanceof NullLiteral)
+            return new DOMNullLiteral();
+        if (expression instanceof Name)
+            return new DOMName((Name) expression);
+        if (expression instanceof NumberLiteral)
+            return new DOMNumberLiteral((NumberLiteral) expression);
+
+        throw new IllegalArgumentException("Unsupported expression type: " + expression);
     }
 }

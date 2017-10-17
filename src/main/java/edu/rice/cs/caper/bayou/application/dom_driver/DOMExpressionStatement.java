@@ -15,19 +15,32 @@ limitations under the License.
 */
 package edu.rice.cs.caper.bayou.application.dom_driver;
 
+import com.google.gson.annotations.Expose;
 import edu.rice.cs.caper.bayou.core.dsl.DSubTree;
 import org.eclipse.jdt.core.dom.ExpressionStatement;
 
-public class DOMExpressionStatement implements Handler {
+public class DOMExpressionStatement extends DOMStatement implements Handler {
 
     final ExpressionStatement statement;
 
+    @Expose
+    final String node = "DOMExpressionStatement";
+
+    @Expose
+    final DOMExpression _expression;
+
     public DOMExpressionStatement(ExpressionStatement statement) {
         this.statement = statement;
+        this._expression = new DOMExpression(statement.getExpression()).handleAML();
     }
 
     @Override
     public DSubTree handle() {
         return new DOMExpression(statement.getExpression()).handle();
+    }
+
+    @Override
+    public DOMExpressionStatement handleAML() {
+        return this;
     }
 }

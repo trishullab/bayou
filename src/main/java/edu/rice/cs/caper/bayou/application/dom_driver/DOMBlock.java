@@ -15,16 +15,29 @@ limitations under the License.
 */
 package edu.rice.cs.caper.bayou.application.dom_driver;
 
+import com.google.gson.annotations.Expose;
 import edu.rice.cs.caper.bayou.core.dsl.DSubTree;
 import org.eclipse.jdt.core.dom.Block;
 import org.eclipse.jdt.core.dom.Statement;
 
-public class DOMBlock implements Handler {
+import java.util.ArrayList;
+import java.util.List;
+
+public class DOMBlock extends DOMStatement implements Handler {
 
     final Block block;
 
+    @Expose
+    final String node = "DOMBlock";
+
+    @Expose
+    final List<DOMStatement> _statements;
+
     public DOMBlock(Block block) {
         this.block = block;
+        this._statements = new ArrayList<>();
+        for (Object o : block.statements())
+            this._statements.add(new DOMStatement((Statement) o).handleAML());
     }
 
     @Override
@@ -37,5 +50,10 @@ public class DOMBlock implements Handler {
                 tree.addNodes(t.getNodes());
             }
         return tree;
+    }
+
+    @Override
+    public DOMBlock handleAML() {
+        return this;
     }
 }
