@@ -30,7 +30,7 @@ def split(args):
     n = int(math.ceil(float(len(programs)) / args.splits))
     split_programs = [programs[i*n:i*n+n] for i in range(args.splits)]
     for i, programs in enumerate(split_programs):
-        with open('{}-{}.json'.format(args.input_file[0][:-5], i), 'w') as f:
+        with open('{}-{:02d}.json'.format(args.input_file[0][:-5], i), 'w') as f:
             json.dump({'programs': programs}, f, indent=2)
 
 
