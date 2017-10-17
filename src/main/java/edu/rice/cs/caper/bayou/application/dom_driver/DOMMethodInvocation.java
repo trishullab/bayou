@@ -69,13 +69,9 @@ public class DOMMethodInvocation extends DOMExpression implements Handler {
         // get to the generic declaration, if this binding is an instantiation
         while (binding != null && binding.getMethodDeclaration() != binding)
             binding = binding.getMethodDeclaration();
-        MethodDeclaration localConstructor = Utils.checkAndGetLocalMethod(binding);
-        if (localConstructor != null) {
-            DSubTree Tconstructor = new DOMMethodDeclaration(localConstructor).handle();
-            tree.addNodes(Tconstructor.getNodes());
-        }
-        else if (Utils.isRelevantCall(binding))
-            tree.addNode(new DAPICall(binding, Visitor.V().getLineNumber(invocation)));
+
+        // program-generation branch: ALL calls are relevant and there are no interprocedural calls
+        tree.addNode(new DAPICall(binding, 999));
         return tree;
     }
 

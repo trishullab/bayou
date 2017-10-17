@@ -62,13 +62,9 @@ public class DOMClassInstanceCreation extends DOMExpression implements Handler {
         // get to the generic declaration, if this binding is an instantiation
         while (binding != null && binding.getMethodDeclaration() != binding)
             binding = binding.getMethodDeclaration();
-        MethodDeclaration localMethod = Utils.checkAndGetLocalMethod(binding);
-        if (localMethod != null) {
-            DSubTree Tmethod = new DOMMethodDeclaration(localMethod).handle();
-            tree.addNodes(Tmethod.getNodes());
-        }
-        else if (Utils.isRelevantCall(binding))
-            tree.addNode(new DAPICall(binding, Visitor.V().getLineNumber(creation)));
+
+        // program-generation branch: ALL calls are relevant and there are no interprocedural calls
+        tree.addNode(new DAPICall(binding, 999));
         return tree;
     }
 
