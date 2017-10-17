@@ -36,8 +36,9 @@ public class DOMBlock extends DOMStatement implements Handler {
     public DOMBlock(Block block) {
         this.block = block;
         this._statements = new ArrayList<>();
-        for (Object o : block.statements())
-            this._statements.add(new DOMStatement((Statement) o).handleAML());
+        if (block != null)
+            for (Object o : block.statements())
+                this._statements.add(new DOMStatement((Statement) o).handleAML());
     }
 
     @Override
