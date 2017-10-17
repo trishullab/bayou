@@ -119,35 +119,35 @@ public class DriverAML extends ASTVisitor {
 
         String classpath = classesFolder.getAbsolutePath() + File.pathSeparator + androidJar.getAbsolutePath();
 
-        // run the driver
+        // run the driver and print to file
         System.out.println("Running driver..."); System.out.flush();
         DriverAML driver = new DriverAML(classpath);
-        List<DOMMethodDeclaration> programs = new ArrayList<>();
+        BufferedWriter bw = new BufferedWriter(new FileWriter(args[1]));
+        bw.write("{ \"programs\": [\n");
+        bw.flush();
+        gson = new GsonBuilder().setPrettyPrinting().serializeNulls()
+                .excludeFieldsWithoutExposeAnnotation()
+                .create();
         int i = 0;
+        boolean first = true;
         for (DataPoint program : js.programs) {
             i += 1;
             try {
                 if (program.aml.equals("ERROR")) {
-                    programs.add(null);
                     System.out.println(String.format("ERROR %d/%d", i, js.programs.size()));
                 } else {
-                    programs.add(driver.execute(program.aml));
+                    DOMMethodDeclaration out = driver.execute(program.aml);
+                    if (! first) bw.write(",\n"); else first = false;
+                    bw.write(gson.toJson(out));
+                    bw.flush();
                     System.out.println(String.format("done %d/%d", i, js.programs.size()));
                 }
             } catch (RuntimeException e) {
-                programs.add(null);
                 e.printStackTrace();
                 System.out.println(String.format("ERROR1 %d/%d", i, js.programs.size()));
             }
         }
-
-        // write to output file
-        gson = new GsonBuilder().setPrettyPrinting().serializeNulls()
-                .excludeFieldsWithoutExposeAnnotation()
-                .create();
-        System.out.println("Writing to output file..."); System.out.flush();
-        BufferedWriter bw = new BufferedWriter(new FileWriter(args[1]));
-        bw.write("{ \"programs\": " + gson.toJson(programs) + "}");
+        bw.write("\n]}");
         bw.close();
     }
 }
