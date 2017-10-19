@@ -20,7 +20,7 @@ import tensorflow as tf
 CONFIG_GENERAL = ['latent_size', 'batch_size', 'num_epochs',
                   'learning_rate', 'print_step', 'alpha', 'beta']
 CONFIG_ENCODER = ['name', 'units', 'num_layers', 'tile']
-CONFIG_DECODER = ['units', 'max_ast_depth']
+CONFIG_DECODER = ['units', 'num_layers', 'max_ast_depth']
 CONFIG_DECODER_INFER = ['chars', 'vocab', 'vocab_size']
 
 C0 = 'CLASS0'

@@ -58,6 +58,7 @@ Config options should be given as a JSON file (see config.json for example):
     ],                                    |
     "decoder": {                          | Provide parameters for the decoder here
         "units": 256,                     | Size of the decoder hidden state
+        "num_layers": 3,                  | Number of layers in the decoder
         "max_ast_depth": 32               | Maximum depth of the AST (length of the longest path)
     }                                     |
 }                                         |

@@ -13,6 +13,7 @@
 # limitations under the License.
 
 import tensorflow as tf
+from bayou.experiments.low_level_evidences.cells import MultiLayerComposedRNNCell
 from itertools import chain
 
 
@@ -57,8 +58,12 @@ class BayesianEncoder(object):
 class BayesianDecoder(object):
     def __init__(self, config, initial_state, infer=False):
 
-        self.cell1 = tf.nn.rnn_cell.GRUCell(config.decoder.units)
-        self.cell2 = tf.nn.rnn_cell.GRUCell(config.decoder.units)
+        cells1, cells2 = [], []
+        for _ in range(config.decoder.num_layers):
+            cells1.append(tf.nn.rnn_cell.GRUCell(config.decoder.units))
+            cells2.append(tf.nn.rnn_cell.GRUCell(config.decoder.units))
+        self.cell1 = MultiLayerComposedRNNCell(cells1)
+        self.cell2 = MultiLayerComposedRNNCell(cells2)
 
         # placeholders
         self.initial_state = initial_state
