@@ -114,6 +114,8 @@ class APICalls(Evidence):
             inp = tf.slice(inputs, [0, 0, 0], [config.batch_size, 1, self.vocab_size])
             inp = tf.reshape(inp, [-1, self.vocab_size])
             encoding = tf.layers.dense(inp, self.units, activation=tf.nn.tanh)
+            for i in range(self.num_layers - 1):
+                encoding = tf.layers.dense(encoding, self.units, activation=tf.nn.tanh)
             w = tf.get_variable('w', [self.units, config.latent_size])
             b = tf.get_variable('b', [config.latent_size])
             latent_encoding += tf.nn.xw_plus_b(encoding, w, b)
@@ -169,6 +171,8 @@ class Types(Evidence):
             inp = tf.slice(inputs, [0, 0, 0], [config.batch_size, 1, self.vocab_size])
             inp = tf.reshape(inp, [-1, self.vocab_size])
             encoding = tf.layers.dense(inp, self.units, activation=tf.nn.tanh)
+            for i in range(self.num_layers - 1):
+                encoding = tf.layers.dense(encoding, self.units, activation=tf.nn.tanh)
             w = tf.get_variable('w', [self.units, config.latent_size])
             b = tf.get_variable('b', [config.latent_size])
             latent_encoding += tf.nn.xw_plus_b(encoding, w, b)
@@ -223,6 +227,8 @@ class Context(Evidence):
             inp = tf.slice(inputs, [0, 0, 0], [config.batch_size, 1, self.vocab_size])
             inp = tf.reshape(inp, [-1, self.vocab_size])
             encoding = tf.layers.dense(inp, self.units, activation=tf.nn.tanh)
+            for i in range(self.num_layers - 1):
+                encoding = tf.layers.dense(encoding, self.units, activation=tf.nn.tanh)
             w = tf.get_variable('w', [self.units, config.latent_size])
             b = tf.get_variable('b', [config.latent_size])
             latent_encoding += tf.nn.xw_plus_b(encoding, w, b)
@@ -280,6 +286,8 @@ class Keywords(Evidence):
             inp = tf.slice(inputs, [0, 0, 0], [config.batch_size, 1, self.vocab_size])
             inp = tf.reshape(inp, [-1, self.vocab_size])
             encoding = tf.layers.dense(inp, self.units, activation=tf.nn.tanh)
+            for i in range(self.num_layers - 1):
+                encoding = tf.layers.dense(encoding, self.units, activation=tf.nn.tanh)
             w = tf.get_variable('w', [self.units, config.latent_size])
             b = tf.get_variable('b', [config.latent_size])
             latent_encoding += tf.nn.xw_plus_b(encoding, w, b)

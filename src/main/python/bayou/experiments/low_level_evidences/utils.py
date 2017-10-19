@@ -22,7 +22,7 @@ import tensorflow as tf
 
 CONFIG_GENERAL = ['latent_size', 'batch_size', 'num_epochs',
                   'learning_rate', 'print_step', 'alpha', 'beta']
-CONFIG_ENCODER = ['name', 'units', 'tile']
+CONFIG_ENCODER = ['name', 'units', 'num_layers', 'tile']
 CONFIG_DECODER = ['units', 'max_ast_depth']
 CONFIG_INFER = ['chars', 'vocab', 'vocab_size']
 
