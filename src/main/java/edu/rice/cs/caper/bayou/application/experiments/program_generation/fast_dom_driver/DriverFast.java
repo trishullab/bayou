@@ -132,7 +132,6 @@ public class DriverFast extends ASTVisitor {
         bw.write("{ \"programs\": [\n");
         bw.flush();
         gson = new GsonBuilder().setPrettyPrinting().serializeNulls()
-                .excludeFieldsWithoutExposeAnnotation()
                 .create();
         int i = 0;
         boolean first = true;
