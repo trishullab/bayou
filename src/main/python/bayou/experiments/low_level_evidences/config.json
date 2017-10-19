@@ -1,4 +1,5 @@
 {
+    "model": "lle",
     "latent_size": 32,
     "batch_size": 50,
     "num_epochs": 100,

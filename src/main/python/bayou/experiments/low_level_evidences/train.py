@@ -29,6 +29,7 @@ from bayou.experiments.low_level_evidences.utils import read_config, dump_config
 HELP = """\
 Config options should be given as a JSON file (see config.json for example):
 {                                         |
+    "model": "lle"                        | The implementation id of this model (do not change)
     "latent_size": 32,                    | Latent dimensionality
     "batch_size": 50,                     | Minibatch size
     "num_epochs": 100,                    | Number of training epochs
