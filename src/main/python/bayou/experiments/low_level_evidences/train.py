@@ -40,25 +40,21 @@ Config options should be given as a JSON file (see config.json for example):
         {                                 |
             "name": "apicalls",           | Name of evidence ("apicalls")
             "units": 64,                  | Size of the encoder hidden state
-            "max_num": 10,                | Maximum number of this type of evidence
             "tile": 1                     | Repeat the encoding n times (to boost its signal)
         },                                |
         {                                 |
             "name": "types",              | Name of evidence ("types")
             "units": 32,                  | Size of the encoder hidden state
-            "max_num": 10,                | Maximum number of this type of evidence
             "tile": 1                     | Repeat the encoding n times (to boost its signal)
         },                                |
         {                                 |
             "name": "context",            | Name of evidence ("context")
             "units": 32,                  | Size of the encoder hidden state
-            "max_num": 10,                | Maximum number of this type of evidence
             "tile": 1                     | Repeat the encoding n times (to boost its signal)
         },                                |
         {                                 |
             "name": "keywords",           | Name of evidence ("keywords")
             "units": 64,                  | Size of the encoder hidden state
-            "max_num": 10,                | Maximum number of this type of evidence
             "tile": 1                     | Repeat the encoding n times (to boost its signal)
         }                                 |
     ],                                    |
