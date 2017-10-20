@@ -45,12 +45,17 @@ def split(clargs):
         with message('Randomizing'):
             random.shuffle(programs)
 
-    n = int(input('How many programs in training data (rest will be in testing)? '))
+    n = int(input('How many programs in training data? '))
+    m = int(input('How many programs in validation data (rest will be in testing)? '))
     training = programs[:n]
-    testing = programs[n:]
+    validation = programs[n:n+m]
+    testing = programs[n+m:]
 
     with message('Dumping training data into DATA-training.json'), open('DATA-training.json', 'w') as f:
         json.dump({'programs': training}, fp=f, indent=2)
+
+    with message('Dumping training data into DATA-validation.json'), open('DATA-validation.json', 'w') as f:
+        json.dump({'programs': validation}, fp=f, indent=2)
 
     with message('Dumping testing data into DATA-testing.json'), open('DATA-testing.json', 'w') as f:
         json.dump({'programs': testing}, fp=f, indent=2)
