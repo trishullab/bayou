@@ -53,11 +53,11 @@ def get_data(input_file, evidence):
     data = []
     nprograms = len(js['programs'])
 
-    for i, program in enumerate(js['programs']):
+    print('Gathering data for LDA from {} programs...'.format(nprograms), end='\r')
+    for program in enumerate(js['programs']):
         bow = set(program[evidence])
         data.append(bow)
-        print('Gathering data for LDA: {:5d}/{:d} programs'.format(i+1, nprograms), end='\r')
-    print()
+    print('done')
     return data
 
 
@@ -72,9 +72,9 @@ if __name__ == '__main__':
     argparser.add_argument('--save', type=str, default='save',
                            help='directory to store LDA model')
     argparser.add_argument('--alpha', type=float, default=None,
-                           help='initial doc-topic prior value')
+                           help='initial doc-topic prior value (default: 50/ntopics)')
     argparser.add_argument('--beta', type=float, default=None,
-                           help='initial topic-word prior value')
+                           help='initial topic-word prior value (default: 200/vocab_size)')
     argparser.add_argument('--top', type=int, default=5,
                            help='top-k words to print from each topic')
     argparser.add_argument('--confirm', action='store_true',
