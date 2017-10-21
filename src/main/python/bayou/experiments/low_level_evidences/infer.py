@@ -47,6 +47,7 @@ class BayesianPredictor(object):
 
     def infer(self, evidences):
         psi = self.psi_from_evidence(evidences)
+        self.evidences = evidences
         self.calls_in_last_ast = []
         return self.generate_ast(psi)
 
@@ -77,7 +78,7 @@ class BayesianPredictor(object):
     def get_prediction(self, psi, nodes, edges):
         if len(nodes) != len(edges):
             raise ValueError('Nodes: {}, Edges: {}'.format(str(nodes), str(edges)))
-        dist = self.model.infer_ast(self.sess, psi, nodes, edges)
+        dist = self.model.infer_ast(self.sess, self.evidences, psi, nodes, edges)
         idx = np.random.choice(range(len(dist)), p=dist)
         prediction = self.model.config.decoder.chars[idx]
         return prediction
