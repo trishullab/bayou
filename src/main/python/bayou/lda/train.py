@@ -53,8 +53,8 @@ def get_data(input_file, evidence):
     data = []
     nprograms = len(js['programs'])
 
-    print('Gathering data for LDA from {} programs...'.format(nprograms), end='\r')
-    for program in enumerate(js['programs']):
+    print('Gathering data for LDA from {} programs...'.format(nprograms), end='')
+    for program in js['programs']:
         bow = set(program[evidence])
         data.append(bow)
     print('done')
