@@ -71,8 +71,10 @@ if __name__ == '__main__':
                            help='the type of evidence for which LDA is run')
     argparser.add_argument('--save', type=str, default='save',
                            help='directory to store LDA model')
-    argparser.add_argument('--alpha', type=float, default=0.1,
-                           help='initial alpha value')
+    argparser.add_argument('--alpha', type=float, default=None,
+                           help='initial doc-topic prior value')
+    argparser.add_argument('--beta', type=float, default=None,
+                           help='initial topic-word prior value')
     argparser.add_argument('--top', type=int, default=5,
                            help='top-k words to print from each topic')
     argparser.add_argument('--confirm', action='store_true',

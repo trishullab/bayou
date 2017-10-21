@@ -31,7 +31,12 @@ class LDA():
                 self.model, self.vectorizer = pickle.load(f, encoding='latin1')
         else:
             self.vectorizer = TfidfVectorizer(lowercase=False, token_pattern=u'[^;]+')
-            self.model = LatentDirichletAllocation(args.ntopics, doc_topic_prior=args.alpha,
+            alpha = args.alpha if args.alpha is not None else 50./args.ntopics
+            beta = args.beta if args.beta is not None else 200./len(self.vectorizer.vocabulary_)
+            print('{} words in vocabulary'.format(len(self.vectorizer.vocabulary_)))
+            print('Training LDA with {} topics, {} alpha, {} beta'.format(args.ntopics, alpha, beta))
+            self.model = LatentDirichletAllocation(args.ntopics,
+                                                   doc_topic_prior=alpha, topic_word_prior=beta,
                                                    learning_method='batch', max_iter=100,
                                                    verbose=1, evaluate_every=1,
                                                    max_doc_update_iter=100, mean_change_tol=1e-5)
