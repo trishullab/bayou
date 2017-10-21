@@ -66,48 +66,86 @@ class Reader():
         # reset batches
         self.reset_batches()
 
-    def get_ast_paths(self, js, idx=0):
-        cons_calls = []
-        i = idx
-        while i < len(js):
-            if js[i]['node'] == 'DAPICall':
-                cons_calls.append((js[i]['_call'], SIBLING_EDGE))
-            else:
-                break
-            i += 1
-        if i == len(js):
-            cons_calls.append(('STOP', SIBLING_EDGE))
-            return [cons_calls]
-        node_type = js[i]['node']
+    def get_ast_paths(self, js):
+        if isinstance(js, list):
+            paths, cons = [], []
+            for e in js:
+                paths += [cons + path for path in self.get_ast_paths(e)]
+                cons += [(e['node'], SIBLING_EDGE)]
+            paths += [cons + [('STOP', SIBLING_EDGE)]]
+            return paths
 
-        if node_type == 'DBranch':
-            pC = self.get_ast_paths(js[i]['_cond'])  # will have at most 1 "path"
-            assert len(pC) <= 1
-            p1 = self.get_ast_paths(js[i]['_then'])
-            p2 = self.get_ast_paths(js[i]['_else'])
-            p = [p1[0] + path for path in p2] + p1[1:]
-            pv = [cons_calls + [('DBranch', CHILD_EDGE)] + pC[0] + path for path in p]
-            p = self.get_ast_paths(js, i+1)
-            ph = [cons_calls + [('DBranch', SIBLING_EDGE)] + path for path in p]
-            return ph + pv
+        node_type = js['node']
+        if node_type == 'DOMAssignment':
+            p1 = self.get_ast_paths(js['_lhs'])
+            p2 = [[(js['_lhs']['node'], SIBLING_EDGE)] + path for path in self.get_ast_paths(js['_rhs'])]
+            paths = [[(node_type, CHILD_EDGE)] + path for path in p1 + p2]
+            return paths
+        if node_type == 'DOMBlock':
+            return [[(node_type, CHILD_EDGE)] + path for path in self.get_ast_paths(js['_statements'])]
+        if node_type == 'DOMCatchClause':
+            p1 = self.get_ast_paths(js['_type'])
+            chain = [(js['_type']['node'], SIBLING_EDGE), (js['_variable'], SIBLING_EDGE)]
+            p2 = [chain + path for path in self.get_ast_paths(js['_body'])]
+            paths = [[(node_type, CHILD_EDGE)] + path for path in p1 + p2]
+            return paths
+        if node_type == 'DOMClassInstanceCreation':
+            p1 = self.get_ast_paths(js['_type'])
+            p2 = [[(js['_type']['node'], SIBLING_EDGE)] + path for path in self.get_ast_paths(js['_arguments'])]
+            paths = [[(node_type, CHILD_EDGE)] + path for path in p1 + p2]
+            return paths
+        if node_type == 'DOMExpressionStatement':
+            return [[(node_type, CHILD_EDGE)] + path for path in self.get_ast_paths(js['_expression'])]
+        if node_type == 'DOMIfStatement':
+            pC = self.get_ast_paths(js['_cond'])
+            p1 = [[(js['_cond']['node'], SIBLING_EDGE)] + path for path in self.get_ast_paths(js['_then'])]
+            p2 = [[(js['_cond']['node'], SIBLING_EDGE), (js['_then']['node'], SIBLING_EDGE)] + path
+                  for path in self.get_ast_paths(js['_then'])]
+            paths = [[(node_type, CHILD_EDGE)] + path for path in pC + p1 + p2]
+            return paths
+        if node_type == 'DOMInfixExpression':
+            p1 = self.get_ast_paths(js['_left'])
+            chain = [(js['_left']['node'], SIBLING_EDGE), (js['_operator'], SIBLING_EDGE)]
+            p2 = [chain + path for path in self.get_ast_paths(js['_right'])]
+            paths = [[(node_type, CHILD_EDGE)] + path for path in p1 + p2]
+            return paths
+        if node_type == 'DOMMethodInvocation':
+            p1 = self.get_ast_paths(js['_expression'])
+            chain = [(js['_expression']['node'], SIBLING_EDGE), (js['_name'], SIBLING_EDGE)]
+            p2 = [chain + path for path in self.get_ast_paths(js['_arguments'])]
+            paths = [[(node_type, CHILD_EDGE)] + path for path in p1 + p2]
+            return paths
+        if node_type == 'DOMName':
+            return [[(node_type, CHILD_EDGE), (js['_name'], SIBLING_EDGE)]]
+        if node_type == 'DOMNullLiteral':
+            return [[(node_type, CHILD_EDGE)]]
+        if node_type == 'DOMNumberLiteral':
+            return [[(node_type, CHILD_EDGE), (js['_value'], SIBLING_EDGE)]]
+        if node_type == 'DOMParenthesizedExpression':
+            return [[(node_type, CHILD_EDGE)] + path for path in self.get_ast_paths(js['_expression'])]
+        if node_type == 'DOMTryStatement':
+            p1 = self.get_ast_paths(js['_body'])
+            p2 = [[(js['_body']['node'], SIBLING_EDGE)] + path for path in self.get_ast_paths(js['_clauses'])]
+            paths = [[(node_type, CHILD_EDGE)] + path for path in p1 + p2]
+            return paths
+        if node_type == 'DOMType':
+            paths = [[(node_type, CHILD_EDGE), (js['type'], SIBLING_EDGE)] + path
+                     for path in self.get_ast_paths(js['parameters'])]
+            return paths
+        if node_type == 'DOMVariableDeclarationFragment':
+            return [[(node_type, CHILD_EDGE), (js['_name'], SIBLING_EDGE)]]
+        if node_type == 'DOMVariableDeclarationStatement':
+            p1 = self.get_ast_paths(js['_type'])
+            p2 = [[(js['_type']['node'], SIBLING_EDGE)] + path for path in self.get_ast_paths(js['_fragments'])]
+            paths = [[(node_type, CHILD_EDGE)] + path for path in p1 + p2]
+            return paths
+        if node_type == 'DOMWhileStatement':
+            p1 = self.get_ast_paths(js['_cond'])
+            p2 = [[(js['_cond']['node'], SIBLING_EDGE)] + path for path in self.get_ast_paths(js['_body'])]
+            paths = [[(node_type, CHILD_EDGE)] + path for path in p1 + p2]
+            return paths
 
-        if node_type == 'DExcept':
-            p1 = self.get_ast_paths(js[i]['_try'])
-            p2 = self.get_ast_paths(js[i]['_catch'])
-            p = [p1[0] + path for path in p2] + p1[1:]
-            pv = [cons_calls + [('DExcept', CHILD_EDGE)] + path for path in p]
-            p = self.get_ast_paths(js, i+1)
-            ph = [cons_calls + [('DExcept', SIBLING_EDGE)] + path for path in p]
-            return ph + pv
-
-        if node_type == 'DLoop':
-            pC = self.get_ast_paths(js[i]['_cond'])  # will have at most 1 "path"
-            assert len(pC) <= 1
-            p = self.get_ast_paths(js[i]['_body'])
-            pv = [cons_calls + [('DLoop', CHILD_EDGE)] + pC[0] + path for path in p]
-            p = self.get_ast_paths(js, i+1)
-            ph = [cons_calls + [('DLoop', SIBLING_EDGE)] + path for path in p]
-            return ph + pv
+        raise ValueError('Invalid type of AML node: ' + node_type)
 
     def read_data(self, filename):
         with open(filename) as f:
@@ -116,13 +154,13 @@ class Reader():
         ignored, done = 0, 0
 
         for program in js['programs']:
-            if 'ast' not in program:
+            if 'aml_ast' not in program:
                 continue
             try:
                 evidence = [ev.read_data_point(program) for ev in self.config.evidence]
-                ast_paths = self.get_ast_paths(program['ast']['_nodes'])
+                ast_paths = self.get_ast_paths(program['aml_ast']['_body'])
                 for path in ast_paths:
-                    path.insert(0, ('DSubTree', CHILD_EDGE))
+                    path.insert(0, ('DOMMethodDeclaration', CHILD_EDGE))
                     assert len(path) <= self.config.decoder.max_ast_depth
                     evidences.append(evidence)
                     targets.append(path)
