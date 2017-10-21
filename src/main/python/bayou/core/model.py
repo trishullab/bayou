@@ -85,6 +85,7 @@ class Model():
     def infer_ast(self, sess, psi, nodes, edges):
         # use the given psi and get decoder's start state
         state = sess.run(self.initial_state, {self.psi: psi})
+        state = [state] * self.config.decoder.num_layers
 
         # run the decoder for every time step
         for node, edge in zip(nodes, edges):
@@ -92,9 +93,10 @@ class Model():
             n = np.array([self.config.decoder.vocab[node]], dtype=np.int32)
             e = np.array([edge == CHILD_EDGE], dtype=np.bool)
 
-            feed = {self.decoder.initial_state: state,
-                    self.decoder.nodes[0].name: n,
+            feed = {self.decoder.nodes[0].name: n,
                     self.decoder.edges[0].name: e}
+            for i in range(self.config.decoder.num_layers):
+                feed[self.decoder.initial_state[i].name] = state[i]
             [probs, state] = sess.run([self.probs, self.decoder.state], feed)
 
         dist = probs[0]

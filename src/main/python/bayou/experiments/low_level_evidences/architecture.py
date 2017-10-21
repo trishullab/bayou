@@ -65,7 +65,7 @@ class BayesianDecoder(object):
         self.cell2 = tf.nn.rnn_cell.MultiRNNCell(cells2)
 
         # placeholders
-        self.initial_state = initial_state
+        self.initial_state = [initial_state] * config.decoder.num_layers
         self.nodes = [tf.placeholder(tf.int32, [config.batch_size], name='node{0}'.format(i))
                       for i in range(config.decoder.max_ast_depth)]
         self.edges = [tf.placeholder(tf.bool, [config.batch_size], name='edge{0}'.format(i))
@@ -91,7 +91,7 @@ class BayesianDecoder(object):
             # the decoder (modified from tensorflow's seq2seq library to fit tree RNNs)
             # TODO: update with dynamic decoder (being implemented in tf) once it is released
             with tf.variable_scope('rnn'):
-                self.state = tf.tuple([self.initial_state] * config.decoder.num_layers)
+                self.state = self.initial_state
                 self.outputs = []
                 prev = None
                 for i, inp in enumerate(emb_inp):
@@ -105,9 +105,8 @@ class BayesianDecoder(object):
                     with tf.variable_scope('cell2'):  # handles SIBLING_EDGE
                         output2, state2 = self.cell2(inp, self.state)
                     output = tf.where(self.edges[i], output1, output2)
-                    state = [tf.where(self.edges[i], state1[j], state2[j])
-                             for j in range(config.decoder.num_layers)]
-                    self.state = tf.tuple(state)
+                    self.state = [tf.where(self.edges[i], state1[j], state2[j])
+                                  for j in range(config.decoder.num_layers)]
                     self.outputs.append(output)
                     if loop_function is not None:
                         prev = output
