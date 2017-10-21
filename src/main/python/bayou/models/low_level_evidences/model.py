@@ -84,9 +84,13 @@ class Model():
         psi = sess.run(self.psi, feed)
         return psi
 
-    def infer_ast(self, sess, psi, nodes, edges):
+    def infer_ast(self, sess, evidences, psi, nodes, edges):
         # use the given psi and get decoder's start state
-        state = sess.run(self.initial_state, {self.psi: psi})
+        inputs = [ev.wrangle([ev.read_data_point(evidences)]) for ev in self.config.evidence]
+        feed = {self.psi: psi}
+        for j, ev in enumerate(self.config.evidence):
+            feed[self.encoder.inputs[j].name] = inputs[j]
+        state = sess.run(self.initial_state, feed)
         state = [state] * self.config.decoder.num_layers
 
         # run the decoder for every time step
