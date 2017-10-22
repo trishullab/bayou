@@ -22,6 +22,7 @@ from bayou.experiments.low_level_evidences.data_reader import CHILD_EDGE, SIBLIN
 
 class Model():
     def __init__(self, config, infer=False):
+        assert config.model == 'lle', 'Trying to load different model implementation: ' + config.model
         self.config = config
         if infer:
             config.batch_size = 1
