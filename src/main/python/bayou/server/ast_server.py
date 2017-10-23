@@ -21,8 +21,9 @@ from flask import request, Response, Flask
 
 import tensorflow as tf
 import bayou.core.evidence
-from bayou.experiments.low_level_evidences.infer import BayesianPredictor
-from bayou.experiments.low_level_evidences.evidence import Keywords
+import bayou.core.infer
+import bayou.experiments.low_level_evidences.infer
+from bayou.core.evidence import Keywords
 
 
 # called when a POST request is sent to the server for AST generation
@@ -173,7 +174,15 @@ if __name__ == '__main__':
         print("    Loading Model. Please Wait.    ")
         print("===================================")
 
-        bp = BayesianPredictor(args.save_dir, sess)  # create a predictor that can generates ASTs from evidence
+        with open(os.path.join(args.save_dir, 'config.json')) as f:
+            model_type = json.load(f)['model']
+        if model_type == 'core':
+            model = bayou.core.infer.BayesianPredictor
+        elif model_type == 'lle':
+            model = bayou.experiments.low_level_evidences.infer.BayesianPredictor
+        else:
+            raise ValueError('Invalid model type in config: ' + model_type)
+        bp = model(args.save_dir, sess)  # create a predictor that can generates ASTs from evidence
 
         # route POST requests to / to handle_http_request
         http_server.add_url_rule("/", "index", lambda: _handle_http_request(bp), methods=['POST'])
