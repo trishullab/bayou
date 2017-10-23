@@ -131,8 +131,8 @@ class Reader():
             except AssertionError:
                 ignored += 1
             done += 1
-            print('{:8d} programs in training data'.format(done), end='\r')
-        print('\n{:8d} programs ignored by given config'.format(ignored))
+        print('{:8d} programs in training data'.format(done))
+        print('{:8d} programs ignored by given config'.format(ignored))
 
         # randomly shuffle to avoid bias towards initial data points during training
         data_points = list(zip(evidences, targets))
