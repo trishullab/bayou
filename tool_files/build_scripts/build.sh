@@ -19,7 +19,9 @@ SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 BUILD_DIR="${SCRIPT_DIR}/out"
 
 # download model if needed
-python3 $SCRIPT_DIR/fetch_model.py --name model52 --model_dir $SCRIPT_DIR/../../src/main/resources/model/ --url http://release.askbayou.com/
+MODEL_DIR=$SCRIPT_DIR/../../src/main/resources/model/
+mkdir -p $MODEL_DIR
+python3 $SCRIPT_DIR/fetch_model.py --name model49 --model_dir $MODEL_DIR --url http://release.askbayou.com/
 
 # ensure ouput dir is empty
 rm -rf $BUILD_DIR
