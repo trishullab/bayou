@@ -25,8 +25,8 @@ from bayou.experiments.low_level_evidences.model import Model
 from bayou.experiments.low_level_evidences.utils import CHILD_EDGE, SIBLING_EDGE
 from bayou.experiments.low_level_evidences.utils import read_config
 
-MAX_GEN_UNTIL_STOP = 20
-MAX_AST_DEPTH = 5
+MAX_GEN_UNTIL_STOP = 99
+MAX_AST_DEPTH = 99
 
 
 class BayesianPredictor(object):
@@ -56,66 +56,188 @@ class BayesianPredictor(object):
     def psi_from_evidence(self, js_evidences):
         return self.model.infer_psi(self.sess, js_evidences)
 
-    def gen_until_STOP(self, psi, depth, in_nodes, in_edges, check_call=False):
+    def gen_until_STOP(self, psi, depth, in_nodes, in_edges):
+        if len(in_nodes) != len(in_edges):
+            raise ValueError('Nodes: {}, Edges: {}'.format(str(in_nodes), str(in_edges)))
         ast = []
         nodes, edges = in_nodes[:], in_edges[:]
         num = 0
         while True:
-            assert num < MAX_GEN_UNTIL_STOP # exception caught in main
-            dist = self.model.infer_ast(self.sess, psi, nodes, edges)
-            idx = np.random.choice(range(len(dist)), p=dist)
-            prediction = self.model.config.decoder.chars[idx]
-            nodes += [prediction]
-            if check_call:  # exception caught in main
-                assert prediction not in ['DBranch', 'DExcept', 'DLoop', 'DSubTree']
+            assert num < MAX_GEN_UNTIL_STOP  # exception caught in main
+            prediction = self.get_prediction(psi, nodes, edges)
             if prediction == 'STOP':
-                edges += [SIBLING_EDGE]
                 break
-            js = self.generate_ast(psi, depth + 1, nodes, edges + [CHILD_EDGE])
+            nodes += [prediction]
+            js = self.generate_ast(psi, depth+1, nodes, edges)
             ast.append(js)
             edges += [SIBLING_EDGE]
             num += 1
-        return ast, nodes, edges
+        return ast
 
-    def generate_ast(self, psi, depth=0, in_nodes=['DSubTree'], in_edges=[CHILD_EDGE]):
+    def get_prediction(self, psi, nodes, edges):
+        if len(nodes) != len(edges):
+            raise ValueError('Nodes: {}, Edges: {}'.format(str(nodes), str(edges)))
+        dist = self.model.infer_ast(self.sess, psi, nodes, edges)
+        idx = np.random.choice(range(len(dist)), p=dist)
+        prediction = self.model.config.decoder.chars[idx]
+        return prediction
+
+    def generate_ast(self, psi, depth=0, in_nodes=['DOMMethodDeclaration'], in_edges=[]):
+        if len(in_nodes) != len(in_edges) + 1:
+            raise ValueError('Nodes: {}, Edges: {}'.format(str(in_nodes), str(in_edges)))
         assert depth < MAX_AST_DEPTH
         ast = collections.OrderedDict()
-        node = in_nodes[-1]
-
-        # Return the "AST" if the node is an API call
-        if node not in ['DBranch', 'DExcept', 'DLoop', 'DSubTree']:
-            ast['node'] = 'DAPICall'
-            ast['_call'] = node
-            self.calls_in_last_ast.append(node)
-            return ast
-
-        ast['node'] = node
+        node_type = in_nodes[-1]
+        ast['node'] = node_type
         nodes, edges = in_nodes[:], in_edges[:]
 
-        if node == 'DBranch':
-            ast_cond, nodes, edges = self.gen_until_STOP(psi, depth, nodes, edges, check_call=True)
-            ast_then, nodes, edges = self.gen_until_STOP(psi, depth, nodes, edges)
-            ast_else, nodes, edges = self.gen_until_STOP(psi, depth, nodes, edges)
-            ast['_cond'] = ast_cond
-            ast['_then'] = ast_then
-            ast['_else'] = ast_else
+        edges += [CHILD_EDGE]
+        if node_type == 'DOMAssignment':
+            prediction = self.get_prediction(psi, nodes, edges)
+            nodes += [prediction]
+            ast['_lhs'] = self.generate_ast(psi, depth+1, nodes, edges)
+            edges += [SIBLING_EDGE]
+            prediction = self.get_prediction(psi, nodes, edges)
+            nodes += [prediction]
+            ast['_rhs'] = self.generate_ast(psi, depth+1, nodes, edges)
             return ast
 
-        if node == 'DExcept':
-            ast_try, nodes, edges = self.gen_until_STOP(psi, depth, nodes, edges)
-            ast_catch, nodes, edges = self.gen_until_STOP(psi, depth, nodes, edges)
-            ast['_try'] = ast_try
-            ast['_catch'] = ast_catch
+        if node_type == 'DOMBlock':
+            ast['_statements'] = self.gen_until_STOP(psi, depth, nodes, edges)
             return ast
 
-        if node == 'DLoop':
-            ast_cond, nodes, edges = self.gen_until_STOP(psi, depth, nodes, edges, check_call=True)
-            ast_body, nodes, edges = self.gen_until_STOP(psi, depth, nodes, edges)
-            ast['_cond'] = ast_cond
-            ast['_body'] = ast_body
+        if node_type == 'DOMCatchClause':
+            prediction = self.get_prediction(psi, nodes, edges)
+            nodes += [prediction]
+            ast['_type'] = self.generate_ast(psi, depth+1, nodes, edges)
+            edges += [SIBLING_EDGE]
+            prediction = self.get_prediction(psi, nodes, edges)
+            nodes += [prediction]
+            ast['_variable'] = prediction
+            edges += [SIBLING_EDGE]
+            prediction = self.get_prediction(psi, nodes, edges)
+            nodes += [prediction]
+            ast['_body'] = self.generate_ast(psi, depth+1, nodes, edges)
             return ast
 
-        if node == 'DSubTree':
-            ast_nodes, _, _ = self.gen_until_STOP(psi, depth, nodes, edges)
-            ast['_nodes'] = ast_nodes
+        if node_type == 'DOMClassInstanceCreation':
+            prediction = self.get_prediction(psi, nodes, edges)
+            nodes += [prediction]
+            ast['_type'] = self.generate_ast(psi, depth+1, nodes, edges)
+            edges += [SIBLING_EDGE]
+            ast['_arguments'] = self.gen_until_STOP(psi, depth, nodes, edges)
             return ast
+
+        if node_type == 'DOMExpressionStatement':
+            prediction = self.get_prediction(psi, nodes, edges)
+            nodes += [prediction]
+            ast['_expression'] = self.generate_ast(psi, depth+1, nodes, edges)
+            return ast
+
+        if node_type == 'DOMIfStatement':
+            prediction = self.get_prediction(psi, nodes, edges)
+            nodes += [prediction]
+            ast['_cond'] = self.generate_ast(psi, depth+1, nodes, edges)
+            edges += [SIBLING_EDGE]
+            prediction = self.get_prediction(psi, nodes, edges)
+            nodes += [prediction]
+            ast['_then'] = self.generate_ast(psi, depth+1, nodes, edges)
+            edges += [SIBLING_EDGE]
+            prediction = self.get_prediction(psi, nodes, edges)
+            nodes += [prediction]
+            ast['_else'] = self.generate_ast(psi, depth+1, nodes, edges)
+            return ast
+
+        if node_type == 'DOMInfixExpression':
+            prediction = self.get_prediction(psi, nodes, edges)
+            nodes += [prediction]
+            ast['_left'] = self.generate_ast(psi, depth+1, nodes, edges)
+            edges += [SIBLING_EDGE]
+            prediction = self.get_prediction(psi, nodes, edges)
+            nodes += [prediction]
+            ast['_operator'] = prediction
+            edges += [SIBLING_EDGE]
+            prediction = self.get_prediction(psi, nodes, edges)
+            nodes += [prediction]
+            ast['_right'] = self.generate_ast(psi, depth+1, nodes, edges)
+            return ast
+
+        if node_type == 'DOMMethodDeclaration':
+            prediction = self.get_prediction(psi, nodes, edges)
+            nodes += [prediction]
+            ast['_body'] = self.generate_ast(psi, depth+1, nodes, edges)
+            return ast
+
+        if node_type == 'DOMMethodInvocation':
+            prediction = self.get_prediction(psi, nodes, edges)
+            nodes += [prediction]
+            ast['_expression'] = self.generate_ast(psi, depth+1, nodes, edges)
+            edges += [SIBLING_EDGE]
+            prediction = self.get_prediction(psi, nodes, edges)
+            nodes += [prediction]
+            ast['_name'] = prediction
+            edges += [SIBLING_EDGE]
+            ast['_arguments'] = self.gen_until_STOP(psi, depth, nodes, edges)
+            return ast
+
+        if node_type == 'DOMName':
+            prediction = self.get_prediction(psi, nodes, edges)
+            ast['_name'] = prediction
+            return ast
+
+        if node_type == 'DOMNullLiteral':
+            return ast
+
+        if node_type == 'DOMNumberLiteral':
+            prediction = self.get_prediction(psi, nodes, edges)
+            ast['_value'] = prediction
+            return ast
+
+        if node_type == 'DOMParenthesizedExpression':
+            prediction = self.get_prediction(psi, nodes, edges)
+            nodes += [prediction]
+            ast['_expression'] = self.generate_ast(psi, depth+1, nodes, edges)
+            return ast
+
+        if node_type == 'DOMTryStatement':
+            prediction = self.get_prediction(psi, nodes, edges)
+            nodes += [prediction]
+            ast['_body'] = self.generate_ast(psi, depth+1, nodes, edges)
+            edges += [SIBLING_EDGE]
+            ast['_clauses'] = self.gen_until_STOP(psi, depth, nodes, edges)
+            ast['_finally'] = None  # always
+            return ast
+
+        if node_type == 'DOMType':
+            prediction = self.get_prediction(psi, nodes, edges)
+            nodes += [prediction]
+            ast['type'] = prediction
+            edges += [SIBLING_EDGE]
+            ast['parameters'] = self.gen_until_STOP(psi, depth, nodes, edges)
+            return ast
+
+        if node_type == 'DOMVariableDeclarationFragment':
+            prediction = self.get_prediction(psi, nodes, edges)
+            ast['_name'] = prediction
+            ast['_initializer'] = None  # always
+            return ast
+
+        if node_type == 'DOMVariableDeclarationStatement':
+            prediction = self.get_prediction(psi, nodes, edges)
+            nodes += [prediction]
+            ast['_type'] = self.generate_ast(psi, depth+1, nodes, edges)
+            edges += [SIBLING_EDGE]
+            ast['_fragments'] = self.gen_until_STOP(psi, depth, nodes, edges)
+            return ast
+
+        if node_type == 'DOMWhileStatement':
+            prediction = self.get_prediction(psi, nodes, edges)
+            nodes += [prediction]
+            ast['_cond'] = self.generate_ast(psi, depth+1, nodes, edges)
+            edges += [SIBLING_EDGE]
+            prediction = self.get_prediction(psi, nodes, edges)
+            nodes += [prediction]
+            ast['_body'] = self.generate_ast(psi, depth+1, nodes, edges)
+            return ast
+
+        assert False  # no need to crash, just discard this AST

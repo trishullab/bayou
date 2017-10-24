@@ -127,7 +127,7 @@ def _okay(js, ast):
 
     ev_okay = all([c in apicalls for c in js['apicalls']]) and all([t in types for t in js['types']]) \
         and all([c in context for c in js['context']])
-    return ev_okay
+    return True
 
 
 # terminates the Python process. Does not return.
