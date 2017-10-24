@@ -16,6 +16,7 @@
 
 now=$(date "+%Y-%m-%d-%H-%M-%S")
 echo "current time is $now"
+read -p 'output file name: ' output_file_name
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 echo "script, model, data directory is $SCRIPT_DIR"
 export PYTHONPATH=$SCRIPT_DIR
@@ -56,6 +57,11 @@ echo "done processing"
 rm -f merged.json
 python3 scripts/merge.py out_asts/ --output_file merged.json
 echo "done merging splitted files"
+echo "Computing metrics..."
+log=OUT-$output_file_name-$now.txt
+# default --top is 3
+java -jar ast_quality_perf_test-1.0-jar-with-dependencies.jar -f merged.json --metric equality-ast >> $log 2>&1
+cat $log
 exit
 
 now=$(date "+%Y-%m-%d-%H-%M-%S")
