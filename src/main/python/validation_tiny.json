@@ -1,0 +1,2931 @@
+{
+  "programs": [
+    {
+      "aml_ast": {
+        "_body": {
+          "_statements": [
+            {
+              "_statements": [
+                {
+                  "_type": {
+                    "node": "DOMType",
+                    "parameters": [],
+                    "type": "ActionBar"
+                  },
+                  "node": "DOMVariableDeclarationStatement",
+                  "_fragments": [
+                    {
+                      "_name": "actionBar1",
+                      "_initializer": null,
+                      "node": "DOMVariableDeclarationFragment"
+                    }
+                  ]
+                },
+                {
+                  "_type": {
+                    "node": "DOMType",
+                    "parameters": [],
+                    "type": "Tab"
+                  },
+                  "node": "DOMVariableDeclarationStatement",
+                  "_fragments": [
+                    {
+                      "_name": "tab2",
+                      "_initializer": null,
+                      "node": "DOMVariableDeclarationFragment"
+                    }
+                  ]
+                },
+                {
+                  "_type": {
+                    "node": "DOMType",
+                    "parameters": [],
+                    "type": "int"
+                  },
+                  "node": "DOMVariableDeclarationStatement",
+                  "_fragments": [
+                    {
+                      "_name": "int1",
+                      "_initializer": null,
+                      "node": "DOMVariableDeclarationFragment"
+                    }
+                  ]
+                },
+                {
+                  "_expression": {
+                    "_rhs": {
+                      "_arguments": [],
+                      "_name": "getActionBar",
+                      "node": "DOMMethodInvocation",
+                      "_expression": {
+                        "_name": "activity1",
+                        "node": "DOMName"
+                      }
+                    },
+                    "_lhs": {
+                      "_name": "actionBar1",
+                      "node": "DOMName"
+                    },
+                    "node": "DOMAssignment"
+                  },
+                  "node": "DOMExpressionStatement"
+                },
+                {
+                  "_expression": {
+                    "_arguments": [
+                      {
+                        "_name": "onMenuVisibilityListener1",
+                        "node": "DOMName"
+                      }
+                    ],
+                    "_name": "addOnMenuVisibilityListener",
+                    "node": "DOMMethodInvocation",
+                    "_expression": {
+                      "_name": "actionBar1",
+                      "node": "DOMName"
+                    }
+                  },
+                  "node": "DOMExpressionStatement"
+                },
+                {
+                  "_expression": {
+                    "_rhs": {
+                      "_arguments": [],
+                      "_name": "getDisplayOptions",
+                      "node": "DOMMethodInvocation",
+                      "_expression": {
+                        "_name": "actionBar1",
+                        "node": "DOMName"
+                      }
+                    },
+                    "_lhs": {
+                      "_name": "int1",
+                      "node": "DOMName"
+                    },
+                    "node": "DOMAssignment"
+                  },
+                  "node": "DOMExpressionStatement"
+                },
+                {
+                  "_expression": {
+                    "_arguments": [
+                      {
+                        "_name": "boolean1",
+                        "node": "DOMName"
+                      }
+                    ],
+                    "_name": "setHomeButtonEnabled",
+                    "node": "DOMMethodInvocation",
+                    "_expression": {
+                      "_name": "actionBar1",
+                      "node": "DOMName"
+                    }
+                  },
+                  "node": "DOMExpressionStatement"
+                },
+                {
+                  "_expression": {
+                    "_rhs": {
+                      "_arguments": [
+                        {
+                          "_name": "int1",
+                          "node": "DOMName"
+                        }
+                      ],
+                      "_name": "setContentDescription",
+                      "node": "DOMMethodInvocation",
+                      "_expression": {
+                        "_name": "tab1",
+                        "node": "DOMName"
+                      }
+                    },
+                    "_lhs": {
+                      "_name": "tab2",
+                      "node": "DOMName"
+                    },
+                    "node": "DOMAssignment"
+                  },
+                  "node": "DOMExpressionStatement"
+                }
+              ],
+              "node": "DOMBlock"
+            }
+          ],
+          "node": "DOMBlock"
+        },
+        "node": "DOMMethodDeclaration"
+      },
+      "keywords": [
+        "get",
+        "options",
+        "action",
+        "enabled",
+        "on",
+        "activity",
+        "display",
+        "listener",
+        "visibility"
+      ],
+      "apicalls": [
+        "getDisplayOptions",
+        "setHomeButtonEnabled"
+      ],
+      "types": [
+        "Tab",
+        "int",
+        "OnMenuVisibilityListener",
+        "boolean",
+        "Activity"
+      ],
+      "aml": "import edu.rice.cs.caper.bayou.annotations.Evidence;\nimport android.app.ActionBar;\nimport android.app.Activity;\nimport android.app.ActionBar.OnMenuVisibilityListener;\nimport android.app.ActionBar.Tab;\npublic class Test {\n    void toSynthesize(String userInput, Activity activity1, OnMenuVisibilityListener onMenuVisibilityListener1, Tab tab1, boolean boolean1) {\n        {\n\t\t\tActionBar actionBar1;\n\t\t\tTab tab2;\n\t\t\tint int1;\n\t\t\tactionBar1 = activity1.getActionBar();\n\t\t\tactionBar1.addOnMenuVisibilityListener(onMenuVisibilityListener1);\n\t\t\tint1 = actionBar1.getDisplayOptions();\n\t\t\tactionBar1.setHomeButtonEnabled(boolean1);\n\t\t\ttab2 = tab1.setContentDescription(int1);\n\t\t}\n    }\n}\n",
+      "sequences": [
+        {
+          "calls": [
+            "android.app.Activity.getActionBar()",
+            "android.app.ActionBar.addOnMenuVisibilityListener(android.app.ActionBar.OnMenuVisibilityListener)",
+            "android.app.ActionBar.getDisplayOptions()",
+            "android.app.ActionBar.setHomeButtonEnabled(boolean)",
+            "android.app.ActionBar.Tab.setContentDescription(int)"
+          ]
+        }
+      ],
+      "ast": {
+        "_nodes": [
+          {
+            "node": "DAPICall",
+            "_call": "android.app.Activity.getActionBar()"
+          },
+          {
+            "node": "DAPICall",
+            "_call": "android.app.ActionBar.addOnMenuVisibilityListener(android.app.ActionBar.OnMenuVisibilityListener)"
+          },
+          {
+            "node": "DAPICall",
+            "_call": "android.app.ActionBar.getDisplayOptions()"
+          },
+          {
+            "node": "DAPICall",
+            "_call": "android.app.ActionBar.setHomeButtonEnabled(boolean)"
+          },
+          {
+            "node": "DAPICall",
+            "_call": "android.app.ActionBar.Tab.setContentDescription(int)"
+          }
+        ],
+        "node": "DSubTree"
+      },
+      "context": [
+        "OnMenuVisibilityListener"
+      ]
+    },
+    {
+      "aml_ast": {
+        "_body": {
+          "_statements": [
+            {
+              "_statements": [
+                {
+                  "_then": {
+                    "_statements": [
+                      {
+                        "_expression": {
+                          "_arguments": [],
+                          "_name": "proceed",
+                          "node": "DOMMethodInvocation",
+                          "_expression": {
+                            "_name": "sslErrorHandler1",
+                            "node": "DOMName"
+                          }
+                        },
+                        "node": "DOMExpressionStatement"
+                      }
+                    ],
+                    "node": "DOMBlock"
+                  },
+                  "_else": {
+                    "_statements": [
+                      {
+                        "_expression": {
+                          "_arguments": [],
+                          "_name": "cancel",
+                          "node": "DOMMethodInvocation",
+                          "_expression": {
+                            "_name": "sslErrorHandler1",
+                            "node": "DOMName"
+                          }
+                        },
+                        "node": "DOMExpressionStatement"
+                      }
+                    ],
+                    "node": "DOMBlock"
+                  },
+                  "_cond": {
+                    "_name": "boolean1",
+                    "node": "DOMName"
+                  },
+                  "node": "DOMIfStatement"
+                }
+              ],
+              "node": "DOMBlock"
+            }
+          ],
+          "node": "DOMBlock"
+        },
+        "node": "DOMMethodDeclaration"
+      },
+      "keywords": [
+        "ssl",
+        "cancel",
+        "handler",
+        "proceed",
+        "webkit",
+        "android"
+      ],
+      "apicalls": [],
+      "types": [],
+      "aml": "import edu.rice.cs.caper.bayou.annotations.Evidence;\nimport android.webkit.SslErrorHandler;\npublic class Test {\n    void toSynthesize(String userInput, SslErrorHandler sslErrorHandler1, boolean boolean1) {\n        {\n\t\t\tif (boolean1) {\n\t\t\t\tsslErrorHandler1.proceed();\n\t\t\t} else {\n\t\t\t\tsslErrorHandler1.cancel();\n\t\t\t}\n\t\t}\n    }\n}\n",
+      "sequences": [
+        {
+          "calls": [
+            "android.webkit.SslErrorHandler.proceed()"
+          ]
+        },
+        {
+          "calls": [
+            "android.webkit.SslErrorHandler.cancel()"
+          ]
+        }
+      ],
+      "ast": {
+        "_nodes": [
+          {
+            "_then": [
+              {
+                "node": "DAPICall",
+                "_call": "android.webkit.SslErrorHandler.proceed()"
+              }
+            ],
+            "_else": [
+              {
+                "node": "DAPICall",
+                "_call": "android.webkit.SslErrorHandler.cancel()"
+              }
+            ],
+            "_cond": [],
+            "node": "DBranch"
+          }
+        ],
+        "node": "DSubTree"
+      },
+      "context": []
+    },
+    {
+      "aml_ast": {
+        "_body": {
+          "_statements": [
+            {
+              "_statements": [
+                {
+                  "_expression": {
+                    "_arguments": [
+                      {
+                        "_name": "int1",
+                        "node": "DOMName"
+                      }
+                    ],
+                    "_name": "setCacheColorHint",
+                    "node": "DOMMethodInvocation",
+                    "_expression": {
+                      "_name": "listView1",
+                      "node": "DOMName"
+                    }
+                  },
+                  "node": "DOMExpressionStatement"
+                },
+                {
+                  "_expression": {
+                    "_arguments": [
+                      {
+                        "_name": "int1",
+                        "node": "DOMName"
+                      }
+                    ],
+                    "_name": "setInputMethodMode",
+                    "node": "DOMMethodInvocation",
+                    "_expression": {
+                      "_name": "popupWindow1",
+                      "node": "DOMName"
+                    }
+                  },
+                  "node": "DOMExpressionStatement"
+                }
+              ],
+              "node": "DOMBlock"
+            }
+          ],
+          "node": "DOMBlock"
+        },
+        "node": "DOMMethodDeclaration"
+      },
+      "keywords": [],
+      "apicalls": [
+        "setInputMethodMode",
+        "setCacheColorHint"
+      ],
+      "types": [
+        "PopupWindow",
+        "int",
+        "ListView"
+      ],
+      "aml": "import edu.rice.cs.caper.bayou.annotations.Evidence;\nimport android.widget.PopupWindow;\nimport android.widget.ListView;\npublic class Test {\n    void toSynthesize(String userInput, PopupWindow popupWindow1, int int1, ListView listView1) {\n        {\n\t\t\tlistView1.setCacheColorHint(int1);\n\t\t\tpopupWindow1.setInputMethodMode(int1);\n\t\t}\n    }\n}\n",
+      "sequences": [
+        {
+          "calls": [
+            "android.widget.ListView.setCacheColorHint(int)",
+            "android.widget.PopupWindow.setInputMethodMode(int)"
+          ]
+        }
+      ],
+      "ast": {
+        "_nodes": [
+          {
+            "node": "DAPICall",
+            "_call": "android.widget.ListView.setCacheColorHint(int)"
+          },
+          {
+            "node": "DAPICall",
+            "_call": "android.widget.PopupWindow.setInputMethodMode(int)"
+          }
+        ],
+        "node": "DSubTree"
+      },
+      "context": []
+    },
+    {
+      "aml_ast": {
+        "_body": {
+          "_statements": [
+            {
+              "_statements": [
+                {
+                  "_type": {
+                    "node": "DOMType",
+                    "parameters": [],
+                    "type": "ActionBar"
+                  },
+                  "node": "DOMVariableDeclarationStatement",
+                  "_fragments": [
+                    {
+                      "_name": "actionBar1",
+                      "_initializer": null,
+                      "node": "DOMVariableDeclarationFragment"
+                    }
+                  ]
+                },
+                {
+                  "_type": {
+                    "node": "DOMType",
+                    "parameters": [],
+                    "type": "CharSequence"
+                  },
+                  "node": "DOMVariableDeclarationStatement",
+                  "_fragments": [
+                    {
+                      "_name": "charSequence1",
+                      "_initializer": null,
+                      "node": "DOMVariableDeclarationFragment"
+                    }
+                  ]
+                },
+                {
+                  "_expression": {
+                    "_rhs": {
+                      "_arguments": [],
+                      "_name": "getActionBar",
+                      "node": "DOMMethodInvocation",
+                      "_expression": {
+                        "_name": "activity1",
+                        "node": "DOMName"
+                      }
+                    },
+                    "_lhs": {
+                      "_name": "actionBar1",
+                      "node": "DOMName"
+                    },
+                    "node": "DOMAssignment"
+                  },
+                  "node": "DOMExpressionStatement"
+                },
+                {
+                  "_expression": {
+                    "_arguments": [
+                      {
+                        "_name": "onMenuVisibilityListener1",
+                        "node": "DOMName"
+                      }
+                    ],
+                    "_name": "addOnMenuVisibilityListener",
+                    "node": "DOMMethodInvocation",
+                    "_expression": {
+                      "_name": "actionBar1",
+                      "node": "DOMName"
+                    }
+                  },
+                  "node": "DOMExpressionStatement"
+                },
+                {
+                  "_expression": {
+                    "_rhs": {
+                      "_arguments": [],
+                      "_name": "getContentDescription",
+                      "node": "DOMMethodInvocation",
+                      "_expression": {
+                        "_name": "tab1",
+                        "node": "DOMName"
+                      }
+                    },
+                    "_lhs": {
+                      "_name": "charSequence1",
+                      "node": "DOMName"
+                    },
+                    "node": "DOMAssignment"
+                  },
+                  "node": "DOMExpressionStatement"
+                }
+              ],
+              "node": "DOMBlock"
+            }
+          ],
+          "node": "DOMBlock"
+        },
+        "node": "DOMMethodDeclaration"
+      },
+      "keywords": [
+        "on",
+        "content",
+        "menu",
+        "android",
+        "visibility",
+        "listener",
+        "add",
+        "bar",
+        "get",
+        "tab",
+        "action",
+        "activity",
+        "description",
+        "app"
+      ],
+      "apicalls": [],
+      "types": [],
+      "aml": "import edu.rice.cs.caper.bayou.annotations.Evidence;\nimport android.app.ActionBar.Tab;\nimport android.app.Activity;\nimport android.app.ActionBar;\nimport android.app.ActionBar.OnMenuVisibilityListener;\npublic class Test {\n    void toSynthesize(String userInput, Activity activity1, OnMenuVisibilityListener onMenuVisibilityListener1, Tab tab1) {\n        {\n\t\t\tActionBar actionBar1;\n\t\t\tCharSequence charSequence1;\n\t\t\tactionBar1 = activity1.getActionBar();\n\t\t\tactionBar1.addOnMenuVisibilityListener(onMenuVisibilityListener1);\n\t\t\tcharSequence1 = tab1.getContentDescription();\n\t\t}\n    }\n}\n",
+      "sequences": [
+        {
+          "calls": [
+            "android.app.Activity.getActionBar()",
+            "android.app.ActionBar.addOnMenuVisibilityListener(android.app.ActionBar.OnMenuVisibilityListener)",
+            "android.app.ActionBar.Tab.getContentDescription()"
+          ]
+        }
+      ],
+      "ast": {
+        "_nodes": [
+          {
+            "node": "DAPICall",
+            "_call": "android.app.Activity.getActionBar()"
+          },
+          {
+            "node": "DAPICall",
+            "_call": "android.app.ActionBar.addOnMenuVisibilityListener(android.app.ActionBar.OnMenuVisibilityListener)"
+          },
+          {
+            "node": "DAPICall",
+            "_call": "android.app.ActionBar.Tab.getContentDescription()"
+          }
+        ],
+        "node": "DSubTree"
+      },
+      "context": [
+        "OnMenuVisibilityListener"
+      ]
+    },
+    {
+      "aml_ast": {
+        "_body": {
+          "_statements": [
+            {
+              "_statements": [
+                {
+                  "_type": {
+                    "node": "DOMType",
+                    "parameters": [],
+                    "type": "MemoryInfo"
+                  },
+                  "node": "DOMVariableDeclarationStatement",
+                  "_fragments": [
+                    {
+                      "_name": "memoryInfo1",
+                      "_initializer": null,
+                      "node": "DOMVariableDeclarationFragment"
+                    }
+                  ]
+                },
+                {
+                  "_expression": {
+                    "_rhs": {
+                      "_arguments": [],
+                      "_type": {
+                        "node": "DOMType",
+                        "parameters": [],
+                        "type": "android.app.ActivityManager.MemoryInfo"
+                      },
+                      "node": "DOMClassInstanceCreation"
+                    },
+                    "_lhs": {
+                      "_name": "memoryInfo1",
+                      "node": "DOMName"
+                    },
+                    "node": "DOMAssignment"
+                  },
+                  "node": "DOMExpressionStatement"
+                },
+                {
+                  "_expression": {
+                    "_arguments": [
+                      {
+                        "_name": "memoryInfo1",
+                        "node": "DOMName"
+                      }
+                    ],
+                    "_name": "getMemoryInfo",
+                    "node": "DOMMethodInvocation",
+                    "_expression": {
+                      "_name": "activityManager1",
+                      "node": "DOMName"
+                    }
+                  },
+                  "node": "DOMExpressionStatement"
+                }
+              ],
+              "node": "DOMBlock"
+            }
+          ],
+          "node": "DOMBlock"
+        },
+        "node": "DOMMethodDeclaration"
+      },
+      "keywords": [],
+      "apicalls": [
+        "getMemoryInfo"
+      ],
+      "types": [
+        "MemoryInfo",
+        "ActivityManager",
+        "MemoryInfo"
+      ],
+      "aml": "import edu.rice.cs.caper.bayou.annotations.Evidence;\nimport android.app.ActivityManager;\nimport android.app.ActivityManager.MemoryInfo;\npublic class Test {\n    void toSynthesize(String userInput, ActivityManager activityManager1) {\n        {\n\t\t\tMemoryInfo memoryInfo1;\n\t\t\tmemoryInfo1 = new android.app.ActivityManager.MemoryInfo();\n\t\t\tactivityManager1.getMemoryInfo(memoryInfo1);\n\t\t}\n    }\n}\n",
+      "sequences": [
+        {
+          "calls": [
+            "android.app.ActivityManager.MemoryInfo.MemoryInfo()",
+            "android.app.ActivityManager.getMemoryInfo(android.app.ActivityManager.MemoryInfo)"
+          ]
+        }
+      ],
+      "ast": {
+        "_nodes": [
+          {
+            "node": "DAPICall",
+            "_call": "android.app.ActivityManager.MemoryInfo.MemoryInfo()"
+          },
+          {
+            "node": "DAPICall",
+            "_call": "android.app.ActivityManager.getMemoryInfo(android.app.ActivityManager.MemoryInfo)"
+          }
+        ],
+        "node": "DSubTree"
+      },
+      "context": []
+    },
+    {
+      "aml_ast": {
+        "_body": {
+          "_statements": [
+            {
+              "_statements": [
+                {
+                  "_type": {
+                    "node": "DOMType",
+                    "parameters": [],
+                    "type": "ActionBar"
+                  },
+                  "node": "DOMVariableDeclarationStatement",
+                  "_fragments": [
+                    {
+                      "_name": "actionBar1",
+                      "_initializer": null,
+                      "node": "DOMVariableDeclarationFragment"
+                    }
+                  ]
+                },
+                {
+                  "_type": {
+                    "node": "DOMType",
+                    "parameters": [],
+                    "type": "CharSequence"
+                  },
+                  "node": "DOMVariableDeclarationStatement",
+                  "_fragments": [
+                    {
+                      "_name": "charSequence1",
+                      "_initializer": null,
+                      "node": "DOMVariableDeclarationFragment"
+                    }
+                  ]
+                },
+                {
+                  "_expression": {
+                    "_rhs": {
+                      "_arguments": [],
+                      "_name": "getActionBar",
+                      "node": "DOMMethodInvocation",
+                      "_expression": {
+                        "_name": "activity1",
+                        "node": "DOMName"
+                      }
+                    },
+                    "_lhs": {
+                      "_name": "actionBar1",
+                      "node": "DOMName"
+                    },
+                    "node": "DOMAssignment"
+                  },
+                  "node": "DOMExpressionStatement"
+                },
+                {
+                  "_expression": {
+                    "_arguments": [
+                      {
+                        "_name": "onMenuVisibilityListener1",
+                        "node": "DOMName"
+                      }
+                    ],
+                    "_name": "addOnMenuVisibilityListener",
+                    "node": "DOMMethodInvocation",
+                    "_expression": {
+                      "_name": "actionBar1",
+                      "node": "DOMName"
+                    }
+                  },
+                  "node": "DOMExpressionStatement"
+                },
+                {
+                  "_expression": {
+                    "_rhs": {
+                      "_arguments": [],
+                      "_name": "getContentDescription",
+                      "node": "DOMMethodInvocation",
+                      "_expression": {
+                        "_name": "tab1",
+                        "node": "DOMName"
+                      }
+                    },
+                    "_lhs": {
+                      "_name": "charSequence1",
+                      "node": "DOMName"
+                    },
+                    "node": "DOMAssignment"
+                  },
+                  "node": "DOMExpressionStatement"
+                }
+              ],
+              "node": "DOMBlock"
+            }
+          ],
+          "node": "DOMBlock"
+        },
+        "node": "DOMMethodDeclaration"
+      },
+      "keywords": [
+        "android",
+        "description",
+        "listener",
+        "visibility",
+        "activity",
+        "content",
+        "get"
+      ],
+      "apicalls": [
+        "addOnMenuVisibilityListener"
+      ],
+      "types": [
+        "Activity",
+        "ActionBar"
+      ],
+      "aml": "import edu.rice.cs.caper.bayou.annotations.Evidence;\nimport android.app.ActionBar.OnMenuVisibilityListener;\nimport android.app.ActionBar.Tab;\nimport android.app.Activity;\nimport android.app.ActionBar;\npublic class Test {\n    void toSynthesize(String userInput, Activity activity1, OnMenuVisibilityListener onMenuVisibilityListener1, Tab tab1) {\n        {\n\t\t\tActionBar actionBar1;\n\t\t\tCharSequence charSequence1;\n\t\t\tactionBar1 = activity1.getActionBar();\n\t\t\tactionBar1.addOnMenuVisibilityListener(onMenuVisibilityListener1);\n\t\t\tcharSequence1 = tab1.getContentDescription();\n\t\t}\n    }\n}\n",
+      "sequences": [
+        {
+          "calls": [
+            "android.app.Activity.getActionBar()",
+            "android.app.ActionBar.addOnMenuVisibilityListener(android.app.ActionBar.OnMenuVisibilityListener)",
+            "android.app.ActionBar.Tab.getContentDescription()"
+          ]
+        }
+      ],
+      "ast": {
+        "_nodes": [
+          {
+            "node": "DAPICall",
+            "_call": "android.app.Activity.getActionBar()"
+          },
+          {
+            "node": "DAPICall",
+            "_call": "android.app.ActionBar.addOnMenuVisibilityListener(android.app.ActionBar.OnMenuVisibilityListener)"
+          },
+          {
+            "node": "DAPICall",
+            "_call": "android.app.ActionBar.Tab.getContentDescription()"
+          }
+        ],
+        "node": "DSubTree"
+      },
+      "context": []
+    },
+    {
+      "aml_ast": {
+        "_body": {
+          "_statements": [
+            {
+              "_statements": [
+                {
+                  "_type": {
+                    "node": "DOMType",
+                    "parameters": [],
+                    "type": "int"
+                  },
+                  "node": "DOMVariableDeclarationStatement",
+                  "_fragments": [
+                    {
+                      "_name": "int1",
+                      "_initializer": null,
+                      "node": "DOMVariableDeclarationFragment"
+                    }
+                  ]
+                },
+                {
+                  "_type": {
+                    "node": "DOMType",
+                    "parameters": [],
+                    "type": "int"
+                  },
+                  "node": "DOMVariableDeclarationStatement",
+                  "_fragments": [
+                    {
+                      "_name": "int2",
+                      "_initializer": null,
+                      "node": "DOMVariableDeclarationFragment"
+                    }
+                  ]
+                },
+                {
+                  "_body": {
+                    "_statements": [
+                      {
+                        "_expression": {
+                          "_rhs": {
+                            "_arguments": [],
+                            "_name": "readUnsignedShort",
+                            "node": "DOMMethodInvocation",
+                            "_expression": {
+                              "_name": "dataInputStream1",
+                              "node": "DOMName"
+                            }
+                          },
+                          "_lhs": {
+                            "_name": "int1",
+                            "node": "DOMName"
+                          },
+                          "node": "DOMAssignment"
+                        },
+                        "node": "DOMExpressionStatement"
+                      },
+                      {
+                        "_expression": {
+                          "_rhs": {
+                            "_arguments": [],
+                            "_name": "readUnsignedShort",
+                            "node": "DOMMethodInvocation",
+                            "_expression": {
+                              "_name": "dataInputStream1",
+                              "node": "DOMName"
+                            }
+                          },
+                          "_lhs": {
+                            "_name": "int2",
+                            "node": "DOMName"
+                          },
+                          "node": "DOMAssignment"
+                        },
+                        "node": "DOMExpressionStatement"
+                      },
+                      {
+                        "_expression": {
+                          "_arguments": [
+                            {
+                              "_name": "int2",
+                              "node": "DOMName"
+                            }
+                          ],
+                          "_name": "writeByte",
+                          "node": "DOMMethodInvocation",
+                          "_expression": {
+                            "_name": "dataOutputStream1",
+                            "node": "DOMName"
+                          }
+                        },
+                        "node": "DOMExpressionStatement"
+                      },
+                      {
+                        "_expression": {
+                          "_arguments": [
+                            {
+                              "_name": "float1",
+                              "node": "DOMName"
+                            }
+                          ],
+                          "_name": "writeFloat",
+                          "node": "DOMMethodInvocation",
+                          "_expression": {
+                            "_name": "dataOutputStream1",
+                            "node": "DOMName"
+                          }
+                        },
+                        "node": "DOMExpressionStatement"
+                      }
+                    ],
+                    "node": "DOMBlock"
+                  },
+                  "_finally": null,
+                  "node": "DOMTryStatement",
+                  "_clauses": [
+                    {
+                      "_body": {
+                        "_statements": [],
+                        "node": "DOMBlock"
+                      },
+                      "_type": {
+                        "node": "DOMType",
+                        "parameters": [],
+                        "type": "IOException"
+                      },
+                      "node": "DOMCatchClause",
+                      "_variable": "_e"
+                    }
+                  ]
+                }
+              ],
+              "node": "DOMBlock"
+            }
+          ],
+          "node": "DOMBlock"
+        },
+        "node": "DOMMethodDeclaration"
+      },
+      "keywords": [
+        "data",
+        "read",
+        "java",
+        "short"
+      ],
+      "apicalls": [
+        "writeFloat"
+      ],
+      "types": [
+        "DataOutputStream"
+      ],
+      "aml": "import edu.rice.cs.caper.bayou.annotations.Evidence;\nimport java.io.DataOutputStream;\nimport java.io.IOException;\nimport java.io.DataInputStream;\npublic class Test {\n    void toSynthesize(String userInput, float float1, DataOutputStream dataOutputStream1, DataInputStream dataInputStream1) {\n        {\n\t\t\tint int1;\n\t\t\tint int2;\n\t\t\ttry {\n\t\t\t\tint1 = dataInputStream1.readUnsignedShort();\n\t\t\t\tint2 = dataInputStream1.readUnsignedShort();\n\t\t\t\tdataOutputStream1.writeByte(int2);\n\t\t\t\tdataOutputStream1.writeFloat(float1);\n\t\t\t} catch (IOException _e) {\n\t\t\t}\n\t\t}\n    }\n}\n",
+      "sequences": [
+        {
+          "calls": [
+            "java.io.DataInputStream.readUnsignedShort()",
+            "java.io.DataInputStream.readUnsignedShort()",
+            "java.io.DataOutputStream.writeByte(int)",
+            "java.io.DataOutputStream.writeFloat(float)"
+          ]
+        }
+      ],
+      "ast": {
+        "_nodes": [
+          {
+            "node": "DAPICall",
+            "_call": "java.io.DataInputStream.readUnsignedShort()"
+          },
+          {
+            "node": "DAPICall",
+            "_call": "java.io.DataInputStream.readUnsignedShort()"
+          },
+          {
+            "node": "DAPICall",
+            "_call": "java.io.DataOutputStream.writeByte(int)"
+          },
+          {
+            "node": "DAPICall",
+            "_call": "java.io.DataOutputStream.writeFloat(float)"
+          }
+        ],
+        "node": "DSubTree"
+      },
+      "context": [
+        "float"
+      ]
+    },
+    {
+      "aml_ast": {
+        "_body": {
+          "_statements": [
+            {
+              "_statements": [
+                {
+                  "_type": {
+                    "node": "DOMType",
+                    "parameters": [],
+                    "type": "View"
+                  },
+                  "node": "DOMVariableDeclarationStatement",
+                  "_fragments": [
+                    {
+                      "_name": "view1",
+                      "_initializer": null,
+                      "node": "DOMVariableDeclarationFragment"
+                    }
+                  ]
+                },
+                {
+                  "_type": {
+                    "node": "DOMType",
+                    "parameters": [],
+                    "type": "Tab"
+                  },
+                  "node": "DOMVariableDeclarationStatement",
+                  "_fragments": [
+                    {
+                      "_name": "tab2",
+                      "_initializer": null,
+                      "node": "DOMVariableDeclarationFragment"
+                    }
+                  ]
+                },
+                {
+                  "_expression": {
+                    "_rhs": {
+                      "_arguments": [
+                        {
+                          "_name": "tab1",
+                          "node": "DOMName"
+                        }
+                      ],
+                      "_name": "setTag",
+                      "node": "DOMMethodInvocation",
+                      "_expression": {
+                        "_name": "tab1",
+                        "node": "DOMName"
+                      }
+                    },
+                    "_lhs": {
+                      "_name": "tab2",
+                      "node": "DOMName"
+                    },
+                    "node": "DOMAssignment"
+                  },
+                  "node": "DOMExpressionStatement"
+                },
+                {
+                  "_expression": {
+                    "_rhs": {
+                      "_arguments": [],
+                      "_name": "getCustomView",
+                      "node": "DOMMethodInvocation",
+                      "_expression": {
+                        "_name": "tab2",
+                        "node": "DOMName"
+                      }
+                    },
+                    "_lhs": {
+                      "_name": "view1",
+                      "node": "DOMName"
+                    },
+                    "node": "DOMAssignment"
+                  },
+                  "node": "DOMExpressionStatement"
+                }
+              ],
+              "node": "DOMBlock"
+            }
+          ],
+          "node": "DOMBlock"
+        },
+        "node": "DOMMethodDeclaration"
+      },
+      "keywords": [
+        "custom",
+        "app",
+        "tab",
+        "get",
+        "set",
+        "bar"
+      ],
+      "apicalls": [
+        "setTag"
+      ],
+      "types": [
+        "Tab",
+        "ActionBar",
+        "Object"
+      ],
+      "aml": "import edu.rice.cs.caper.bayou.annotations.Evidence;\nimport android.view.View;\nimport android.app.ActionBar.Tab;\npublic class Test {\n    void toSynthesize(String userInput, Tab tab1) {\n        {\n\t\t\tView view1;\n\t\t\tTab tab2;\n\t\t\ttab2 = tab1.setTag(tab1);\n\t\t\tview1 = tab2.getCustomView();\n\t\t}\n    }\n}\n",
+      "sequences": [
+        {
+          "calls": [
+            "android.app.ActionBar.Tab.setTag(java.lang.Object)",
+            "android.app.ActionBar.Tab.getCustomView()"
+          ]
+        }
+      ],
+      "ast": {
+        "_nodes": [
+          {
+            "node": "DAPICall",
+            "_call": "android.app.ActionBar.Tab.setTag(java.lang.Object)"
+          },
+          {
+            "node": "DAPICall",
+            "_call": "android.app.ActionBar.Tab.getCustomView()"
+          }
+        ],
+        "node": "DSubTree"
+      },
+      "context": [
+        "Object"
+      ]
+    },
+    {
+      "aml_ast": {
+        "_body": {
+          "_statements": [
+            {
+              "_statements": [
+                {
+                  "_type": {
+                    "node": "DOMType",
+                    "parameters": [],
+                    "type": "ActionBar"
+                  },
+                  "node": "DOMVariableDeclarationStatement",
+                  "_fragments": [
+                    {
+                      "_name": "actionBar1",
+                      "_initializer": null,
+                      "node": "DOMVariableDeclarationFragment"
+                    }
+                  ]
+                },
+                {
+                  "_type": {
+                    "node": "DOMType",
+                    "parameters": [],
+                    "type": "CharSequence"
+                  },
+                  "node": "DOMVariableDeclarationStatement",
+                  "_fragments": [
+                    {
+                      "_name": "charSequence1",
+                      "_initializer": null,
+                      "node": "DOMVariableDeclarationFragment"
+                    }
+                  ]
+                },
+                {
+                  "_type": {
+                    "node": "DOMType",
+                    "parameters": [],
+                    "type": "int"
+                  },
+                  "node": "DOMVariableDeclarationStatement",
+                  "_fragments": [
+                    {
+                      "_name": "int1",
+                      "_initializer": null,
+                      "node": "DOMVariableDeclarationFragment"
+                    }
+                  ]
+                },
+                {
+                  "_expression": {
+                    "_rhs": {
+                      "_arguments": [],
+                      "_name": "getActionBar",
+                      "node": "DOMMethodInvocation",
+                      "_expression": {
+                        "_name": "activity1",
+                        "node": "DOMName"
+                      }
+                    },
+                    "_lhs": {
+                      "_name": "actionBar1",
+                      "node": "DOMName"
+                    },
+                    "node": "DOMAssignment"
+                  },
+                  "node": "DOMExpressionStatement"
+                },
+                {
+                  "_expression": {
+                    "_arguments": [
+                      {
+                        "_name": "onMenuVisibilityListener1",
+                        "node": "DOMName"
+                      }
+                    ],
+                    "_name": "addOnMenuVisibilityListener",
+                    "node": "DOMMethodInvocation",
+                    "_expression": {
+                      "_name": "actionBar1",
+                      "node": "DOMName"
+                    }
+                  },
+                  "node": "DOMExpressionStatement"
+                },
+                {
+                  "_expression": {
+                    "_rhs": {
+                      "_arguments": [],
+                      "_name": "getDisplayOptions",
+                      "node": "DOMMethodInvocation",
+                      "_expression": {
+                        "_name": "actionBar1",
+                        "node": "DOMName"
+                      }
+                    },
+                    "_lhs": {
+                      "_name": "int1",
+                      "node": "DOMName"
+                    },
+                    "node": "DOMAssignment"
+                  },
+                  "node": "DOMExpressionStatement"
+                },
+                {
+                  "_expression": {
+                    "_arguments": [
+                      {
+                        "_name": "boolean1",
+                        "node": "DOMName"
+                      }
+                    ],
+                    "_name": "setHomeButtonEnabled",
+                    "node": "DOMMethodInvocation",
+                    "_expression": {
+                      "_name": "actionBar1",
+                      "node": "DOMName"
+                    }
+                  },
+                  "node": "DOMExpressionStatement"
+                },
+                {
+                  "_expression": {
+                    "_rhs": {
+                      "_arguments": [],
+                      "_name": "getContentDescription",
+                      "node": "DOMMethodInvocation",
+                      "_expression": {
+                        "_name": "tab1",
+                        "node": "DOMName"
+                      }
+                    },
+                    "_lhs": {
+                      "_name": "charSequence1",
+                      "node": "DOMName"
+                    },
+                    "node": "DOMAssignment"
+                  },
+                  "node": "DOMExpressionStatement"
+                }
+              ],
+              "node": "DOMBlock"
+            }
+          ],
+          "node": "DOMBlock"
+        },
+        "node": "DOMMethodDeclaration"
+      },
+      "keywords": [
+        "action",
+        "tab",
+        "visibility",
+        "app"
+      ],
+      "apicalls": [
+        "getDisplayOptions",
+        "setHomeButtonEnabled",
+        "addOnMenuVisibilityListener",
+        "getContentDescription"
+      ],
+      "types": [
+        "Tab",
+        "Activity"
+      ],
+      "aml": "import edu.rice.cs.caper.bayou.annotations.Evidence;\nimport android.app.Activity;\nimport android.app.ActionBar;\nimport android.app.ActionBar.Tab;\nimport android.app.ActionBar.OnMenuVisibilityListener;\npublic class Test {\n    void toSynthesize(String userInput, Activity activity1, OnMenuVisibilityListener onMenuVisibilityListener1, Tab tab1, boolean boolean1) {\n        {\n\t\t\tActionBar actionBar1;\n\t\t\tCharSequence charSequence1;\n\t\t\tint int1;\n\t\t\tactionBar1 = activity1.getActionBar();\n\t\t\tactionBar1.addOnMenuVisibilityListener(onMenuVisibilityListener1);\n\t\t\tint1 = actionBar1.getDisplayOptions();\n\t\t\tactionBar1.setHomeButtonEnabled(boolean1);\n\t\t\tcharSequence1 = tab1.getContentDescription();\n\t\t}\n    }\n}\n",
+      "sequences": [
+        {
+          "calls": [
+            "android.app.Activity.getActionBar()",
+            "android.app.ActionBar.addOnMenuVisibilityListener(android.app.ActionBar.OnMenuVisibilityListener)",
+            "android.app.ActionBar.getDisplayOptions()",
+            "android.app.ActionBar.setHomeButtonEnabled(boolean)",
+            "android.app.ActionBar.Tab.getContentDescription()"
+          ]
+        }
+      ],
+      "ast": {
+        "_nodes": [
+          {
+            "node": "DAPICall",
+            "_call": "android.app.Activity.getActionBar()"
+          },
+          {
+            "node": "DAPICall",
+            "_call": "android.app.ActionBar.addOnMenuVisibilityListener(android.app.ActionBar.OnMenuVisibilityListener)"
+          },
+          {
+            "node": "DAPICall",
+            "_call": "android.app.ActionBar.getDisplayOptions()"
+          },
+          {
+            "node": "DAPICall",
+            "_call": "android.app.ActionBar.setHomeButtonEnabled(boolean)"
+          },
+          {
+            "node": "DAPICall",
+            "_call": "android.app.ActionBar.Tab.getContentDescription()"
+          }
+        ],
+        "node": "DSubTree"
+      },
+      "context": [
+        "OnMenuVisibilityListener",
+        "boolean"
+      ]
+    },
+    {
+      "aml_ast": {
+        "_body": {
+          "_statements": [
+            {
+              "_statements": [
+                {
+                  "_expression": {
+                    "_arguments": [
+                      {
+                        "_name": "int1",
+                        "node": "DOMName"
+                      }
+                    ],
+                    "_name": "setProgress",
+                    "node": "DOMMethodInvocation",
+                    "_expression": {
+                      "_name": "progressBar1",
+                      "node": "DOMName"
+                    }
+                  },
+                  "node": "DOMExpressionStatement"
+                },
+                {
+                  "_expression": {
+                    "_arguments": [
+                      {
+                        "_name": "int1",
+                        "node": "DOMName"
+                      }
+                    ],
+                    "_name": "setProgress",
+                    "node": "DOMMethodInvocation",
+                    "_expression": {
+                      "_name": "progressBar1",
+                      "node": "DOMName"
+                    }
+                  },
+                  "node": "DOMExpressionStatement"
+                }
+              ],
+              "node": "DOMBlock"
+            }
+          ],
+          "node": "DOMBlock"
+        },
+        "node": "DOMMethodDeclaration"
+      },
+      "keywords": [
+        "progress",
+        "set"
+      ],
+      "apicalls": [
+        "setProgress"
+      ],
+      "types": [
+        "int"
+      ],
+      "aml": "import edu.rice.cs.caper.bayou.annotations.Evidence;\nimport android.widget.ProgressBar;\npublic class Test {\n    void toSynthesize(String userInput, int int1, ProgressBar progressBar1) {\n        {\n\t\t\tprogressBar1.setProgress(int1);\n\t\t\tprogressBar1.setProgress(int1);\n\t\t}\n    }\n}\n",
+      "sequences": [
+        {
+          "calls": [
+            "android.widget.ProgressBar.setProgress(int)",
+            "android.widget.ProgressBar.setProgress(int)"
+          ]
+        }
+      ],
+      "ast": {
+        "_nodes": [
+          {
+            "node": "DAPICall",
+            "_call": "android.widget.ProgressBar.setProgress(int)"
+          },
+          {
+            "node": "DAPICall",
+            "_call": "android.widget.ProgressBar.setProgress(int)"
+          }
+        ],
+        "node": "DSubTree"
+      },
+      "context": []
+    },
+    {
+      "aml_ast": {
+        "_body": {
+          "_statements": [
+            {
+              "_statements": [
+                {
+                  "_type": {
+                    "node": "DOMType",
+                    "parameters": [],
+                    "type": "BufferedWriter"
+                  },
+                  "node": "DOMVariableDeclarationStatement",
+                  "_fragments": [
+                    {
+                      "_name": "bufferedWriter1",
+                      "_initializer": null,
+                      "node": "DOMVariableDeclarationFragment"
+                    }
+                  ]
+                },
+                {
+                  "_type": {
+                    "node": "DOMType",
+                    "parameters": [],
+                    "type": "FileWriter"
+                  },
+                  "node": "DOMVariableDeclarationStatement",
+                  "_fragments": [
+                    {
+                      "_name": "fileWriter1",
+                      "_initializer": null,
+                      "node": "DOMVariableDeclarationFragment"
+                    }
+                  ]
+                },
+                {
+                  "_type": {
+                    "node": "DOMType",
+                    "parameters": [],
+                    "type": "PrintWriter"
+                  },
+                  "node": "DOMVariableDeclarationStatement",
+                  "_fragments": [
+                    {
+                      "_name": "printWriter1",
+                      "_initializer": null,
+                      "node": "DOMVariableDeclarationFragment"
+                    }
+                  ]
+                },
+                {
+                  "_body": {
+                    "_statements": [
+                      {
+                        "_expression": {
+                          "_rhs": {
+                            "_arguments": [
+                              {
+                                "_name": "file1",
+                                "node": "DOMName"
+                              }
+                            ],
+                            "_type": {
+                              "node": "DOMType",
+                              "parameters": [],
+                              "type": "java.io.FileWriter"
+                            },
+                            "node": "DOMClassInstanceCreation"
+                          },
+                          "_lhs": {
+                            "_name": "fileWriter1",
+                            "node": "DOMName"
+                          },
+                          "node": "DOMAssignment"
+                        },
+                        "node": "DOMExpressionStatement"
+                      },
+                      {
+                        "_expression": {
+                          "_rhs": {
+                            "_arguments": [
+                              {
+                                "_name": "fileWriter1",
+                                "node": "DOMName"
+                              }
+                            ],
+                            "_type": {
+                              "node": "DOMType",
+                              "parameters": [],
+                              "type": "java.io.BufferedWriter"
+                            },
+                            "node": "DOMClassInstanceCreation"
+                          },
+                          "_lhs": {
+                            "_name": "bufferedWriter1",
+                            "node": "DOMName"
+                          },
+                          "node": "DOMAssignment"
+                        },
+                        "node": "DOMExpressionStatement"
+                      },
+                      {
+                        "_expression": {
+                          "_rhs": {
+                            "_arguments": [
+                              {
+                                "_name": "bufferedWriter1",
+                                "node": "DOMName"
+                              }
+                            ],
+                            "_type": {
+                              "node": "DOMType",
+                              "parameters": [],
+                              "type": "java.io.PrintWriter"
+                            },
+                            "node": "DOMClassInstanceCreation"
+                          },
+                          "_lhs": {
+                            "_name": "printWriter1",
+                            "node": "DOMName"
+                          },
+                          "node": "DOMAssignment"
+                        },
+                        "node": "DOMExpressionStatement"
+                      },
+                      {
+                        "_expression": {
+                          "_arguments": [
+                            {
+                              "_name": "userInput",
+                              "node": "DOMName"
+                            }
+                          ],
+                          "_name": "print",
+                          "node": "DOMMethodInvocation",
+                          "_expression": {
+                            "_name": "printWriter1",
+                            "node": "DOMName"
+                          }
+                        },
+                        "node": "DOMExpressionStatement"
+                      },
+                      {
+                        "_expression": {
+                          "_arguments": [],
+                          "_name": "flush",
+                          "node": "DOMMethodInvocation",
+                          "_expression": {
+                            "_name": "printWriter1",
+                            "node": "DOMName"
+                          }
+                        },
+                        "node": "DOMExpressionStatement"
+                      },
+                      {
+                        "_expression": {
+                          "_arguments": [],
+                          "_name": "close",
+                          "node": "DOMMethodInvocation",
+                          "_expression": {
+                            "_name": "printWriter1",
+                            "node": "DOMName"
+                          }
+                        },
+                        "node": "DOMExpressionStatement"
+                      }
+                    ],
+                    "node": "DOMBlock"
+                  },
+                  "_finally": null,
+                  "node": "DOMTryStatement",
+                  "_clauses": [
+                    {
+                      "_body": {
+                        "_statements": [],
+                        "node": "DOMBlock"
+                      },
+                      "_type": {
+                        "node": "DOMType",
+                        "parameters": [],
+                        "type": "IOException"
+                      },
+                      "node": "DOMCatchClause",
+                      "_variable": "_e"
+                    }
+                  ]
+                }
+              ],
+              "node": "DOMBlock"
+            }
+          ],
+          "node": "DOMBlock"
+        },
+        "node": "DOMMethodDeclaration"
+      },
+      "keywords": [
+        "close",
+        "writer",
+        "file"
+      ],
+      "apicalls": [
+        "close"
+      ],
+      "types": [
+        "String",
+        "File",
+        "Writer"
+      ],
+      "aml": "import edu.rice.cs.caper.bayou.annotations.Evidence;\nimport java.io.File;\nimport java.io.IOException;\nimport java.io.BufferedWriter;\nimport java.io.PrintWriter;\nimport java.io.FileWriter;\npublic class Test {\n    void toSynthesize(String userInput, File file1) {\n        {\n\t\t\tBufferedWriter bufferedWriter1;\n\t\t\tFileWriter fileWriter1;\n\t\t\tPrintWriter printWriter1;\n\t\t\ttry {\n\t\t\t\tfileWriter1 = new java.io.FileWriter(file1);\n\t\t\t\tbufferedWriter1 = new java.io.BufferedWriter(fileWriter1);\n\t\t\t\tprintWriter1 = new java.io.PrintWriter(bufferedWriter1);\n\t\t\t\tprintWriter1.print(userInput);\n\t\t\t\tprintWriter1.flush();\n\t\t\t\tprintWriter1.close();\n\t\t\t} catch (IOException _e) {\n\t\t\t}\n\t\t}\n    }\n}\n",
+      "sequences": [
+        {
+          "calls": [
+            "java.io.FileWriter.FileWriter(java.io.File)",
+            "java.io.BufferedWriter.BufferedWriter(java.io.Writer)",
+            "java.io.PrintWriter.PrintWriter(java.io.Writer)",
+            "java.io.PrintWriter.print(java.lang.String)",
+            "java.io.PrintWriter.flush()",
+            "java.io.PrintWriter.close()"
+          ]
+        }
+      ],
+      "ast": {
+        "_nodes": [
+          {
+            "node": "DAPICall",
+            "_call": "java.io.FileWriter.FileWriter(java.io.File)"
+          },
+          {
+            "node": "DAPICall",
+            "_call": "java.io.BufferedWriter.BufferedWriter(java.io.Writer)"
+          },
+          {
+            "node": "DAPICall",
+            "_call": "java.io.PrintWriter.PrintWriter(java.io.Writer)"
+          },
+          {
+            "node": "DAPICall",
+            "_call": "java.io.PrintWriter.print(java.lang.String)"
+          },
+          {
+            "node": "DAPICall",
+            "_call": "java.io.PrintWriter.flush()"
+          },
+          {
+            "node": "DAPICall",
+            "_call": "java.io.PrintWriter.close()"
+          }
+        ],
+        "node": "DSubTree"
+      },
+      "context": []
+    },
+    {
+      "aml_ast": {
+        "_body": {
+          "_statements": [
+            {
+              "_statements": [
+                {
+                  "_body": {
+                    "_statements": [
+                      {
+                        "_expression": {
+                          "_arguments": [
+                            {
+                              "_name": "int1",
+                              "node": "DOMName"
+                            }
+                          ],
+                          "_name": "write",
+                          "node": "DOMMethodInvocation",
+                          "_expression": {
+                            "_name": "writer1",
+                            "node": "DOMName"
+                          }
+                        },
+                        "node": "DOMExpressionStatement"
+                      },
+                      {
+                        "_expression": {
+                          "_arguments": [
+                            {
+                              "_name": "int1",
+                              "node": "DOMName"
+                            }
+                          ],
+                          "_name": "write",
+                          "node": "DOMMethodInvocation",
+                          "_expression": {
+                            "_name": "writer1",
+                            "node": "DOMName"
+                          }
+                        },
+                        "node": "DOMExpressionStatement"
+                      },
+                      {
+                        "_expression": {
+                          "_arguments": [],
+                          "_name": "flush",
+                          "node": "DOMMethodInvocation",
+                          "_expression": {
+                            "_name": "writer1",
+                            "node": "DOMName"
+                          }
+                        },
+                        "node": "DOMExpressionStatement"
+                      }
+                    ],
+                    "node": "DOMBlock"
+                  },
+                  "_finally": null,
+                  "node": "DOMTryStatement",
+                  "_clauses": [
+                    {
+                      "_body": {
+                        "_statements": [],
+                        "node": "DOMBlock"
+                      },
+                      "_type": {
+                        "node": "DOMType",
+                        "parameters": [],
+                        "type": "IOException"
+                      },
+                      "node": "DOMCatchClause",
+                      "_variable": "_e"
+                    }
+                  ]
+                }
+              ],
+              "node": "DOMBlock"
+            }
+          ],
+          "node": "DOMBlock"
+        },
+        "node": "DOMMethodDeclaration"
+      },
+      "keywords": [
+        "io",
+        "java",
+        "flush",
+        "write",
+        "writer"
+      ],
+      "apicalls": [
+        "write",
+        "flush"
+      ],
+      "types": [],
+      "aml": "import edu.rice.cs.caper.bayou.annotations.Evidence;\nimport java.io.Writer;\nimport java.io.IOException;\npublic class Test {\n    void toSynthesize(String userInput, int int1, Writer writer1) {\n        {\n\t\t\ttry {\n\t\t\t\twriter1.write(int1);\n\t\t\t\twriter1.write(int1);\n\t\t\t\twriter1.flush();\n\t\t\t} catch (IOException _e) {\n\t\t\t}\n\t\t}\n    }\n}\n",
+      "sequences": [
+        {
+          "calls": [
+            "java.io.Writer.write(int)",
+            "java.io.Writer.write(int)",
+            "java.io.Writer.flush()"
+          ]
+        }
+      ],
+      "ast": {
+        "_nodes": [
+          {
+            "node": "DAPICall",
+            "_call": "java.io.Writer.write(int)"
+          },
+          {
+            "node": "DAPICall",
+            "_call": "java.io.Writer.write(int)"
+          },
+          {
+            "node": "DAPICall",
+            "_call": "java.io.Writer.flush()"
+          }
+        ],
+        "node": "DSubTree"
+      },
+      "context": [
+        "int"
+      ]
+    },
+    {
+      "aml_ast": {
+        "_body": {
+          "_statements": [
+            {
+              "_statements": [
+                {
+                  "_body": {
+                    "_statements": [
+                      {
+                        "_expression": {
+                          "_arguments": [
+                            {
+                              "_name": "int1",
+                              "node": "DOMName"
+                            }
+                          ],
+                          "_name": "writeByte",
+                          "node": "DOMMethodInvocation",
+                          "_expression": {
+                            "_name": "dataOutputStream1",
+                            "node": "DOMName"
+                          }
+                        },
+                        "node": "DOMExpressionStatement"
+                      },
+                      {
+                        "_expression": {
+                          "_arguments": [
+                            {
+                              "_name": "int1",
+                              "node": "DOMName"
+                            }
+                          ],
+                          "_name": "writeInt",
+                          "node": "DOMMethodInvocation",
+                          "_expression": {
+                            "_name": "dataOutputStream1",
+                            "node": "DOMName"
+                          }
+                        },
+                        "node": "DOMExpressionStatement"
+                      }
+                    ],
+                    "node": "DOMBlock"
+                  },
+                  "_finally": null,
+                  "node": "DOMTryStatement",
+                  "_clauses": [
+                    {
+                      "_body": {
+                        "_statements": [],
+                        "node": "DOMBlock"
+                      },
+                      "_type": {
+                        "node": "DOMType",
+                        "parameters": [],
+                        "type": "IOException"
+                      },
+                      "node": "DOMCatchClause",
+                      "_variable": "_e"
+                    }
+                  ]
+                }
+              ],
+              "node": "DOMBlock"
+            }
+          ],
+          "node": "DOMBlock"
+        },
+        "node": "DOMMethodDeclaration"
+      },
+      "keywords": [
+        "io",
+        "output",
+        "stream",
+        "data",
+        "byte",
+        "int"
+      ],
+      "apicalls": [
+        "writeByte",
+        "writeInt"
+      ],
+      "types": [],
+      "aml": "import edu.rice.cs.caper.bayou.annotations.Evidence;\nimport java.io.DataOutputStream;\nimport java.io.IOException;\npublic class Test {\n    void toSynthesize(String userInput, int int1, DataOutputStream dataOutputStream1) {\n        {\n\t\t\ttry {\n\t\t\t\tdataOutputStream1.writeByte(int1);\n\t\t\t\tdataOutputStream1.writeInt(int1);\n\t\t\t} catch (IOException _e) {\n\t\t\t}\n\t\t}\n    }\n}\n",
+      "sequences": [
+        {
+          "calls": [
+            "java.io.DataOutputStream.writeByte(int)",
+            "java.io.DataOutputStream.writeInt(int)"
+          ]
+        }
+      ],
+      "ast": {
+        "_nodes": [
+          {
+            "node": "DAPICall",
+            "_call": "java.io.DataOutputStream.writeByte(int)"
+          },
+          {
+            "node": "DAPICall",
+            "_call": "java.io.DataOutputStream.writeInt(int)"
+          }
+        ],
+        "node": "DSubTree"
+      },
+      "context": []
+    },
+    {
+      "aml_ast": {
+        "_body": {
+          "_statements": [
+            {
+              "_statements": [
+                {
+                  "_type": {
+                    "node": "DOMType",
+                    "parameters": [],
+                    "type": "FileReader"
+                  },
+                  "node": "DOMVariableDeclarationStatement",
+                  "_fragments": [
+                    {
+                      "_name": "fileReader1",
+                      "_initializer": null,
+                      "node": "DOMVariableDeclarationFragment"
+                    }
+                  ]
+                },
+                {
+                  "_body": {
+                    "_statements": [
+                      {
+                        "_expression": {
+                          "_rhs": {
+                            "_arguments": [
+                              {
+                                "_name": "file1",
+                                "node": "DOMName"
+                              }
+                            ],
+                            "_type": {
+                              "node": "DOMType",
+                              "parameters": [],
+                              "type": "java.io.FileReader"
+                            },
+                            "node": "DOMClassInstanceCreation"
+                          },
+                          "_lhs": {
+                            "_name": "fileReader1",
+                            "node": "DOMName"
+                          },
+                          "node": "DOMAssignment"
+                        },
+                        "node": "DOMExpressionStatement"
+                      }
+                    ],
+                    "node": "DOMBlock"
+                  },
+                  "_finally": null,
+                  "node": "DOMTryStatement",
+                  "_clauses": [
+                    {
+                      "_body": {
+                        "_statements": [],
+                        "node": "DOMBlock"
+                      },
+                      "_type": {
+                        "node": "DOMType",
+                        "parameters": [],
+                        "type": "FileNotFoundException"
+                      },
+                      "node": "DOMCatchClause",
+                      "_variable": "_e"
+                    }
+                  ]
+                }
+              ],
+              "node": "DOMBlock"
+            }
+          ],
+          "node": "DOMBlock"
+        },
+        "node": "DOMMethodDeclaration"
+      },
+      "keywords": [
+        "file",
+        "java"
+      ],
+      "apicalls": [],
+      "types": [],
+      "aml": "import edu.rice.cs.caper.bayou.annotations.Evidence;\nimport java.io.FileNotFoundException;\nimport java.io.BufferedReader;\nimport java.io.File;\nimport java.io.FileReader;\npublic class Test {\n    void toSynthesize(String userInput, File file1) {\n        {\n\t\t\tFileReader fileReader1;\n\t\t\ttry {\n\t\t\t\tfileReader1 = new java.io.FileReader(file1);\n\t\t\t} catch (FileNotFoundException _e) {\n\t\t\t}\n\t\t}\n    }\n}\n",
+      "sequences": [
+        {
+          "calls": [
+            "java.io.FileReader.FileReader(java.io.File)"
+          ]
+        }
+      ],
+      "ast": {
+        "_nodes": [
+          {
+            "node": "DAPICall",
+            "_call": "java.io.FileReader.FileReader(java.io.File)"
+          }
+        ],
+        "node": "DSubTree"
+      },
+      "context": [
+        "File"
+      ]
+    },
+    {
+      "aml_ast": {
+        "_body": {
+          "_statements": [
+            {
+              "_statements": [
+                {
+                  "_then": {
+                    "_statements": [
+                      {
+                        "_expression": {
+                          "_arguments": [
+                            {
+                              "_name": "userInput",
+                              "node": "DOMName"
+                            }
+                          ],
+                          "_name": "setText",
+                          "node": "DOMMethodInvocation",
+                          "_expression": {
+                            "_name": "textView1",
+                            "node": "DOMName"
+                          }
+                        },
+                        "node": "DOMExpressionStatement"
+                      }
+                    ],
+                    "node": "DOMBlock"
+                  },
+                  "_else": {
+                    "_statements": [
+                      {
+                        "_expression": {
+                          "_arguments": [
+                            {
+                              "_name": "userInput",
+                              "node": "DOMName"
+                            }
+                          ],
+                          "_name": "setText",
+                          "node": "DOMMethodInvocation",
+                          "_expression": {
+                            "_name": "textView1",
+                            "node": "DOMName"
+                          }
+                        },
+                        "node": "DOMExpressionStatement"
+                      },
+                      {
+                        "_expression": {
+                          "_arguments": [
+                            {
+                              "_name": "userInput",
+                              "node": "DOMName"
+                            }
+                          ],
+                          "_name": "setText",
+                          "node": "DOMMethodInvocation",
+                          "_expression": {
+                            "_name": "textView1",
+                            "node": "DOMName"
+                          }
+                        },
+                        "node": "DOMExpressionStatement"
+                      }
+                    ],
+                    "node": "DOMBlock"
+                  },
+                  "_cond": {
+                    "_name": "boolean1",
+                    "node": "DOMName"
+                  },
+                  "node": "DOMIfStatement"
+                }
+              ],
+              "node": "DOMBlock"
+            }
+          ],
+          "node": "DOMBlock"
+        },
+        "node": "DOMMethodDeclaration"
+      },
+      "keywords": [
+        "text",
+        "set"
+      ],
+      "apicalls": [],
+      "types": [
+        "TextView"
+      ],
+      "aml": "import edu.rice.cs.caper.bayou.annotations.Evidence;\nimport android.widget.TextView;\npublic class Test {\n    void toSynthesize(String userInput, boolean boolean1, TextView textView1) {\n        {\n\t\t\tif (boolean1) {\n\t\t\t\ttextView1.setText(userInput);\n\t\t\t} else {\n\t\t\t\ttextView1.setText(userInput);\n\t\t\t\ttextView1.setText(userInput);\n\t\t\t}\n\t\t}\n    }\n}\n",
+      "sequences": [
+        {
+          "calls": [
+            "android.widget.TextView.setText(java.lang.CharSequence)"
+          ]
+        },
+        {
+          "calls": [
+            "android.widget.TextView.setText(java.lang.CharSequence)",
+            "android.widget.TextView.setText(java.lang.CharSequence)"
+          ]
+        }
+      ],
+      "ast": {
+        "_nodes": [
+          {
+            "_then": [
+              {
+                "node": "DAPICall",
+                "_call": "android.widget.TextView.setText(java.lang.CharSequence)"
+              }
+            ],
+            "_else": [
+              {
+                "node": "DAPICall",
+                "_call": "android.widget.TextView.setText(java.lang.CharSequence)"
+              },
+              {
+                "node": "DAPICall",
+                "_call": "android.widget.TextView.setText(java.lang.CharSequence)"
+              }
+            ],
+            "_cond": [],
+            "node": "DBranch"
+          }
+        ],
+        "node": "DSubTree"
+      },
+      "context": [
+        "CharSequence"
+      ]
+    },
+    {
+      "aml_ast": {
+        "_body": {
+          "_statements": [
+            {
+              "_statements": [
+                {
+                  "_type": {
+                    "node": "DOMType",
+                    "parameters": [],
+                    "type": "boolean"
+                  },
+                  "node": "DOMVariableDeclarationStatement",
+                  "_fragments": [
+                    {
+                      "_name": "boolean1",
+                      "_initializer": null,
+                      "node": "DOMVariableDeclarationFragment"
+                    }
+                  ]
+                },
+                {
+                  "_type": {
+                    "node": "DOMType",
+                    "parameters": [],
+                    "type": "File"
+                  },
+                  "node": "DOMVariableDeclarationStatement",
+                  "_fragments": [
+                    {
+                      "_name": "file1",
+                      "_initializer": null,
+                      "node": "DOMVariableDeclarationFragment"
+                    }
+                  ]
+                },
+                {
+                  "_type": {
+                    "node": "DOMType",
+                    "parameters": [],
+                    "type": "URI"
+                  },
+                  "node": "DOMVariableDeclarationStatement",
+                  "_fragments": [
+                    {
+                      "_name": "uRI1",
+                      "_initializer": null,
+                      "node": "DOMVariableDeclarationFragment"
+                    }
+                  ]
+                },
+                {
+                  "_expression": {
+                    "_rhs": {
+                      "_arguments": [
+                        {
+                          "_name": "userInput",
+                          "node": "DOMName"
+                        }
+                      ],
+                      "_type": {
+                        "node": "DOMType",
+                        "parameters": [],
+                        "type": "java.io.File"
+                      },
+                      "node": "DOMClassInstanceCreation"
+                    },
+                    "_lhs": {
+                      "_name": "file1",
+                      "node": "DOMName"
+                    },
+                    "node": "DOMAssignment"
+                  },
+                  "node": "DOMExpressionStatement"
+                },
+                {
+                  "_then": {
+                    "_statements": [
+                      {
+                        "_then": {
+                          "_statements": [
+                            {
+                              "_expression": {
+                                "_rhs": {
+                                  "_arguments": [],
+                                  "_name": "toURI",
+                                  "node": "DOMMethodInvocation",
+                                  "_expression": {
+                                    "_name": "file1",
+                                    "node": "DOMName"
+                                  }
+                                },
+                                "_lhs": {
+                                  "_name": "uRI1",
+                                  "node": "DOMName"
+                                },
+                                "node": "DOMAssignment"
+                              },
+                              "node": "DOMExpressionStatement"
+                            }
+                          ],
+                          "node": "DOMBlock"
+                        },
+                        "_else": {
+                          "_statements": [
+                            {
+                              "_expression": {
+                                "_rhs": {
+                                  "_arguments": [],
+                                  "_name": "toURI",
+                                  "node": "DOMMethodInvocation",
+                                  "_expression": {
+                                    "_name": "file1",
+                                    "node": "DOMName"
+                                  }
+                                },
+                                "_lhs": {
+                                  "_name": "uRI1",
+                                  "node": "DOMName"
+                                },
+                                "node": "DOMAssignment"
+                              },
+                              "node": "DOMExpressionStatement"
+                            }
+                          ],
+                          "node": "DOMBlock"
+                        },
+                        "_cond": {
+                          "_name": "boolean1",
+                          "node": "DOMName"
+                        },
+                        "node": "DOMIfStatement"
+                      }
+                    ],
+                    "node": "DOMBlock"
+                  },
+                  "_else": {
+                    "_statements": [],
+                    "node": "DOMBlock"
+                  },
+                  "_cond": {
+                    "_rhs": {
+                      "_arguments": [],
+                      "_name": "exists",
+                      "node": "DOMMethodInvocation",
+                      "_expression": {
+                        "_name": "file1",
+                        "node": "DOMName"
+                      }
+                    },
+                    "_lhs": {
+                      "_name": "boolean1",
+                      "node": "DOMName"
+                    },
+                    "node": "DOMAssignment"
+                  },
+                  "node": "DOMIfStatement"
+                }
+              ],
+              "node": "DOMBlock"
+            }
+          ],
+          "node": "DOMBlock"
+        },
+        "node": "DOMMethodDeclaration"
+      },
+      "keywords": [
+        "uri",
+        "io"
+      ],
+      "apicalls": [],
+      "types": [
+        "File",
+        "String"
+      ],
+      "aml": "import edu.rice.cs.caper.bayou.annotations.Evidence;\nimport java.io.File;\nimport java.net.URI;\npublic class Test {\n    void toSynthesize(String userInput) {\n        {\n\t\t\tboolean boolean1;\n\t\t\tFile file1;\n\t\t\tURI uRI1;\n\t\t\tfile1 = new java.io.File(userInput);\n\t\t\tif (boolean1 = file1.exists()) {\n\t\t\t\tif (boolean1) {\n\t\t\t\t\tuRI1 = file1.toURI();\n\t\t\t\t} else {\n\t\t\t\t\tuRI1 = file1.toURI();\n\t\t\t\t}\n\t\t\t} else {\n\t\t\t}\n\t\t}\n    }\n}\n",
+      "sequences": [
+        {
+          "calls": [
+            "java.io.File.File(java.lang.String)",
+            "java.io.File.exists()",
+            "java.io.File.toURI()"
+          ]
+        },
+        {
+          "calls": [
+            "java.io.File.File(java.lang.String)",
+            "java.io.File.exists()"
+          ]
+        }
+      ],
+      "ast": {
+        "_nodes": [
+          {
+            "node": "DAPICall",
+            "_call": "java.io.File.File(java.lang.String)"
+          },
+          {
+            "_then": [
+              {
+                "_then": [
+                  {
+                    "node": "DAPICall",
+                    "_call": "java.io.File.toURI()"
+                  }
+                ],
+                "_else": [
+                  {
+                    "node": "DAPICall",
+                    "_call": "java.io.File.toURI()"
+                  }
+                ],
+                "_cond": [],
+                "node": "DBranch"
+              }
+            ],
+            "_else": [],
+            "_cond": [
+              {
+                "node": "DAPICall",
+                "_call": "java.io.File.exists()"
+              }
+            ],
+            "node": "DBranch"
+          }
+        ],
+        "node": "DSubTree"
+      },
+      "context": []
+    },
+    {
+      "aml_ast": {
+        "_body": {
+          "_statements": [
+            {
+              "_statements": [
+                {
+                  "_then": {
+                    "_statements": [
+                      {
+                        "_expression": {
+                          "_arguments": [
+                            {
+                              "_name": "listAdapter1",
+                              "node": "DOMName"
+                            }
+                          ],
+                          "_name": "setAdapter",
+                          "node": "DOMMethodInvocation",
+                          "_expression": {
+                            "_name": "gridView1",
+                            "node": "DOMName"
+                          }
+                        },
+                        "node": "DOMExpressionStatement"
+                      }
+                    ],
+                    "node": "DOMBlock"
+                  },
+                  "_else": {
+                    "_statements": [
+                      {
+                        "_expression": {
+                          "_arguments": [
+                            {
+                              "_name": "int1",
+                              "node": "DOMName"
+                            }
+                          ],
+                          "_name": "setVisibility",
+                          "node": "DOMMethodInvocation",
+                          "_expression": {
+                            "_name": "progressBar1",
+                            "node": "DOMName"
+                          }
+                        },
+                        "node": "DOMExpressionStatement"
+                      }
+                    ],
+                    "node": "DOMBlock"
+                  },
+                  "_cond": {
+                    "_name": "boolean1",
+                    "node": "DOMName"
+                  },
+                  "node": "DOMIfStatement"
+                }
+              ],
+              "node": "DOMBlock"
+            }
+          ],
+          "node": "DOMBlock"
+        },
+        "node": "DOMMethodDeclaration"
+      },
+      "keywords": [
+        "set",
+        "view",
+        "android",
+        "widget",
+        "adapter",
+        "grid",
+        "progress"
+      ],
+      "apicalls": [
+        "setAdapter",
+        "setVisibility"
+      ],
+      "types": [],
+      "aml": "import edu.rice.cs.caper.bayou.annotations.Evidence;\nimport android.widget.ListAdapter;\nimport android.widget.ProgressBar;\nimport android.widget.GridView;\npublic class Test {\n    void toSynthesize(String userInput, ListAdapter listAdapter1, int int1, ProgressBar progressBar1, GridView gridView1, boolean boolean1) {\n        {\n\t\t\tif (boolean1) {\n\t\t\t\tgridView1.setAdapter(listAdapter1);\n\t\t\t} else {\n\t\t\t\tprogressBar1.setVisibility(int1);\n\t\t\t}\n\t\t}\n    }\n}\n",
+      "sequences": [
+        {
+          "calls": [
+            "android.widget.GridView.setAdapter(android.widget.ListAdapter)"
+          ]
+        },
+        {
+          "calls": [
+            "android.widget.ProgressBar.setVisibility(int)"
+          ]
+        }
+      ],
+      "ast": {
+        "_nodes": [
+          {
+            "_then": [
+              {
+                "node": "DAPICall",
+                "_call": "android.widget.GridView.setAdapter(android.widget.ListAdapter)"
+              }
+            ],
+            "_else": [
+              {
+                "node": "DAPICall",
+                "_call": "android.widget.ProgressBar.setVisibility(int)"
+              }
+            ],
+            "_cond": [],
+            "node": "DBranch"
+          }
+        ],
+        "node": "DSubTree"
+      },
+      "context": [
+        "int"
+      ]
+    },
+    {
+      "aml_ast": {
+        "_body": {
+          "_statements": [
+            {
+              "_statements": [
+                {
+                  "_type": {
+                    "node": "DOMType",
+                    "parameters": [],
+                    "type": "boolean"
+                  },
+                  "node": "DOMVariableDeclarationStatement",
+                  "_fragments": [
+                    {
+                      "_name": "boolean1",
+                      "_initializer": null,
+                      "node": "DOMVariableDeclarationFragment"
+                    }
+                  ]
+                },
+                {
+                  "_type": {
+                    "node": "DOMType",
+                    "parameters": [],
+                    "type": "Intent"
+                  },
+                  "node": "DOMVariableDeclarationStatement",
+                  "_fragments": [
+                    {
+                      "_name": "intent1",
+                      "_initializer": null,
+                      "node": "DOMVariableDeclarationFragment"
+                    }
+                  ]
+                },
+                {
+                  "_expression": {
+                    "_arguments": [
+                      {
+                        "_name": "int1",
+                        "node": "DOMName"
+                      },
+                      {
+                        "_name": "int1",
+                        "node": "DOMName"
+                      }
+                    ],
+                    "_name": "overridePendingTransition",
+                    "node": "DOMMethodInvocation",
+                    "_expression": {
+                      "_name": "activity1",
+                      "node": "DOMName"
+                    }
+                  },
+                  "node": "DOMExpressionStatement"
+                },
+                {
+                  "_expression": {
+                    "_rhs": {
+                      "_arguments": [
+                        {
+                          "_name": "int1",
+                          "node": "DOMName"
+                        }
+                      ],
+                      "_name": "requestWindowFeature",
+                      "node": "DOMMethodInvocation",
+                      "_expression": {
+                        "_name": "activity1",
+                        "node": "DOMName"
+                      }
+                    },
+                    "_lhs": {
+                      "_name": "boolean1",
+                      "node": "DOMName"
+                    },
+                    "node": "DOMAssignment"
+                  },
+                  "node": "DOMExpressionStatement"
+                },
+                {
+                  "_then": {
+                    "_statements": [
+                      {
+                        "_expression": {
+                          "_arguments": [
+                            {
+                              "_name": "view1",
+                              "node": "DOMName"
+                            }
+                          ],
+                          "_name": "setContentView",
+                          "node": "DOMMethodInvocation",
+                          "_expression": {
+                            "_name": "activity1",
+                            "node": "DOMName"
+                          }
+                        },
+                        "node": "DOMExpressionStatement"
+                      }
+                    ],
+                    "node": "DOMBlock"
+                  },
+                  "_else": {
+                    "_statements": [
+                      {
+                        "_expression": {
+                          "_arguments": [
+                            {
+                              "_name": "view1",
+                              "node": "DOMName"
+                            }
+                          ],
+                          "_name": "setContentView",
+                          "node": "DOMMethodInvocation",
+                          "_expression": {
+                            "_name": "activity1",
+                            "node": "DOMName"
+                          }
+                        },
+                        "node": "DOMExpressionStatement"
+                      }
+                    ],
+                    "node": "DOMBlock"
+                  },
+                  "_cond": {
+                    "_name": "boolean1",
+                    "node": "DOMName"
+                  },
+                  "node": "DOMIfStatement"
+                },
+                {
+                  "_expression": {
+                    "_rhs": {
+                      "_arguments": [],
+                      "_name": "getIntent",
+                      "node": "DOMMethodInvocation",
+                      "_expression": {
+                        "_name": "activity1",
+                        "node": "DOMName"
+                      }
+                    },
+                    "_lhs": {
+                      "_name": "intent1",
+                      "node": "DOMName"
+                    },
+                    "node": "DOMAssignment"
+                  },
+                  "node": "DOMExpressionStatement"
+                }
+              ],
+              "node": "DOMBlock"
+            }
+          ],
+          "node": "DOMBlock"
+        },
+        "node": "DOMMethodDeclaration"
+      },
+      "keywords": [
+        "activity",
+        "request",
+        "content",
+        "override",
+        "view",
+        "feature"
+      ],
+      "apicalls": [
+        "requestWindowFeature"
+      ],
+      "types": [
+        "Activity",
+        "int"
+      ],
+      "aml": "import edu.rice.cs.caper.bayou.annotations.Evidence;\nimport android.view.View;\nimport android.app.Activity;\nimport android.content.Intent;\npublic class Test {\n    void toSynthesize(String userInput, Activity activity1, int int1, View view1) {\n        {\n\t\t\tboolean boolean1;\n\t\t\tIntent intent1;\n\t\t\tactivity1.overridePendingTransition(int1, int1);\n\t\t\tboolean1 = activity1.requestWindowFeature(int1);\n\t\t\tif (boolean1) {\n\t\t\t\tactivity1.setContentView(view1);\n\t\t\t} else {\n\t\t\t\tactivity1.setContentView(view1);\n\t\t\t}\n\t\t\tintent1 = activity1.getIntent();\n\t\t}\n    }\n}\n",
+      "sequences": [
+        {
+          "calls": [
+            "android.app.Activity.overridePendingTransition(int,int)",
+            "android.app.Activity.requestWindowFeature(int)",
+            "android.app.Activity.setContentView(android.view.View)",
+            "android.app.Activity.getIntent()"
+          ]
+        }
+      ],
+      "ast": {
+        "_nodes": [
+          {
+            "node": "DAPICall",
+            "_call": "android.app.Activity.overridePendingTransition(int,int)"
+          },
+          {
+            "node": "DAPICall",
+            "_call": "android.app.Activity.requestWindowFeature(int)"
+          },
+          {
+            "_then": [
+              {
+                "node": "DAPICall",
+                "_call": "android.app.Activity.setContentView(android.view.View)"
+              }
+            ],
+            "_else": [
+              {
+                "node": "DAPICall",
+                "_call": "android.app.Activity.setContentView(android.view.View)"
+              }
+            ],
+            "_cond": [],
+            "node": "DBranch"
+          },
+          {
+            "node": "DAPICall",
+            "_call": "android.app.Activity.getIntent()"
+          }
+        ],
+        "node": "DSubTree"
+      },
+      "context": [
+        "int",
+        "View"
+      ]
+    },
+    {
+      "aml_ast": {
+        "_body": {
+          "_statements": [
+            {
+              "_statements": [
+                {
+                  "_type": {
+                    "node": "DOMType",
+                    "parameters": [],
+                    "type": "GZIPOutputStream"
+                  },
+                  "node": "DOMVariableDeclarationStatement",
+                  "_fragments": [
+                    {
+                      "_name": "gZIPOutputStream1",
+                      "_initializer": null,
+                      "node": "DOMVariableDeclarationFragment"
+                    }
+                  ]
+                },
+                {
+                  "_body": {
+                    "_statements": [
+                      {
+                        "_expression": {
+                          "_rhs": {
+                            "_arguments": [
+                              {
+                                "_name": "outputStream1",
+                                "node": "DOMName"
+                              }
+                            ],
+                            "_type": {
+                              "node": "DOMType",
+                              "parameters": [],
+                              "type": "java.util.zip.GZIPOutputStream"
+                            },
+                            "node": "DOMClassInstanceCreation"
+                          },
+                          "_lhs": {
+                            "_name": "gZIPOutputStream1",
+                            "node": "DOMName"
+                          },
+                          "node": "DOMAssignment"
+                        },
+                        "node": "DOMExpressionStatement"
+                      },
+                      {
+                        "_expression": {
+                          "_arguments": [],
+                          "_name": "flush",
+                          "node": "DOMMethodInvocation",
+                          "_expression": {
+                            "_name": "gZIPOutputStream1",
+                            "node": "DOMName"
+                          }
+                        },
+                        "node": "DOMExpressionStatement"
+                      },
+                      {
+                        "_expression": {
+                          "_arguments": [],
+                          "_name": "close",
+                          "node": "DOMMethodInvocation",
+                          "_expression": {
+                            "_name": "gZIPOutputStream1",
+                            "node": "DOMName"
+                          }
+                        },
+                        "node": "DOMExpressionStatement"
+                      }
+                    ],
+                    "node": "DOMBlock"
+                  },
+                  "_finally": null,
+                  "node": "DOMTryStatement",
+                  "_clauses": [
+                    {
+                      "_body": {
+                        "_statements": [],
+                        "node": "DOMBlock"
+                      },
+                      "_type": {
+                        "node": "DOMType",
+                        "parameters": [],
+                        "type": "IOException"
+                      },
+                      "node": "DOMCatchClause",
+                      "_variable": "_e"
+                    }
+                  ]
+                }
+              ],
+              "node": "DOMBlock"
+            }
+          ],
+          "node": "DOMBlock"
+        },
+        "node": "DOMMethodDeclaration"
+      },
+      "keywords": [
+        "close",
+        "zip"
+      ],
+      "apicalls": [
+        "flush",
+        "close"
+      ],
+      "types": [],
+      "aml": "import edu.rice.cs.caper.bayou.annotations.Evidence;\nimport java.io.IOException;\nimport java.util.zip.GZIPOutputStream;\nimport java.io.OutputStream;\npublic class Test {\n    void toSynthesize(String userInput, OutputStream outputStream1) {\n        {\n\t\t\tGZIPOutputStream gZIPOutputStream1;\n\t\t\ttry {\n\t\t\t\tgZIPOutputStream1 = new java.util.zip.GZIPOutputStream(outputStream1);\n\t\t\t\tgZIPOutputStream1.flush();\n\t\t\t\tgZIPOutputStream1.close();\n\t\t\t} catch (IOException _e) {\n\t\t\t}\n\t\t}\n    }\n}\n",
+      "sequences": [
+        {
+          "calls": [
+            "java.util.zip.GZIPOutputStream.GZIPOutputStream(java.io.OutputStream)",
+            "java.util.zip.DeflaterOutputStream.flush()",
+            "java.util.zip.DeflaterOutputStream.close()"
+          ]
+        }
+      ],
+      "ast": {
+        "_nodes": [
+          {
+            "node": "DAPICall",
+            "_call": "java.util.zip.GZIPOutputStream.GZIPOutputStream(java.io.OutputStream)"
+          },
+          {
+            "node": "DAPICall",
+            "_call": "java.util.zip.DeflaterOutputStream.flush()"
+          },
+          {
+            "node": "DAPICall",
+            "_call": "java.util.zip.DeflaterOutputStream.close()"
+          }
+        ],
+        "node": "DSubTree"
+      },
+      "context": []
+    },
+    {
+      "aml_ast": {
+        "_body": {
+          "_statements": [
+            {
+              "_statements": [
+                {
+                  "_expression": {
+                    "_arguments": [
+                      {
+                        "_name": "int1",
+                        "node": "DOMName"
+                      },
+                      {
+                        "_name": "int1",
+                        "node": "DOMName"
+                      },
+                      {
+                        "_name": "int1",
+                        "node": "DOMName"
+                      },
+                      {
+                        "_name": "int1",
+                        "node": "DOMName"
+                      }
+                    ],
+                    "_name": "setBounds",
+                    "node": "DOMMethodInvocation",
+                    "_expression": {
+                      "_name": "drawable1",
+                      "node": "DOMName"
+                    }
+                  },
+                  "node": "DOMExpressionStatement"
+                },
+                {
+                  "_expression": {
+                    "_arguments": [
+                      {
+                        "_name": "int1",
+                        "node": "DOMName"
+                      }
+                    ],
+                    "_name": "setAlpha",
+                    "node": "DOMMethodInvocation",
+                    "_expression": {
+                      "_name": "drawable1",
+                      "node": "DOMName"
+                    }
+                  },
+                  "node": "DOMExpressionStatement"
+                }
+              ],
+              "node": "DOMBlock"
+            }
+          ],
+          "node": "DOMBlock"
+        },
+        "node": "DOMMethodDeclaration"
+      },
+      "keywords": [
+        "bounds"
+      ],
+      "apicalls": [
+        "setBounds",
+        "setAlpha"
+      ],
+      "types": [
+        "int"
+      ],
+      "aml": "import edu.rice.cs.caper.bayou.annotations.Evidence;\nimport android.graphics.drawable.Drawable;\npublic class Test {\n    void toSynthesize(String userInput, Drawable drawable1, int int1) {\n        {\n\t\t\tdrawable1.setBounds(int1, int1, int1, int1);\n\t\t\tdrawable1.setAlpha(int1);\n\t\t}\n    }\n}\n",
+      "sequences": [
+        {
+          "calls": [
+            "android.graphics.drawable.Drawable.setBounds(int,int,int,int)",
+            "android.graphics.drawable.Drawable.setAlpha(int)"
+          ]
+        }
+      ],
+      "ast": {
+        "_nodes": [
+          {
+            "node": "DAPICall",
+            "_call": "android.graphics.drawable.Drawable.setBounds(int,int,int,int)"
+          },
+          {
+            "node": "DAPICall",
+            "_call": "android.graphics.drawable.Drawable.setAlpha(int)"
+          }
+        ],
+        "node": "DSubTree"
+      },
+      "context": []
+    }
+  ]
+}
