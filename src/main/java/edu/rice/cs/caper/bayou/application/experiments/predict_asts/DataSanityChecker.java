@@ -17,7 +17,7 @@ package edu.rice.cs.caper.bayou.application.experiments.predict_asts;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import com.google.gson.JsonSyntaxException;
+import com.google.gson.JsonParseException;
 import com.google.gson.annotations.Expose;
 import edu.rice.cs.caper.bayou.application.dom_driver.*;
 import edu.rice.cs.caper.bayou.core.synthesizer.RuntimeTypeAdapterFactory;
@@ -156,11 +156,17 @@ public class DataSanityChecker {
                 DOMMethodDeclaration predictedAST;
                 try {
                     predictedAST = gsonIn.fromJson(pAST.toString(), DOMMethodDeclaration.class);
-                } catch (JsonSyntaxException e) {
+                } catch (JsonParseException e) {
                     numInvalidASTs += 1;
                     continue;
                 }
-                Set<String> apicalls = predictedAST.bagOfAPICalls().stream().map(c -> c.toString()).collect(Collectors.toSet());
+                Set<String> apicalls;
+                try {
+                    apicalls = predictedAST.bagOfAPICalls().stream().map(c -> c.toString()).collect(Collectors.toSet());
+                } catch (RuntimeException e) {
+                    numInvalidASTs += 1;
+                    continue;
+                }
                 apicalls.removeAll(vocab);
                 if (apicalls.isEmpty()) /* there's no API call that's not in vocab */
                     validASTs.add(predictedAST);
