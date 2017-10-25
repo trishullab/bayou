@@ -142,4 +142,10 @@ public class DOMClassInstanceCreation extends DOMExpression implements Handler {
     public int numExcepts() {
         return 0;
     }
+
+    @Override
+    public String toAML() {
+        List<String> args = _arguments.stream().map(a -> a.toAML()).collect(Collectors.toList());
+        return String.format("new %s(%s)", _type.toAML(), String.join(",", args));
+    }
 }

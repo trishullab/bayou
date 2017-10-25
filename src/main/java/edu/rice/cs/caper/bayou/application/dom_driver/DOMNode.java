@@ -65,4 +65,8 @@ public class DOMNode implements HandlerAML {
     public int numExcepts() {
         throw new NotImplementedException();
     }
+
+    public String toAML() { throw new NotImplementedException(); }
+
+    public String toString() { throw new NotImplementedException(); }
 }

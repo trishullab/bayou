@@ -107,4 +107,9 @@ public class DOMCatchClause extends DOMNode implements Handler {
     public int numExcepts() {
         return _body.numExcepts();
     }
+
+    @Override
+    public String toAML() {
+        return String.format("catch (%s %s) %s", _type.toAML(), _variable, _body.toAML());
+    }
 }

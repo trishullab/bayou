@@ -20,6 +20,7 @@ import edu.rice.cs.caper.bayou.core.dsl.Sequence;
 import org.eclipse.jdt.core.dom.*;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class DOMType extends DOMNode {
 
@@ -130,5 +131,11 @@ public class DOMType extends DOMNode {
     @Override
     public int numExcepts() {
         return 0;
+    }
+
+    @Override
+    public String toAML() {
+        List<String> params = parameters.stream().map(p -> p.toAML()).collect(Collectors.toList());
+        return params.isEmpty()? type : String.format("%s<%s>", type, String.join(",", params));
     }
 }

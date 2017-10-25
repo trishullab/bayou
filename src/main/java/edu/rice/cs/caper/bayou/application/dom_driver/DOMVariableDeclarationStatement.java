@@ -25,6 +25,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 public class DOMVariableDeclarationStatement extends DOMStatement implements Handler {
 
@@ -116,5 +117,11 @@ public class DOMVariableDeclarationStatement extends DOMStatement implements Han
     @Override
     public int numExcepts() {
         return 0;
+    }
+
+    @Override
+    public String toAML() {
+        List<String> frags = _fragments.stream().map(f -> f.toAML()).collect(Collectors.toList());
+        return String.format("%s %s;", _type.toAML(), String.join(",", frags));
     }
 }

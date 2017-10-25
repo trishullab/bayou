@@ -130,4 +130,9 @@ public class DOMWhileStatement extends DOMStatement implements Handler {
     public int numExcepts() {
         return _body.numExcepts();
     }
+
+    @Override
+    public String toAML() {
+        return String.format("while (%s) %s", _cond.toAML(), _body.toAML());
+    }
 }

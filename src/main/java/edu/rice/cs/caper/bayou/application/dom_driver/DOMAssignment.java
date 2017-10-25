@@ -105,4 +105,9 @@ public class DOMAssignment extends DOMExpression implements Handler {
     public int numExcepts() {
         return 0;
     }
+
+    @Override
+    public String toAML() {
+        return _lhs.toAML() + "=" + _rhs.toAML();
+    }
 }

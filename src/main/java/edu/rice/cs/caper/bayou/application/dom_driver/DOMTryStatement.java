@@ -26,6 +26,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 public class DOMTryStatement extends DOMStatement implements Handler {
 
@@ -150,5 +151,11 @@ public class DOMTryStatement extends DOMStatement implements Handler {
     @Override
     public int numExcepts() {
         return _body.numExcepts() + _clauses.stream().mapToInt(c -> c.numExcepts()).sum() + 1;
+    }
+
+    @Override
+    public String toAML() {
+        List<String> clauses = _clauses.stream().map(c -> c.toAML()).collect(Collectors.toList());
+        return String.format("try %s %s", _body.toAML(), String.join("", clauses));
     }
 }

@@ -98,4 +98,9 @@ public class DOMParenthesizedExpression extends DOMExpression implements Handler
     public int numExcepts() {
         return 0;
     }
+
+    @Override
+    public String toAML() {
+        return "(" + _expression.toAML() + ")";
+    }
 }

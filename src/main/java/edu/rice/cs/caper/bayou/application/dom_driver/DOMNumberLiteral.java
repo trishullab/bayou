@@ -86,4 +86,9 @@ public class DOMNumberLiteral extends DOMExpression {
     public int numExcepts() {
         return 0;
     }
+
+    @Override
+    public String toAML() {
+        return _value;
+    }
 }

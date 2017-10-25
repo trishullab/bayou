@@ -25,6 +25,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 public class DOMBlock extends DOMStatement implements Handler {
 
@@ -116,5 +117,11 @@ public class DOMBlock extends DOMStatement implements Handler {
     @Override
     public int numExcepts() {
         return _statements.stream().mapToInt(s -> s.numExcepts()).sum();
+    }
+
+    @Override
+    public String toAML() {
+        List<String> stmts = _statements.stream().map(s -> s.toAML()).collect(Collectors.toList());
+        return "{" + String.join("", stmts) + "}";
     }
 }

@@ -95,4 +95,9 @@ public class DOMMethodDeclaration extends DOMNode implements Handler {
     public int numExcepts() {
         return _body.numExcepts();
     }
+
+    @Override
+    public String toAML() {
+        return _body.toAML();
+    }
 }

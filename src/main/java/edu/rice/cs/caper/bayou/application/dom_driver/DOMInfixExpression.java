@@ -116,4 +116,9 @@ public class DOMInfixExpression extends DOMExpression implements Handler {
     public int numExcepts() {
         return 0;
     }
+
+    @Override
+    public String toAML() {
+        return String.format("%s %s %s", _left.toAML(), _operator, _right.toAML());
+    }
 }

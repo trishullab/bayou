@@ -28,6 +28,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 public class DOMMethodInvocation extends DOMExpression implements Handler {
 
@@ -143,6 +144,12 @@ public class DOMMethodInvocation extends DOMExpression implements Handler {
     @Override
     public int numExcepts() {
         return 0;
+    }
+
+    @Override
+    public String toAML() {
+        List<String> args = _arguments.stream().map(a -> a.toAML()).collect(Collectors.toList());
+        return String.format("%s.%s(%s)", _expression.toAML(), _name, String.join(",", args));
     }
 }
 

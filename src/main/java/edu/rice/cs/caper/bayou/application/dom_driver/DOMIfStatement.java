@@ -139,4 +139,9 @@ public class DOMIfStatement extends DOMStatement implements Handler {
     public int numExcepts() {
         return _then.numExcepts() + _else.numExcepts();
     }
+
+    @Override
+    public String toAML() {
+        return String.format("if (%s) %s %s", _cond.toAML(), _then.toAML(), _else.toAML());
+    }
 }
