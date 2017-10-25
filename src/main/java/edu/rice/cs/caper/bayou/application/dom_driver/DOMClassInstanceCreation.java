@@ -30,16 +30,20 @@ import java.util.stream.Collectors;
 
 public class DOMClassInstanceCreation extends DOMExpression implements Handler {
 
-    final ClassInstanceCreation creation;
+    ClassInstanceCreation creation;
 
     @Expose
-    final String node = "DOMClassInstanceCreation";
+    String node = "DOMClassInstanceCreation";
 
     @Expose
-    final DOMType _type;
+    DOMType _type;
 
     @Expose
-    final List<DOMExpression> _arguments;
+    List<DOMExpression> _arguments;
+
+    public DOMClassInstanceCreation() {
+        this.node = "DOMClassInstanceCreation";
+    }
 
     public DOMClassInstanceCreation(ClassInstanceCreation creation) {
         this.creation = creation;

@@ -25,8 +25,11 @@ import java.util.Set;
 public class DOMNullLiteral extends DOMExpression {
 
     @Expose
-    final String node = "DOMNullLiteral";
+    String node = "DOMNullLiteral";
 
+    public DOMNullLiteral() {
+        this.node = "DOMNullLiteral";
+    }
 
     @Override
     public DOMNullLiteral handleAML() {

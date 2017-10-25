@@ -29,19 +29,23 @@ import java.util.Set;
 
 public class DOMIfStatement extends DOMStatement implements Handler {
 
-    final IfStatement statement;
+    IfStatement statement;
 
     @Expose
-    final String node = "DOMIfStatement";
+    String node = "DOMIfStatement";
 
     @Expose
-    final DOMExpression _cond;
+    DOMExpression _cond;
 
     @Expose
-    final DOMStatement _then;
+    DOMStatement _then;
 
     @Expose
-    final DOMStatement _else;
+    DOMStatement _else;
+
+    public DOMIfStatement() {
+        this.node = "DOMIfStatement";
+    }
 
     public DOMIfStatement(IfStatement statement) {
         this.statement = statement;

@@ -26,16 +26,20 @@ import java.util.Set;
 
 public class DOMAssignment extends DOMExpression implements Handler {
 
-    final Assignment assignment;
+    Assignment assignment;
 
     @Expose
-    final String node = "DOMAssignment";
+    String node = "DOMAssignment";
 
     @Expose
-    final DOMExpression _lhs;
+    DOMExpression _lhs;
 
     @Expose
-    final DOMExpression _rhs;
+    DOMExpression _rhs;
+
+    public DOMAssignment() {
+        this.node = "DOMAssignment";
+    }
 
     public DOMAssignment(Assignment assignment) {
         this.assignment = assignment;

@@ -26,13 +26,17 @@ import java.util.Set;
 
 public class DOMParenthesizedExpression extends DOMExpression implements Handler {
 
-    final ParenthesizedExpression expression;
+    ParenthesizedExpression expression;
 
     @Expose
-    final String node = "DOMParenthesizedExpression";
+    String node = "DOMParenthesizedExpression";
 
     @Expose
-    final DOMExpression _expression;
+    DOMExpression _expression;
+
+    public DOMParenthesizedExpression() {
+        this.node = "DOMParenthesizedExpression";
+    }
 
     public DOMParenthesizedExpression(ParenthesizedExpression expression) {
         this.expression = expression;

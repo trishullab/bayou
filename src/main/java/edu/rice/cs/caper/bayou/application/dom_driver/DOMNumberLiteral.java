@@ -26,10 +26,14 @@ import java.util.Set;
 public class DOMNumberLiteral extends DOMExpression {
 
     @Expose
-    final String node = "DOMNumberLiteral";
+    String node = "DOMNumberLiteral";
 
     @Expose
-    final String _value;
+    String _value;
+
+    public DOMNumberLiteral() {
+        this.node = "DOMNumberLiteral";
+    }
 
     public DOMNumberLiteral(NumberLiteral number) {
         this._value = number.getToken();

@@ -26,13 +26,17 @@ import java.util.Set;
 
 public class DOMExpressionStatement extends DOMStatement implements Handler {
 
-    final ExpressionStatement statement;
+    ExpressionStatement statement;
 
     @Expose
-    final String node = "DOMExpressionStatement";
+    String node = "DOMExpressionStatement";
 
     @Expose
-    final DOMExpression _expression;
+    DOMExpression _expression;
+
+    public DOMExpressionStatement() {
+        this.node = "DOMExpressionStatement";
+    }
 
     public DOMExpressionStatement(ExpressionStatement statement) {
         this.statement = statement;

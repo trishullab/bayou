@@ -26,10 +26,14 @@ import java.util.Set;
 public class DOMName extends DOMExpression {
 
     @Expose
-    final String node = "DOMName";
+    String node = "DOMName";
 
     @Expose
-    final String _name;
+    String _name;
+
+    public DOMName() {
+        this.node = "DOMName";
+    }
 
     public DOMName(Name name) {
         this._name = name.getFullyQualifiedName();

@@ -31,19 +31,23 @@ import java.util.Set;
 
 public class DOMMethodInvocation extends DOMExpression implements Handler {
 
-    final MethodInvocation invocation;
+    MethodInvocation invocation;
 
     @Expose
-    final String node = "DOMMethodInvocation";
+    String node = "DOMMethodInvocation";
 
     @Expose
-    final DOMExpression _expression;
+    DOMExpression _expression;
 
     @Expose
-    final String _name; // terminal
+    String _name; // terminal
 
     @Expose
-    final List<DOMExpression> _arguments;
+    List<DOMExpression> _arguments;
+
+    public DOMMethodInvocation() {
+        this.node = "DOMMethodInvocation";
+    }
 
     public DOMMethodInvocation(MethodInvocation invocation) {
         this.invocation = invocation;

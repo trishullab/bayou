@@ -86,6 +86,8 @@ public class JSONInputFormat {
         @Expose
         List<DOMMethodDeclaration> out_aml_asts;
         @Expose
+        String aml;
+        @Expose
         String file;
         @Expose
         Set<String> apicalls;

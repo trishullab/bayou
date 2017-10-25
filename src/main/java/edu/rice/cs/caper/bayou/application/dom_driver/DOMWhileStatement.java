@@ -28,16 +28,20 @@ import java.util.Set;
 
 public class DOMWhileStatement extends DOMStatement implements Handler {
 
-    final WhileStatement statement;
+    WhileStatement statement;
 
     @Expose
-    final String node = "DOMWhileStatement";
+    String node = "DOMWhileStatement";
 
     @Expose
-    final DOMExpression _cond;
+    DOMExpression _cond;
 
     @Expose
-    final DOMStatement _body;
+    DOMStatement _body;
+
+    public DOMWhileStatement() {
+        this.node = "DOMWhileStatement";
+    }
 
     public DOMWhileStatement(WhileStatement statement) {
         this.statement = statement;

@@ -18,6 +18,7 @@ package edu.rice.cs.caper.bayou.application.experiments.predict_asts;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonSyntaxException;
+import com.google.gson.annotations.Expose;
 import edu.rice.cs.caper.bayou.application.dom_driver.*;
 import edu.rice.cs.caper.bayou.core.synthesizer.RuntimeTypeAdapterFactory;
 import org.apache.commons.cli.*;
@@ -123,6 +124,7 @@ public class DataSanityChecker {
         Gson gsonIn = new GsonBuilder().serializeNulls()
                 .registerTypeAdapterFactory(exprAdapter)
                 .registerTypeAdapterFactory(stmtAdapter)
+                .excludeFieldsWithoutExposeAnnotation()
                 .create();
 
         int numASTs = 0, numValidASTs = 0, numInvalidASTs = 0;
@@ -140,7 +142,8 @@ public class DataSanityChecker {
                 datapoint.context.add((String) q);
             for (Object q: program.getJSONArray("keywords"))
                 datapoint.keywords.add((String) q);
-            datapoint.file = program.getString("file");
+            datapoint.file = program.has("file")? program.getString("file") : null;
+            datapoint.aml = program.getString("aml");
             datapoint.aml_ast = gsonIn.fromJson(program.getJSONObject("aml_ast").toString(), DOMMethodDeclaration.class);
 
             int i = 0;
@@ -188,17 +191,19 @@ public class DataSanityChecker {
 
     void writeToFile(JSONInputFormat.Data data, String outfile) throws IOException {
         BufferedWriter bw = new BufferedWriter(new FileWriter(outfile));
-        Gson outGson = new GsonBuilder().setPrettyPrinting().serializeNulls().create();
+        Gson outGson = new GsonBuilder().setPrettyPrinting().excludeFieldsWithoutExposeAnnotation().serializeNulls().create();
         bw.write(outGson.toJson(data));
         bw.flush();
         bw.close();
     }
 
     static class VocabData {
+        @Expose
         List<VocabDataPoint> programs;
     }
 
     static class VocabDataPoint {
+        @Expose
         DOMMethodDeclaration aml_ast;
     }
 
@@ -235,6 +240,7 @@ public class DataSanityChecker {
         Gson gson = new GsonBuilder().serializeNulls()
                 .registerTypeAdapterFactory(exprAdapter)
                 .registerTypeAdapterFactory(stmtAdapter)
+                .excludeFieldsWithoutExposeAnnotation()
                 .create();
         String s = new String(Files.readAllBytes(Paths.get(vocabDataFile)));
         VocabData js = gson.fromJson(s, VocabData.class);

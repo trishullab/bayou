@@ -26,10 +26,10 @@ import java.util.Set;
 
 public class DOMInfixExpression extends DOMExpression implements Handler {
 
-    final InfixExpression expr;
+    InfixExpression expr;
 
     @Expose
-    final String node = "DOMInfixExpression";
+    String node = "DOMInfixExpression";
 
     @Expose
     DOMExpression _left;
@@ -39,6 +39,10 @@ public class DOMInfixExpression extends DOMExpression implements Handler {
 
     @Expose
     String _operator; // terminal
+
+    public DOMInfixExpression() {
+        this.node = "DOMInfixExpression";
+    }
 
     public DOMInfixExpression(InfixExpression expr) {
         this.expr = expr;

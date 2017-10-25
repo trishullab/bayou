@@ -28,13 +28,17 @@ import java.util.Set;
 
 public class DOMBlock extends DOMStatement implements Handler {
 
-    final Block block;
+    Block block;
 
     @Expose
-    final String node = "DOMBlock";
+    String node = "DOMBlock";
 
     @Expose
-    final List<DOMStatement> _statements;
+    List<DOMStatement> _statements;
+
+    public DOMBlock() {
+        this.node = "DOMBlock";
+    }
 
     public DOMBlock(Block block) {
         this.block = block;

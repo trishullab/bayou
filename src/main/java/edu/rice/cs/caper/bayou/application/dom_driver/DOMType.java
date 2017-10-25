@@ -24,13 +24,17 @@ import java.util.*;
 public class DOMType extends DOMNode {
 
     @Expose
-    final String node = "DOMType";
+    String node = "DOMType";
 
     @Expose
-    final String type;
+    String type;
 
     @Expose
-    final List<DOMType> parameters; // will be of size > 0 if type is generic
+    List<DOMType> parameters; // will be of size > 0 if type is generic
+
+    public DOMType() {
+        this.node = "DOMType";
+    }
 
     static Map<PrimitiveType.Code,String> primitiveMap;
     static {

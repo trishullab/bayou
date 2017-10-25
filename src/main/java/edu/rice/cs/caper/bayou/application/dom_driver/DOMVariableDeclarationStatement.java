@@ -28,16 +28,20 @@ import java.util.Set;
 
 public class DOMVariableDeclarationStatement extends DOMStatement implements Handler {
 
-    final VariableDeclarationStatement statement;
+    VariableDeclarationStatement statement;
 
     @Expose
-    final String node = "DOMVariableDeclarationStatement";
+    String node = "DOMVariableDeclarationStatement";
 
     @Expose
-    final DOMType _type;
+    DOMType _type;
 
     @Expose
-    final List<DOMVariableDeclarationFragment> _fragments;
+    List<DOMVariableDeclarationFragment> _fragments;
+
+    public DOMVariableDeclarationStatement() {
+        this.node = "DOMVariableDeclarationStatement";
+    }
 
     public DOMVariableDeclarationStatement(VariableDeclarationStatement statement) {
         this.statement = statement;

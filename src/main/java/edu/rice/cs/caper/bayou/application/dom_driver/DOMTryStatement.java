@@ -29,19 +29,23 @@ import java.util.Set;
 
 public class DOMTryStatement extends DOMStatement implements Handler {
 
-    final TryStatement statement;
+    TryStatement statement;
 
     @Expose
-    final String node = "DOMTryStatement";
+    String node = "DOMTryStatement";
 
     @Expose
-    final DOMBlock _body;
+    DOMBlock _body;
 
     @Expose
-    final List<DOMCatchClause> _clauses;
+    List<DOMCatchClause> _clauses;
 
     @Expose
-    final DOMBlock _finally;
+    DOMBlock _finally;
+
+    public DOMTryStatement() {
+        this.node = "DOMTryStatement";
+    }
 
     public DOMTryStatement(TryStatement statement) {
         this.statement = statement;
