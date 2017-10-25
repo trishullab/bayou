@@ -128,10 +128,10 @@ class APICalls(Evidence):
             cls, name = split[-2:]
             cls = cls.split('<')[0]  # class name might be generic but method name is never
             return [name] if not cls == name else []
-	except Exception as e:
-	    with open('bad_call.txt','w') as f:
-	        f.write('call: ' + call)
-	    return []
+        except Exception as e:
+            with open('bad_call.txt','w') as f:
+            f.write('call: ' + call)
+            return []
 
 class Types(Evidence):
 
