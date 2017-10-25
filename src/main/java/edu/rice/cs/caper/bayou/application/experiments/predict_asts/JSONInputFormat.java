@@ -17,6 +17,7 @@ package edu.rice.cs.caper.bayou.application.experiments.predict_asts;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.google.gson.annotations.Expose;
 import edu.rice.cs.caper.bayou.application.dom_driver.*;
 import edu.rice.cs.caper.bayou.core.synthesizer.RuntimeTypeAdapterFactory;
 
@@ -63,6 +64,7 @@ public class JSONInputFormat {
         Gson gson = new GsonBuilder().serializeNulls()
                 .registerTypeAdapterFactory(exprAdapter)
                 .registerTypeAdapterFactory(stmtAdapter)
+                .excludeFieldsWithoutExposeAnnotation()
                 .create();
         String s = new String(Files.readAllBytes(Paths.get(file)));
         Data js = gson.fromJson(s, Data.class);
@@ -71,6 +73,7 @@ public class JSONInputFormat {
     }
 
     static class Data {
+        @Expose
         List<DataPoint> programs;
         Data() {
             programs = new ArrayList<>();
@@ -78,13 +81,21 @@ public class JSONInputFormat {
     }
 
     static class DataPoint {
+        @Expose
         DOMMethodDeclaration aml_ast;
+        @Expose
         List<DOMMethodDeclaration> out_aml_asts;
+        @Expose
         String file;
+        @Expose
         Set<String> apicalls;
+        @Expose
         Set<String> types;
+        @Expose
         Set<String> context;
+        @Expose
         Set<String> keywords;
+        @Expose
         boolean in_corpus;
 
         DataPoint() {
