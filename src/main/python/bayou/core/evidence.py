@@ -130,7 +130,7 @@ class APICalls(Evidence):
             return [name] if not cls == name else []
         except Exception as e:
             with open('bad_call.txt','w') as f:
-            f.write('call: ' + call)
+                f.write('call: ' + call)
             return []
 
 class Types(Evidence):
