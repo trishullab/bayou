@@ -143,7 +143,7 @@ public class DataSanityChecker {
             for (Object q: program.getJSONArray("keywords"))
                 datapoint.keywords.add((String) q);
             datapoint.file = program.has("file")? program.getString("file") : null;
-            datapoint.in_corpus = program.has("in_corpus")? program.getBoolean("in_corpus") : null;
+            datapoint.in_corpus = program.getBoolean("in_corpus");
             datapoint.aml = program.getString("aml");
             datapoint.aml_ast = gsonIn.fromJson(program.getJSONObject("aml_ast").toString(), DOMMethodDeclaration.class);
 
