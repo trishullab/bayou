@@ -123,11 +123,15 @@ class APICalls(Evidence):
 
     @staticmethod
     def from_call(call):
-        split = call.split('(')[0].split('.')
-        cls, name = split[-2:]
-        cls = cls.split('<')[0]  # class name might be generic but method name is never
-        return [name] if not cls == name else []
-
+        try:
+		split = call.split('(')[0].split('.')
+        	cls, name = split[-2:]
+        	cls = cls.split('<')[0]  # class name might be generic but method name is never
+        	return [name] if not cls == name else []
+	except Exception as e:
+		with open('bad_call.txt','w') as f:
+			f.write('call: ' + call)
+		return []
 
 class Types(Evidence):
 
