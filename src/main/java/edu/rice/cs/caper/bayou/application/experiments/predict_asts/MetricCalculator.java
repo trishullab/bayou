@@ -15,7 +15,7 @@ limitations under the License.
 */
 package edu.rice.cs.caper.bayou.application.experiments.predict_asts;
 
-import edu.rice.cs.caper.bayou.core.dsl.*;
+import edu.rice.cs.caper.bayou.application.dom_driver.DOMMethodDeclaration;
 import org.apache.commons.cli.*;
 import org.apache.commons.math3.stat.inference.TTest;
 
@@ -121,9 +121,9 @@ public class MetricCalculator {
 
         List<Float> values = new ArrayList<>();
         for (JSONInputFormat.DataPoint datapoint : data) {
-            DSubTree originalAST = datapoint.ast;
-            List<DSubTree> predictedASTs = datapoint.out_asts.subList(0,
-                    Math.min(topk, datapoint.out_asts.size()));
+            DOMMethodDeclaration originalAST = datapoint.aml_ast;
+            List<DOMMethodDeclaration> predictedASTs = datapoint.out_aml_asts.subList(0,
+                    Math.min(topk, datapoint.out_aml_asts.size()));
 
             values.add(metric.compute(originalAST, predictedASTs, aggregate));
         }
@@ -137,9 +137,9 @@ public class MetricCalculator {
                 data2 = data2.stream().filter(datapoint -> !datapoint.in_corpus).collect(Collectors.toList());
 
             for (JSONInputFormat.DataPoint datapoint : data2) {
-                DSubTree originalAST = datapoint.ast;
-                List<DSubTree> predictedASTs = datapoint.out_asts.subList(0,
-                        Math.min(topk, datapoint.out_asts.size()));
+                DOMMethodDeclaration originalAST = datapoint.aml_ast;
+                List<DOMMethodDeclaration> predictedASTs = datapoint.out_aml_asts.subList(0,
+                        Math.min(topk, datapoint.out_aml_asts.size()));
 
                 values2.add(metric.compute(originalAST, predictedASTs, aggregate));
             }

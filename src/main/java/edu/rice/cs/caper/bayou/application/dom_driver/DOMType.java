@@ -16,6 +16,7 @@ limitations under the License.
 package edu.rice.cs.caper.bayou.application.dom_driver;
 
 import com.google.gson.annotations.Expose;
+import edu.rice.cs.caper.bayou.core.dsl.Sequence;
 import org.eclipse.jdt.core.dom.*;
 
 import java.util.*;
@@ -76,5 +77,54 @@ public class DOMType extends DOMNode {
     @Override
     public DOMType handleAML() {
         return this;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (o == null || !(o instanceof DOMType))
+            return false;
+        DOMType d = (DOMType) o;
+        if (! type.equals(d.type) || parameters.size() != d.parameters.size())
+            return false;
+        for (int i = 0; i < parameters.size(); i++)
+            if (! parameters.get(i).equals(d.parameters.get(i)))
+                return false;
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        return 7* type.hashCode() + 17* parameters.hashCode();
+    }
+
+    @Override
+    public Set<String> bagOfAPICalls() {
+        Set<String> calls = new HashSet<>();
+        return calls;
+    }
+
+    @Override
+    public void updateSequences(List<Sequence> soFar, int max, int max_length)
+            throws TooManySequencesException, TooLongSequenceException {
+    }
+
+    @Override
+    public int numStatements() {
+        return 0;
+    }
+
+    @Override
+    public int numLoops() {
+        return 0;
+    }
+
+    @Override
+    public int numBranches() {
+        return 0;
+    }
+
+    @Override
+    public int numExcepts() {
+        return 0;
     }
 }

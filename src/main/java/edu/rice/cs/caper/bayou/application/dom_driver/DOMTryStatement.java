@@ -18,11 +18,14 @@ package edu.rice.cs.caper.bayou.application.dom_driver;
 import com.google.gson.annotations.Expose;
 import edu.rice.cs.caper.bayou.core.dsl.DExcept;
 import edu.rice.cs.caper.bayou.core.dsl.DSubTree;
+import edu.rice.cs.caper.bayou.core.dsl.Sequence;
 import org.eclipse.jdt.core.dom.CatchClause;
 import org.eclipse.jdt.core.dom.TryStatement;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 public class DOMTryStatement extends DOMStatement implements Handler {
 
@@ -81,5 +84,67 @@ public class DOMTryStatement extends DOMStatement implements Handler {
     @Override
     public DOMTryStatement handleAML() {
         return this;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (o == null || !(o instanceof DOMTryStatement))
+            return false;
+        DOMTryStatement d = (DOMTryStatement) o;
+        return _body.equals(d._body) && _clauses.equals(d._clauses);
+    }
+
+    @Override
+    public int hashCode() {
+        return 7* _body.hashCode() + 17* _clauses.hashCode();
+    }
+
+    @Override
+    public Set<String> bagOfAPICalls() {
+        Set<String> calls = new HashSet<>();
+        calls.addAll(_body.bagOfAPICalls());
+        for (DOMCatchClause c : _clauses)
+            calls.addAll(c.bagOfAPICalls());
+        return calls;
+    }
+
+    @Override
+    public void updateSequences(List<Sequence> soFar, int max, int max_length)
+            throws TooManySequencesException, TooLongSequenceException {
+        if (soFar.size() >= max)
+            throw new TooManySequencesException();
+        _body.updateSequences(soFar, max, max_length);
+        List<List<Sequence>> copies = new ArrayList<>();
+        for (DOMCatchClause c : _clauses) {
+            List<Sequence> copy = new ArrayList<>();
+            for (Sequence seq : soFar)
+                copy.add(new Sequence(seq.getCalls()));
+            c.updateSequences(copy, max, max_length);
+            copies.add(copy);
+        }
+        for (List<Sequence> copy : copies)
+            for (Sequence seq : copy)
+                if (!soFar.contains(seq))
+                    soFar.add(seq);
+    }
+
+    @Override
+    public int numStatements() {
+        return _body.numStatements() + _clauses.stream().mapToInt(c -> c.numStatements()).sum() + 1;
+    }
+
+    @Override
+    public int numLoops() {
+        return _body.numLoops() + _clauses.stream().mapToInt(c -> c.numLoops()).sum();
+    }
+
+    @Override
+    public int numBranches() {
+        return _body.numBranches() + _clauses.stream().mapToInt(c -> c.numBranches()).sum();
+    }
+
+    @Override
+    public int numExcepts() {
+        return _body.numExcepts() + _clauses.stream().mapToInt(c -> c.numExcepts()).sum() + 1;
     }
 }

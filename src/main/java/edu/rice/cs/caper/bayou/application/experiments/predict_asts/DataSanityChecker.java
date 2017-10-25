@@ -18,7 +18,7 @@ package edu.rice.cs.caper.bayou.application.experiments.predict_asts;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonSyntaxException;
-import edu.rice.cs.caper.bayou.core.dsl.*;
+import edu.rice.cs.caper.bayou.application.dom_driver.*;
 import edu.rice.cs.caper.bayou.core.synthesizer.RuntimeTypeAdapterFactory;
 import org.apache.commons.cli.*;
 import org.json.JSONArray;
@@ -91,20 +91,45 @@ public class DataSanityChecker {
         System.out.println(String.format("Checking validity of each AST in top-%d...", topk));
         JSONObject js = new JSONObject(new String(Files.readAllBytes(Paths.get(file))));
         JSONArray programs = js.getJSONArray("programs");
-        RuntimeTypeAdapterFactory<DASTNode> nodeAdapter = RuntimeTypeAdapterFactory.of(DASTNode.class, "node")
-                .registerSubtype(DAPICall.class)
-                .registerSubtype(DBranch.class)
-                .registerSubtype(DExcept.class)
-                .registerSubtype(DLoop.class)
-                .registerSubtype(DSubTree.class);
-        Gson gsonIn = new GsonBuilder().registerTypeAdapterFactory(nodeAdapter).
-                serializeNulls().create();
+        RuntimeTypeAdapterFactory<DOMExpression> exprAdapter =
+                RuntimeTypeAdapterFactory.of(DOMExpression.class, "node")
+                        .registerSubtype(DOMMethodInvocation.class)
+                        .registerSubtype(DOMClassInstanceCreation.class)
+                        .registerSubtype(DOMInfixExpression.class)
+                        .registerSubtype(DOMPrefixExpression.class)
+                        .registerSubtype(DOMConditionalExpression.class)
+                        .registerSubtype(DOMVariableDeclarationExpression.class)
+                        .registerSubtype(DOMAssignment.class)
+                        .registerSubtype(DOMParenthesizedExpression.class)
+                        .registerSubtype(DOMNullLiteral.class)
+                        .registerSubtype(DOMName.class)
+                        .registerSubtype(DOMNumberLiteral.class);
+        RuntimeTypeAdapterFactory<DOMStatement> stmtAdapter =
+                RuntimeTypeAdapterFactory.of(DOMStatement.class, "node")
+                        .registerSubtype(DOMBlock.class)
+                        .registerSubtype(DOMExpressionStatement.class)
+                        .registerSubtype(DOMIfStatement.class)
+                        .registerSubtype(DOMSwitchStatement.class)
+                        .registerSubtype(DOMSwitchCase.class)
+                        .registerSubtype(DOMDoStatement.class)
+                        .registerSubtype(DOMForStatement.class)
+                        .registerSubtype(DOMEnhancedForStatement.class)
+                        .registerSubtype(DOMWhileStatement.class)
+                        .registerSubtype(DOMTryStatement.class)
+                        .registerSubtype(DOMVariableDeclarationStatement.class)
+                        .registerSubtype(DOMSynchronizedStatement.class)
+                        .registerSubtype(DOMReturnStatement.class)
+                        .registerSubtype(DOMLabeledStatement.class);
+        Gson gsonIn = new GsonBuilder().serializeNulls()
+                .registerTypeAdapterFactory(exprAdapter)
+                .registerTypeAdapterFactory(stmtAdapter)
+                .create();
 
         int numASTs = 0, numValidASTs = 0, numInvalidASTs = 0;
         JSONInputFormat.Data data = new JSONInputFormat.Data();
         for (Object o: programs) {
             JSONObject program = (JSONObject) o;
-            JSONArray predictASTs = program.getJSONArray("out_asts");
+            JSONArray predictASTs = program.getJSONArray("out_aml_asts");
 
             JSONInputFormat.DataPoint datapoint = new JSONInputFormat.DataPoint();
             for (Object q: program.getJSONArray("apicalls"))
@@ -113,19 +138,21 @@ public class DataSanityChecker {
                 datapoint.types.add((String) q);
             for (Object q: program.getJSONArray("context"))
                 datapoint.context.add((String) q);
+            for (Object q: program.getJSONArray("keywords"))
+                datapoint.keywords.add((String) q);
             datapoint.file = program.getString("file");
-            datapoint.ast = gsonIn.fromJson(program.getJSONObject("ast").toString(), DSubTree.class);
+            datapoint.aml_ast = gsonIn.fromJson(program.getJSONObject("aml_ast").toString(), DOMMethodDeclaration.class);
 
             int i = 0;
-            List<DSubTree> validASTs = new ArrayList<>();
+            List<DOMMethodDeclaration> validASTs = new ArrayList<>();
             for (Object p: predictASTs) {
                 if (i >= topk)
                     break;
                 i++;
                 JSONObject pAST = (JSONObject) p;
-                DSubTree predictedAST;
+                DOMMethodDeclaration predictedAST;
                 try {
-                    predictedAST = gsonIn.fromJson(pAST.toString(), DSubTree.class);
+                    predictedAST = gsonIn.fromJson(pAST.toString(), DOMMethodDeclaration.class);
                 } catch (JsonSyntaxException e) {
                     numInvalidASTs += 1;
                     continue;
@@ -140,7 +167,7 @@ public class DataSanityChecker {
             numValidASTs += validASTs.size();
             numASTs += i;
 
-            datapoint.out_asts = validASTs;
+            datapoint.out_aml_asts = validASTs;
             data.programs.add(datapoint);
         }
 
@@ -172,27 +199,51 @@ public class DataSanityChecker {
     }
 
     static class VocabDataPoint {
-        DSubTree ast;
+        DOMMethodDeclaration aml_ast;
     }
 
     public Set<String> getVocab(String vocabDataFile) throws IOException {
-        RuntimeTypeAdapterFactory<DASTNode> nodeAdapter = RuntimeTypeAdapterFactory.of(DASTNode.class, "node")
-                .registerSubtype(DAPICall.class)
-                .registerSubtype(DBranch.class)
-                .registerSubtype(DExcept.class)
-                .registerSubtype(DLoop.class)
-                .registerSubtype(DSubTree.class);
+        RuntimeTypeAdapterFactory<DOMExpression> exprAdapter =
+                RuntimeTypeAdapterFactory.of(DOMExpression.class, "node")
+                        .registerSubtype(DOMMethodInvocation.class)
+                        .registerSubtype(DOMClassInstanceCreation.class)
+                        .registerSubtype(DOMInfixExpression.class)
+                        .registerSubtype(DOMPrefixExpression.class)
+                        .registerSubtype(DOMConditionalExpression.class)
+                        .registerSubtype(DOMVariableDeclarationExpression.class)
+                        .registerSubtype(DOMAssignment.class)
+                        .registerSubtype(DOMParenthesizedExpression.class)
+                        .registerSubtype(DOMNullLiteral.class)
+                        .registerSubtype(DOMName.class)
+                        .registerSubtype(DOMNumberLiteral.class);
+        RuntimeTypeAdapterFactory<DOMStatement> stmtAdapter =
+                RuntimeTypeAdapterFactory.of(DOMStatement.class, "node")
+                        .registerSubtype(DOMBlock.class)
+                        .registerSubtype(DOMExpressionStatement.class)
+                        .registerSubtype(DOMIfStatement.class)
+                        .registerSubtype(DOMSwitchStatement.class)
+                        .registerSubtype(DOMSwitchCase.class)
+                        .registerSubtype(DOMDoStatement.class)
+                        .registerSubtype(DOMForStatement.class)
+                        .registerSubtype(DOMEnhancedForStatement.class)
+                        .registerSubtype(DOMWhileStatement.class)
+                        .registerSubtype(DOMTryStatement.class)
+                        .registerSubtype(DOMVariableDeclarationStatement.class)
+                        .registerSubtype(DOMSynchronizedStatement.class)
+                        .registerSubtype(DOMReturnStatement.class)
+                        .registerSubtype(DOMLabeledStatement.class);
         Gson gson = new GsonBuilder().serializeNulls()
-                .registerTypeAdapterFactory(nodeAdapter)
+                .registerTypeAdapterFactory(exprAdapter)
+                .registerTypeAdapterFactory(stmtAdapter)
                 .create();
         String s = new String(Files.readAllBytes(Paths.get(vocabDataFile)));
         VocabData js = gson.fromJson(s, VocabData.class);
 
         Set<String> vocab = new HashSet<>();
         for (VocabDataPoint dataPoint: js.programs) {
-            DSubTree ast = dataPoint.ast;
-            Set<DAPICall> apicalls = ast.bagOfAPICalls();
-            vocab.addAll(apicalls.stream().map(c -> c.toString()).collect(Collectors.toSet()));
+            DOMMethodDeclaration aml_ast = dataPoint.aml_ast;
+            Set<String> apicalls = aml_ast.bagOfAPICalls();
+            vocab.addAll(apicalls);
         }
         return vocab;
     }

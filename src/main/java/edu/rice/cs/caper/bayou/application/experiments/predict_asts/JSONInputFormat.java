@@ -17,7 +17,7 @@ package edu.rice.cs.caper.bayou.application.experiments.predict_asts;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import edu.rice.cs.caper.bayou.core.dsl.*;
+import edu.rice.cs.caper.bayou.application.dom_driver.*;
 import edu.rice.cs.caper.bayou.core.synthesizer.RuntimeTypeAdapterFactory;
 
 import java.io.IOException;
@@ -31,14 +31,38 @@ import java.util.Set;
 public class JSONInputFormat {
 
     public static List<DataPoint> readData(String file) throws IOException {
-        RuntimeTypeAdapterFactory<DASTNode> nodeAdapter = RuntimeTypeAdapterFactory.of(DASTNode.class, "node")
-                .registerSubtype(DAPICall.class)
-                .registerSubtype(DBranch.class)
-                .registerSubtype(DExcept.class)
-                .registerSubtype(DLoop.class)
-                .registerSubtype(DSubTree.class);
+        RuntimeTypeAdapterFactory<DOMExpression> exprAdapter =
+                RuntimeTypeAdapterFactory.of(DOMExpression.class, "node")
+                    .registerSubtype(DOMMethodInvocation.class)
+                    .registerSubtype(DOMClassInstanceCreation.class)
+                    .registerSubtype(DOMInfixExpression.class)
+                    .registerSubtype(DOMPrefixExpression.class)
+                    .registerSubtype(DOMConditionalExpression.class)
+                    .registerSubtype(DOMVariableDeclarationExpression.class)
+                    .registerSubtype(DOMAssignment.class)
+                    .registerSubtype(DOMParenthesizedExpression.class)
+                    .registerSubtype(DOMNullLiteral.class)
+                    .registerSubtype(DOMName.class)
+                    .registerSubtype(DOMNumberLiteral.class);
+        RuntimeTypeAdapterFactory<DOMStatement> stmtAdapter =
+                RuntimeTypeAdapterFactory.of(DOMStatement.class, "node")
+                    .registerSubtype(DOMBlock.class)
+                    .registerSubtype(DOMExpressionStatement.class)
+                    .registerSubtype(DOMIfStatement.class)
+                    .registerSubtype(DOMSwitchStatement.class)
+                    .registerSubtype(DOMSwitchCase.class)
+                    .registerSubtype(DOMDoStatement.class)
+                    .registerSubtype(DOMForStatement.class)
+                    .registerSubtype(DOMEnhancedForStatement.class)
+                    .registerSubtype(DOMWhileStatement.class)
+                    .registerSubtype(DOMTryStatement.class)
+                    .registerSubtype(DOMVariableDeclarationStatement.class)
+                    .registerSubtype(DOMSynchronizedStatement.class)
+                    .registerSubtype(DOMReturnStatement.class)
+                    .registerSubtype(DOMLabeledStatement.class);
         Gson gson = new GsonBuilder().serializeNulls()
-                .registerTypeAdapterFactory(nodeAdapter)
+                .registerTypeAdapterFactory(exprAdapter)
+                .registerTypeAdapterFactory(stmtAdapter)
                 .create();
         String s = new String(Files.readAllBytes(Paths.get(file)));
         Data js = gson.fromJson(s, Data.class);
@@ -54,19 +78,21 @@ public class JSONInputFormat {
     }
 
     static class DataPoint {
-        DSubTree ast;
-        List<DSubTree> out_asts;
+        DOMMethodDeclaration aml_ast;
+        List<DOMMethodDeclaration> out_aml_asts;
         String file;
         Set<String> apicalls;
         Set<String> types;
         Set<String> context;
+        Set<String> keywords;
         boolean in_corpus;
 
         DataPoint() {
-            out_asts = new ArrayList<>();
+            out_aml_asts = new ArrayList<>();
             apicalls = new HashSet<>();
             types = new HashSet<>();
             context = new HashSet<>();
+            keywords = new HashSet<>();
         }
     }
 }

@@ -15,10 +15,10 @@ limitations under the License.
 */
 package edu.rice.cs.caper.bayou.application.experiments.predict_asts;
 
-import edu.rice.cs.caper.bayou.core.dsl.DSubTree;
+
+import edu.rice.cs.caper.bayou.application.dom_driver.DOMMethodDeclaration;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 public class NumStatementsMetric implements Metric {
@@ -27,11 +27,11 @@ public class NumStatementsMetric implements Metric {
      * statements in the original vs predicted ASTs.
      */
     @Override
-    public float compute(DSubTree originalAST, List<DSubTree> predictedASTs, String aggregate) {
+    public float compute(DOMMethodDeclaration originalAST, List<DOMMethodDeclaration> predictedASTs, String aggregate) {
         int original = originalAST.numStatements();
         List<Integer> diffs = new ArrayList<>();
         diffs.add(original);
-        for (DSubTree predictedAST : predictedASTs) {
+        for (DOMMethodDeclaration predictedAST : predictedASTs) {
             int predicted = predictedAST.numStatements();
             int diff_predicted = Math.abs(predicted - original);
             diffs.add(diff_predicted);

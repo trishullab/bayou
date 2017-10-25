@@ -17,7 +17,12 @@ package edu.rice.cs.caper.bayou.application.dom_driver;
 
 import com.google.gson.annotations.Expose;
 import edu.rice.cs.caper.bayou.core.dsl.DSubTree;
+import edu.rice.cs.caper.bayou.core.dsl.Sequence;
 import org.eclipse.jdt.core.dom.InfixExpression;
+
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 public class DOMInfixExpression extends DOMExpression implements Handler {
 
@@ -58,5 +63,53 @@ public class DOMInfixExpression extends DOMExpression implements Handler {
     @Override
     public DOMInfixExpression handleAML() {
         return this;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (o == null || !(o instanceof DOMInfixExpression))
+            return false;
+        DOMInfixExpression d = (DOMInfixExpression) o;
+        return _left.equals(d._left) && _right.equals(d._right);
+    }
+
+    @Override
+    public int hashCode() {
+        return 7* _left.hashCode() + 17* _right.hashCode();
+    }
+
+    @Override
+    public Set<String> bagOfAPICalls() {
+        Set<String> calls = new HashSet<>();
+        calls.addAll(_left.bagOfAPICalls());
+        calls.addAll(_right.bagOfAPICalls());
+        return calls;
+    }
+
+    @Override
+    public void updateSequences(List<Sequence> soFar, int max, int max_length)
+            throws TooManySequencesException, TooLongSequenceException {
+        _left.updateSequences(soFar, max, max_length);
+        _right.updateSequences(soFar, max, max_length);
+    }
+
+    @Override
+    public int numStatements() {
+        return 0;
+    }
+
+    @Override
+    public int numLoops() {
+        return 0;
+    }
+
+    @Override
+    public int numBranches() {
+        return 0;
+    }
+
+    @Override
+    public int numExcepts() {
+        return 0;
     }
 }

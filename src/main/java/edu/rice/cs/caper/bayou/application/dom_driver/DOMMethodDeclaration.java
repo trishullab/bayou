@@ -17,7 +17,12 @@ package edu.rice.cs.caper.bayou.application.dom_driver;
 
 import com.google.gson.annotations.Expose;
 import edu.rice.cs.caper.bayou.core.dsl.DSubTree;
+import edu.rice.cs.caper.bayou.core.dsl.Sequence;
 import org.eclipse.jdt.core.dom.MethodDeclaration;
+
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 public class DOMMethodDeclaration extends DOMNode implements Handler {
 
@@ -43,5 +48,51 @@ public class DOMMethodDeclaration extends DOMNode implements Handler {
     @Override
     public DOMMethodDeclaration handleAML() {
         return this;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (o == null || !(o instanceof DOMMethodDeclaration))
+            return false;
+        DOMMethodDeclaration d = (DOMMethodDeclaration) o;
+        return _body.equals(d._body);
+    }
+
+    @Override
+    public int hashCode() {
+        return _body.hashCode();
+    }
+
+    @Override
+    public Set<String> bagOfAPICalls() {
+        Set<String> calls = new HashSet<>();
+        calls.addAll(_body.bagOfAPICalls());
+        return calls;
+    }
+
+    @Override
+    public void updateSequences(List<Sequence> soFar, int max, int max_length)
+            throws TooManySequencesException, TooLongSequenceException {
+        _body.updateSequences(soFar, max, max_length);
+    }
+
+    @Override
+    public int numStatements() {
+        return _body.numStatements();
+    }
+
+    @Override
+    public int numLoops() {
+        return _body.numLoops();
+    }
+
+    @Override
+    public int numBranches() {
+        return _body.numBranches();
+    }
+
+    @Override
+    public int numExcepts() {
+        return _body.numExcepts();
     }
 }

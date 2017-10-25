@@ -15,7 +15,7 @@ limitations under the License.
 */
 package edu.rice.cs.caper.bayou.application.experiments.predict_asts;
 
-import edu.rice.cs.caper.bayou.core.dsl.DSubTree;
+import edu.rice.cs.caper.bayou.application.dom_driver.DOMMethodDeclaration;
 import java.util.List;
 
 public class EqualityASTMetric implements Metric {
@@ -24,9 +24,9 @@ public class EqualityASTMetric implements Metric {
      * of the predicted ASTS.
      */
     @Override
-    public float compute(DSubTree originalAST, List<DSubTree> predictedASTs, String aggregate) {
+    public float compute(DOMMethodDeclaration originalAST, List<DOMMethodDeclaration> predictedASTs, String aggregate) {
         boolean equals = false;
-        for (DSubTree predictedAST : predictedASTs) {
+        for (DOMMethodDeclaration predictedAST : predictedASTs) {
             if (originalAST.equals(predictedAST)) {
                 equals = true;
                 break;

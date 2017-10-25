@@ -15,8 +15,8 @@ limitations under the License.
 */
 package edu.rice.cs.caper.bayou.application.experiments.predict_asts;
 
-import edu.rice.cs.caper.bayou.core.dsl.DASTNode;
-import edu.rice.cs.caper.bayou.core.dsl.DSubTree;
+import edu.rice.cs.caper.bayou.application.dom_driver.DOMMethodDeclaration;
+import edu.rice.cs.caper.bayou.application.dom_driver.DOMNode;
 import edu.rice.cs.caper.bayou.core.dsl.Sequence;
 
 import java.util.*;
@@ -27,7 +27,7 @@ public class JaccardSequencesMetric implements Metric {
      * between the original and the predicted ASTs.
      */
     @Override
-    public float compute(DSubTree originalAST, List<DSubTree> predictedASTs, String aggregate) {
+    public float compute(DOMMethodDeclaration originalAST, List<DOMMethodDeclaration> predictedASTs, String aggregate) {
         List<Float> jaccard = new ArrayList<>();
         jaccard.add((float) 1);
         Set<Sequence> A;
@@ -36,17 +36,17 @@ public class JaccardSequencesMetric implements Metric {
             _A.add(new Sequence());
             originalAST.updateSequences(_A, 999, 999);
             A = new HashSet<>(_A);
-        } catch (DASTNode.TooManySequencesException|DASTNode.TooLongSequenceException e) {
+        } catch (DOMNode.TooManySequencesException|DOMNode.TooLongSequenceException e) {
             return (float) 1;
         }
-        for (DSubTree predictedAST : predictedASTs) {
+        for (DOMMethodDeclaration predictedAST : predictedASTs) {
             Set<Sequence> B;
             try {
                 List<Sequence> _B = new ArrayList<>();
                 _B.add(new Sequence());
                 predictedAST.updateSequences(_B, 999, 999);
                 B = new HashSet<>(_B);
-            } catch (DASTNode.TooManySequencesException|DASTNode.TooLongSequenceException e) {
+            } catch (DOMNode.TooManySequencesException|DOMNode.TooLongSequenceException e) {
                 jaccard.add((float) 1);
                 continue;
             }

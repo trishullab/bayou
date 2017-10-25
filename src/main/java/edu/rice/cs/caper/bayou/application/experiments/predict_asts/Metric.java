@@ -15,13 +15,13 @@ limitations under the License.
 */
 package edu.rice.cs.caper.bayou.application.experiments.predict_asts;
 
-import edu.rice.cs.caper.bayou.core.dsl.DSubTree;
+import edu.rice.cs.caper.bayou.application.dom_driver.DOMMethodDeclaration;
 import org.apache.commons.math3.stat.StatUtils;
 
 import java.util.List;
 
 public interface Metric {
-    float compute(DSubTree originalAST, List<DSubTree> predictedASTs, String aggregate);
+    float compute(DOMMethodDeclaration originalAST, List<DOMMethodDeclaration> predictedASTs, String aggregate);
 
     static float aggregate(List<? extends Number> values, String aggregate) {
         switch (aggregate) {

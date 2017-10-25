@@ -18,7 +18,13 @@ package edu.rice.cs.caper.bayou.application.dom_driver;
 import com.google.gson.annotations.Expose;
 import edu.rice.cs.caper.bayou.core.dsl.DLoop;
 import edu.rice.cs.caper.bayou.core.dsl.DSubTree;
+import edu.rice.cs.caper.bayou.core.dsl.Sequence;
 import org.eclipse.jdt.core.dom.WhileStatement;
+
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 public class DOMWhileStatement extends DOMStatement implements Handler {
 
@@ -62,5 +68,62 @@ public class DOMWhileStatement extends DOMStatement implements Handler {
     @Override
     public DOMWhileStatement handleAML() {
         return this;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (o == null || !(o instanceof DOMWhileStatement))
+            return false;
+        DOMWhileStatement d = (DOMWhileStatement) o;
+        return _cond.equals(d._cond) && _body.equals(d._body);
+    }
+
+    @Override
+    public int hashCode() {
+        return 7* _cond.hashCode() + 17* _body.hashCode();
+    }
+
+    @Override
+    public Set<String> bagOfAPICalls() {
+        Set<String> calls = new HashSet<>();
+        calls.addAll(_cond.bagOfAPICalls());
+        calls.addAll(_body.bagOfAPICalls());
+        return calls;
+    }
+
+    @Override
+    public void updateSequences(List<Sequence> soFar, int max, int max_length)
+            throws TooManySequencesException, TooLongSequenceException {
+        if (soFar.size() >= max)
+            throw new TooManySequencesException();
+        _cond.updateSequences(soFar, max, max_length);
+        List<Sequence> copy = new ArrayList<>();
+        for (Sequence seq : soFar)
+            copy.add(new Sequence(seq.getCalls()));
+        _body.updateSequences(copy, max, max_length);
+        _cond.updateSequences(copy, max, max_length);
+        for (Sequence seq : copy)
+            if (! soFar.contains(seq))
+                soFar.add(seq);
+    }
+
+    @Override
+    public int numStatements() {
+        return _body.numStatements() + 1;
+    }
+
+    @Override
+    public int numLoops() {
+        return _body.numLoops() + 1;
+    }
+
+    @Override
+    public int numBranches() {
+        return _body.numBranches();
+    }
+
+    @Override
+    public int numExcepts() {
+        return _body.numExcepts();
     }
 }

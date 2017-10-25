@@ -17,7 +17,12 @@ package edu.rice.cs.caper.bayou.application.dom_driver;
 
 import com.google.gson.annotations.Expose;
 import edu.rice.cs.caper.bayou.core.dsl.DSubTree;
+import edu.rice.cs.caper.bayou.core.dsl.Sequence;
 import org.eclipse.jdt.core.dom.ExpressionStatement;
+
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 public class DOMExpressionStatement extends DOMStatement implements Handler {
 
@@ -42,5 +47,51 @@ public class DOMExpressionStatement extends DOMStatement implements Handler {
     @Override
     public DOMExpressionStatement handleAML() {
         return this;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (o == null || !(o instanceof DOMExpressionStatement))
+            return false;
+        DOMExpressionStatement d = (DOMExpressionStatement) o;
+        return _expression.equals(d._expression);
+    }
+
+    @Override
+    public int hashCode() {
+        return _expression.hashCode();
+    }
+
+    @Override
+    public Set<String> bagOfAPICalls() {
+        Set<String> calls = new HashSet<>();
+        calls.addAll(_expression.bagOfAPICalls());
+        return calls;
+    }
+
+    @Override
+    public void updateSequences(List<Sequence> soFar, int max, int max_length)
+            throws TooManySequencesException, TooLongSequenceException {
+        _expression.updateSequences(soFar, max, max_length);
+    }
+
+    @Override
+    public int numStatements() {
+        return 1;
+    }
+
+    @Override
+    public int numLoops() {
+        return 0;
+    }
+
+    @Override
+    public int numBranches() {
+        return 0;
+    }
+
+    @Override
+    public int numExcepts() {
+        return 0;
     }
 }

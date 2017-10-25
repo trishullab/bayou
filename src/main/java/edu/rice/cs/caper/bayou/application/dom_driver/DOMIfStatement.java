@@ -16,9 +16,16 @@ limitations under the License.
 package edu.rice.cs.caper.bayou.application.dom_driver;
 
 import com.google.gson.annotations.Expose;
+import edu.rice.cs.caper.bayou.core.dsl.DAPICall;
 import edu.rice.cs.caper.bayou.core.dsl.DBranch;
 import edu.rice.cs.caper.bayou.core.dsl.DSubTree;
+import edu.rice.cs.caper.bayou.core.dsl.Sequence;
 import org.eclipse.jdt.core.dom.IfStatement;
+
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 public class DOMIfStatement extends DOMStatement implements Handler {
 
@@ -69,5 +76,63 @@ public class DOMIfStatement extends DOMStatement implements Handler {
     @Override
     public DOMIfStatement handleAML() {
         return this;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (o == null || !(o instanceof DOMIfStatement))
+            return false;
+        DOMIfStatement d = (DOMIfStatement) o;
+        return _cond.equals(d._cond) && _then.equals(d._then) && _else.equals(d._else);
+    }
+
+    @Override
+    public int hashCode() {
+        return 7* _cond.hashCode() + 17* _then.hashCode() + 31* _else.hashCode();
+    }
+
+    @Override
+    public Set<String> bagOfAPICalls() {
+        Set<String> calls = new HashSet<>();
+        calls.addAll(_cond.bagOfAPICalls());
+        calls.addAll(_then.bagOfAPICalls());
+        calls.addAll(_else.bagOfAPICalls());
+        return calls;
+    }
+
+    @Override
+    public void updateSequences(List<Sequence> soFar, int max, int max_length)
+            throws TooManySequencesException, TooLongSequenceException {
+        if (soFar.size() >= max)
+            throw new TooManySequencesException();
+        _cond.updateSequences(soFar, max, max_length);
+        List<Sequence> copy = new ArrayList<>();
+        for (Sequence seq : soFar)
+            copy.add(new Sequence(seq.getCalls()));
+        _then.updateSequences(soFar, max, max_length);
+        _else.updateSequences(copy, max, max_length);
+        for (Sequence seq : copy)
+            if (! soFar.contains(seq))
+                soFar.add(seq);
+    }
+
+    @Override
+    public int numStatements() {
+        return _then.numStatements() + _else.numStatements() + 1;
+    }
+
+    @Override
+    public int numLoops() {
+        return _then.numLoops() + _else.numLoops();
+    }
+
+    @Override
+    public int numBranches() {
+        return _then.numBranches() + _else.numBranches() + 1;
+    }
+
+    @Override
+    public int numExcepts() {
+        return _then.numExcepts() + _else.numExcepts();
     }
 }

@@ -17,11 +17,14 @@ package edu.rice.cs.caper.bayou.application.dom_driver;
 
 import com.google.gson.annotations.Expose;
 import edu.rice.cs.caper.bayou.core.dsl.DSubTree;
+import edu.rice.cs.caper.bayou.core.dsl.Sequence;
 import org.eclipse.jdt.core.dom.Block;
 import org.eclipse.jdt.core.dom.Statement;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 public class DOMBlock extends DOMStatement implements Handler {
 
@@ -56,5 +59,58 @@ public class DOMBlock extends DOMStatement implements Handler {
     @Override
     public DOMBlock handleAML() {
         return this;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (o == null || !(o instanceof DOMBlock))
+            return false;
+        DOMBlock d = (DOMBlock) o;
+        if (_statements.size() != d._statements.size())
+            return false;
+        for (int i = 0; i < _statements.size(); i++)
+            if (! _statements.get(i).equals(d._statements.get(i)))
+                return false;
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        return _statements.hashCode();
+    }
+
+    @Override
+    public Set<String> bagOfAPICalls() {
+        Set<String> calls = new HashSet<>();
+        for (DOMStatement s : _statements)
+            calls.addAll(s.bagOfAPICalls());
+        return calls;
+    }
+
+    @Override
+    public void updateSequences(List<Sequence> soFar, int max, int max_length)
+            throws TooManySequencesException, TooLongSequenceException {
+        for (DOMStatement s : _statements)
+            s.updateSequences(soFar, max, max_length);
+    }
+
+    @Override
+    public int numStatements() {
+        return _statements.stream().mapToInt(s -> s.numStatements()).sum();
+    }
+
+    @Override
+    public int numLoops() {
+        return _statements.stream().mapToInt(s -> s.numLoops()).sum();
+    }
+
+    @Override
+    public int numBranches() {
+        return _statements.stream().mapToInt(s -> s.numBranches()).sum();
+    }
+
+    @Override
+    public int numExcepts() {
+        return _statements.stream().mapToInt(s -> s.numExcepts()).sum();
     }
 }

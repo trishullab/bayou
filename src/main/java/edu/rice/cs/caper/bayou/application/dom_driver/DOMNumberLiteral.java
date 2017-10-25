@@ -16,7 +16,12 @@ limitations under the License.
 package edu.rice.cs.caper.bayou.application.dom_driver;
 
 import com.google.gson.annotations.Expose;
+import edu.rice.cs.caper.bayou.core.dsl.Sequence;
 import org.eclipse.jdt.core.dom.NumberLiteral;
+
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 public class DOMNumberLiteral extends DOMExpression {
 
@@ -33,5 +38,48 @@ public class DOMNumberLiteral extends DOMExpression {
     @Override
     public DOMNumberLiteral handleAML() {
         return this;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (o == null || !(o instanceof DOMNumberLiteral))
+            return false;
+        return true; // ignore constant values when comparing AML ASTs
+    }
+
+    @Override
+    public int hashCode() {
+        return 1234;
+    }
+
+    @Override
+    public Set<String> bagOfAPICalls() {
+        Set<String> calls = new HashSet<>();
+        return calls;
+    }
+
+    @Override
+    public void updateSequences(List<Sequence> soFar, int max, int max_length)
+            throws TooManySequencesException, TooLongSequenceException {
+    }
+
+    @Override
+    public int numStatements() {
+        return 0;
+    }
+
+    @Override
+    public int numLoops() {
+        return 0;
+    }
+
+    @Override
+    public int numBranches() {
+        return 0;
+    }
+
+    @Override
+    public int numExcepts() {
+        return 0;
     }
 }

@@ -15,10 +15,54 @@ limitations under the License.
 */
 package edu.rice.cs.caper.bayou.application.dom_driver;
 
+import edu.rice.cs.caper.bayou.core.dsl.Sequence;
+
+import java.util.List;
+import java.util.Set;
+
 public class DOMNode implements HandlerAML {
+    public class TooManySequencesException extends Exception { }
+    public class TooLongSequenceException extends Exception { }
+
+    public class NotImplementedException extends RuntimeException { }
 
     @Override
     public DOMNode handleAML() {
         return this;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        throw new NotImplementedException();
+    }
+
+    @Override
+    public int hashCode() {
+        throw new NotImplementedException();
+    }
+
+    public Set<String> bagOfAPICalls() {
+        throw new NotImplementedException();
+    }
+
+    public void updateSequences(List<Sequence> soFar, int max, int max_length)
+        throws TooManySequencesException, TooLongSequenceException {
+        throw new NotImplementedException();
+    }
+
+    public int numStatements() {
+        throw new NotImplementedException();
+    }
+
+    public int numLoops() {
+        throw new NotImplementedException();
+    }
+
+    public int numBranches() {
+        throw new NotImplementedException();
+    }
+
+    public int numExcepts() {
+        throw new NotImplementedException();
     }
 }

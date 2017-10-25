@@ -15,8 +15,7 @@ limitations under the License.
 */
 package edu.rice.cs.caper.bayou.application.experiments.predict_asts;
 
-import edu.rice.cs.caper.bayou.core.dsl.DAPICall;
-import edu.rice.cs.caper.bayou.core.dsl.DSubTree;
+import edu.rice.cs.caper.bayou.application.dom_driver.DOMMethodDeclaration;
 
 import java.util.*;
 
@@ -26,20 +25,20 @@ public class JaccardAPICallsMetric implements Metric {
      * between the original and the predicted ASTs.
      */
     @Override
-    public float compute(DSubTree originalAST, List<DSubTree> predictedASTs, String aggregate) {
+    public float compute(DOMMethodDeclaration originalAST, List<DOMMethodDeclaration> predictedASTs, String aggregate) {
         List<Float> jaccard = new ArrayList<>();
         jaccard.add((float) 1);
-        Set<DAPICall> A = originalAST.bagOfAPICalls();
-        for (DSubTree predictedAST : predictedASTs) {
-            Set<DAPICall> B = predictedAST.bagOfAPICalls();
+        Set<String> A = originalAST.bagOfAPICalls();
+        for (DOMMethodDeclaration predictedAST : predictedASTs) {
+            Set<String> B = predictedAST.bagOfAPICalls();
 
             // A union B
-            Set<DAPICall> AunionB = new HashSet<>();
+            Set<String> AunionB = new HashSet<>();
             AunionB.addAll(A);
             AunionB.addAll(B);
 
             // A intersect B
-            Set<DAPICall> AinterB = new HashSet<>();
+            Set<String> AinterB = new HashSet<>();
             AinterB.addAll(A);
             AinterB.retainAll(B);
 

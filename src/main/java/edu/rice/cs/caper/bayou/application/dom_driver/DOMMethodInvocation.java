@@ -18,13 +18,16 @@ package edu.rice.cs.caper.bayou.application.dom_driver;
 import com.google.gson.annotations.Expose;
 import edu.rice.cs.caper.bayou.core.dsl.DAPICall;
 import edu.rice.cs.caper.bayou.core.dsl.DSubTree;
+import edu.rice.cs.caper.bayou.core.dsl.Sequence;
 import org.eclipse.jdt.core.dom.Expression;
 import org.eclipse.jdt.core.dom.IMethodBinding;
 import org.eclipse.jdt.core.dom.MethodDeclaration;
 import org.eclipse.jdt.core.dom.MethodInvocation;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 public class DOMMethodInvocation extends DOMExpression implements Handler {
 
@@ -78,6 +81,64 @@ public class DOMMethodInvocation extends DOMExpression implements Handler {
     @Override
     public DOMMethodInvocation handleAML() {
         return this;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (o == null || !(o instanceof DOMMethodInvocation))
+            return false;
+        DOMMethodInvocation d = (DOMMethodInvocation) o;
+        return _expression.equals(d._expression) && _name.equals(d._name) && _arguments.equals(d._arguments);
+    }
+
+    @Override
+    public int hashCode() {
+        return 7* _expression.hashCode() + 17* _name.hashCode() + 31* _arguments.hashCode();
+    }
+
+    @Override
+    public Set<String> bagOfAPICalls() {
+        Set<String> calls = new HashSet<>();
+        calls.add(_name);
+        calls.addAll(_expression.bagOfAPICalls());
+        for (DOMExpression a : _arguments)
+            calls.addAll(a.bagOfAPICalls());
+        return calls;
+    }
+
+    @Override
+    public void updateSequences(List<Sequence> soFar, int max, int max_length)
+            throws TooManySequencesException, TooLongSequenceException {
+        if (soFar.size() >= max)
+            throw new TooManySequencesException();
+        for (Sequence sequence : soFar) {
+            sequence.addCall(_name);
+            if (sequence.getCalls().size() > max_length)
+                throw new TooLongSequenceException();
+        }
+        _expression.updateSequences(soFar, max, max_length);
+        for (DOMExpression a : _arguments)
+            a.updateSequences(soFar, max, max_length);
+    }
+
+    @Override
+    public int numStatements() {
+        return 0;
+    }
+
+    @Override
+    public int numLoops() {
+        return 0;
+    }
+
+    @Override
+    public int numBranches() {
+        return 0;
+    }
+
+    @Override
+    public int numExcepts() {
+        return 0;
     }
 }
 
