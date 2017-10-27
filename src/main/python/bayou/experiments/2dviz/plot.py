@@ -33,6 +33,7 @@ def plot(clargs):
         for i, psi in enumerate(psis):
             print('Generate AST {}'.format(i))
             predictor.calls_in_last_ast = []
+            predictor.evidences = js['programs'][i]
             try:
                 predictor.generate_ast(psi)
                 ast_calls.append(predictor.calls_in_last_ast)
