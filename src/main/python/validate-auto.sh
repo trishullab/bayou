@@ -41,7 +41,7 @@ splits=50
 # DATA=$1
 ls *.json
 # DATA=$3
-DATA=DATA-validation-sampled.json
+DATA=DATA-validation.json
 DATA_STEM=${DATA%.*}
 echo "DATA_STEM is $DATA_STEM"
 rm -f $DATA_STEM-*
