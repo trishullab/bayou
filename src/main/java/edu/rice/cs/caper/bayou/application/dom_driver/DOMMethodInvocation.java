@@ -22,6 +22,8 @@ import org.eclipse.jdt.core.dom.IMethodBinding;
 import org.eclipse.jdt.core.dom.MethodDeclaration;
 import org.eclipse.jdt.core.dom.MethodInvocation;
 
+import java.util.Stack;
+
 public class DOMMethodInvocation implements Handler {
 
     final MethodInvocation invocation;
@@ -47,10 +49,15 @@ public class DOMMethodInvocation implements Handler {
         // get to the generic declaration, if this binding is an instantiation
         while (binding != null && binding.getMethodDeclaration() != binding)
             binding = binding.getMethodDeclaration();
-        MethodDeclaration localConstructor = Utils.checkAndGetLocalMethod(binding);
-        if (localConstructor != null) {
-            DSubTree Tconstructor = new DOMMethodDeclaration(localConstructor).handle();
-            tree.addNodes(Tconstructor.getNodes());
+        MethodDeclaration localMethod = Utils.checkAndGetLocalMethod(binding);
+        if (localMethod != null) {
+            Stack<MethodDeclaration> callStack = Visitor.V().callStack;
+            if (! callStack.contains(localMethod)) {
+                callStack.push(localMethod);
+                DSubTree Tmethod = new DOMMethodDeclaration(localMethod).handle();
+                callStack.pop();
+                tree.addNodes(Tmethod.getNodes());
+            }
         }
         else if (Utils.isRelevantCall(binding))
             tree.addNode(new DAPICall(binding, Visitor.V().getLineNumber(invocation)));
