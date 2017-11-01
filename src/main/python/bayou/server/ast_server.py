@@ -110,8 +110,8 @@ def _generate_asts(evidence_json: str, predictor, num_samples: int=100, max_ast_
     i = 0
     while i < len(asts) and len(okay_asts) < max_ast_count:
         ast = asts[i]
-        if _okay(js, ast):
-            okay_asts.append(ast)
+        # if _okay(js, ast) or True:
+        okay_asts.append(ast)
         i = i + 1
 
     logging.debug("exiting")

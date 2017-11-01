@@ -76,7 +76,7 @@ echo "done merging splitted files"
 echo "Computing metrics..."
 log=OUT-$output_file_name-$now.txt
 # default --top is 3
-java -jar ast_quality_perf_test-1.0-jar-with-dependencies.jar -f merged.json --metric equality-ast --top 5 >> $log 2>&1
+java -jar ast_quality_perf_test-1.0-jar-with-dependencies.jar -f merged.json --metric equality-ast --top 10 >> $log 2>&1
 cat $log
  
 merged_file=merged.json
