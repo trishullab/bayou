@@ -16,6 +16,7 @@ limitations under the License.
 package edu.rice.cs.caper.bayou.core.dom_driver;
 
 
+import edu.rice.cs.caper.bayou.core.dsl.DAPICall;
 import edu.rice.cs.caper.bayou.core.dsl.DSubTree;
 import org.eclipse.jdt.core.dom.PrefixExpression;
 
@@ -29,6 +30,12 @@ public class DOMPrefixExpression implements Handler {
 
     @Override
     public DSubTree handle() {
-        return new DOMExpression(expression.getOperand()).handle();
+        DSubTree sub = new DOMExpression(expression.getOperand()).handle();
+        if (expression.getOperator() == PrefixExpression.Operator.NOT && sub.getNodes().size() == 1) {
+            // encode the ! predicate into the API call name
+            DAPICall call = (DAPICall) sub.getNodes().get(0);
+            call.setNotPredicate();
+        }
+        return sub;
     }
 }

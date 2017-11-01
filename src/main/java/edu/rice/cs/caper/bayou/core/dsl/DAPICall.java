@@ -83,6 +83,10 @@ public class DAPICall extends DASTNode
         return methodBinding.getName() + "(" + String.join(",", types.collect(Collectors.toCollection(ArrayList::new))) + ")";
     }
 
+    public void setNotPredicate() {
+        this._call = "$NOT$" + this._call;
+    }
+
     @Override
     public int numStatements() {
         return 1;
