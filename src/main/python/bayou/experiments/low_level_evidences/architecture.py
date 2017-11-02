@@ -57,11 +57,15 @@ class BayesianEncoder(object):
 class BayesianDecoder(object):
     def __init__(self, config, initial_state, infer=False):
 
-        self.cell1 = tf.nn.rnn_cell.GRUCell(config.decoder.units)
-        self.cell2 = tf.nn.rnn_cell.GRUCell(config.decoder.units)
+        cells1, cells2 = [], []
+        for _ in range(config.decoder.num_layers):
+            cells1.append(tf.nn.rnn_cell.GRUCell(config.decoder.units))
+            cells2.append(tf.nn.rnn_cell.GRUCell(config.decoder.units))
+        self.cell1 = tf.nn.rnn_cell.MultiRNNCell(cells1)
+        self.cell2 = tf.nn.rnn_cell.MultiRNNCell(cells2)
 
         # placeholders
-        self.initial_state = initial_state
+        self.initial_state = [initial_state] * config.decoder.num_layers
         self.nodes = [tf.placeholder(tf.int32, [config.batch_size], name='node{0}'.format(i))
                       for i in range(config.decoder.max_ast_depth)]
         self.edges = [tf.placeholder(tf.bool, [config.batch_size], name='edge{0}'.format(i))
@@ -101,7 +105,8 @@ class BayesianDecoder(object):
                     with tf.variable_scope('cell2'):  # handles SIBLING_EDGE
                         output2, state2 = self.cell2(inp, self.state)
                     output = tf.where(self.edges[i], output1, output2)
-                    self.state = tf.where(self.edges[i], state1, state2)
+                    self.state = [tf.where(self.edges[i], state1[j], state2[j])
+                                  for j in range(config.decoder.num_layers)]
                     self.outputs.append(output)
                     if loop_function is not None:
                         prev = output

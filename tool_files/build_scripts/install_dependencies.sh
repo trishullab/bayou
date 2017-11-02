@@ -20,13 +20,14 @@ if [ $OS == "Linux" ]
 then
 
 	apt-get update
-	apt-get install openjdk-8-jdk maven
+	apt-get install openjdk-8-jdk maven python3
 
 elif [ $OS == "Darwin" ] # Darwin for Mac OS X
 then
 	brew update
 	brew cask install java
 	brew install maven
+        brew install python3
 
 else
 	echo "Unknown OS."

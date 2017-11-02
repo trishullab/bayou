@@ -16,6 +16,7 @@ import json
 import argparse
 import numpy as np
 import tensorflow as tf
+from collections import Counter
 from sklearn.manifold import TSNE
 
 from bayou.core.infer import BayesianPredictor
@@ -26,10 +27,20 @@ def plot(clargs):
         predictor = BayesianPredictor(clargs.save, sess)
         with open(clargs.input_file[0]) as f:
             js = json.load(f)
-        psis = np.array([predictor.psi_from_evidence(program)[0] for program in js['programs']])
+        psis = np.array([predictor.psi_from_evidence(program) for program in js['programs']])
+        ast_calls = []
+        for i, psi in enumerate(psis):
+            print('Generate AST {}'.format(i))
+            predictor.calls_in_last_ast = []
+            try:
+                predictor.generate_ast(psi)
+                ast_calls.append(predictor.calls_in_last_ast)
+            except AssertionError:
+                ast_calls.append([])
+        psis = np.array([psi[0] for psi in psis])  # drop batch
         model = TSNE(n_components=2, init='pca')
         psis_2d = model.fit_transform(psis)
-        labels = [sorted(program['types'])[0] for program in js['programs']]
+        labels = [get_api(calls) for calls in ast_calls]
         assert len(psis_2d) == len(labels)
 
         for psi_2d, label in zip(psis_2d, labels):
@@ -37,11 +48,20 @@ def plot(clargs):
         scatter(clargs, zip(psis_2d, labels))
 
 
+def get_api(calls):
+    apis = ['.'.join(call.split('.')[:2]) for call in calls]
+    counts = Counter(apis)
+    apis = sorted(counts.keys(), key=lambda a: counts[a], reverse=True)
+    return apis[0] if apis != [] else 'N/A'
+
+
 def scatter(clargs, data):
     import matplotlib.pyplot as plt
     import matplotlib.cm as cm
     dic = {}
     for psi_2d, label in data:
+        if label == 'N/A':
+            continue
         if label not in dic:
             dic[label] = []
         dic[label].append(psi_2d)
@@ -63,6 +83,7 @@ def scatter(clargs, data):
     plt.axhline(0, color='black')
     plt.axvline(0, color='black')
     plt.show()
+
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)

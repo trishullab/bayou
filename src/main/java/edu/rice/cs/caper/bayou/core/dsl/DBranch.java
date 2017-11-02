@@ -194,19 +194,21 @@ public class DBranch extends DASTNode {
             default:
                 InfixExpression expr = ast.newInfixExpression();
                 expr.setLeftOperand(clauses.get(0));
-                expr.setOperator(InfixExpression.Operator.AND);
+                expr.setOperator(InfixExpression.Operator.CONDITIONAL_AND);
                 expr.setRightOperand(clauses.get(1));
                 for (int i = 2; i < clauses.size(); i++) {
                     InfixExpression joined = ast.newInfixExpression();
                     joined.setLeftOperand(expr);
-                    joined.setOperator(InfixExpression.Operator.AND);
+                    joined.setOperator(InfixExpression.Operator.CONDITIONAL_AND);
                     joined.setRightOperand(clauses.get(i));
                     expr = joined;
                 }
                 statement.setExpression(expr);
         }
 
-        /* synthesize then and else body */
+        /* synthesize then and else body in separate scopes */
+        List<Scope> scopes = new ArrayList<>(); // will contain then and else scopes
+        env.pushScope();
         Block thenBlock = ast.newBlock();
         for (DASTNode dNode : _then) {
             ASTNode aNode = dNode.synthesize(env);
@@ -216,7 +218,9 @@ public class DBranch extends DASTNode {
                 thenBlock.statements().add(ast.newExpressionStatement((Expression) aNode));
         }
         statement.setThenStatement(thenBlock);
+        scopes.add(env.popScope());
 
+        env.pushScope();
         Block elseBlock = ast.newBlock();
         for (DASTNode dNode : _else) {
             ASTNode aNode = dNode.synthesize(env);
@@ -226,6 +230,9 @@ public class DBranch extends DASTNode {
                 elseBlock.statements().add(ast.newExpressionStatement((Expression) aNode));
         }
         statement.setElseStatement(elseBlock);
+        scopes.add(env.popScope());
+
+        env.getScope().join(scopes);
 
         return statement;
     }

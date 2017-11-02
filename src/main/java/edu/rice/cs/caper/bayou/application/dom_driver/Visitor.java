@@ -39,6 +39,9 @@ public class Visitor extends ASTVisitor {
 
     public List<MethodDeclaration> allMethods;
 
+    // call stack during driver execution
+    public final Stack<MethodDeclaration> callStack = new Stack<>();
+
     private static Visitor V;
 
     public static Visitor V() {
@@ -123,22 +126,30 @@ public class Visitor extends ASTVisitor {
             for (MethodDeclaration c : constructors)
                 for (MethodDeclaration m : publicMethods) {
                     String javadoc = Utils.getJavadoc(m, options.JAVADOC_TYPE);
+                    callStack.push(c);
                     DSubTree ast = new DOMMethodDeclaration(c).handle();
+                    callStack.push(m);
                     ast.addNodes(new DOMMethodDeclaration(m).handle().getNodes());
+                    callStack.pop();
+                    callStack.pop();
                     if (ast.isValid())
                         astsWithJavadoc.add(new ImmutablePair<>(ast, javadoc));
                 }
         } else if (!constructors.isEmpty()) { // no public methods, only constructor
             for (MethodDeclaration c : constructors) {
                 String javadoc = Utils.getJavadoc(c, options.JAVADOC_TYPE);
+                callStack.push(c);
                 DSubTree ast = new DOMMethodDeclaration(c).handle();
+                callStack.pop();
                 if (ast.isValid())
                     astsWithJavadoc.add(new ImmutablePair<>(ast, javadoc));
             }
         } else if (!publicMethods.isEmpty()) { // no constructors, methods executed typically through Android callbacks
             for (MethodDeclaration m : publicMethods) {
                 String javadoc = Utils.getJavadoc(m, options.JAVADOC_TYPE);
+                callStack.push(m);
                 DSubTree ast = new DOMMethodDeclaration(m).handle();
+                callStack.pop();
                 if (ast.isValid())
                     astsWithJavadoc.add(new ImmutablePair<>(ast, javadoc));
             }

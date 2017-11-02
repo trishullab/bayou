@@ -21,10 +21,7 @@ import java.util.*;
 
 public class Environment {
 
-    List<Variable> scope; // unmutable
-    List<Variable> mu_scope; // mutable
-    Map<String,Integer> prettyNameCounts;
-
+    private final Stack<Scope> scopes;
     Set<Class> imports;
     final AST ast;
 
@@ -32,38 +29,22 @@ public class Environment {
         return ast;
     }
 
-    public Environment(AST ast, List<Variable> scope) {
+    public Environment(AST ast, List<Variable> variables) {
         this.ast = ast;
-        this.scope = Collections.unmodifiableList(scope);
-        mu_scope = new ArrayList<>();
-        prettyNameCounts = new HashMap<>();
+        this.scopes = new Stack<>();
+        this.scopes.push(new Scope(variables));
         imports = new HashSet<>();
-
-        // initialize pretty name counts with variables in scope
-        for (Variable v : scope) {
-            int lastCharIdx = -1;
-            for (int i = 0; i < v.name.length(); i++)
-                if (! Character.isDigit(v.name.charAt(i)))
-                    lastCharIdx = i;
-            lastCharIdx += 1;
-            String prettyName = v.name.substring(0, lastCharIdx);
-            if (lastCharIdx == v.name.length()) {
-                prettyNameCounts.put(prettyName, 0);
-                continue;
-            }
-            Integer num = Integer.parseInt(v.name.substring(lastCharIdx));
-            boolean exists = prettyNameCounts.containsKey(prettyName);
-            prettyNameCounts.put(prettyName, exists? Math.max(prettyNameCounts.get(prettyName), num): num);
-        }
     }
 
     public TypedExpression addVariable(Type type) {
-        /* construct a nice name for the variable */
-        String name = getPrettyName(type);
+        return addVariable(type, true);
+    }
 
+    public TypedExpression addVariable(Type type, boolean join) {
         /* add variable to scope */
-        Variable var = new Variable(name, type);
-        mu_scope.add(var);
+        Variable var = scopes.peek().addVariable(type);
+        if (! join)
+            var.doNotJoin();
 
         /* add type to imports */
         imports.add(type.C());
@@ -84,19 +65,17 @@ public class Environment {
         return tExpr;
     }
 
-    public Variable addScopedVariable(String name, Class cls) {
-        Type t;
-        if (cls.isPrimitive())
-            t = new Type(ast.newPrimitiveType(PrimitiveType.toCode(cls.getName())), cls);
-        else
-            t = new Type(ast.newSimpleType(ast.newSimpleName(cls.getSimpleName())), cls);
-        Variable var = new Variable(name, t);
-        mu_scope.add(var);
-        return var;
+    public Scope getScope() {
+        return scopes.peek();
     }
 
-    public void removeScopedVariable(Variable v) {
-        mu_scope.remove(v);
+    public void pushScope() {
+        Scope newScope = new Scope(scopes.peek());
+        scopes.push(newScope);
+    }
+
+    public Scope popScope() {
+        return scopes.pop();
     }
 
     /**
@@ -137,24 +116,4 @@ public class Environment {
         imports.add(c);
     }
 
-    String getPrettyName(Type type) {
-        String name;
-        if (type.C().isPrimitive())
-            name = type.C().getSimpleName().substring(0, 1);
-        else {
-            name = "";
-            for (Character c : type.C().getName().toCharArray())
-                if (Character.isUpperCase(c))
-                    name += Character.toLowerCase(c);
-        }
-
-        if (prettyNameCounts.containsKey(name)) {
-            prettyNameCounts.put(name, prettyNameCounts.get(name)+1);
-            name += prettyNameCounts.get(name);
-        }
-        else
-            prettyNameCounts.put(name, 0);
-
-        return name;
-    }
 }

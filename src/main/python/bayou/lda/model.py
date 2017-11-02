@@ -29,12 +29,12 @@ class LDA():
         if from_file is not None:
             with open(from_file, 'rb') as f:
                 self.model, self.vectorizer = pickle.load(f, encoding='latin1')
-        else:
+        else:  # training for the first time
             self.vectorizer = TfidfVectorizer(lowercase=False, token_pattern=u'[^;]+')
-            self.model = LatentDirichletAllocation(args.ntopics, doc_topic_prior=args.alpha,
-                                                   learning_method='batch', max_iter=100,
-                                                   verbose=1, evaluate_every=1,
-                                                   max_doc_update_iter=100, mean_change_tol=1e-5)
+            self.alpha = args.alpha
+            self.beta = args.beta
+            self.ntopics = args.ntopics
+            self.model = None
 
     def top_words(self, n):
         features = self.vectorizer.get_feature_names()
@@ -45,6 +45,15 @@ class LDA():
     def train(self, docs):
         data = [';'.join(bow) for bow in docs]
         vect = self.vectorizer.fit_transform(data)
+        self.alpha = self.alpha if self.alpha is not None else 50./self.ntopics
+        self.beta = self.beta if self.beta is not None else 200./len(self.vectorizer.vocabulary_)
+        print('{} words in vocabulary'.format(len(self.vectorizer.vocabulary_)))
+        print('Training LDA with {} topics, {} alpha, {} beta'.format(self.ntopics, self.alpha, self.beta))
+        self.model = LatentDirichletAllocation(self.ntopics,
+                                               doc_topic_prior=self.alpha, topic_word_prior=self.beta,
+                                               learning_method='batch', max_iter=100,
+                                               verbose=1, evaluate_every=1,
+                                               max_doc_update_iter=100, mean_change_tol=1e-5)
         self.model.fit(vect)
         # normalizing does not change subsequent inference, provided no further training is done
         self.model.components_ /= self.model.components_.sum(axis=1)[:, np.newaxis]

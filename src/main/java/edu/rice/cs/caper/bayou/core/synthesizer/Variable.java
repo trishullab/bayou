@@ -20,11 +20,15 @@ public class Variable {
     final String name;
     final Type type;
     int refCount;
+    boolean userVar;
+    boolean join;
 
     Variable(String name, Type type) {
         this.name = name;
         this.type = type;
         refCount = 0;
+        join = true;
+        userVar = false;
     }
 
     public String getName() {
@@ -33,6 +37,18 @@ public class Variable {
 
     public Type getType() {
         return type;
+    }
+
+    public void doNotJoin() {
+        this.join = false;
+    }
+
+    public void setUserVar(boolean userVar) {
+        this.userVar = userVar;
+    }
+
+    public boolean isUserVar() {
+        return userVar;
     }
 
     public void addRefCount() {

@@ -1,4 +1,5 @@
 {
+    "model": "lle",
     "latent_size": 32,
     "batch_size": 50,
     "num_epochs": 100,
@@ -10,30 +11,31 @@
         {
             "name": "apicalls",
             "units": 128,
-            "max_num": 1,
+            "num_layers": 3,
             "tile": 1
         },
         {
             "name": "types",
             "units": 64,
-            "max_num": 1,
+            "num_layers": 3,
             "tile": 1
         },
         {
             "name": "context",
             "units": 64,
-            "max_num": 1,
+            "num_layers": 3,
             "tile": 1
         },
         {
             "name": "keywords",
             "units": 64,
-            "max_num": 1,
+            "num_layers": 3,
             "tile": 1
         }
     ],
     "decoder": {
         "units": 256,
+        "num_layers": 3,
         "max_ast_depth": 32
     }
 }

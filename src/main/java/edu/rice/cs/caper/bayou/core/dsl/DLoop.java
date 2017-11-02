@@ -181,19 +181,20 @@ public class DLoop extends DASTNode {
             default:
                 InfixExpression expr = ast.newInfixExpression();
                 expr.setLeftOperand(clauses.get(0));
-                expr.setOperator(InfixExpression.Operator.AND);
+                expr.setOperator(InfixExpression.Operator.CONDITIONAL_AND);
                 expr.setRightOperand(clauses.get(1));
                 for (int i = 2; i < clauses.size(); i++) {
                     InfixExpression joined = ast.newInfixExpression();
                     joined.setLeftOperand(expr);
-                    joined.setOperator(InfixExpression.Operator.AND);
+                    joined.setOperator(InfixExpression.Operator.CONDITIONAL_AND);
                     joined.setRightOperand(clauses.get(i));
                     expr = joined;
                 }
                 statement.setExpression(expr);
         }
 
-        /* synthesize the body */
+        /* synthesize the body under a new scope */
+        env.pushScope();
         Block body = ast.newBlock();
         for (DASTNode dNode : _body) {
             ASTNode aNode = dNode.synthesize(env);
@@ -203,6 +204,12 @@ public class DLoop extends DASTNode {
                 body.statements().add(ast.newExpressionStatement((Expression) aNode));
         }
         statement.setBody(body);
+
+        /* join with parent scope itself (the "sub-scope" of a loop if condition was false) */
+        List<Scope> scopes = new ArrayList<>();
+        scopes.add(env.popScope());
+        scopes.add(new Scope(env.getScope()));
+        env.getScope().join(scopes);
 
         return statement;
     }

@@ -135,15 +135,17 @@ public class Visitor extends ASTVisitor {
         }
 
         /* add variable declarations */
-        for (Variable var : env.mu_scope) {
-            if (!eliminatedVars.contains(var.name)) {
+        Set<Variable> toDeclare = env.getScope().getVariables();
+        toDeclare.addAll(env.getScope().getPhantomVariables());
+        for (Variable var : toDeclare) {
+            if (!eliminatedVars.contains(var.name) && !var.isUserVar()) {
                 VariableDeclarationFragment varDeclFrag = ast.newVariableDeclarationFragment();
                 varDeclFrag.setName(ast.newSimpleName(var.name));
                 VariableDeclarationStatement varDeclStmt = ast.newVariableDeclarationStatement(varDeclFrag);
                 if (var.getType().T().isPrimitiveType())
-                    varDeclStmt.setType(var.type.T());
+                    varDeclStmt.setType((org.eclipse.jdt.core.dom.Type) ASTNode.copySubtree(ast, var.type.T()));
                 else if (var.getType().T().isSimpleType()) {
-                    Name name = ((SimpleType) var.type.T()).getName();
+                    Name name = ((SimpleType) ASTNode.copySubtree(ast, var.type.T())).getName();
                     String simpleName = name.isSimpleName()? ((SimpleName) name).getIdentifier()
                             : ((QualifiedName) name).getName().getIdentifier();
                     varDeclStmt.setType(ast.newSimpleType(ast.newSimpleName(simpleName)));
@@ -186,6 +188,7 @@ public class Visitor extends ASTVisitor {
         for (Object o : method.parameters()) {
             SingleVariableDeclaration param = (SingleVariableDeclaration) o;
             Variable v = new Variable(param.getName().getIdentifier(), new Type(param.getType()));
+            v.setUserVar(true);
             currentScope.add(v);
         }
 
@@ -199,6 +202,7 @@ public class Visitor extends ASTVisitor {
             for (Object f : varDecl.fragments()) {
                 VariableDeclarationFragment frag = (VariableDeclarationFragment) f;
                 Variable v = new Variable(frag.getName().getIdentifier(), new Type(varDecl.getType()));
+                v.setUserVar(true);
                 currentScope.add(v);
             }
         }

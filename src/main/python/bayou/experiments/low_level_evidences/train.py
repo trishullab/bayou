@@ -29,6 +29,7 @@ from bayou.experiments.low_level_evidences.utils import read_config, dump_config
 HELP = """\
 Config options should be given as a JSON file (see config.json for example):
 {                                         |
+    "model": "lle"                        | The implementation id of this model (do not change)
     "latent_size": 32,                    | Latent dimensionality
     "batch_size": 50,                     | Minibatch size
     "num_epochs": 100,                    | Number of training epochs
@@ -40,30 +41,31 @@ Config options should be given as a JSON file (see config.json for example):
         {                                 |
             "name": "apicalls",           | Name of evidence ("apicalls")
             "units": 64,                  | Size of the encoder hidden state
-            "max_num": 10,                | Maximum number of this type of evidence
+            "num_layers": 3               | Number of densely connected layers
             "tile": 1                     | Repeat the encoding n times (to boost its signal)
         },                                |
         {                                 |
             "name": "types",              | Name of evidence ("types")
             "units": 32,                  | Size of the encoder hidden state
-            "max_num": 10,                | Maximum number of this type of evidence
+            "num_layers": 3               | Number of densely connected layers
             "tile": 1                     | Repeat the encoding n times (to boost its signal)
         },                                |
         {                                 |
             "name": "context",            | Name of evidence ("context")
             "units": 32,                  | Size of the encoder hidden state
-            "max_num": 10,                | Maximum number of this type of evidence
+            "num_layers": 3               | Number of densely connected layers
             "tile": 1                     | Repeat the encoding n times (to boost its signal)
         },                                |
         {                                 |
             "name": "keywords",           | Name of evidence ("keywords")
             "units": 64,                  | Size of the encoder hidden state
-            "max_num": 10,                | Maximum number of this type of evidence
+            "num_layers": 3               | Number of densely connected layers
             "tile": 1                     | Repeat the encoding n times (to boost its signal)
         }                                 |
     ],                                    |
     "decoder": {                          | Provide parameters for the decoder here
         "units": 256,                     | Size of the decoder hidden state
+        "num_layers": 3,                  | Number of layers in the decoder
         "max_ast_depth": 32               | Maximum depth of the AST (length of the longest path)
     }                                     |
 }                                         |

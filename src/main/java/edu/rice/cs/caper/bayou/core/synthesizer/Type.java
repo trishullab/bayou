@@ -40,6 +40,9 @@ public class Type {
 
         this.refCount = 0;
         autoConcretize();
+
+        if (t.resolveBinding() != null)
+            this.t = releaseBinding(t, t.getAST());
     }
 
     public Type(org.eclipse.jdt.core.dom.Type t, Class c) {
@@ -51,6 +54,9 @@ public class Type {
 
         this.refCount = 0;
         autoConcretize();
+
+        if (t.resolveBinding() != null)
+            this.t = releaseBinding(t, t.getAST());
     }
 
     public Type(Class c) {
@@ -257,6 +263,31 @@ public class Type {
         }
         else
             throw new SynthesisException(SynthesisException.InvalidKindOfType);
+    }
+
+    // make a DOM type independent of its bindings, because when copying subtrees bindings don't copy over
+    org.eclipse.jdt.core.dom.Type releaseBinding(org.eclipse.jdt.core.dom.Type type, AST ast) {
+        ITypeBinding binding = type.resolveBinding();
+        if (type.isPrimitiveType())
+            return type;
+        else if (type.isSimpleType())
+            return ast.newSimpleType(ast.newName(binding.getQualifiedName()));
+        else if (binding.isParameterizedType()) {
+            ITypeBinding erasure = binding.getErasure();
+            SimpleType baseType = ast.newSimpleType(ast.newName(erasure.getQualifiedName()));
+            ParameterizedType retType = ast.newParameterizedType(baseType);
+
+            for (Object o: ((ParameterizedType) type).typeArguments()) {
+                org.eclipse.jdt.core.dom.Type arg = (org.eclipse.jdt.core.dom.Type) o;
+                org.eclipse.jdt.core.dom.Type argType = releaseBinding(arg, ast);
+                retType.typeArguments().add(argType);
+            }
+
+            return retType;
+        }
+        else {
+            throw new SynthesisException(SynthesisException.InvalidKindOfType);
+        }
     }
 
     public boolean isConcretized() {

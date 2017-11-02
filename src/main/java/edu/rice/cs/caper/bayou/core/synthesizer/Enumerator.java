@@ -122,8 +122,7 @@ public class Enumerator {
             return null;
 
         /* see if a variable with the type already exists in scope */
-        List<Variable> toSearch = new ArrayList<>(env.scope);
-        toSearch.addAll(env.mu_scope);
+        List<Variable> toSearch = new ArrayList<>(env.getScope().getVariables());
         sortVariablesByCost(toSearch);
         for (Variable v : toSearch)
             if (targetType.isAssignableFrom(v.getType())) {
@@ -271,8 +270,7 @@ public class Enumerator {
     }
 
     public Type searchType() {
-        List<Variable> vars = new ArrayList<>(env.scope);
-        vars.addAll(env.mu_scope);
+        List<Variable> vars = new ArrayList<>(env.getScope().getVariables());
         List<Type> types = vars.stream().map(v -> v.getType())
                 .filter(t -> t.T().isSimpleType())
                 .collect(Collectors.toList()); // only consider simple types

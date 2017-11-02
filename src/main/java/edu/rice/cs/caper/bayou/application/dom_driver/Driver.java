@@ -14,22 +14,6 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-
-/*
- * The DSL is implemented as a subset of the Eclipse AST. The convention
- * is to use the Eclipse AST class name prefixed with D. Every class that
- * wishes to be in the DSL has to provide an inner class Handle that extends
- * the class Handler. The Handle takes an Eclipse AST element and the visitor
- * (through its constructor) and upon invoking the handle() method, returns
- * the corresponding DSL element. The handle() method may return null if
- * the Eclipse AST element does not satisfy the conditions to be in the DSL.
- *
- * Note that if the DSL element is a subclass of DOMExpression or DASTNode
- * it has to be added to the switch cases in the Handles of both these classes.
- */
-
-
-
 package edu.rice.cs.caper.bayou.application.dom_driver;
 
 import org.apache.commons.cli.*;
