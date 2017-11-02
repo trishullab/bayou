@@ -161,16 +161,16 @@ public class CFGFeature extends SourceFeature {
         {
             Queue<CFGNode> queue = new LinkedList<>();
             queue.add(body_cfg.start);
-            Set<CFGNode> visited = new HashSet<>();
+            Set<ASTNode> visited = new HashSet<>();
 
             while(!queue.isEmpty()) {
                 CFGNode front = queue.poll();
-                visited.add(front);
+                visited.add(front.node);
 
                 for(CFGNode c : front.children) {
-                    if(!visited.contains(c)) {
+                    if(!visited.contains(c.node)) {
                         queue.add(c);
-                        visited.add(c);
+                        visited.add(c.node);
                     }
                 }
 
