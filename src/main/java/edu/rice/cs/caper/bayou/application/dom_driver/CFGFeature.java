@@ -144,6 +144,93 @@ public class CFGFeature extends SourceFeature {
         graph.add_cfg(dcfg);
     }
 
+    private void handle_try(CFG graph, TryStatement ts, MethodDeclaration method) {
+        CFG try_cfg = new CFG();
+
+        // final cfg
+        CFG final_cfg = null;
+        if(ts.getFinally() != null) {
+            final_cfg = this.gen_cfg(ts.getFinally().statements(), method);
+        }
+
+        // get all the CFGs for all catch clauses
+        List catches = ts.catchClauses();
+        List<CFG> catches_cfg = new ArrayList<>();
+        for(int i = 0; i < catches.size(); ++i) {
+            CatchClause clause = (CatchClause) catches.get(i);
+            CFG g = this.gen_cfg(clause.getBody().statements(), method);
+
+            // add the finally block
+            if(final_cfg != null) {
+                g.end.children.add(final_cfg.start);
+            }
+
+            catches_cfg.add(g);
+        }
+
+        // body cfg
+        CFG body_cfg = this.gen_cfg(ts.getBody().statements(), method);
+
+        // add body cfg and for every node in body cfg, add an edge for each catch clause
+        try_cfg.add_cfg(body_cfg);
+        {
+            Queue<CFGNode> queue = new LinkedList<>();
+            queue.add(body_cfg.start);
+            Set<ASTNode> visited = new HashSet<>();
+
+            while(!queue.isEmpty()) {
+                CFGNode front = queue.poll();
+                visited.add(front.node);
+
+                for(CFGNode c : front.children) {
+                    if(!visited.contains(c.node)) {
+                        queue.add(c);
+                        visited.add(c.node);
+                    }
+                }
+
+                for(int i = 0; i < catches_cfg.size(); ++i) {
+                    front.children.add(catches_cfg.get(i).start);
+                }
+            }
+        }
+
+        // add the clauses and the finally block
+        for(int i = 0; i < catches_cfg.size(); ++i) {
+            try_cfg.add_cfg(catches_cfg.get(i));
+        }
+        if(final_cfg != null) {
+            try_cfg.add_cfg(final_cfg);
+        }
+
+        CFGNode joint = null;
+        if(final_cfg != null) {
+            joint = final_cfg.start;
+        } else {
+            joint = new CFGNode(method.getAST().newEmptyStatement());
+        }
+
+
+        // remove all the duplicate and incorrect edges
+        body_cfg.end.children.clear();
+        body_cfg.end.children.add(joint);
+        for(int i = 0; i < catches_cfg.size(); ++i) {
+            body_cfg.end.children.add(catches_cfg.get(i).start);
+            // remove the edge from previous clause to the current clause
+            catches_cfg.get(i).end.children.clear();
+            catches_cfg.get(i).end.children.add(joint);
+        }
+
+        // add the finally block and remove the duplicate edge from the last clause to the finally block
+        if(final_cfg != null && !catches_cfg.isEmpty()) {
+            CFG last_clause = catches_cfg.get(catches_cfg.size() - 1);
+            last_clause.end.children.clear();
+            last_clause.end.children.add(joint);
+        }
+        try_cfg.end = joint;
+        graph.add_cfg(try_cfg);
+    }
+
     private void handle_cond(CFG graph, IfStatement ifs, MethodDeclaration method) {
         CFG if_cfg = new CFG();
         CFGNode test = new CFGNode(ifs.getExpression());
@@ -336,6 +423,9 @@ public class CFGFeature extends SourceFeature {
                     IfStatement ifs = (IfStatement) switch_to_if(sstmt.statements(), 0, sstmt.getExpression(), method);
                     handle_cond(graph, ifs, method);
                     break;
+                case ASTNode.TRY_STATEMENT:
+                    handle_try(graph, ((TryStatement) stmt), method);
+                    break;
                 default:
                     // we only want basic blocks
                     /*
@@ -354,6 +444,10 @@ public class CFGFeature extends SourceFeature {
                     break;
             }
             last_stmt = stmt;
+        }
+
+        if(graph.start == null || graph.end == null) {
+            graph.add_end(new CFGNode(method.getAST().newEmptyStatement()));
         }
         return graph;
     }
@@ -463,13 +557,19 @@ public class CFGFeature extends SourceFeature {
      */
     public CFGFeature(MethodDeclaration input) {
         CFGFeature.logger.debug("Creating CFG feature object...");
-        List stmt_list = input.getBody().statements();
-        if(!stmt_list.isEmpty()) {
-            this.cfg = this.gen_cfg(input.getBody().statements(), input);
-            this.cfg_to_dot();
-        } else {
+        if(input.getBody() == null) {
             this.cfg = null;
             this.nodes = new ArrayList<>();
+        } else {
+            List stmt_list = input.getBody().statements();
+            if(!stmt_list.isEmpty()) {
+                this.cfg = this.gen_cfg(input.getBody().statements(), input);
+                this.cfg_to_dot();
+                // System.out.println(this.dot);
+            } else {
+                this.cfg = null;
+                this.nodes = new ArrayList<>();
+            }
         }
     }
 
@@ -480,6 +580,15 @@ public class CFGFeature extends SourceFeature {
         CFGNode(ASTNode n) {
             this.node = n;
             this.children = new ArrayList<>();
+        }
+
+        @Override
+        public int hashCode() {
+            int hash = node.hashCode();
+            for(CFGNode n : this.children) {
+                hash += n.node.hashCode();
+            }
+            return hash;
         }
     }
 
