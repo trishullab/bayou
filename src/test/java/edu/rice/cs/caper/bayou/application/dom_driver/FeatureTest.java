@@ -59,7 +59,7 @@ public class FeatureTest {
         String testDir = srcFolder.getAbsolutePath() + File.separator + "test" + File.separator + "resources" +
             File.separator + "driver";
 
-        String test_filename = "fail1.java";
+        String test_filename = "skeleton1.java";
         String src = read_file(testDir + File.separator + test_filename);
 
         ASTParser parser = ASTParser.newParser(AST.JLS3);
@@ -72,7 +72,6 @@ public class FeatureTest {
         cu.accept(new ASTVisitor() {
             @Override
             public boolean visit(MethodDeclaration method) {
-                System.out.println(method.getName().getIdentifier());
                 CFGFeature feature = new CFGFeature(method);
                 Multiset<Integer> set = feature.gen_subgraph(4, true);
                 System.out.println(set.toString());
