@@ -33,6 +33,6 @@ else
 fi
 
 pip3 install 'flask'
-pip3 install 'tensorflow==1.2'
+pip3 install 'tensorflow==1.4'
 pip3 install 'scikit-learn==0.19'
 pip3 install 'scipy'
