@@ -13,19 +13,21 @@
 # limitations under the License.
 
 from __future__ import print_function
-import tensorflow as tf
-import numpy as np
+
 import argparse
-import textwrap
-import os
 import collections
-from itertools import chain
 import json
 import math
+import os
+import textwrap
 import time
+from itertools import chain
 
-from bayou.embed.utils import read_config, dump_config
-from bayou.core.utils import C0, UNK
+import numpy as np
+import tensorflow as tf
+
+from bayou.experiments.embed.utils import read_config, dump_config
+from bayou.models.core.utils import C0, UNK
 
 HELP = """\
 Config options should be given as a JSON file (see config.json for example):

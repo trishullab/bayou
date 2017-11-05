@@ -19,7 +19,7 @@ import re
 import json
 import itertools
 
-from bayou.core.utils import CONFIG_ENCODER, C0, UNK
+from bayou.models.core.utils import CONFIG_ENCODER, C0, UNK
 from bayou.lda.model import LDA
 
 

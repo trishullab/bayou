@@ -12,14 +12,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import json
 import argparse
+import json
+from collections import Counter
+
 import numpy as np
 import tensorflow as tf
-from collections import Counter
 from sklearn.manifold import TSNE
 
-from bayou.core.infer import BayesianPredictor
+from bayou.models.core import BayesianPredictor
 
 
 def plot(clargs):

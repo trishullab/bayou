@@ -20,10 +20,10 @@ from itertools import chain
 from flask import request, Response, Flask
 
 import tensorflow as tf
-import bayou.core.evidence
-import bayou.core.infer
-import bayou.experiments.low_level_evidences.infer
-from bayou.core.evidence import Keywords
+import bayou.models.core.evidence
+import bayou.models.core.infer
+import bayou.models.low_level_evidences.infer
+from bayou.models.core.evidence import Keywords
 
 
 # called when a POST request is sent to the server for AST generation
@@ -120,8 +120,8 @@ def _generate_asts(evidence_json: str, predictor, num_samples: int=100, max_ast_
 # Include in here any conditions that dictate whether an AST should be returned or not
 def _okay(js, ast):
     calls = ast['calls']
-    apicalls = list(set(chain.from_iterable([bayou.core.evidence.APICalls.from_call(call) for call in calls])))
-    types = list(set(chain.from_iterable([bayou.core.evidence.Types.from_call(call) for call in calls])))
+    apicalls = list(set(chain.from_iterable([bayou.models.core.evidence.APICalls.from_call(call) for call in calls])))
+    types = list(set(chain.from_iterable([bayou.models.core.evidence.Types.from_call(call) for call in calls])))
 
     ev_okay = all([c in apicalls for c in js['apicalls']]) and all([t in types for t in js['types']])
     return ev_okay
@@ -174,9 +174,9 @@ if __name__ == '__main__':
         with open(os.path.join(args.save_dir, 'config.json')) as f:
             model_type = json.load(f)['model']
         if model_type == 'core':
-            model = bayou.core.infer.BayesianPredictor
+            model = bayou.models.core.infer.BayesianPredictor
         elif model_type == 'lle':
-            model = bayou.experiments.low_level_evidences.infer.BayesianPredictor
+            model = bayou.models.low_level_evidences.infer.BayesianPredictor
         else:
             raise ValueError('Invalid model type in config: ' + model_type)
         bp = model(args.save_dir, sess)  # create a predictor that can generates ASTs from evidence

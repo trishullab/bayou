@@ -16,19 +16,32 @@ import tensorflow as tf
 import argparse
 import json
 import time
+import os
 
-from bayou.core.infer import BayesianPredictor
+import bayou.models.core.infer
+import bayou.models.low_level_evidences.infer
 from bayou.server.ast_server import _generate_asts
 
 
 def ast_quality_perf_test(clargs):
     with open(clargs.input_file[0]) as f:
         js = json.load(f)
+
+    # check model to load
+    with open(os.path.join(clargs.save_dir, 'config.json')) as f:
+        model_type = json.load(f)['model']
+    if model_type == 'core':
+        model = bayou.models.core.infer.BayesianPredictor
+    elif model_type == 'lle':
+        model = bayou.models.low_level_evidences.infer.BayesianPredictor
+    else:
+        raise ValueError('Invalid model type in config: ' + model_type)
+
     programs = js['programs']
 
     with tf.Session() as sess:
         print('Loading model...')
-        predictor = BayesianPredictor(clargs.save, sess)
+        predictor = model(clargs.save_dir, sess)  # create a predictor that can generates ASTs from evidence
 
         n = len(programs)
         for i, program in enumerate(programs):

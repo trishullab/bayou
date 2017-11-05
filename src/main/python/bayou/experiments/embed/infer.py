@@ -12,14 +12,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import tensorflow as tf
 import argparse
 import json
 import os
 from sklearn.manifold import TSNE
 from matplotlib import pylab
 
-from bayou.embed.utils import read_config
+from bayou.experiments.embed.utils import read_config
 
 
 def infer(clargs):

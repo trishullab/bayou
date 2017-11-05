@@ -12,15 +12,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import tensorflow as tf
 import argparse
 import json
 import time
 
-import bayou.core.infer
-import bayou.experiments.nonbayesian.infer
-import bayou.experiments.low_level_evidences.infer
+import tensorflow as tf
+
 import bayou.experiments.low_level_sketches.infer
+import bayou.experiments.nonbayesian.infer
+import bayou.models.core.infer
+import bayou.models.low_level_evidences.infer
 
 TIMEOUT = 20  # seconds per query
 
@@ -32,11 +33,11 @@ def main(clargs):
 
     with tf.Session() as sess:
         if clargs.model == 'bayesian':
-            p_type = bayou.core.infer.BayesianPredictor
+            p_type = bayou.models.core.infer.BayesianPredictor
         elif clargs.model == 'nonbayesian':
             p_type = bayou.experiments.nonbayesian.infer.NonBayesianPredictor
         elif clargs.model == 'low_level_evidences':
-            p_type = bayou.experiments.low_level_evidences.infer.BayesianPredictor
+            p_type = bayou.models.low_level_evidences.infer.BayesianPredictor
         elif clargs.model == 'low_level_sketches':
             p_type = bayou.experiments.low_level_sketches.infer.BayesianPredictor
         else:

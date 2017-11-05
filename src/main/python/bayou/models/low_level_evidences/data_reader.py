@@ -18,7 +18,7 @@ import numpy as np
 import random
 from collections import Counter
 
-from bayou.experiments.low_level_evidences.utils import C0, CHILD_EDGE, SIBLING_EDGE
+from bayou.models.low_level_evidences.utils import C0, CHILD_EDGE, SIBLING_EDGE
 
 
 class Reader():

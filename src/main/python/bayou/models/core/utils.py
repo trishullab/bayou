@@ -15,16 +15,13 @@
 from __future__ import print_function
 import argparse
 import re
-import json
-import random
-from itertools import chain
 import tensorflow as tf
 
 CONFIG_GENERAL = ['model', 'latent_size', 'batch_size', 'num_epochs',
                   'learning_rate', 'print_step', 'alpha', 'beta']
 CONFIG_ENCODER = ['name', 'units', 'num_layers', 'tile']
 CONFIG_DECODER = ['units', 'num_layers', 'max_ast_depth']
-CONFIG_INFER = ['chars', 'vocab', 'vocab_size']
+CONFIG_DECODER_INFER = ['chars', 'vocab', 'vocab_size']
 
 C0 = 'CLASS0'
 UNK = '_UNK_'
@@ -46,22 +43,22 @@ def split_camel(s):
 
 
 # Do not move these imports to the top, it will introduce a cyclic dependency
-import bayou.experiments.low_level_evidences.evidence
+import bayou.models.core.evidence
 
 
 # convert JSON to config
-def read_config(js, chars_vocab=False):
+def read_config(js, save_dir, infer=False):
     config = argparse.Namespace()
 
     for attr in CONFIG_GENERAL:
         config.__setattr__(attr, js[attr])
     
-    config.evidence = bayou.experiments.low_level_evidences.evidence.Evidence.read_config(js['evidence'], chars_vocab)
+    config.evidence = bayou.models.core.evidence.Evidence.read_config(js['evidence'], save_dir)
     config.decoder = argparse.Namespace()
     for attr in CONFIG_DECODER:
         config.decoder.__setattr__(attr, js['decoder'][attr])
-    if chars_vocab:
-        for attr in CONFIG_INFER:
+    if infer:
+        for attr in CONFIG_DECODER_INFER:
             config.decoder.__setattr__(attr, js['decoder'][attr])
 
     return config
@@ -76,6 +73,6 @@ def dump_config(config):
 
     js['evidence'] = [ev.dump_config() for ev in config.evidence]
     js['decoder'] = {attr: config.decoder.__getattribute__(attr) for attr in
-                     CONFIG_DECODER + CONFIG_INFER}
+                     CONFIG_DECODER + CONFIG_DECODER_INFER}
 
     return js

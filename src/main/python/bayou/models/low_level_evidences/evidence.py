@@ -20,7 +20,7 @@ import json
 import itertools
 from collections import Counter
 
-from bayou.experiments.low_level_evidences.utils import CONFIG_ENCODER, CONFIG_INFER, C0, UNK
+from bayou.models.low_level_evidences.utils import CONFIG_ENCODER, CONFIG_INFER, C0, UNK
 
 
 class Evidence(object):

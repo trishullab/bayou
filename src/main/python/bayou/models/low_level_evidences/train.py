@@ -22,9 +22,9 @@ import os
 import json
 import textwrap
 
-from bayou.experiments.low_level_evidences.data_reader import Reader
-from bayou.experiments.low_level_evidences.model import Model
-from bayou.experiments.low_level_evidences.utils import read_config, dump_config
+from bayou.models.low_level_evidences.data_reader import Reader
+from bayou.models.low_level_evidences.model import Model
+from bayou.models.low_level_evidences.utils import read_config, dump_config
 
 HELP = """\
 Config options should be given as a JSON file (see config.json for example):

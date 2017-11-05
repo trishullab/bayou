@@ -16,8 +16,8 @@ import tensorflow as tf
 from tensorflow.contrib import legacy_seq2seq as seq2seq
 import numpy as np
 
-from bayou.core.architecture import BayesianEncoder, BayesianDecoder
-from bayou.core.data_reader import CHILD_EDGE, SIBLING_EDGE
+from bayou.models.core.architecture import BayesianEncoder, BayesianDecoder
+from bayou.models.core.data_reader import CHILD_EDGE, SIBLING_EDGE
 
 
 class Model():

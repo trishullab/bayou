@@ -16,14 +16,13 @@ from __future__ import print_function
 import tensorflow as tf
 import numpy as np
 
-import argparse
 import os
 import json
 import collections
 
-from bayou.core.model import Model
-from bayou.core.utils import CHILD_EDGE, SIBLING_EDGE
-from bayou.core.utils import read_config
+from bayou.models.low_level_evidences.model import Model
+from bayou.models.low_level_evidences.utils import CHILD_EDGE, SIBLING_EDGE
+from bayou.models.low_level_evidences.utils import read_config
 
 MAX_GEN_UNTIL_STOP = 20
 MAX_AST_DEPTH = 5
@@ -36,7 +35,7 @@ class BayesianPredictor(object):
 
         # load the saved config
         with open(os.path.join(save, 'config.json')) as f:
-            config = read_config(json.load(f), save_dir=save, infer=True)
+            config = read_config(json.load(f), chars_vocab=True)
         self.model = Model(config, True)
 
         # restore the saved model
