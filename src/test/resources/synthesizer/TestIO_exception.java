@@ -22,7 +22,6 @@ public class TestIO_exception {
         String file;
         {
             Evidence.apicalls("readLine", "printStackTrace", "close");
-            Evidence.context("String");
         }
     }
 

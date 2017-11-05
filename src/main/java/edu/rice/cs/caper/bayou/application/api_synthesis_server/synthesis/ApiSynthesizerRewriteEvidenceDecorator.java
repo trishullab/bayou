@@ -225,8 +225,6 @@ public class ApiSynthesizerRewriteEvidenceDecorator implements ApiSynthesizer
             // edu.rice.cs.caper.bayou.annotations.Evidence.apicalls(
             // or
             // edu.rice.cs.caper.bayou.annotations.Evidence.types(
-            // or
-            // edu.rice.cs.caper.bayou.annotations.Evidence.context(
             try
             {
                 evidencePrefix = determineEvidenceType(element);
@@ -276,8 +274,6 @@ public class ApiSynthesizerRewriteEvidenceDecorator implements ApiSynthesizer
                     case "type":
                     case "types":
                         return "edu.rice.cs.caper.bayou.annotations.Evidence.types(\"";
-                    case "context":
-                        return "edu.rice.cs.caper.bayou.annotations.Evidence.context(\"";
                     default:
                         throw new UnknownType(typeIdent);
                 }

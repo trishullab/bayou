@@ -42,8 +42,6 @@ class Evidence(object):
                 e = APICalls()
             elif name == 'types':
                 e = Types()
-            elif name == 'context':
-                e = Context()
             elif name == 'keywords':
                 e = Keywords()
             else:
@@ -187,66 +185,16 @@ class Types(Evidence):
     @staticmethod
     def from_call(call):
         split = list(reversed([q for q in call.split('(')[0].split('.')[:-1] if q[0].isupper()]))
-        return [split[1], split[0]] if len(split) > 1 else [split[0]]
+        types = [split[1], split[0]] if len(split) > 1 else [split[0]]
+        types = [re.sub('<.*', r'', t) for t in types]  # ignore generic types in evidence
 
-
-class Context(Evidence):
-
-    def read_data_point(self, program):
-        context = program['context'] if 'context' in program else []
-        return list(set(context))
-
-    def set_chars_vocab(self, data):
-        counts = Counter([c for context in data for c in context])
-        self.chars = sorted(counts.keys(), key=lambda w: counts[w], reverse=True)
-        self.vocab = dict(zip(self.chars, range(len(self.chars))))
-        self.vocab_size = len(self.vocab)
-
-    def wrangle(self, data):
-        wrangled = np.zeros((len(data), 1, self.vocab_size), dtype=np.int32)
-        for i, context in enumerate(data):
-            for c in context:
-                if c in self.vocab:
-                    wrangled[i, 0, self.vocab[c]] = 1
-        return wrangled
-
-    def placeholder(self, config):
-        return tf.placeholder(tf.float32, [config.batch_size, 1, self.vocab_size])
-
-    def exists(self, inputs):
-        i = tf.reduce_sum(inputs, axis=2)
-        return tf.not_equal(tf.count_nonzero(i, axis=1), 0)
-
-    def init_sigma(self, config):
-        with tf.variable_scope('context'):
-            self.sigma = tf.get_variable('sigma', [])
-
-    def encode(self, inputs, config):
-        with tf.variable_scope('context'):
-            latent_encoding = tf.zeros([config.batch_size, config.latent_size])
-            inp = tf.slice(inputs, [0, 0, 0], [config.batch_size, 1, self.vocab_size])
-            inp = tf.reshape(inp, [-1, self.vocab_size])
-            encoding = tf.layers.dense(inp, self.units, activation=tf.nn.tanh)
-            for i in range(self.num_layers - 1):
-                encoding = tf.layers.dense(encoding, self.units, activation=tf.nn.tanh)
-            w = tf.get_variable('w', [self.units, config.latent_size])
-            b = tf.get_variable('b', [config.latent_size])
-            latent_encoding += tf.nn.xw_plus_b(encoding, w, b)
-            return latent_encoding
-
-    def evidence_loss(self, psi, encoding, config):
-        sigma_sq = tf.square(self.sigma)
-        loss = 0.5 * (config.latent_size * tf.log(2 * np.pi * sigma_sq + 1e-10)
-                      + tf.square(encoding - psi) / sigma_sq)
-        return loss
-
-    @staticmethod
-    def from_call(call):
         args = call.split('(')[1].split(')')[0].split(',')
         args = [arg.split('.')[-1] for arg in args]
         args = [re.sub('<.*', r'', arg) for arg in args]  # remove generics
         args = [re.sub('\[\]', r'', arg) for arg in args]  # remove array type
-        return [arg for arg in args if not arg == '']
+        types_args = [arg for arg in args if not arg == '' and not arg.startswith('Tau_')]
+
+        return types + types_args
 
 
 class Keywords(Evidence):

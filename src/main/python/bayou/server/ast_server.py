@@ -76,8 +76,7 @@ def _generate_asts(evidence_json: str, predictor, num_samples: int=100, max_ast_
 
     # enhance keywords evidence from others
     keywords = [Keywords.split_camel(c) for c in js['apicalls']] + \
-               [Keywords.split_camel(t) for t in js['types']] + \
-               [Keywords.split_camel(c) for c in js['context']]
+               [Keywords.split_camel(t) for t in js['types']]
     keywords = [kw.lower() for kw in list(chain.from_iterable(keywords))]
     js['keywords'] = list(set(js['keywords'] + keywords))
 
@@ -123,10 +122,8 @@ def _okay(js, ast):
     calls = ast['calls']
     apicalls = list(set(chain.from_iterable([bayou.core.evidence.APICalls.from_call(call) for call in calls])))
     types = list(set(chain.from_iterable([bayou.core.evidence.Types.from_call(call) for call in calls])))
-    context = list(set(chain.from_iterable([bayou.core.evidence.Context.from_call(call) for call in calls])))
 
-    ev_okay = all([c in apicalls for c in js['apicalls']]) and all([t in types for t in js['types']]) \
-        and all([c in context for c in js['context']])
+    ev_okay = all([c in apicalls for c in js['apicalls']]) and all([t in types for t in js['types']])
     return ev_okay
 
 

@@ -51,12 +51,6 @@ Config options should be given as a JSON file (see config.json for example):
             "tile": 1                     | Repeat the encoding n times (to boost its signal)
         },                                |
         {                                 |
-            "name": "context",            | Name of evidence ("context")
-            "units": 32,                  | Size of the encoder hidden state
-            "num_layers": 3               | Number of densely connected layers
-            "tile": 1                     | Repeat the encoding n times (to boost its signal)
-        },                                |
-        {                                 |
             "name": "keywords",           | Name of evidence ("keywords")
             "units": 64,                  | Size of the encoder hidden state
             "num_layers": 3               | Number of densely connected layers

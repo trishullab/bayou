@@ -94,7 +94,6 @@ public class ApiSynthesizerRewriteEvidenceDecoratorTests
                         "// Bayou supports three types of evidence:\n" +
                         "// 1. apicalls - API methods the code should invoke\n" +
                         "// 2. types - datatypes of objects which invoke API methods\n" +
-                        "// 3. context - datatypes of variables that the code should use\n" +
                         "\n" +
                         "public class TestBluetooth {\n" +
                         "\n" +
@@ -122,7 +121,6 @@ public class ApiSynthesizerRewriteEvidenceDecoratorTests
                         "// Bayou supports three types of evidence:\n" +
                         "// 1. apicalls - API methods the code should invoke\n" +
                         "// 2. types - datatypes of objects which invoke API methods\n" +
-                        "// 3. context - datatypes of variables that the code should use\n" +
                         "\n" +
                         "public class TestBluetooth {\n" +
                         "\n" +
@@ -154,7 +152,6 @@ public class ApiSynthesizerRewriteEvidenceDecoratorTests
                         "// Bayou supports three types of evidence:\n" +
                         "// 1. apicalls - API methods the code should invoke\n" +
                         "// 2. types - datatypes of objects which invoke API methods\n" +
-                        "// 3. context - datatypes of variables that the code should use\n" +
                         "\n" +
                         "public class TestCamera {\n" +
                         "\n" +
@@ -168,8 +165,6 @@ public class ApiSynthesizerRewriteEvidenceDecoratorTests
                         "        { // Provide evidence within a separate block\n" +
                         "            // Code should call \"startPreview\"...\n" +
                         "            /// calls: startPreview\n" +
-                        "            // ...and use an \"int\" as argument\n" +
-                        "            /// context: int\n" +
                         "        } // Synthesized code will replace this block\n" +
                         "    }   \n" +
                         "\n" +
@@ -183,7 +178,6 @@ public class ApiSynthesizerRewriteEvidenceDecoratorTests
                         "// Bayou supports three types of evidence:\n" +
                         "// 1. apicalls - API methods the code should invoke\n" +
                         "// 2. types - datatypes of objects which invoke API methods\n" +
-                        "// 3. context - datatypes of variables that the code should use\n" +
                         "\n" +
                         "public class TestCamera {\n" +
                         "\n" +
@@ -197,8 +191,6 @@ public class ApiSynthesizerRewriteEvidenceDecoratorTests
                         "        { // Provide evidence within a separate block\n" +
                         "            // Code should call \"startPreview\"...\n" +
                         "            edu.rice.cs.caper.bayou.annotations.Evidence.apicalls(\"startPreview\");\n" +
-                        "            // ...and use an \"int\" as argument\n" +
-                        "            edu.rice.cs.caper.bayou.annotations.Evidence.context(\"int\");\n" +
                         "        } // Synthesized code will replace this block\n" +
                         "    }   \n" +
                         "\n" +
@@ -217,7 +209,6 @@ public class ApiSynthesizerRewriteEvidenceDecoratorTests
                         "// Bayou supports three types of evidence:\n" +
                         "// 1. apicalls - API methods the code should invoke\n" +
                         "// 2. types - datatypes of objects which invoke API methods\n" +
-                        "// 3. context - datatypes of variables that the code should use\n" +
                         "\n" +
                         "public class TestDialog {\n" +
                         "\n" +
@@ -247,7 +238,6 @@ public class ApiSynthesizerRewriteEvidenceDecoratorTests
                         "// Bayou supports three types of evidence:\n" +
                         "// 1. apicalls - API methods the code should invoke\n" +
                         "// 2. types - datatypes of objects which invoke API methods\n" +
-                        "// 3. context - datatypes of variables that the code should use\n" +
                         "\n" +
                         "public class TestDialog {\n" +
                         "\n" +
@@ -280,7 +270,6 @@ public class ApiSynthesizerRewriteEvidenceDecoratorTests
                         "// Bayou supports three types of evidence:\n" +
                         "// 1. apicalls - API methods the code should invoke\n" +
                         "// 2. types - datatypes of objects which invoke API methods\n" +
-                        "// 3. context - datatypes of variables that the code should use\n" +
                         "\n" +
                         "public class TestIO {\n" +
                         "\n" +
@@ -305,7 +294,6 @@ public class ApiSynthesizerRewriteEvidenceDecoratorTests
                         "// Bayou supports three types of evidence:\n" +
                         "// 1. apicalls - API methods the code should invoke\n" +
                         "// 2. types - datatypes of objects which invoke API methods\n" +
-                        "// 3. context - datatypes of variables that the code should use\n" +
                         "\n" +
                         "public class TestIO {\n" +
                         "\n" +
@@ -334,18 +322,16 @@ public class ApiSynthesizerRewriteEvidenceDecoratorTests
                         "// Bayou supports three types of evidence:\n" +
                         "// 1. apicalls - API methods the code should invoke\n" +
                         "// 2. types - datatypes of objects which invoke API methods\n" +
-                        "// 3. context - datatypes of variables that the code should use\n" +
                         "\n" +
                         "public class TestIO {\n" +
                         "\n" +
                         "    // NOTE: Bayou only supports one synthesis task in a given\n" +
                         "    // program at a time, so please comment out the rest.\n" +
                         "\n" +
-                        "    // Read from a file, more specifically using the\n" +
-                        "    // string argument given\n" +
+                        "    // Read from a file" +
                         "    void read(String file) {\n" +
                         "        {\n" +
-                        "            /// calls: readLine context: String\n" +
+                        "            /// calls: readLine\n" +
                         "        }\n" +
                         "    }   \n" +
                         "}\n";
@@ -358,18 +344,16 @@ public class ApiSynthesizerRewriteEvidenceDecoratorTests
                         "// Bayou supports three types of evidence:\n" +
                         "// 1. apicalls - API methods the code should invoke\n" +
                         "// 2. types - datatypes of objects which invoke API methods\n" +
-                        "// 3. context - datatypes of variables that the code should use\n" +
                         "\n" +
                         "public class TestIO {\n" +
                         "\n" +
                         "    // NOTE: Bayou only supports one synthesis task in a given\n" +
                         "    // program at a time, so please comment out the rest.\n" +
                         "\n" +
-                        "    // Read from a file, more specifically using the\n" +
-                        "    // string argument given\n" +
+                        "    // Read from a file" +
                         "    void read(String file) {\n" +
                         "        {\n" +
-                        "            edu.rice.cs.caper.bayou.annotations.Evidence.apicalls(\"readLine\");edu.rice.cs.caper.bayou.annotations.Evidence.context(\"String\");\n" +
+                        "            edu.rice.cs.caper.bayou.annotations.Evidence.apicalls(\"readLine\");\n" +
                         "        }\n" +
                         "    }   \n" +
                         "}\n";
@@ -386,7 +370,6 @@ public class ApiSynthesizerRewriteEvidenceDecoratorTests
                         "// Bayou supports three types of evidence:\n" +
                         "// 1. apicalls - API methods the code should invoke\n" +
                         "// 2. types - datatypes of objects which invoke API methods\n" +
-                        "// 3. context - datatypes of variables that the code should use\n" +
                         "\n" +
                         "public class TestIO {\n" +
                         "\n" +
@@ -398,7 +381,7 @@ public class ApiSynthesizerRewriteEvidenceDecoratorTests
                         "    void readWithErrorHandling() {\n" +
                         "        String file;\n" +
                         "        {\n" +
-                        "            /// calls: readLine, printStackTrace, close context: String\n" +
+                        "            /// calls: readLine, printStackTrace, close\n" +
                         "        }\n" +
                         "    }   \n" +
                         "}\n";
@@ -411,7 +394,6 @@ public class ApiSynthesizerRewriteEvidenceDecoratorTests
                         "// Bayou supports three types of evidence:\n" +
                         "// 1. apicalls - API methods the code should invoke\n" +
                         "// 2. types - datatypes of objects which invoke API methods\n" +
-                        "// 3. context - datatypes of variables that the code should use\n" +
                         "\n" +
                         "public class TestIO {\n" +
                         "\n" +
@@ -423,7 +405,7 @@ public class ApiSynthesizerRewriteEvidenceDecoratorTests
                         "    void readWithErrorHandling() {\n" +
                         "        String file;\n" +
                         "        {\n" +
-                        "            edu.rice.cs.caper.bayou.annotations.Evidence.apicalls(\"readLine\", \"printStackTrace\", \"close\");edu.rice.cs.caper.bayou.annotations.Evidence.context(\"String\");\n" +
+                        "            edu.rice.cs.caper.bayou.annotations.Evidence.apicalls(\"readLine\", \"printStackTrace\", \"close\");\n" +
                         "        }\n" +
                         "    }   \n" +
                         "}\n";
@@ -443,7 +425,6 @@ public class ApiSynthesizerRewriteEvidenceDecoratorTests
                         "// Bayou supports three types of evidence:\n" +
                         "// 1. apicalls - API methods the code should invoke\n" +
                         "// 2. types - datatypes of objects which invoke API methods\n" +
-                        "// 3. context - datatypes of variables that the code should use\n" +
                         "\n" +
                         "public class TestSpeech {\n" +
                         "\n" +
@@ -452,8 +433,6 @@ public class ApiSynthesizerRewriteEvidenceDecoratorTests
                         "        { // Provide evidence within a separate block\n" +
                         "            // Code should make API calls on \"SpeechRecognizer\"...\n" +
                         "            /// type: SpeechRecognizer\n" +
-                        "            // ...and use a \"Context\" as argument\n" +
-                        "            /// context: Context\n" +
                         "        } // Synthesized code will replace this block\n" +
                         "    }   \n" +
                         "\n" +
@@ -470,7 +449,6 @@ public class ApiSynthesizerRewriteEvidenceDecoratorTests
                         "// Bayou supports three types of evidence:\n" +
                         "// 1. apicalls - API methods the code should invoke\n" +
                         "// 2. types - datatypes of objects which invoke API methods\n" +
-                        "// 3. context - datatypes of variables that the code should use\n" +
                         "\n" +
                         "public class TestSpeech {\n" +
                         "\n" +
@@ -479,8 +457,6 @@ public class ApiSynthesizerRewriteEvidenceDecoratorTests
                         "        { // Provide evidence within a separate block\n" +
                         "            // Code should make API calls on \"SpeechRecognizer\"...\n" +
                         "            edu.rice.cs.caper.bayou.annotations.Evidence.types(\"SpeechRecognizer\");\n" +
-                        "            // ...and use a \"Context\" as argument\n" +
-                        "            edu.rice.cs.caper.bayou.annotations.Evidence.context(\"Context\");\n" +
                         "        } // Synthesized code will replace this block\n" +
                         "    }   \n" +
                         "\n" +
@@ -499,7 +475,6 @@ public class ApiSynthesizerRewriteEvidenceDecoratorTests
                         "// Bayou supports three types of evidence:\n" +
                         "// 1. apicalls - API methods the code should invoke\n" +
                         "// 2. types - datatypes of objects which invoke API methods\n" +
-                        "// 3. context - datatypes of variables that the code should use\n" +
                         "\n" +
                         "public class TestWifi {\n" +
                         "\n" +
@@ -525,7 +500,6 @@ public class ApiSynthesizerRewriteEvidenceDecoratorTests
                         "// Bayou supports three types of evidence:\n" +
                         "// 1. apicalls - API methods the code should invoke\n" +
                         "// 2. types - datatypes of objects which invoke API methods\n" +
-                        "// 3. context - datatypes of variables that the code should use\n" +
                         "\n" +
                         "public class TestWifi {\n" +
                         "\n" +
@@ -607,14 +581,6 @@ public class ApiSynthesizerRewriteEvidenceDecoratorTests
         String result = ApiSynthesizerRewriteEvidenceDecorator.makeEvidenceFromComment("/// types: foo, bar");
 
         Assert.assertEquals("edu.rice.cs.caper.bayou.annotations.Evidence.types(\"foo\", \"bar\");\n", result);
-    }
-
-    @Test
-    public void testMakeEvidenceFromCommentContext() throws ParseException
-    {
-        String result = ApiSynthesizerRewriteEvidenceDecorator.makeEvidenceFromComment("/// context: foo");
-
-        Assert.assertEquals("edu.rice.cs.caper.bayou.annotations.Evidence.context(\"foo\");\n", result);
     }
 
     @Test(expected = IllegalArgumentException.class)

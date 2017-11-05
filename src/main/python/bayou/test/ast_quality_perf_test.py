@@ -40,7 +40,7 @@ def ast_quality_perf_test(clargs):
                     program['latency'] = latency
                     continue
                 evidences = {clargs.evidence: program[clargs.evidence]}
-                remaining = ['apicalls', 'types', 'context']
+                remaining = ['apicalls', 'types', 'keywords']
                 remaining.remove(clargs.evidence)
                 for ev in remaining:
                     evidences[ev] = []
@@ -68,7 +68,7 @@ if __name__ == '__main__':
     parser.add_argument('--save', type=str, required=True,
                         help='directory to load model from')
     parser.add_argument('--evidence', type=str, default='all',
-                        choices=['apicalls', 'types', 'context', 'all'],
+                        choices=['apicalls', 'types', 'keywords', 'all'],
                         help='use only this evidence for inference queries')
     parser.add_argument('--output_file', type=str, default=None,
                         help='output file to print predicted ASTs')

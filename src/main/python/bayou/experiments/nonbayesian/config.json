@@ -10,9 +10,6 @@
         },
         {
             "name": "types"
-        },
-        {
-            "name": "context"
         }
     ],
     "decoder": {

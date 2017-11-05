@@ -16,11 +16,6 @@
             "name": "types",
             "units": 64,
             "tile": 1
-        },
-        {
-            "name": "context",
-            "units": 64,
-            "tile": 1
         }
     ],
     "decoder": {

@@ -111,8 +111,6 @@ public class DataSanityChecker {
                 datapoint.apicalls.add((String) q);
             for (Object q: program.getJSONArray("types"))
                 datapoint.types.add((String) q);
-            for (Object q: program.getJSONArray("context"))
-                datapoint.context.add((String) q);
             datapoint.file = program.getString("file");
             datapoint.ast = gsonIn.fromJson(program.getJSONObject("ast").toString(), DSubTree.class);
 

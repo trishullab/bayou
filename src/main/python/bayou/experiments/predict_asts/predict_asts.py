@@ -81,6 +81,7 @@ def main(clargs):
             with open(clargs.output_file, 'w') as f:
                 json.dump({'programs': programs}, f, indent=2)
 
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument('input_file', type=str, nargs=1,
@@ -91,7 +92,7 @@ if __name__ == '__main__':
                         choices=['bayesian', 'nonbayesian', 'low_level_evidences', 'low_level_sketches'],
                         help='the type of model')
     parser.add_argument('--evidence', type=str, default='all',
-                        choices=['apicalls', 'types', 'context', 'all'],
+                        choices=['apicalls', 'types', 'keywords', 'all'],
                         help='use only this evidence for inference queries')
     parser.add_argument('--output_file', type=str, default=None,
                         help='output file to print predicted ASTs')

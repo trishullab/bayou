@@ -43,8 +43,6 @@ class Evidence(object):
                 e = APICalls()
             elif name == 'types':
                 e = Types()
-            elif name == 'context':
-                e = Context()
             else:
                 raise TypeError('Invalid evidence name: {}'.format(name))
             e.init_config(evidence, save_dir)
@@ -119,37 +117,16 @@ class Types(Evidence):
     @staticmethod
     def from_call(call):
         split = list(reversed([q for q in call.split('(')[0].split('.')[:-1] if q[0].isupper()]))
-        return [split[1], split[0]] if len(split) > 1 else [split[0]]
+        types = [split[1], split[0]] if len(split) > 1 else [split[0]]
+        types = [re.sub('<.*', r'', t) for t in types]  # ignore generic types in evidence
 
-
-class Context(Evidence):
-
-    def load_embedding(self, save_dir):
-        embed_save_dir = os.path.join(save_dir, 'embed_context')
-        self.lda = LDA(from_file=os.path.join(embed_save_dir, 'model.pkl'))
-
-    def read_data_point(self, program):
-        context = program['context'] if 'context' in program else []
-        return list(set(context))
-
-    def wrangle(self, data):
-        return np.array(self.lda.infer(data), dtype=np.float32)
-
-    def placeholder(self, config):
-        return tf.placeholder(tf.float32, [config.batch_size, self.lda.model.n_components])
-
-    def encode(self, inputs, config):
-        with tf.variable_scope('context'):
-            encoding = tf.layers.dense(inputs, config.units)
-            return encoding
-
-    @staticmethod
-    def from_call(call):
         args = call.split('(')[1].split(')')[0].split(',')
         args = [arg.split('.')[-1] for arg in args]
         args = [re.sub('<.*', r'', arg) for arg in args]  # remove generics
         args = [re.sub('\[\]', r'', arg) for arg in args]  # remove array type
-        return [arg for arg in args if not arg == '']
+        types_args = [arg for arg in args if not arg == '' and not arg.startswith('Tau_')]
+
+        return types + types_args
 
 
 # TODO: handle Javadoc with word2vec

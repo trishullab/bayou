@@ -59,14 +59,12 @@ public class JSONInputFormat {
         String file;
         Set<String> apicalls;
         Set<String> types;
-        Set<String> context;
         boolean in_corpus;
 
         DataPoint() {
             out_asts = new ArrayList<>();
             apicalls = new HashSet<>();
             types = new HashSet<>();
-            context = new HashSet<>();
         }
     }
 }

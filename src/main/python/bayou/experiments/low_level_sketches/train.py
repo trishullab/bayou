@@ -46,11 +46,6 @@ Config options should be given as a JSON file (see config.json for example):
             "name": "types",              | Name of evidence ("types")
             "units": 32,                  | Size of the encoder hidden state
             "tile": 1                     | Repeat the encoding n times (to boost its signal)
-        },                                |
-        {                                 |
-            "name": "context",            | Name of evidence ("context")
-            "units": 32,                  | Size of the encoder hidden state
-            "tile": 1                     | Repeat the encoding n times (to boost its signal)
         }                                 |
     ],                                    |
     "decoder": {                          | Provide parameters for the decoder here

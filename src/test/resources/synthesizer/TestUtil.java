@@ -20,7 +20,6 @@ import java.util.HashMap;
 // Bayou supports three types of evidence:
 // 1. apicalls - API methods the code should invoke
 // 2. types - datatypes of objects which invoke API methods
-// 3. context - datatypes of variables that the code should use
 
 public class TestUtil {
 

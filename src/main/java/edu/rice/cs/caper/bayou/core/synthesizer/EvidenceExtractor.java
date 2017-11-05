@@ -25,13 +25,11 @@ public class EvidenceExtractor extends ASTVisitor {
     class JSONOutputWrapper {
         List<String> apicalls;
         List<String> types;
-        List<String> context;
         List<String> keywords;
 
         public JSONOutputWrapper() {
             this.apicalls = new ArrayList<>();
             this.types = new ArrayList<>();
-            this.context = new ArrayList<>();
             this.keywords = new ArrayList<>();
         }
     }
@@ -76,11 +74,6 @@ public class EvidenceExtractor extends ASTVisitor {
             for (Object arg : invocation.arguments()) {
                 StringLiteral a = (StringLiteral) arg;
                 output.types.add(a.getLiteralValue());
-            }
-        } else if (binding.getName().equals("context")) {
-            for (Object arg : invocation.arguments()) {
-                StringLiteral a = (StringLiteral) arg;
-                output.context.add(a.getLiteralValue());
             }
         } else if (binding.getName().equals("keywords")) {
             for (Object arg : invocation.arguments()) {

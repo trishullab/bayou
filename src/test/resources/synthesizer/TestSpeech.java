@@ -24,7 +24,6 @@ public class TestSpeech {
     void speechRecognition(Context context, Intent intent, RecognitionListener listener) {
         {
             Evidence.types("SpeechRecognizer");
-            Evidence.context("Context");
         }
     }
 

@@ -32,7 +32,7 @@ public class LowLevelSketchExtractor {
         String file;
         DSubTreeLowLevel ast;
         List<Sequence> sequences;
-        List<String> apicalls, types, context;
+        List<String> apicalls, types;
     }
 
     class JsonOutputWrapper {
@@ -40,7 +40,7 @@ public class LowLevelSketchExtractor {
         DSubTreeLowLevel ast;
         String low_level_sketch;
         List<Sequence> sequences;
-        List<String> apicalls, types, context;
+        List<String> apicalls, types;
     }
 
     File inFile, outFile;
@@ -86,7 +86,6 @@ public class LowLevelSketchExtractor {
             outputProgram.sequences = inputProgram.sequences;
             outputProgram.apicalls = inputProgram.apicalls;
             outputProgram.types = inputProgram.types;
-            outputProgram.context = inputProgram.context;
 
             gsonOut.toJson(outputProgram, JsonOutputWrapper.class, writer);
         }

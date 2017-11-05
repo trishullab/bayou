@@ -41,9 +41,6 @@ Config options should be given as a JSON file (see config.json for example):
         },                                |
         {                                 |
             "name": "types",              | Name of evidence ("types")
-        },                                |
-        {                                 |
-            "name": "context",            | Name of evidence ("context")
         }                                 |
     ],                                    |
     "decoder": {                          | Provide parameters for the decoder here

@@ -186,7 +186,6 @@ public abstract class CcllLexerTests
                 "// Bayou supports three types of evidence:\n" +
                 "// 1. apicalls - API methods the code should invoke\n" +
                 "// 2. types - datatypes of objects which invoke API methods\n" +
-                "// 3. context - datatypes of variables that the code should use\n" +
                 "\n" +
                 "public class TestBluetooth {\n" +
                 "\n" +
@@ -230,11 +229,6 @@ public abstract class CcllLexerTests
         token = tokens.next();
         Assert.assertEquals("// 2. types - datatypes of objects which invoke API methods\n", token.getLexeme());
         Assert.assertEquals(program.indexOf("// 2."), token.getStartIndex());
-        Assert.assertTrue(token.getType() instanceof TokenTypeLineComment);
-
-        token = tokens.next();
-        Assert.assertEquals("// 3. context - datatypes of variables that the code should use\n", token.getLexeme());
-        Assert.assertEquals(program.indexOf("// 3."), token.getStartIndex());
         Assert.assertTrue(token.getType() instanceof TokenTypeLineComment);
 
         token = tokens.next();

@@ -41,26 +41,20 @@ def extract_evidence(clargs):
 
         apicalls = list(set(chain.from_iterable([bayou.core.evidence.APICalls.from_call(call) for call in calls])))
         types = list(set(chain.from_iterable([bayou.core.evidence.Types.from_call(call) for call in calls])))
-        context = list(set(chain.from_iterable([bayou.core.evidence.Context.from_call(call) for call in calls])))
         keywords = list(set(chain.from_iterable([bayou.core.evidence.Keywords.from_call(call) for call in calls])))
-
-        types += context  # merging types and context together
 
         if clargs.num_samples == 0:
             program['apicalls'] = apicalls
             program['types'] = types
-            program['context'] = context
             program['keywords'] = keywords
             programs.append(program)
         else:
             for i in range(clargs.num_samples):
                 sample = dict(program)
-                sample['apicalls'], sample['types'], sample['context'], sample['keywords'] = [], [], [], []
-                while sample['apicalls'] == [] and sample['types'] == [] and \
-                                sample['context'] == [] and sample['keywords'] == []:
+                sample['apicalls'], sample['types'], sample['keywords'] = [], [], []
+                while sample['apicalls'] == [] and sample['types'] == [] and sample['keywords'] == []:
                     sample['apicalls'] = random.sample(apicalls, random.choice(range(len(apicalls) + 1)))
                     sample['types'] = random.sample(types, random.choice(range(len(types) + 1)))
-                    sample['context'] = random.sample(context, random.choice(range(len(context) + 1)))
                     sample['keywords'] = random.sample(keywords, random.choice(range(len(keywords) + 1)))
                 programs.append(sample)
 

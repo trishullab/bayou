@@ -82,7 +82,7 @@ public class Visitor extends ASTVisitor {
         this.evidenceBlock = evidenceBlock;
 
         String name = binding.getName();
-        if (! (name.equals("apicalls") || name.equals("types") || name.equals("context") || name.equals("keywords")))
+        if (! (name.equals("apicalls") || name.equals("types") || name.equals("keywords")))
             throw new SynthesisException(SynthesisException.InvalidEvidenceType);
 
         Environment env = new Environment(invocation.getAST(), currentScope);

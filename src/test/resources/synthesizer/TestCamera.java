@@ -23,7 +23,6 @@ public class TestCamera {
         int height = 480;
         {
             Evidence.apicalls("startPreview");
-            Evidence.context("int");
         }
     }
 

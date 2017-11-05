@@ -21,12 +21,6 @@
             "tile": 1
         },
         {
-            "name": "context",
-            "units": 64,
-            "num_layers": 3,
-            "tile": 1
-        },
-        {
             "name": "keywords",
             "units": 64,
             "num_layers": 3,
