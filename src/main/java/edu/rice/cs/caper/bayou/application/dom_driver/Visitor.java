@@ -26,6 +26,7 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.eclipse.jdt.core.dom.*;
 
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -34,8 +35,6 @@ public class Visitor extends ASTVisitor {
 
     public final CompilationUnit unit;
     public final Options options;
-    public final PrintWriter output;
-    public final Gson gson;
     public final JSONOutput js;
 
     public List<MethodDeclaration> allMethods;
@@ -89,12 +88,6 @@ public class Visitor extends ASTVisitor {
     public Visitor(CompilationUnit unit, Options options) throws FileNotFoundException {
         this.unit = unit;
         this.options = options;
-        this.gson = new GsonBuilder().setPrettyPrinting().serializeNulls().create();
-
-        if (options.cmdLine.hasOption("output-file"))
-            this.output = new PrintWriter(options.cmdLine.getOptionValue("output-file"));
-        else
-            this.output = new PrintWriter(System.out);
 
         this.js = new JSONOutput();
         allMethods = new ArrayList<>();
@@ -195,9 +188,17 @@ public class Visitor extends ASTVisitor {
         js.programs.add(out);
     }
 
-    public void printJson() {
+    public void printJson() throws IOException {
         if (js.programs.isEmpty())
             return;
+
+        Gson gson = new GsonBuilder().setPrettyPrinting().serializeNulls().create();
+        PrintWriter output;
+        if (options.cmdLine.hasOption("output-file"))
+            output = new PrintWriter(options.cmdLine.getOptionValue("output-file"));
+        else
+            output = new PrintWriter(System.out);
+
         output.write(gson.toJson(js));
         output.flush();
         output.close();
