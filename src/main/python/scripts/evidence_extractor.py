@@ -15,6 +15,7 @@
 from __future__ import print_function
 import argparse
 import json
+import math
 import random
 from itertools import chain
 
@@ -49,13 +50,18 @@ def extract_evidence(clargs):
             program['keywords'] = keywords
             programs.append(program)
         else:
+            # put all evidences in the same bag (to avoid bias during sampling)
+            evidences = [(e, 'apicalls') for e in apicalls] + [(e, 'types') for e in types] + \
+                        [(e, 'keywords') for e in keywords]
+
             for i in range(clargs.num_samples):
                 sample = dict(program)
-                sample['apicalls'], sample['types'], sample['keywords'] = [], [], []
-                while sample['apicalls'] == [] and sample['types'] == [] and sample['keywords'] == []:
-                    sample['apicalls'] = random.sample(apicalls, random.choice(range(len(apicalls) + 1)))
-                    sample['types'] = random.sample(types, random.choice(range(len(types) + 1)))
-                    sample['keywords'] = random.sample(keywords, random.choice(range(len(keywords) + 1)))
+                sample['apicalls'] = []
+                sample['types'] = []
+                sample['keywords'] = []
+                choices = random.sample(evidences, math.ceil(len(evidences) * clargs.observability / 100))
+                for choice, evidence in choices:
+                    sample[evidence].append(choice)
                 programs.append(sample)
 
         done += 1
@@ -80,5 +86,7 @@ if __name__ == '__main__':
                         help='maximum length of each sequence in a program')
     parser.add_argument('--num_samples', type=int, default=0,
                         help='number of samples of evidences per program')
+    parser.add_argument('--observability', type=int, default=100,
+                        help='percentage of observable evidence (e.g., 100, 75, 50, etc.)')
     clargs = parser.parse_args()
     extract_evidence(clargs)
