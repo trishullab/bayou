@@ -14,6 +14,7 @@
 
 from __future__ import print_function
 import argparse
+import sys
 import json
 import math
 import random
@@ -80,6 +81,8 @@ if __name__ == '__main__':
                         help='input data file')
     parser.add_argument('output_file', type=str, nargs=1,
                         help='output data file')
+    parser.add_argument('--python_recursion_limit', type=int, default=10000,
+                        help='set recursion limit for the Python interpreter')
     parser.add_argument('--max_seqs', type=int, default=9999,
                         help='maximum number of sequences in a program')
     parser.add_argument('--max_seq_length', type=int, default=9999,
@@ -89,4 +92,5 @@ if __name__ == '__main__':
     parser.add_argument('--observability', type=int, default=100,
                         help='percentage of observable evidence (e.g., 100, 75, 50, etc.)')
     clargs = parser.parse_args()
+    sys.setrecursionlimit(clargs.python_recursion_limit)
     extract_evidence(clargs)
