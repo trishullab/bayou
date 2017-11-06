@@ -60,7 +60,7 @@ def ast_quality_perf_test(clargs):
             else:
                 evidences = program
 
-            result = json.loads(_generate_asts(json.dumps(evidences), predictor))
+            result = json.loads(_generate_asts(json.dumps(evidences), predictor, okay_check=False))
 
             program['out_asts'] = result['asts']
             latency = float('{:.2f}'.format(time.time() - start))

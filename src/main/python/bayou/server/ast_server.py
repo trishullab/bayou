@@ -62,7 +62,7 @@ def _handle_generate_asts_request(request_dict, predictor):
     return asts
 
 
-def _generate_asts(evidence_json: str, predictor, num_samples: int=100, max_ast_count: int=10):
+def _generate_asts(evidence_json: str, predictor, num_samples: int=100, max_ast_count: int=10, okay_check=True):
     logging.debug("entering")
     logging.debug("num_samples:" + str(num_samples))
 
@@ -109,7 +109,7 @@ def _generate_asts(evidence_json: str, predictor, num_samples: int=100, max_ast_
     i = 0
     while i < len(asts) and len(okay_asts) < max_ast_count:
         ast = asts[i]
-        if _okay(js, ast):
+        if not okay_check or _okay(js, ast):
             okay_asts.append(ast)
         i = i + 1
 
