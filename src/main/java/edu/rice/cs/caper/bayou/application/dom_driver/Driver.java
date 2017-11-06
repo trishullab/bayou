@@ -51,7 +51,7 @@ public class Driver {
         CompilationUnit cu = createCompilationUnit(classpath);
         Visitor visitor = new Visitor(cu, options);
         cu.accept(visitor);
-        visitor.output.close();
+        visitor.printJson();
     }
 
 	public static void main(String args[]) {

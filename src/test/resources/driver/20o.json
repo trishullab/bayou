@@ -1,65 +1,60 @@
 {
-  "file": "20f.java",
-  "ast": {
-    "node": "DSubTree",
-    "_nodes": [
-      {
-        "node": "DAPICall",
-        "_call": "java.io.FileReader.FileReader(java.io.File)"
-      },
-      {
-        "node": "DAPICall",
-        "_call": "java.io.BufferedReader.BufferedReader(java.io.Reader)"
-      },
-      {
-        "node": "DBranch",
-        "_cond": [
+  "programs": [
+    {
+      "file": "/Users/vijay/Work/bayou/src/test/resources/driver/20f.java",
+      "ast": {
+        "node": "DSubTree",
+        "_nodes": [
           {
             "node": "DAPICall",
-            "_call": "java.io.BufferedReader.ready()"
-          }
-        ],
-        "_then": [
+            "_call": "java.io.FileReader.FileReader(java.io.File)"
+          },
           {
             "node": "DAPICall",
-            "_call": "java.io.BufferedReader.readLine()"
-          }
-        ],
-        "_else": [
+            "_call": "java.io.BufferedReader.BufferedReader(java.io.Reader)"
+          },
           {
-            "node": "DAPICall",
-            "_call": "java.io.BufferedReader.close()"
+            "node": "DBranch",
+            "_cond": [
+              {
+                "node": "DAPICall",
+                "_call": "java.io.BufferedReader.ready()"
+              }
+            ],
+            "_then": [
+              {
+                "node": "DAPICall",
+                "_call": "java.io.BufferedReader.readLine()"
+              }
+            ],
+            "_else": [
+              {
+                "node": "DAPICall",
+                "_call": "java.io.BufferedReader.close()"
+              }
+            ]
           }
         ]
-      }
-    ]
-  },
-  "sequences": [
-    {
-      "calls": [
-        "java.io.FileReader.FileReader(java.io.File)",
-        "java.io.BufferedReader.BufferedReader(java.io.Reader)",
-        "java.io.BufferedReader.ready()",
-        "java.io.BufferedReader.close()"
-      ]
-    },
-    {
-      "calls": [
-        "java.io.FileReader.FileReader(java.io.File)",
-        "java.io.BufferedReader.BufferedReader(java.io.Reader)",
-        "java.io.BufferedReader.ready()",
-        "java.io.BufferedReader.readLine()"
-      ]
+      },
+      "sequences": [
+        {
+          "calls": [
+            "java.io.FileReader.FileReader(java.io.File)",
+            "java.io.BufferedReader.BufferedReader(java.io.Reader)",
+            "java.io.BufferedReader.ready()",
+            "java.io.BufferedReader.close()"
+          ]
+        },
+        {
+          "calls": [
+            "java.io.FileReader.FileReader(java.io.File)",
+            "java.io.BufferedReader.BufferedReader(java.io.Reader)",
+            "java.io.BufferedReader.ready()",
+            "java.io.BufferedReader.readLine()"
+          ]
+        }
+      ],
+      "javadoc": null
     }
-  ],
-  "keywords": [
-    "file",
-    "read",
-    "reader",
-    "ready",
-    "line",
-    "buffered",
-    "close"
-  ],
-  "javadoc": null
+  ]
 }

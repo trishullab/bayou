@@ -1,73 +1,64 @@
 {
-  "file": "6f.java",
-  "ast": {
-    "node": "DSubTree",
-    "_nodes": [
-      {
-        "node": "DAPICall",
-        "_call": "java.io.FileReader.FileReader(java.io.File)"
-      },
-      {
-        "node": "DAPICall",
-        "_call": "java.io.BufferedReader.BufferedReader(java.io.Reader)"
-      },
-      {
-        "node": "DAPICall",
-        "_call": "java.io.BufferedReader.readLine()"
-      }
-    ]
-  },
-  "sequences": [
+  "programs": [
     {
-      "calls": [
-        "java.io.FileReader.FileReader(java.io.File)",
-        "java.io.BufferedReader.BufferedReader(java.io.Reader)",
-        "java.io.BufferedReader.readLine()"
-      ]
-    }
-  ],
-  "keywords": [
-    "file",
-    "read",
-    "reader",
-    "line",
-    "buffered"
-  ],
-  "javadoc": null
-},
-{
-  "file": "6f.java",
-  "ast": {
-    "node": "DSubTree",
-    "_nodes": [
-      {
-        "node": "DAPICall",
-        "_call": "java.io.FileReader.FileReader(java.io.File)"
+      "file": "/Users/vijay/Work/bayou/src/test/resources/driver/6f.java",
+      "ast": {
+        "node": "DSubTree",
+        "_nodes": [
+          {
+            "node": "DAPICall",
+            "_call": "java.io.FileReader.FileReader(java.io.File)"
+          },
+          {
+            "node": "DAPICall",
+            "_call": "java.io.BufferedReader.BufferedReader(java.io.Reader)"
+          },
+          {
+            "node": "DAPICall",
+            "_call": "java.io.BufferedReader.readLine()"
+          }
+        ]
       },
-      {
-        "node": "DAPICall",
-        "_call": "java.io.BufferedReader.BufferedReader(java.io.Reader)"
-      },
-      {
-        "node": "DAPICall",
-        "_call": "java.io.BufferedReader.close()"
-      }
-    ]
-  },
-  "sequences": [
+      "sequences": [
+        {
+          "calls": [
+            "java.io.FileReader.FileReader(java.io.File)",
+            "java.io.BufferedReader.BufferedReader(java.io.Reader)",
+            "java.io.BufferedReader.readLine()"
+          ]
+        }
+      ],
+      "javadoc": null
+    },
     {
-      "calls": [
-        "java.io.FileReader.FileReader(java.io.File)",
-        "java.io.BufferedReader.BufferedReader(java.io.Reader)",
-        "java.io.BufferedReader.close()"
-      ]
+      "file": "/Users/vijay/Work/bayou/src/test/resources/driver/6f.java",
+      "ast": {
+        "node": "DSubTree",
+        "_nodes": [
+          {
+            "node": "DAPICall",
+            "_call": "java.io.FileReader.FileReader(java.io.File)"
+          },
+          {
+            "node": "DAPICall",
+            "_call": "java.io.BufferedReader.BufferedReader(java.io.Reader)"
+          },
+          {
+            "node": "DAPICall",
+            "_call": "java.io.BufferedReader.close()"
+          }
+        ]
+      },
+      "sequences": [
+        {
+          "calls": [
+            "java.io.FileReader.FileReader(java.io.File)",
+            "java.io.BufferedReader.BufferedReader(java.io.Reader)",
+            "java.io.BufferedReader.close()"
+          ]
+        }
+      ],
+      "javadoc": null
     }
-  ],
-  "keywords": [
-    "file",
-    "reader",
-    "buffered",
-    "close"
-  ],
-  "javadoc": null
+  ]
 }

@@ -36,6 +36,7 @@ public class Visitor extends ASTVisitor {
     public final Options options;
     public final PrintWriter output;
     public final Gson gson;
+    public final JSONOutput js;
 
     public List<MethodDeclaration> allMethods;
 
@@ -46,6 +47,14 @@ public class Visitor extends ASTVisitor {
 
     public static Visitor V() {
         return V;
+    }
+
+    class JSONOutput {
+        List<JSONOutputWrapper> programs;
+
+        JSONOutput() {
+            this.programs = new ArrayList<>();
+        }
     }
 
     class JSONOutputWrapper {
@@ -87,6 +96,7 @@ public class Visitor extends ASTVisitor {
         else
             this.output = new PrintWriter(System.out);
 
+        this.js = new JSONOutput();
         allMethods = new ArrayList<>();
         V = this;
     }
@@ -162,7 +172,7 @@ public class Visitor extends ASTVisitor {
                 astDoc.getLeft().updateSequences(sequences, options.MAX_SEQS, options.MAX_SEQ_LENGTH);
                 List<Sequence> uniqSequences = new ArrayList<>(new HashSet<>(sequences));
                 if (okToPrintAST(uniqSequences))
-                    printJson(astDoc.getLeft(), uniqSequences, astDoc.getRight(),
+                    addToJson(astDoc.getLeft(), uniqSequences, astDoc.getRight(),
                         skeletons, cfg3_bfs, cfg4_bfs, cfg3_dfs, cfg4_dfs);
             } catch (DASTNode.TooManySequencesException e) {
                 System.err.println("Too many sequences from AST");
@@ -173,8 +183,7 @@ public class Visitor extends ASTVisitor {
         return false;
     }
 
-    boolean first = true;
-    private void printJson(DSubTree ast, List<Sequence> sequences, String javadoc,
+    private void addToJson(DSubTree ast, List<Sequence> sequences, String javadoc,
                            List<String> skeletons,
                            List<Multiset<Integer>> cfg3_bfs,
                            List<Multiset<Integer>> cfg4_bfs,
@@ -183,10 +192,15 @@ public class Visitor extends ASTVisitor {
         String file = options.cmdLine.getOptionValue("input-file");
         JSONOutputWrapper out = new JSONOutputWrapper(file, ast, sequences, javadoc,
             skeletons, cfg3_bfs, cfg4_bfs, cfg3_dfs, cfg4_dfs);
-        output.write(first? "" : ",\n");
-        output.write(gson.toJson(out));
+        js.programs.add(out);
+    }
+
+    public void printJson() {
+        if (js.programs.isEmpty())
+            return;
+        output.write(gson.toJson(js));
         output.flush();
-        first = false;
+        output.close();
     }
 
     private boolean okToPrintAST(List<Sequence> sequences) {

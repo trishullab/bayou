@@ -1,86 +1,81 @@
 {
-  "file": "16f.java",
-  "ast": {
-    "node": "DSubTree",
-    "_nodes": [
-      {
-        "node": "DAPICall",
-        "_call": "java.io.FileReader.FileReader(java.io.File)"
-      },
-      {
-        "node": "DAPICall",
-        "_call": "java.io.BufferedReader.BufferedReader(java.io.Reader)"
-      },
-      {
-        "node": "DExcept",
-        "_try": [
+  "programs": [
+    {
+      "file": "/Users/vijay/Work/bayou/src/test/resources/driver/16f.java",
+      "ast": {
+        "node": "DSubTree",
+        "_nodes": [
+          {
+            "node": "DAPICall",
+            "_call": "java.io.FileReader.FileReader(java.io.File)"
+          },
+          {
+            "node": "DAPICall",
+            "_call": "java.io.BufferedReader.BufferedReader(java.io.Reader)"
+          },
           {
             "node": "DExcept",
             "_try": [
               {
-                "node": "DAPICall",
-                "_call": "java.io.BufferedReader.readLine()"
+                "node": "DExcept",
+                "_try": [
+                  {
+                    "node": "DAPICall",
+                    "_call": "java.io.BufferedReader.readLine()"
+                  }
+                ],
+                "_catch": [
+                  {
+                    "node": "DAPICall",
+                    "_call": "java.io.BufferedReader.ready()"
+                  }
+                ]
               }
             ],
             "_catch": [
               {
                 "node": "DAPICall",
-                "_call": "java.io.BufferedReader.ready()"
+                "_call": "java.io.BufferedReader.close()"
               }
             ]
           }
-        ],
-        "_catch": [
-          {
-            "node": "DAPICall",
-            "_call": "java.io.BufferedReader.close()"
-          }
         ]
-      }
-    ]
-  },
-  "sequences": [
-    {
-      "calls": [
-        "java.io.FileReader.FileReader(java.io.File)",
-        "java.io.BufferedReader.BufferedReader(java.io.Reader)",
-        "java.io.BufferedReader.readLine()"
-      ]
-    },
-    {
-      "calls": [
-        "java.io.FileReader.FileReader(java.io.File)",
-        "java.io.BufferedReader.BufferedReader(java.io.Reader)",
-        "java.io.BufferedReader.readLine()",
-        "java.io.BufferedReader.ready()",
-        "java.io.BufferedReader.close()"
-      ]
-    },
-    {
-      "calls": [
-        "java.io.FileReader.FileReader(java.io.File)",
-        "java.io.BufferedReader.BufferedReader(java.io.Reader)",
-        "java.io.BufferedReader.readLine()",
-        "java.io.BufferedReader.close()"
-      ]
-    },
-    {
-      "calls": [
-        "java.io.FileReader.FileReader(java.io.File)",
-        "java.io.BufferedReader.BufferedReader(java.io.Reader)",
-        "java.io.BufferedReader.readLine()",
-        "java.io.BufferedReader.ready()"
-      ]
+      },
+      "sequences": [
+        {
+          "calls": [
+            "java.io.FileReader.FileReader(java.io.File)",
+            "java.io.BufferedReader.BufferedReader(java.io.Reader)",
+            "java.io.BufferedReader.readLine()"
+          ]
+        },
+        {
+          "calls": [
+            "java.io.FileReader.FileReader(java.io.File)",
+            "java.io.BufferedReader.BufferedReader(java.io.Reader)",
+            "java.io.BufferedReader.readLine()",
+            "java.io.BufferedReader.ready()",
+            "java.io.BufferedReader.close()"
+          ]
+        },
+        {
+          "calls": [
+            "java.io.FileReader.FileReader(java.io.File)",
+            "java.io.BufferedReader.BufferedReader(java.io.Reader)",
+            "java.io.BufferedReader.readLine()",
+            "java.io.BufferedReader.close()"
+          ]
+        },
+        {
+          "calls": [
+            "java.io.FileReader.FileReader(java.io.File)",
+            "java.io.BufferedReader.BufferedReader(java.io.Reader)",
+            "java.io.BufferedReader.readLine()",
+            "java.io.BufferedReader.ready()"
+          ]
+        }
+      ],
+      "javadoc": null
     }
-  ],
-  "keywords": [
-    "file",
-    "read",
-    "reader",
-    "line",
-    "ready",
-    "buffered",
-    "close"
-  ],
-  "javadoc": null
+  ]
 }

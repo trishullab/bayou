@@ -25,6 +25,7 @@ import org.junit.Test;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.NoSuchFileException;
 import java.nio.file.Paths;
 
 public class DriverTest {
@@ -81,8 +82,6 @@ public class DriverTest {
         // match the output and expected JSON
         String out = new String(Files.readAllBytes(Paths.get(tmpFile.getAbsolutePath())));
         String exp = new String(Files.readAllBytes(Paths.get(outputFile.getAbsolutePath())));
-        out = "{\"programs\":[" + out + "]}";
-        exp = "{\"programs\":[" + exp + "]}";
 
         JsonParser parser = new JsonParser();
         JsonArray expJSON = parser.parse(exp).getAsJsonObject().getAsJsonArray("programs");
@@ -116,7 +115,12 @@ public class DriverTest {
 
     @Test
     public void test1() throws ParseException, IOException {
-        testExecute("1f", "1o");
+        try {
+            testExecute("1f", "1o");
+        } catch (NoSuchFileException e) {
+            return; // output file must NOT be created for this test
+        }
+        Assert.assertTrue(false);
     }
 
     @Test
