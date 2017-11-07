@@ -16,6 +16,7 @@ from __future__ import print_function
 
 # Use this (interactive) script to split a data file into training and testing data.
 
+import sys
 import json
 import random
 import argparse
@@ -65,6 +66,9 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument('input_file', type=str, nargs=1,
                         help='input JSON file')
+    parser.add_argument('--python_recursion_limit', type=int, default=10000,
+                        help='set recursion limit for the Python interpreter')
     clargs = parser.parse_args()
+    sys.setrecursionlimit(clargs.python_recursion_limit)
     split(clargs)
 

@@ -18,6 +18,7 @@ from __future__ import print_function
 # JSON file containing the data (such as DATA-testing.json, variational-*.json,
 # etc.) and split it into N files
 
+import sys
 import json
 import math
 import argparse
@@ -38,7 +39,10 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('input_file', type=str, nargs=1,
                         help='input JSON file')
+    parser.add_argument('--python_recursion_limit', type=int, default=10000,
+                        help='set recursion limit for the Python interpreter')
     parser.add_argument('--splits', type=int, required=True,
                         help='number of splits')
     args = parser.parse_args()
+    sys.setrecursionlimit(args.python_recursion_limit)
     split(args)

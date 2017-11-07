@@ -18,7 +18,7 @@ from __future__ import print_function
 # The script will accept a folder containing all the JSON files, and it will
 # merge them into a given file.
 
-import os
+import sys
 import json
 import argparse
 
@@ -44,7 +44,10 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('file_list', type=str, nargs=1,
                         help='file containing list of all JSON files')
+    parser.add_argument('--python_recursion_limit', type=int, default=10000,
+                        help='set recursion limit for the Python interpreter')
     parser.add_argument('--output_file', type=str, required=True,
                         help='file to output merged data')
     clargs = parser.parse_args()
+    sys.setrecursionlimit(clargs.python_recursion_limit)
     merge(clargs)
