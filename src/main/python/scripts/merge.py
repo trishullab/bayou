@@ -25,9 +25,16 @@ import argparse
 
 def merge(clargs):
     programs = []
-    for filename in sorted(os.listdir(clargs.folder[0])):
-        with open(os.path.join(clargs.folder[0], filename)) as f:
-            js = json.load(f)
+    with open(clargs.file_list[0]) as f:
+        file_list = f.readlines()
+    for filename in file_list:
+        filename = filename[:-1]  # ignore '\n'
+        try:
+            with open(filename) as f:
+                js = json.load(f)
+        except ValueError:
+            print('Error merging file: {}'.format(filename))
+            continue
         programs += (js['programs'])
     with open(clargs.output_file, 'w') as f:
         json.dump({'programs': programs}, f, indent=2)
@@ -35,8 +42,8 @@ def merge(clargs):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('folder', type=str, nargs=1,
-                        help='folder where all JSON files are stored')
+    parser.add_argument('file_list', type=str, nargs=1,
+                        help='file containing list of all JSON files')
     parser.add_argument('--output_file', type=str, required=True,
                         help='file to output merged data')
     clargs = parser.parse_args()
