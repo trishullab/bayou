@@ -29,7 +29,7 @@ def ast_quality_perf_test(clargs):
         js = json.load(f)
 
     # check model to load
-    with open(os.path.join(clargs.save_dir, 'config.json')) as f:
+    with open(os.path.join(clargs.save, 'config.json')) as f:
         model_type = json.load(f)['model']
     if model_type == 'core':
         model = bayou.models.core.infer.BayesianPredictor
@@ -42,7 +42,7 @@ def ast_quality_perf_test(clargs):
 
     with tf.Session() as sess:
         print('Loading model...')
-        predictor = model(clargs.save_dir, sess)  # create a predictor that can generates ASTs from evidence
+        predictor = model(clargs.save, sess)  # create a predictor that can generates ASTs from evidence
 
         n = len(programs)
         for i, program in enumerate(programs):
