@@ -17,6 +17,7 @@ import argparse
 import json
 import time
 import os
+import sys
 
 import bayou.models.core.infer
 import bayou.models.low_level_evidences.infer
@@ -78,6 +79,8 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument('input_file', type=str, nargs=1,
                         help='input data file')
+    parser.add_argument('--python_recursion_limit', type=int, default=10000,
+                        help='set recursion limit for the Python interpreter')
     parser.add_argument('--save', type=str, required=True,
                         help='directory to load model from')
     parser.add_argument('--evidence', type=str, default='all',
@@ -86,5 +89,6 @@ if __name__ == '__main__':
     parser.add_argument('--output_file', type=str, default=None,
                         help='output file to print predicted ASTs')
     clargs = parser.parse_args()
+    sys.setrecursionlimit(clargs.python_recursion_limit)
     print(clargs)
     ast_quality_perf_test(clargs)

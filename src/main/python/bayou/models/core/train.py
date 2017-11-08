@@ -19,6 +19,7 @@ import tensorflow as tf
 import argparse
 import time
 import os
+import sys
 import json
 import textwrap
 
@@ -138,11 +139,14 @@ def train(clargs):
                    avg_generation / config.num_batches,
                    avg_loss / config.num_batches))
 
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(formatter_class=argparse.RawDescriptionHelpFormatter,
                                      description=textwrap.dedent(HELP))
     parser.add_argument('input_file', type=str, nargs=1,
                         help='input data file')
+    parser.add_argument('--python_recursion_limit', type=int, default=10000,
+                        help='set recursion limit for the Python interpreter')
     parser.add_argument('--save', type=str, default='save',
                         help='checkpoint model during training here')
     parser.add_argument('--config', type=str, default=None,
@@ -150,6 +154,7 @@ if __name__ == '__main__':
     parser.add_argument('--continue_from', type=str, default=None,
                         help='ignore config options and continue training model checkpointed here')
     clargs = parser.parse_args()
+    sys.setrecursionlimit(clargs.python_recursion_limit)
     if clargs.config and clargs.continue_from:
         parser.error('Do not provide --config if you are continuing from checkpointed model')
     if not clargs.config and not clargs.continue_from:
