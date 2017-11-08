@@ -127,6 +127,7 @@ class APICalls(Evidence):
 
     @staticmethod
     def from_call(call):
+        call = re.sub('^\$.*\$', '', call)  # get rid of predicates
         split = call.split('(')[0].split('.')
         cls, name = split[-2:]
         return [name] if not cls == name else []
@@ -184,6 +185,7 @@ class Types(Evidence):
 
     @staticmethod
     def from_call(call):
+        call = re.sub('^\$.*\$', '', call)  # get rid of predicates
         split = list(reversed([q for q in call.split('(')[0].split('.')[:-1] if q[0].isupper()]))
         types = [split[1], split[0]] if len(split) > 1 else [split[0]]
         types = [re.sub('<.*', r'', t) for t in types]  # ignore generic types in evidence
@@ -255,6 +257,7 @@ class Keywords(Evidence):
 
     @staticmethod
     def from_call(call):
+        call = re.sub('^\$.*\$', '', call)  # get rid of predicates
         qualified = call.split('(')[0]
         qualified = re.sub('<.*>', '', qualified).split('.')  # remove generics for keywords
         kws = list(itertools.chain.from_iterable([Keywords.split_camel(s) for s in qualified]))
