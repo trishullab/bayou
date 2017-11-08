@@ -73,6 +73,7 @@ public class DriverTest {
         File outputFile = new File(String.format("%s/%s.json", testDir, output));
         File configFile = new File(String.format("%s/%s.json", testDir, config));
         File tmpFile = new File(String.format("%s/%s-tmp.json", testDir, input));
+        tmpFile.deleteOnExit();
 
         String[] args = {"-f", inputFile.getAbsolutePath(),
                          "-c", configFile.getAbsolutePath(),
@@ -94,9 +95,6 @@ public class DriverTest {
             Assert.assertTrue(compareSequences(e, o));
             Assert.assertTrue(compareJavadoc(e, o));
         }
-
-        if (!tmpFile.delete())
-            System.out.println(tmpFile.getAbsolutePath() + " could not be deleted!");
     }
 
     private boolean compareAST(JsonObject js1, JsonObject js2) {

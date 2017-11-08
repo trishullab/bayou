@@ -16,6 +16,8 @@ limitations under the License.
 
 package edu.rice.cs.caper.bayou.application.dom_driver;
 
+import edu.rice.cs.caper.bayou.core.dom_driver.Options;
+import edu.rice.cs.caper.bayou.core.dom_driver.Visitor;
 import org.apache.commons.cli.*;
 import org.apache.commons.io.FileUtils;
 import org.eclipse.jdt.core.dom.AST;
@@ -24,6 +26,7 @@ import org.eclipse.jdt.core.dom.CompilationUnit;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.PrintWriter;
 
 public class Driver {
 
@@ -51,7 +54,20 @@ public class Driver {
         CompilationUnit cu = createCompilationUnit(classpath);
         Visitor visitor = new Visitor(cu, options);
         cu.accept(visitor);
-        visitor.printJson();
+        String json = visitor.buildJson();
+
+        if(json == null)
+            return;
+
+        PrintWriter output;
+        if (options.cmdLine.hasOption("output-file"))
+            output = new PrintWriter(options.cmdLine.getOptionValue("output-file"));
+        else
+            output = new PrintWriter(System.out);
+
+        output.write(json);
+        output.flush();
+        output.close();
     }
 
 	public static void main(String args[]) {
