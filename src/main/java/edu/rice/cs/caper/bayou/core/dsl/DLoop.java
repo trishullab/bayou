@@ -15,8 +15,7 @@ limitations under the License.
 */
 package edu.rice.cs.caper.bayou.core.dsl;
 
-
-import edu.rice.cs.caper.bayou.application.dom_driver.Visitor;
+import edu.rice.cs.caper.bayou.core.dom_driver.Visitor;
 import edu.rice.cs.caper.bayou.core.synthesizer.*;
 import edu.rice.cs.caper.bayou.core.synthesizer.Type;
 import org.eclipse.jdt.core.dom.*;

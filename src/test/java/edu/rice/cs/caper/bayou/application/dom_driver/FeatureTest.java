@@ -16,6 +16,8 @@ limitations under the License.
 package edu.rice.cs.caper.bayou.application.dom_driver;
 
 import com.google.common.collect.Multiset;
+import edu.rice.cs.caper.bayou.core.dom_driver.CFGFeature;
+import edu.rice.cs.caper.bayou.core.dom_driver.DecoratedSkeletonFeature;
 import org.apache.commons.cli.ParseException;
 import org.eclipse.jdt.core.dom.*;
 import org.junit.Test;
