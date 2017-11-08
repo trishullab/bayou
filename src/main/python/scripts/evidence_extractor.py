@@ -60,7 +60,8 @@ def extract_evidence(clargs):
                 sample['apicalls'] = []
                 sample['types'] = []
                 sample['keywords'] = []
-                choices = random.sample(evidences, math.ceil(len(evidences) * clargs.observability / 100))
+                observability = clargs.observability if clargs.observability > 0 else random.randint(1, 100)
+                choices = random.sample(evidences, math.ceil(len(evidences) * observability / 100))
                 for choice, evidence in choices:
                     sample[evidence].append(choice)
                 programs.append(sample)
@@ -90,7 +91,7 @@ if __name__ == '__main__':
     parser.add_argument('--num_samples', type=int, default=0,
                         help='number of samples of evidences per program')
     parser.add_argument('--observability', type=int, default=100,
-                        help='percentage of observable evidence (e.g., 100, 75, 50, etc.)')
+                        help='percentage of observable evidence (e.g., 100, 75, 50, etc.. 0 = random)')
     clargs = parser.parse_args()
     sys.setrecursionlimit(clargs.python_recursion_limit)
     extract_evidence(clargs)
