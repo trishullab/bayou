@@ -125,7 +125,7 @@ def get_instance_id_blocking(client, spot_request_id):
 def terminate_instance_blocking(client, instance_id):
     client.terminate_instances(InstanceIds=[instance_id])
     waiter = client.get_waiter('instance_terminated')
-    waiter.wait(InstanceIds=[instance_id], WaiterConfig={'Delay': 10, 'MaxAttempts': 7})
+    waiter.wait(InstanceIds=[instance_id], WaiterConfig={'Delay': 10, 'MaxAttempts': 16})
 
 
 def cancel_spot_request(client, spot_request_id):
