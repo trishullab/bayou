@@ -174,7 +174,7 @@ public class DExcept extends DASTNode {
             env.pushScope();
             Type type = new Type(except);
             type.concretizeType(env); // shouldn't be a generic type
-            SimpleName name = (SimpleName) env.addVariable(type, false).getExpression();
+            SimpleName name = (SimpleName) env.addVariable(type, false, false).getExpression();
 
             /* synthesize catch clause exception types */
             SingleVariableDeclaration ex = ast.newSingleVariableDeclaration();

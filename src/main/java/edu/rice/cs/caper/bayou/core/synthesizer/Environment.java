@@ -24,27 +24,29 @@ public class Environment {
     private final Stack<Scope> scopes;
     Set<Class> imports;
     final AST ast;
+    final Synthesizer.Mode mode;
 
     public AST ast() {
         return ast;
     }
 
-    public Environment(AST ast, List<Variable> variables) {
+    public Environment(AST ast, List<Variable> variables, Synthesizer.Mode mode) {
         this.ast = ast;
         this.scopes = new Stack<>();
         this.scopes.push(new Scope(variables));
+        this.mode = mode;
         imports = new HashSet<>();
     }
 
     public TypedExpression addVariable(Type type) {
-        return addVariable(type, true);
+        return addVariable(type, true, false);
     }
 
-    public TypedExpression addVariable(Type type, boolean join) {
+    public TypedExpression addVariable(Type type, boolean join, boolean defaultInit) {
         /* add variable to scope */
         Variable var = scopes.peek().addVariable(type);
-        if (! join)
-            var.setJoin(false);
+        var.setJoin(join);
+        var.setDefaultInit(defaultInit);
 
         /* add type to imports */
         imports.add(type.C());
@@ -53,12 +55,12 @@ public class Environment {
     }
 
     public Type searchType() {
-        Enumerator enumerator = new Enumerator(ast, this);
+        Enumerator enumerator = new Enumerator(ast, this, mode);
         return enumerator.searchType();
     }
 
     public TypedExpression search(Type type) throws SynthesisException {
-        Enumerator enumerator = new Enumerator(ast, this);
+        Enumerator enumerator = new Enumerator(ast, this, mode);
         TypedExpression tExpr = enumerator.search(type);
         if (tExpr == null)
             throw new SynthesisException(SynthesisException.TypeNotFoundDuringSearch);

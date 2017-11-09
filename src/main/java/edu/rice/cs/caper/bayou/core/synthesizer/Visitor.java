@@ -33,6 +33,7 @@ public class Visitor extends ASTVisitor {
     protected ASTRewrite rewriter;
     Block evidenceBlock;
     List<Variable> currentScope;
+    final Synthesizer.Mode mode;
 
     static final Map<PrimitiveType.Code,Class> primitiveToClass;
     static {
@@ -49,13 +50,14 @@ public class Visitor extends ASTVisitor {
         primitiveToClass = Collections.unmodifiableMap(map);
     }
 
-    public Visitor(DSubTree dAST, Document document, CompilationUnit cu) {
+    public Visitor(DSubTree dAST, Document document, CompilationUnit cu, Synthesizer.Mode mode) {
         this.dAST = dAST;
         this.document = document;
         this.cu = cu;
 
         this.rewriter = ASTRewrite.create(this.cu.getAST());
         this.currentScope = new ArrayList<>();
+        this.mode = mode;
     }
 
     @Override
@@ -85,7 +87,7 @@ public class Visitor extends ASTVisitor {
         if (! (name.equals("apicalls") || name.equals("types") || name.equals("keywords")))
             throw new SynthesisException(SynthesisException.InvalidEvidenceType);
 
-        Environment env = new Environment(invocation.getAST(), currentScope);
+        Environment env = new Environment(invocation.getAST(), currentScope, mode);
         Block body = dAST.synthesize(env);
 
         // Apply dead code elimination here
@@ -138,24 +140,33 @@ public class Visitor extends ASTVisitor {
         Set<Variable> toDeclare = env.getScope().getVariables();
         toDeclare.addAll(env.getScope().getPhantomVariables());
         for (Variable var : toDeclare) {
-            if (!eliminatedVars.contains(var.getName()) && !var.isUserVar()) {
-                VariableDeclarationFragment varDeclFrag = ast.newVariableDeclarationFragment();
-                varDeclFrag.setName(ast.newSimpleName(var.getName()));
-                VariableDeclarationStatement varDeclStmt = ast.newVariableDeclarationStatement(varDeclFrag);
-                if (var.getType().T().isPrimitiveType())
-                    varDeclStmt.setType((org.eclipse.jdt.core.dom.Type) ASTNode.copySubtree(ast, var.getType().T()));
-                else if (var.getType().T().isSimpleType()) {
-                    Name name = ((SimpleType) ASTNode.copySubtree(ast, var.getType().T())).getName();
-                    String simpleName = name.isSimpleName()? ((SimpleName) name).getIdentifier()
-                            : ((QualifiedName) name).getName().getIdentifier();
-                    varDeclStmt.setType(ast.newSimpleType(ast.newSimpleName(simpleName)));
-                }
-                else if (var.getType().T().isParameterizedType()) {
-                    varDeclStmt.setType((org.eclipse.jdt.core.dom.Type) ASTNode.copySubtree(ast, var.getType().T()));
-                }
-                else throw new SynthesisException(SynthesisException.InvalidKindOfType);
-                body.statements().add(0, varDeclStmt);
+            if (eliminatedVars.contains(var.getName()) || var.isUserVar())
+                continue;
+
+            // create the variable declaration fragment
+            VariableDeclarationFragment varDeclFrag = ast.newVariableDeclarationFragment();
+            varDeclFrag.setName(ast.newSimpleName(var.getName()));
+
+            // set the default initializer if the variable is a dollar variable
+            if (var.isDefaultInit())
+                varDeclFrag.setInitializer(var.createDefaultInitializer(ast));
+
+            // set the type for the statement
+            VariableDeclarationStatement varDeclStmt = ast.newVariableDeclarationStatement(varDeclFrag);
+            if (var.getType().T().isPrimitiveType())
+                varDeclStmt.setType((org.eclipse.jdt.core.dom.Type) ASTNode.copySubtree(ast, var.getType().T()));
+            else if (var.getType().T().isSimpleType()) {
+                Name name = ((SimpleType) ASTNode.copySubtree(ast, var.getType().T())).getName();
+                String simpleName = name.isSimpleName()? ((SimpleName) name).getIdentifier()
+                        : ((QualifiedName) name).getName().getIdentifier();
+                varDeclStmt.setType(ast.newSimpleType(ast.newSimpleName(simpleName)));
             }
+            else if (var.getType().T().isParameterizedType()) {
+                varDeclStmt.setType((org.eclipse.jdt.core.dom.Type) ASTNode.copySubtree(ast, var.getType().T()));
+            }
+            else throw new SynthesisException(SynthesisException.InvalidKindOfType);
+
+            body.statements().add(0, varDeclStmt);
         }
 
         return body;

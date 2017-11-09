@@ -32,6 +32,8 @@ public class Enumerator {
     static final int MAX_ARGUMENT_DEPTH = 2; // a(b(c(d(...))))
     static final int K = 3; // number of arguments is given K times more weight than length of composition in cost
 
+    Synthesizer.Mode mode;
+
     class InvocationChain {
         final Variable var;
         final List<Method> methods;
@@ -85,10 +87,11 @@ public class Enumerator {
 
     private final Set<Class> importsDuringSearch;
 
-    public Enumerator(AST ast, Environment env) {
+    public Enumerator(AST ast, Environment env, Synthesizer.Mode mode) {
         this.ast = ast;
         this.env = env;
         this.importsDuringSearch = new HashSet<>();
+        this.mode = mode;
     }
 
     public TypedExpression search(Type targetType) {
@@ -134,13 +137,19 @@ public class Enumerator {
         if (isFunctionalInterface(targetType))
             return new TypedExpression(createAnonymousClass(targetType), targetType);
 
-        /* could not pick variable, so concretize target type and resort to enumerative search */
+        /* could not pick variable, so concretize target type */
         targetType.concretizeType(env);
-        return enumerate(targetType, argDepth, toSearch);
+
+        /* ... and start enumerative search or add variable (with default init) depending on enumeration mode */
+        if (mode == Synthesizer.Mode.COMBINATORIAL_ENUMERATOR)
+            return enumerate(targetType, argDepth, toSearch);
+        else if (mode == Synthesizer.Mode.CONDITIONAL_PROGRAM_GENERATOR)
+            return env.addVariable(targetType, true, true);
+        throw new IllegalArgumentException("Invalid enumeration mode");
     }
 
     private TypedExpression enumerate(Type targetType, int argDepth, List<Variable> toSearch) {
-        Enumerator enumerator = new Enumerator(ast, env);
+        Enumerator enumerator = new Enumerator(ast, env, mode);
 
         /* first, see if we can create a new object of target type directly */
         List<Executable> constructors = new ArrayList<>(Arrays.asList(targetType.C().getConstructors()));

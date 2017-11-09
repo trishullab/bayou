@@ -15,13 +15,27 @@ limitations under the License.
 */
 package edu.rice.cs.caper.bayou.core.synthesizer;
 
+import org.eclipse.jdt.core.dom.AST;
+import org.eclipse.jdt.core.dom.CharacterLiteral;
+import org.eclipse.jdt.core.dom.Expression;
+
+import java.util.Arrays;
+
 public class Variable {
+
+    /* TODO: add support for arrays (search for isArray) */
 
     private final String name;
     private final Type type;
     private int refCount;
     private boolean userVar;
     private boolean join;
+    private boolean defaultInit;
+
+    private static Class[] numeric = { byte.class, short.class, int.class, long.class };
+    private static Class[] floating = { float.class, double.class };
+    private static Class[] character = { char.class };
+    private static Class[] bool = { boolean.class };
 
     Variable(String name, Type type) {
         this.name = name;
@@ -29,6 +43,7 @@ public class Variable {
         refCount = 0;
         join = true;
         userVar = false;
+        defaultInit = false;
     }
 
     public String getName() {
@@ -55,12 +70,40 @@ public class Variable {
         return userVar;
     }
 
+    public void setDefaultInit(boolean defaultInit) {
+        this.defaultInit = defaultInit;
+    }
+
+    public boolean isDefaultInit() {
+        return defaultInit;
+    }
+
     public void addRefCount() {
         refCount += 1;
     }
 
     public int getRefCount() {
         return refCount;
+    }
+
+    public Expression createDefaultInitializer(AST ast) {
+        Class c = type.C();
+        if (c.isPrimitive()) {
+            if (Arrays.asList(numeric).contains(c))
+                return ast.newNumberLiteral("0");
+            if (Arrays.asList(floating).contains(c))
+                return ast.newNumberLiteral("0.0");
+            if (Arrays.asList(character).contains(c)) {
+                CharacterLiteral ch = ast.newCharacterLiteral();
+                ch.setCharValue('\0');
+                return ch;
+            }
+            if (Arrays.asList(bool).contains(c))
+                return ast.newBooleanLiteral(false);
+            throw new SynthesisException(SynthesisException.InvalidKindOfType);
+        } else if (c.isArray())
+            throw new SynthesisException(SynthesisException.InvalidKindOfType);
+        else return ast.newNullLiteral();
     }
 
     @Override
