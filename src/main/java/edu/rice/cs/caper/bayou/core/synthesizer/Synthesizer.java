@@ -29,8 +29,31 @@ public class Synthesizer {
 
     static ClassLoader classLoader;
 
+    enum Mode {
+        COMBINATORIAL_ENUMERATOR,
+        CONDITIONAL_PROGRAM_GENERATOR,
+    }
+
+    public Mode getMode() {
+        return mode;
+    }
+
+    public void setMode(Mode mode) {
+        this.mode = mode;
+    }
+
+    Mode mode;
+
     class JSONInputWrapper {
         List<DSubTree> asts;
+    }
+
+    public Synthesizer() {
+        this.mode = Mode.COMBINATORIAL_ENUMERATOR; // default mode
+    }
+
+    public Synthesizer(Mode mode) {
+        this.mode = mode;
     }
 
     private List<DSubTree> getASTsFromNN(String astJson) {
@@ -57,7 +80,7 @@ public class Synthesizer {
         CompilationUnit cu = parser.cu;
         List<String> programs = new ArrayList<>();
         for (DSubTree ast : asts) {
-            Visitor visitor = new Visitor(ast, new Document(parser.source), cu);
+            Visitor visitor = new Visitor(ast, new Document(parser.source), cu, mode);
             try {
                 cu.accept(visitor);
                 if (visitor.synthesizedProgram == null)

@@ -55,6 +55,7 @@ public class SynthesizerTest {
 
 
         Synthesizer synthesizer = new Synthesizer();
+        Synthesizer synthesizerCPG = new Synthesizer(Synthesizer.Mode.CONDITIONAL_PROGRAM_GENERATOR);
 
         String code = new String(Files.readAllBytes(Paths.get(String.format("%s/%s.java", testDir, test))));
         String asts = new String(Files.readAllBytes(Paths.get(String.format("%s/%s.json", testDir, test))));
@@ -62,6 +63,15 @@ public class SynthesizerTest {
         Parser parser = new Parser(code, classpath);
         parser.parse();
         List<String> results = synthesizer.execute(parser, asts);
+
+        Assert.assertTrue(results.size() > 0);
+
+        for(String resultProgram : results) {
+            Assert.assertTrue(resultProgram.contains("public class")); // some code was synthesized
+        }
+
+
+        results = synthesizerCPG.execute(parser, asts);
 
         Assert.assertTrue(results.size() > 0);
 
