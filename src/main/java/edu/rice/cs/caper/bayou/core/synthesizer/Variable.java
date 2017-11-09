@@ -17,11 +17,11 @@ package edu.rice.cs.caper.bayou.core.synthesizer;
 
 public class Variable {
 
-    final String name;
-    final Type type;
-    int refCount;
-    boolean userVar;
-    boolean join;
+    private final String name;
+    private final Type type;
+    private int refCount;
+    private boolean userVar;
+    private boolean join;
 
     Variable(String name, Type type) {
         this.name = name;
@@ -39,8 +39,12 @@ public class Variable {
         return type;
     }
 
-    public void doNotJoin() {
-        this.join = false;
+    public void setJoin(boolean join) {
+        this.join = join;
+    }
+
+    public boolean isJoinVar() {
+        return join;
     }
 
     public void setUserVar(boolean userVar) {
@@ -53,6 +57,10 @@ public class Variable {
 
     public void addRefCount() {
         refCount += 1;
+    }
+
+    public int getRefCount() {
+        return refCount;
     }
 
     @Override

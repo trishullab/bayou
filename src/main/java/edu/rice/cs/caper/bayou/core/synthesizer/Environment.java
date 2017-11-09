@@ -44,7 +44,7 @@ public class Environment {
         /* add variable to scope */
         Variable var = scopes.peek().addVariable(type);
         if (! join)
-            var.doNotJoin();
+            var.setJoin(false);
 
         /* add type to imports */
         imports.add(type.C());

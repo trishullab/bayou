@@ -82,7 +82,7 @@ public class Scope {
             common.retainAll(subScope.getVariables());
         common.removeAll(variables);
         for (Variable var : common)
-            if (var.join)
+            if (var.isJoinVar())
                 variables.add(var);
 
         for (Scope subScope : subScopes) {
@@ -90,7 +90,7 @@ public class Scope {
             uncommon.removeAll(variables);
             uncommon.removeAll(common);
             for (Variable var : uncommon)
-                if (var.join)
+                if (var.isJoinVar())
                     phantomVariables.add(var);
             phantomVariables.addAll(subScope.getPhantomVariables());
         }

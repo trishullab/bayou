@@ -138,14 +138,14 @@ public class Visitor extends ASTVisitor {
         Set<Variable> toDeclare = env.getScope().getVariables();
         toDeclare.addAll(env.getScope().getPhantomVariables());
         for (Variable var : toDeclare) {
-            if (!eliminatedVars.contains(var.name) && !var.isUserVar()) {
+            if (!eliminatedVars.contains(var.getName()) && !var.isUserVar()) {
                 VariableDeclarationFragment varDeclFrag = ast.newVariableDeclarationFragment();
-                varDeclFrag.setName(ast.newSimpleName(var.name));
+                varDeclFrag.setName(ast.newSimpleName(var.getName()));
                 VariableDeclarationStatement varDeclStmt = ast.newVariableDeclarationStatement(varDeclFrag);
                 if (var.getType().T().isPrimitiveType())
-                    varDeclStmt.setType((org.eclipse.jdt.core.dom.Type) ASTNode.copySubtree(ast, var.type.T()));
+                    varDeclStmt.setType((org.eclipse.jdt.core.dom.Type) ASTNode.copySubtree(ast, var.getType().T()));
                 else if (var.getType().T().isSimpleType()) {
-                    Name name = ((SimpleType) ASTNode.copySubtree(ast, var.type.T())).getName();
+                    Name name = ((SimpleType) ASTNode.copySubtree(ast, var.getType().T())).getName();
                     String simpleName = name.isSimpleName()? ((SimpleName) name).getIdentifier()
                             : ((QualifiedName) name).getName().getIdentifier();
                     varDeclStmt.setType(ast.newSimpleType(ast.newSimpleName(simpleName)));

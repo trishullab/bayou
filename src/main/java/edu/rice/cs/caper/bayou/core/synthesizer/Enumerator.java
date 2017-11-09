@@ -304,7 +304,7 @@ public class Enumerator {
     }
 
     private void sortVariablesByCost(List<Variable> variables) {
-        variables.sort(Comparator.comparingInt(v -> v.refCount));
+        variables.sort(Comparator.comparingInt(v -> v.getRefCount()));
     }
 
     private void sortChainsByCost(List<InvocationChain> chains) {
