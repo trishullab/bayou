@@ -112,7 +112,7 @@ class Reader():
     def read_data(self, filename):
         with open(filename) as f:
             js = json.load(f)
-        evidences, targets = [], []
+        data_points = []
         ignored, done = 0, 0
 
         for program in js['programs']:
@@ -124,8 +124,7 @@ class Reader():
                 for path in ast_paths:
                     path.insert(0, ('DSubTree', CHILD_EDGE))
                     assert len(path) <= self.config.decoder.max_ast_depth
-                    evidences.append(evidence)
-                    targets.append(path)
+                    data_points.append((evidence, path))
             except AssertionError:
                 ignored += 1
             done += 1
@@ -133,7 +132,6 @@ class Reader():
         print('{:8d} programs ignored by given config'.format(ignored))
 
         # randomly shuffle to avoid bias towards initial data points during training
-        data_points = list(zip(evidences, targets))
         random.shuffle(data_points)
         evidences, targets = zip(*data_points)
 
