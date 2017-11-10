@@ -31,12 +31,10 @@ fi
 
 output_file_name=model-$id
 model_dir=model-$id
-# SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 SCRIPT_DIR="$(cd ../../; pwd)"
 echo "script, model, data directory is $SCRIPT_DIR"
 export PYTHONPATH=$SCRIPT_DIR
 echo "python path is $PYTHONPATH"
-#splits=$2
 splits=50
 ls *.json
 DATA=DATA-validation.json
@@ -53,7 +51,7 @@ rm -rf out_asts/
 mkdir -p out_asts/
 counter=1
 for filename in splits/*.json; do
-    python3 -u ../../bayou/test/ast_quality_perf_test_model.py $filename \
+    python3 -u ../../bayou/test/ast_quality_perf_test.py $filename \
         --save $model_dir/ \
         --evidence all \
         --output_file out_asts/out_asts_$counter.json 2>&1 &
