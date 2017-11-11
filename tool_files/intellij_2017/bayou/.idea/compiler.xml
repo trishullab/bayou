@@ -7,10 +7,12 @@
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
         <module name="bayou" />
+        <module name="floodgage" />
       </profile>
     </annotationProcessing>
     <bytecodeTargetLevel>
       <module name="bayou" target="1.8" />
+      <module name="floodgage" target="1.8" />
       <module name="parent" target="1.5" />
     </bytecodeTargetLevel>
   </component>

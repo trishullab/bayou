@@ -5,6 +5,7 @@
       <list>
         <option value="$PROJECT_DIR$/../../maven_3_3_9/pom.xml" />
         <option value="$PROJECT_DIR$/../../maven_3_3_9/bayou/pom.xml" />
+        <option value="$PROJECT_DIR$/../../maven_3_3_9/floodgage/pom.xml" />
       </list>
     </option>
   </component>

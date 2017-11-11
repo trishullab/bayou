@@ -87,6 +87,30 @@ public class Options {
     public final int MAX_SEQ_LENGTH;
     public final String JAVADOC_TYPE;
 
+    public Options()
+    {
+        API_CLASSES = Arrays.asList(
+                "java.io.BufferedReader",
+                "java.io.InputStreamReader",
+                "java.io.FileReader",
+                "java.util.Stack",
+                "java.util.Map",
+                "java.util.HashMap",
+                "java.io.File");
+
+        API_PACKAGES = Arrays.asList("android.bluetooth");
+        NUM_UNROLLS = 1;
+        JAVADOC_TYPE= "full";
+        MAX_SEQS = 10;
+        MAX_SEQ_LENGTH = 10;
+
+        API_MODULES = Collections.emptyList();
+        KNOWN_CONSTANTS_BOOLEAN = Collections.emptyMap();
+        KNOWN_CONSTANTS_NUMBER = Collections.emptyMap();
+        KNOWN_CONSTANTS_STRING = Collections.emptyMap();
+    }
+
+
     public Options(String[] args) throws ParseException, IOException {
         this.cmdLine = readCommandLine(args);
         this.config = readConfigFile(cmdLine.getOptionValue("config-file"));
