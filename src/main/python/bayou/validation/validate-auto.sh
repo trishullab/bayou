@@ -67,7 +67,7 @@ for idx in $(seq 1 $counter); do
 done
 echo "done processing"
 rm -f merged.json
-python3 ../../scripts/merge.py out_asts/ --output_file merged.json
+python3 merge.py out_asts/ --output_file merged.json
 echo "done merging splitted files"
 echo "Computing metrics..."
 log=OUT-$output_file_name-$now.txt
