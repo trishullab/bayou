@@ -157,6 +157,9 @@ public class DAPICall extends DASTNode
     @Override
     public ASTNode synthesize(Environment env) throws SynthesisException
     {
+        boolean notPredicate = _call.contains("$NOT$");
+        if (notPredicate)
+            _call = _call.replaceAll("\\$NOT\\$", "");
         Executable executable = getConstructorOrMethod();
         if (executable instanceof Constructor) {
             constructor = (Constructor) executable;
@@ -164,7 +167,7 @@ public class DAPICall extends DASTNode
         }
         else {
             method = (Method) executable;
-            return synthesizeMethodInvocation(env);
+            return synthesizeMethodInvocation(env, notPredicate);
         }
     }
 
@@ -200,7 +203,7 @@ public class DAPICall extends DASTNode
         return assignment;
     }
 
-    private ASTNode synthesizeMethodInvocation(Environment env) throws SynthesisException {
+    private ASTNode synthesizeMethodInvocation(Environment env, boolean toBeNegated) throws SynthesisException {
         AST ast = env.ast();
         MethodInvocation invocation = ast.newMethodInvocation();
 
@@ -227,9 +230,17 @@ public class DAPICall extends DASTNode
         TypedExpression ret = env.addVariable(retType);
 
         /* the assignment */
+        Expression lhs = ret.getExpression();
+        Expression rhs;
+        if (toBeNegated) {
+            rhs = ast.newPrefixExpression();
+            ((PrefixExpression) rhs).setOperator(PrefixExpression.Operator.NOT);
+            ((PrefixExpression) rhs).setOperand(invocation);
+        } else
+            rhs = invocation;
         Assignment assignment = ast.newAssignment();
-        assignment.setLeftHandSide(ret.getExpression());
-        assignment.setRightHandSide(invocation);
+        assignment.setLeftHandSide(lhs);
+        assignment.setRightHandSide(rhs);
         assignment.setOperator(Assignment.Operator.ASSIGN);
 
         return assignment;

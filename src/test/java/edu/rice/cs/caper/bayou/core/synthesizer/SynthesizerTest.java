@@ -81,6 +81,11 @@ public class SynthesizerTest {
     }
 
     @Test
+    public void testIO_not() throws IOException, ParseException {
+        testExecute("TestIO_not");
+    }
+
+    @Test
     public void testIO_exception() throws IOException, ParseException {
         testExecute("TestIO_exception");
     }
