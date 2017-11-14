@@ -148,11 +148,11 @@ public class DLoop extends DASTNode {
                 throw new SynthesisException(SynthesisException.MalformedASTFromNN);
             Assignment assignment = (Assignment) synth;
 
+            ParenthesizedExpression pAssignment = ast.newParenthesizedExpression();
+            pAssignment.setExpression(assignment);
             // if the method does not return a boolean, add != null or != 0 to the condition
             if (call.method == null || (!call.method.getReturnType().equals(Boolean.class) &&
                     !call.method.getReturnType().equals(boolean.class))) {
-                ParenthesizedExpression pAssignment = ast.newParenthesizedExpression();
-                pAssignment.setExpression(assignment);
                 InfixExpression notEqualsNull = ast.newInfixExpression();
                 notEqualsNull.setLeftOperand(pAssignment);
                 notEqualsNull.setOperator(InfixExpression.Operator.NOT_EQUALS);
@@ -164,7 +164,7 @@ public class DLoop extends DASTNode {
                 clauses.add(notEqualsNull);
             }
             else
-                clauses.add(assignment);
+                clauses.add(pAssignment);
         }
         switch (clauses.size()) {
             case 0:
