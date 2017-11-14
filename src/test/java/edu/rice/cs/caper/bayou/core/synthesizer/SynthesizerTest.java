@@ -81,6 +81,11 @@ public class SynthesizerTest {
     }
 
     @Test
+    public void testIO_exception() throws IOException, ParseException {
+        testExecute("TestIO_exception");
+    }
+
+    @Test
     public void testUtil() throws IOException, ParseException {
         testExecute("TestUtil");
     }
