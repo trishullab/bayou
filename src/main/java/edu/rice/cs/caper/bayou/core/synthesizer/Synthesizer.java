@@ -49,7 +49,7 @@ public class Synthesizer {
     }
 
     public Synthesizer() {
-        this.mode = Mode.COMBINATORIAL_ENUMERATOR; // default mode
+        this.mode = Mode.CONDITIONAL_PROGRAM_GENERATOR; // default mode
     }
 
     public Synthesizer(Mode mode) {
