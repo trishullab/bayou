@@ -33,8 +33,25 @@ class Evidence(object):
         js = {attr: self.__getattribute__(attr) for attr in CONFIG_ENCODER + CONFIG_INFER}
         return js
 
+    # @staticmethod
+    # def read_config(js, chars_vocab):
+    #     evidences = []
+    #     for evidence in js:
+    #         name = evidence['name']
+    #         if name == 'apicalls':
+    #             e = APICalls()
+    #         elif name == 'types':
+    #             e = Types()
+    #         elif name == 'keywords':
+    #             e = Keywords()
+    #         else:
+    #             raise TypeError('Invalid evidence name: {}'.format(name))
+    #         e.init_config(evidence, chars_vocab)
+    #         evidences.append(e)
+    #     return evidences
+
     @staticmethod
-    def read_config(js, chars_vocab):
+    def read_config(js, save_dir):
         evidences = []
         for evidence in js:
             name = evidence['name']
@@ -44,9 +61,13 @@ class Evidence(object):
                 e = Types()
             elif name == 'keywords':
                 e = Keywords()
+            # javadoc_(No.)
+            elif name[:7] == 'javadoc':
+                order = name[-1:]
+                e = Javadoc(order, evidence['max_length'], evidence['filter_sizes'], evidence['num_filters'])
             else:
                 raise TypeError('Invalid evidence name: {}'.format(name))
-            e.init_config(evidence, chars_vocab)
+            e.init_config(evidence, save_dir)
             evidences.append(e)
         return evidences
 
@@ -261,11 +282,73 @@ class Keywords(Evidence):
         return [kw.lower() for kw in kws]
 
 
+# # TODO: handle Javadoc with word2vec
+# class Javadoc(Evidence):
+#
+#     def read_data_point(self, program, infer=False):
+#         javadoc = program['javadoc'] if 'javadoc' in program else None
+#         if not javadoc:
+#             javadoc = UNK
+#         try:  # do not consider non-ASCII javadoc
+#             javadoc.encode('ascii')
+#         except UnicodeEncodeError:
+#             javadoc = UNK
+#         javadoc = javadoc.split()
+#         return javadoc
+#
+#     def set_dicts(self, data):
+#         if self.pretrained_embed:
+#             save_dir = os.path.join(self.save_dir, 'embed_' + self.name)
+#             with open(os.path.join(save_dir, 'config.json')) as f:
+#                 js = json.load(f)
+#             self.chars = js['chars']
+#         else:
+#             self.chars = [C0] + list(set([w for point in data for w in point]))
+#         self.vocab = dict(zip(self.chars, range(len(self.chars))))
+#         self.vocab_size = len(self.vocab)
+
+
 # TODO: handle Javadoc with word2vec
 class Javadoc(Evidence):
 
-    def read_data_point(self, program, infer=False):
-        javadoc = program['javadoc'] if 'javadoc' in program else None
+    def __init__(self, order, max_length, filter_sizes, num_filters):
+        self.order = order
+        self.max_sentence_length = max_length
+        self.filter_sizes = filter_sizes
+        self.num_filters = num_filters
+        self.pad_char = '_PADDING_'
+
+    def load_embedding(self, save_dir):
+        embed_save_dir = os.path.join(save_dir, 'embed_javadoc')
+        # vocabulary
+        with open(os.path.join(embed_save_dir, 'config.json')) as f:
+            js = json.load(f)
+        self.chars = js['chars']
+        # add padding character
+        self.chars = [self.pad_char] + self.chars
+        self.vocab = dict(zip(self.chars, range(len(self.chars))))
+        # self.vocab_size = len(self.vocab)
+        # max_sentence_length could also be pre-determined and hard-coded
+        # self.max_sentence_length = js['javadoc_' + self.order + '_max_length']
+        # embedding
+        with tf.Session() as sess:
+            embedding = tf.get_variable('embedding_' + self.order, [js['vocab_size'], js['embedding_size']],
+                                        dtype=tf.float32, trainable=False)
+            norm = tf.sqrt(tf.reduce_sum(tf.square(embedding), 1, keep_dims=True))
+            normalized_embedding = embedding / norm
+            saver = tf.train.Saver({'embedding': embedding})
+            ckpt = tf.train.get_checkpoint_state(embed_save_dir)
+            saver.restore(sess, ckpt.model_checkpoint_path)
+            # numpy array
+            self.final_embedding = normalized_embedding.eval()
+            # add embedding for padding character
+            self.final_embedding = np.append([[0] * js['embedding_size']], self.final_embedding, axis=0)
+
+    # def read_data_point(self, program, infer=False):
+    def read_data_point(self, program):
+        # assume data is clean
+        field_name = 'javadoc_' + self.order
+        javadoc = program[field_name] if field_name in program else None
         if not javadoc:
             javadoc = UNK
         try:  # do not consider non-ASCII javadoc
@@ -273,17 +356,102 @@ class Javadoc(Evidence):
         except UnicodeEncodeError:
             javadoc = UNK
         javadoc = javadoc.split()
+        # if len(javadoc) > self.max_sentence_length:
+        #     self.max_sentence_length = len(javadoc)
+        # replace words not in the dictionary with unknown
+        javadoc = [i if i in self.chars else UNK for i in javadoc]
+
         return javadoc
 
-    def set_dicts(self, data):
-        if self.pretrained_embed:
-            save_dir = os.path.join(self.save_dir, 'embed_' + self.name)
-            with open(os.path.join(save_dir, 'config.json')) as f:
-                js = json.load(f)
-            self.chars = js['chars']
-        else:
-            self.chars = [C0] + list(set([w for point in data for w in point]))
-        self.vocab = dict(zip(self.chars, range(len(self.chars))))
-        self.vocab_size = len(self.vocab)
+    def wrangle(self, data):
+        # index words and pad and trim word vectors
+        indices_list = []
+        for s in data:
+            padding_length = self.max_sentence_length - len(s)
+            if padding_length > 0:
+                s.extend([self.pad_char] * padding_length)
+                words = s
+            elif padding_length < 0:
+                words = s[:padding_length]
+            else:
+                words = s
+            indices = list(map(self.vocab.get, words))
+            indices_list.append(indices)
+        return np.array(indices_list, dtype=np.int32)
 
+    def placeholder(self, config):
+        return tf.placeholder(tf.int32, [config.batch_size, self.max_sentence_length])
 
+    def exists(self, inputs):
+        return tf.not_equal(tf.count_nonzero(inputs, axis=1), 0)
+
+    def init_sigma(self, config):
+        with tf.variable_scope('javadoc_' + self.order):
+            self.sigma = tf.get_variable('sigma', [])
+
+    def encode(self, inputs, config):
+        with tf.variable_scope('javadoc_' + self.order):
+            # step. make embedding a variable tensor
+            # W = tf.get_variable(name="W", shape=embedding.shape, tf.constant_initializer(embedding), trainable=False)
+            with tf.variable_scope('embedding'):
+                W = tf.get_variable(
+                    name='W',
+                    shape=list(self.final_embedding.shape),
+                    initializer=tf.constant_initializer(self.final_embedding),
+                    trainable=False)
+                embedded_chars = tf.nn.embedding_lookup(W, inputs)
+                embedded_chars_expanded = tf.expand_dims(embedded_chars, -1)
+
+            # convolution and pooling layers
+            pooled_outputs = []
+            embedding_size = self.final_embedding.shape[1]
+            for i, filter_size in enumerate(self.filter_sizes):
+                with tf.variable_scope('conv-maxpool-%s' % filter_size):
+                    # convolution
+                    filter_shape = [filter_size, embedding_size, 1, self.num_filters]
+                    # hyper-parameters
+                    W = tf.Variable(tf.truncated_normal(filter_shape, stddev=0.1), name='W')
+                    b = tf.Variable(tf.constant(0.1, shape=[self.num_filters]), name='b')
+                    conv = tf.nn.conv2d(
+                        embedded_chars_expanded,
+                        W,
+                        strides=[1, 1, 1, 1],
+                        padding='VALID',
+                        name='conv')
+                    # non-linearity
+                    h = tf.nn.relu(tf.nn.bias_add(conv, b), name='relu')
+                    # max pooling -> tensor([batch_size, 1, 1, num_filters])
+                    pooled = tf.nn.max_pool(
+                        h,
+                        ksize=[1, self.max_sentence_length - filter_size + 1, 1, 1],
+                        strides=[1, 1, 1, 1],
+                        padding='VALID',
+                        name='pool')
+                    pooled_outputs.append(pooled)
+
+            # combine all the pooled features
+            num_filters_total = self.num_filters * len(self.filter_sizes)
+            h_pool = tf.concat(pooled_outputs, 3)
+            h_pool_flat = tf.reshape(h_pool, [-1, num_filters_total])
+
+            # dropout
+            with tf.variable_scope('dropout'):
+                # hyper-parameter
+                keep_rate = 0.5
+                h_drop = tf.nn.dropout(h_pool_flat, keep_rate)
+
+            # final fc layer
+            with tf.variable_scope('output'):
+                W = tf.get_variable(
+                    'W',
+                    shape=[num_filters_total, config.latent_size],
+                    initializer=tf.contrib.layers.xavier_initializer())
+                b = tf.Variable(tf.constant(0.1, shape=[config.latent_size]), name='b')
+                latent_encoding = tf.nn.xw_plus_b(h_drop, W, b, name='encoding')
+                return latent_encoding
+
+    def evidence_loss(self, psi, encoding, config):
+        sigma_sq = tf.square(self.sigma)
+        loss = 0.5 * (config.latent_size * tf.log(2 * np.pi * sigma_sq + 1e-10)
+                      + tf.square(encoding - psi) / sigma_sq)
+        return loss
