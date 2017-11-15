@@ -3,7 +3,6 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/bayou.iml" filepath="$PROJECT_DIR$/bayou.iml" />
-      <module fileurl="file://$PROJECT_DIR$/../../maven_3_3_9/floodgage/floodgage.iml" filepath="$PROJECT_DIR$/../../maven_3_3_9/floodgage/floodgage.iml" />
       <module fileurl="file://$PROJECT_DIR$/parent.iml" filepath="$PROJECT_DIR$/parent.iml" />
     </modules>
   </component>

@@ -4,7 +4,7 @@
     <output url="file://$MODULE_DIR$/../../maven_3_3_9/bayou/target/classes" />
     <output-test url="file://$MODULE_DIR$/../../maven_3_3_9/bayou/target/test-classes" />
     <content url="file://$MODULE_DIR$/../../../examples" />
-    <content url="file://$MODULE_DIR$/../../../src/main/java">
+    <content url="file://$MODULE_DIR$/../../../src/main/java/edu">
       <sourceFolder url="file://$MODULE_DIR$/../../../src/main/java/edu/rice/cs/caper/bayou" isTestSource="false" packagePrefix="edu.rice.cs.caper.bayou" />
       <sourceFolder url="file://$MODULE_DIR$/../../../src/main/java/edu/rice/cs/caper/programming" isTestSource="false" packagePrefix="edu.rice.cs.caper.programming" />
       <sourceFolder url="file://$MODULE_DIR$/../../../src/main/java/edu/rice/cs/caper/servlet" isTestSource="false" packagePrefix="edu.rice.cs.caper.servlet" />

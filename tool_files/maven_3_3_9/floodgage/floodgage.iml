@@ -3,6 +3,18 @@
   <component name="NewModuleRootManager" LANGUAGE_LEVEL="JDK_1_8">
     <output url="file://$MODULE_DIR$/target/classes" />
     <output-test url="file://$MODULE_DIR$/target/test-classes" />
+    <content url="file://$MODULE_DIR$/../../../src/main/java/edu/rice/cs/caper/bayou/core/bayou_services_client">
+      <sourceFolder url="file://$MODULE_DIR$/../../../src/main/java/edu/rice/cs/caper/bayou/core/bayou_services_client" isTestSource="false" packagePrefix="edu.rice.cs.caper.bayou.core.bayou_services_client" />
+    </content>
+    <content url="file://$MODULE_DIR$/../../../src/main/java/edu/rice/cs/caper/bayou/core/dom_driver">
+      <sourceFolder url="file://$MODULE_DIR$/../../../src/main/java/edu/rice/cs/caper/bayou/core/dom_driver" isTestSource="false" packagePrefix="edu.rice.cs.caper.bayou.core.dom_driver" />
+    </content>
+    <content url="file://$MODULE_DIR$/../../../src/main/java/edu/rice/cs/caper/bayou/core/dsl">
+      <sourceFolder url="file://$MODULE_DIR$/../../../src/main/java/edu/rice/cs/caper/bayou/core/dsl" isTestSource="false" packagePrefix="edu.rice.cs.caper.bayou.core.dsl" />
+    </content>
+    <content url="file://$MODULE_DIR$/../../../src/main/java/edu/rice/cs/caper/bayou/core/synthesizer">
+      <sourceFolder url="file://$MODULE_DIR$/../../../src/main/java/edu/rice/cs/caper/bayou/core/synthesizer" isTestSource="false" packagePrefix="edu.rice.cs.caper.bayou.core.synthesizer" />
+    </content>
     <content url="file://$MODULE_DIR$/../../../src/main/java/edu/rice/cs/caper/floodgage">
       <sourceFolder url="file://$MODULE_DIR$/../../../src/main/java/edu/rice/cs/caper/floodgage" isTestSource="false" packagePrefix="edu.rice.cs.caper.floodgage" />
     </content>
@@ -45,16 +57,5 @@
     <orderEntry type="library" name="Maven: org.codehaus.mojo:animal-sniffer-annotations:1.14" level="project" />
     <orderEntry type="library" name="Maven: org.apache.commons:commons-lang3:3.5" level="project" />
     <orderEntry type="library" name="Maven: commons-cli:commons-cli:1.4" level="project" />
-    <orderEntry type="module-library">
-      <library>
-        <CLASSES>
-          <root url="jar://$MODULE_DIR$/../../../../../trialpack/rt/trials.jar!/" />
-        </CLASSES>
-        <JAVADOC />
-        <SOURCES>
-          <root url="jar://$MODULE_DIR$/../../../../../trialpack/rt/trials.jar!/" />
-        </SOURCES>
-      </library>
-    </orderEntry>
   </component>
 </module>

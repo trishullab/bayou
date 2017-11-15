@@ -35,7 +35,7 @@ public class Visitor extends ASTVisitor {
 
     public final CompilationUnit unit;
     public final Options options;
-    public final JSONOutput js;
+    private final JSONOutput _js;
 
     public List<MethodDeclaration> allMethods;
 
@@ -57,7 +57,6 @@ public class Visitor extends ASTVisitor {
     }
 
     class JSONOutputWrapper {
-        String file;
         DSubTree ast;
         List<Sequence> sequences;
         String javadoc;
@@ -67,13 +66,12 @@ public class Visitor extends ASTVisitor {
         List<Multiset<Integer>> cfg3_dfs;
         List<Multiset<Integer>> cfg4_dfs;
 
-        public JSONOutputWrapper(String file, DSubTree ast, List<Sequence> sequences, String javadoc,
+        public JSONOutputWrapper(DSubTree ast, List<Sequence> sequences, String javadoc,
                                  List<String> skeletons,
                                  List<Multiset<Integer>> cfgs3_bfs,
                                  List<Multiset<Integer>> cfgs4_bfs,
                                  List<Multiset<Integer>> cfgs3_dfs,
                                  List<Multiset<Integer>> cfgs4_dfs) {
-            this.file = file;
             this.ast = ast;
             this.sequences = sequences;
             this.javadoc = javadoc;
@@ -89,7 +87,7 @@ public class Visitor extends ASTVisitor {
         this.unit = unit;
         this.options = options;
 
-        this.js = new JSONOutput();
+        _js = new JSONOutput();
         allMethods = new ArrayList<>();
         V = this;
     }
@@ -182,19 +180,18 @@ public class Visitor extends ASTVisitor {
                            List<Multiset<Integer>> cfg4_bfs,
                            List<Multiset<Integer>> cfg3_dfs,
                            List<Multiset<Integer>> cfg4_dfs) {
-        String file = options.cmdLine.getOptionValue("input-file");
-        JSONOutputWrapper out = new JSONOutputWrapper(file, ast, sequences, javadoc,
+        JSONOutputWrapper out = new JSONOutputWrapper(ast, sequences, javadoc,
             skeletons, cfg3_bfs, cfg4_bfs, cfg3_dfs, cfg4_dfs);
-        js.programs.add(out);
+        _js.programs.add(out);
     }
 
     public String buildJson() throws IOException {
-        if (js.programs.isEmpty())
+        if (_js.programs.isEmpty())
             return null;
 
         Gson gson = new GsonBuilder().setPrettyPrinting().serializeNulls().create();
 
-        return gson.toJson(js);
+        return gson.toJson(_js);
 
     }
 
