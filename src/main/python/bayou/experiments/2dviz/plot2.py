@@ -20,7 +20,7 @@ import numpy as np
 import tensorflow as tf
 from sklearn.manifold import TSNE
 
-from bayou.models.core import BayesianPredictor
+from bayou.models.core.infer import BayesianPredictor
 
 
 def plot(clargs):
