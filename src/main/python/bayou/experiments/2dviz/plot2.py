@@ -57,6 +57,8 @@ def get_api(calls):
 
 
 def scatter(clargs, data):
+    import matplotlib
+    matplotlib.use('Agg')
     import matplotlib.pyplot as plt
     import matplotlib.cm as cm
     dic = {}
@@ -83,8 +85,19 @@ def scatter(clargs, data):
     plt.legend(plotpoints, labels, scatterpoints=1, loc='lower left', ncol=3, fontsize=12)
     plt.axhline(0, color='black')
     plt.axvline(0, color='black')
-    plt.show()
+    # plt.show()
+    plt.savefig('plot.png')
 
+# def plot(embeddings, labels, out):
+#     assert embeddings.shape[0] >= len(labels), 'More labels than embeddings'
+#     pylab.figure(figsize=(15,15))
+#     for i, label in enumerate(labels):
+#         x, y = embeddings[i,:]
+#         pylab.scatter(x, y)
+#         pylab.annotate(label, xy=(x, y), xytext=(5, 2), textcoords='offset points',
+#                        ha='right', va='bottom')
+#     pylab.savefig(out)
+#     print('Saved plot to {}'.format(out))
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
