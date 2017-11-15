@@ -27,12 +27,14 @@ public class EqualityASTMetric implements Metric {
     @Override
     public float compute(DSubTree originalAST, List<DSubTree> predictedASTs) {
         boolean equals = false;
+        float index = 1;
         for (DSubTree predictedAST : predictedASTs) {
             if (originalAST.equals(predictedAST)) {
                 equals = true;
                 break;
             }
+            index++;
         }
-        return equals? 1 : 0;
+        return equals? index : 0;
     }
 }

@@ -99,6 +99,7 @@ public class MetricCalculator {
         List<JSONInputFormat.DataPoint> data = JSONInputFormat.readData(cmdLine.getOptionValue("f"));
 
         List<Float> values = new ArrayList<>();
+	int dataIndex = 0;
         for (JSONInputFormat.DataPoint datapoint : data) {
             DSubTree originalAST = datapoint.ast;
             List<DSubTree> predictedASTs = datapoint.out_asts.subList(0,
@@ -106,9 +107,16 @@ public class MetricCalculator {
 
             if (m.equals("latency"))
                 values.add(datapoint.latency);
-            else
-                values.add(metric.compute(originalAST, predictedASTs));
-        }
+            else {
+                float metricValue = metric.compute(originalAST, predictedASTs);
+                if (m.equals("equality-ast") && metricValue >= 1) {
+                    System.out.println("program-index=" + dataIndex + ", metric=equality-test, predicted-index=" + (metricValue - 1));
+		    metricValue = metricValue >= 1 ? 1 : 0;
+                }	
+                values.add(metricValue);
+            }
+            dataIndex++;
+	}
 
         float average = Metric.mean(values);
         float stdv = Metric.standardDeviation(values);
