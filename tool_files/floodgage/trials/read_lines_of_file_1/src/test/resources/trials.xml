@@ -1,0 +1,13 @@
+<trials>
+  <trial>
+    <description>Read the lines of a file.</description>
+    <draftProgramPath>ReadFileLinesDraft.java</draftProgramPath>
+    <expectedSketchPath>ReadFileLinesSketch.java</expectedSketchPath>
+    <holes>
+      <hole id="1">
+        <evidence type="call">readLine</evidence>
+        <evidence type="type">File</evidence>
+      </hole>
+    </holes>
+  </trial>
+</trials>

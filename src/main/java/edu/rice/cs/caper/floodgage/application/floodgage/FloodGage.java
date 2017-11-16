@@ -56,8 +56,6 @@ class FloodGage
         if(result.getFailureCount() > 0)
             return;
 
-        view.declareResult(true);
-
         view.declareNumberOfTestCasesInSuite(result.getRunCount());
 
         List<Trial> trails = makeTrials(directive, this::makeDefaultDraftBuilder, view);

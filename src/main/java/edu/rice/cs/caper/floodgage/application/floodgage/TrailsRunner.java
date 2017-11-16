@@ -1,5 +1,10 @@
 package edu.rice.cs.caper.floodgage.application.floodgage;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import edu.rice.cs.caper.bayou.core.dsl.*;
+import edu.rice.cs.caper.bayou.core.sketch_metric.EqualityASTMetric;
+import edu.rice.cs.caper.bayou.core.synthesizer.RuntimeTypeAdapterFactory;
 import edu.rice.cs.caper.floodgage.application.floodgage.model.plan.Trial;
 import edu.rice.cs.caper.floodgage.application.floodgage.synthesizer.SynthesizeException;
 import edu.rice.cs.caper.floodgage.application.floodgage.synthesizer.Synthesizer;
@@ -12,17 +17,23 @@ import org.apache.commons.io.FileUtils;
 import org.eclipse.jdt.core.dom.AST;
 import org.eclipse.jdt.core.dom.ASTParser;
 import org.eclipse.jdt.core.dom.CompilationUnit;
+import org.json.JSONObject;
+import org.junit.experimental.theories.DataPoint;
 
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.util.List;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.*;
 
 class TrailsRunner
 {
     static void runTrails(List<Trial> trails, Synthesizer synthesizer, View view)
     {
         int trailId = 0;
+        int numPasses = 0;
+        int numFailures = 0;
         for(Trial trial : trails)
         {
             trailId++;
@@ -37,6 +48,7 @@ class TrailsRunner
             }
             catch (SynthesizeException e)
             {
+                numFailures++;
                 view.declareSynthesisFailed();
                continue;
             }
@@ -63,33 +75,62 @@ class TrailsRunner
                 catch (ClassNotFoundException e)
                 {
                     view.declareSyntResultDoesNotCompile(resultId);
+                    view.declareResult(false);
+                    numFailures++;
                     continue;
                 }
 
                 Class resultSpecificTestSuite = makeTrialSpecificTestSuite(uniqueResultClassName);
 
                 view.declareTestingResult(resultId);
-                TestSuiteRunner.runTestSuiteAgainst(resultSpecificTestSuite, view);
+                boolean passSoFar = TestSuiteRunner.runTestSuiteAgainst(resultSpecificTestSuite, view);
 
                 if(trial.containsSketchProgramSource())
                 {
                     String expectedSketchSource = trial.tryGetSketchProgramSource(null);
 
-
                     if(expectedSketchSource == null)
                         throw new RuntimeException("Expected access to succeed after containsSketchProgramSource() check");
 
-                    String expectedSketch = makeSketchFromSource(expectedSketchSource, trial.getDraftProgramClassName() + ".java");
-                    String resultSketch = makeSketchFromSource(result, uniqueResultClassName + ".java");
-                    int j = 0;
+                    DSubTree expectedSketch = makeSketchFromSource(expectedSketchSource, trial.getDraftProgramClassName() + ".java");
+                    DSubTree resultSketch = makeSketchFromSource(result, uniqueResultClassName + ".java");
 
+
+                    if(expectedSketch == null && resultSketch == null)
+                    {
+                        view.warnSketchesNull();
+                    }
+                    if(expectedSketch != null && resultSketch != null)
+                    {
+                        float equalityResult = new EqualityASTMetric().compute(expectedSketch, Arrays.asList(resultSketch), "");
+                        view.declareSketchMetricResult(equalityResult);
+                        if(equalityResult != 1)
+                        {
+                            passSoFar = false;
+                        }
+                    }
+                    else
+                    {
+                        view.warnSketchesNullMismatch();
+                        passSoFar = false;
+                    }
                 }
+
+                if(passSoFar)
+                    numPasses++;
+                else
+                    numFailures++;
+                view.declareResult(passSoFar);
+
             }
 
         }
+
+        view.declareTally(numPasses, numFailures);
     }
 
-    private static String makeSketchFromSource(String source, String unitName)
+
+    private static DSubTree makeSketchFromSource(String source, String unitName)
     {
         CompilationUnit cu;
         {
@@ -109,12 +150,31 @@ class TrailsRunner
         {
             Visitor visitor = new Visitor(cu, options);
             cu.accept(visitor);
-            return visitor.buildJson();
+            sketch = visitor.buildJson();
         }
         catch (IOException e)
         {
             throw new RuntimeException(e);
         }
+
+        if(sketch == null)
+            return null;
+
+        JSONObject sketchObject = new JSONObject(sketch);
+        JSONObject program = sketchObject.getJSONArray("programs").getJSONObject(0);
+        JSONObject astNode = program.getJSONObject("ast");
+
+        RuntimeTypeAdapterFactory<DASTNode> nodeAdapter = RuntimeTypeAdapterFactory.of(DASTNode.class, "node")
+                .registerSubtype(DAPICall.class)
+                .registerSubtype(DBranch.class)
+                .registerSubtype(DExcept.class)
+                .registerSubtype(DLoop.class)
+                .registerSubtype(DSubTree.class);
+        Gson gson = new GsonBuilder().serializeNulls()
+                .registerTypeAdapterFactory(nodeAdapter)
+                .create();
+        return gson.fromJson(astNode.toString(), DSubTree.class);
+
     }
 
     private static Class makeTrialSpecificTestSuite(String assumedResultClassName)

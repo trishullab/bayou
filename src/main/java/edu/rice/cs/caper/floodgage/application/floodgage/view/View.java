@@ -32,4 +32,12 @@ public interface View
     void declarePassProgramTestFailure(String message);
 
     void declareNumberOfTestCasesInSuite(int runCount);
+
+    void warnSketchesNull();
+
+    void declareSketchMetricResult(float equalityResult);
+
+    void warnSketchesNullMismatch();
+
+    void declareTally(int numPasses, int numFailures);
 }

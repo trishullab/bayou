@@ -81,15 +81,15 @@ public class ViewConsole implements View
     public void declareResult(boolean success)
     {
         if(success)
-            System.out.print("  [PASS]");
+            System.out.print("\n[PASS]");
         else
-            System.out.print("  [FAIL]");
+            System.out.print("\n[FAIL]");
     }
 
     @Override
     public void declareClassDoesNotInstantiate(String classname)
     {
-        System.out.print("\n" + classname + " does not instantiate. [FAIL]");
+        System.out.print("\n" + classname + " does not instantiate.");
     }
 
     @Override
@@ -125,6 +125,31 @@ public class ViewConsole implements View
     public void declareNumberOfTestCasesInSuite(int numTestCases)
     {
         System.out.print("\n"  + numTestCases + " test cases found.");
+    }
+
+    @Override
+    public void warnSketchesNull()
+    {
+        System.out.print("\n[Warning] Sketches are equal, but both are null.");
+    }
+
+    @Override
+    public void declareSketchMetricResult(float equalityResult)
+    {
+        System.out.print("[Sketch match value is " + equalityResult + "]");
+    }
+
+    @Override
+    public void warnSketchesNullMismatch()
+    {
+        System.out.print("\n[Warning] Only one sketch is null");
+    }
+
+    @Override
+    public void declareTally(int numPasses, int numFailures)
+    {
+        System.out.println("\n==============================================");
+        System.out.println(numPasses + " passes and " + numFailures + " failures.");
     }
 
 }

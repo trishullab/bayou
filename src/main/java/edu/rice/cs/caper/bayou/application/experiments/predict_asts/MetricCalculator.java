@@ -16,6 +16,8 @@ limitations under the License.
 package edu.rice.cs.caper.bayou.application.experiments.predict_asts;
 
 import edu.rice.cs.caper.bayou.core.dsl.*;
+import edu.rice.cs.caper.bayou.core.sketch_metric.EqualityASTMetric;
+import edu.rice.cs.caper.bayou.core.sketch_metric.Metric;
 import org.apache.commons.cli.*;
 import org.apache.commons.math3.stat.inference.TTest;
 

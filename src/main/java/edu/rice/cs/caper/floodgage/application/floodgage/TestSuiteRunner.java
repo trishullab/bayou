@@ -13,22 +13,20 @@ import java.security.spec.ECField;
 
 class TestSuiteRunner
 {
-    static void runTestSuiteAgainst(Class testSuite, View view)
+    static boolean runTestSuiteAgainst(Class testSuite, View view)
     {
         Result result = new JUnitCore().run(testSuite);
 
 
         if (result.getFailureCount() > 0)
         {
-            view.declareResult(false);
-
             for (Failure f : result.getFailures())
                 view.declarePassProgramTestFailure(f.getTrace());
+
+            return false;
         }
-        else
-        {
-            view.declareResult(true);
-        }
+
+        return true;
     }
 
 }

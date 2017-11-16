@@ -123,7 +123,7 @@ public class JavaxXmlParser implements DirectiveXmlV1Parser
     {
         String description = getSingleChildElementTextContent(trialElement, "description");
         String draftProgramPath = getSingleChildElementTextContent(trialElement, "draftProgramPath");
-        String expectedSketchProgramPath = getSingleChildElementTextContent(trialElement, "expectedSketchProgramPath");
+        String expectedSketchProgramPath = getSingleChildElementTextContent(trialElement, "expectedSketchPath");
 
         List<Hole> holes = new LinkedList<>();
         {
