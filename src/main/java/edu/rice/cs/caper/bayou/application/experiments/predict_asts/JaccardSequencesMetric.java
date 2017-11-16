@@ -18,10 +18,12 @@ package edu.rice.cs.caper.bayou.application.experiments.predict_asts;
 import edu.rice.cs.caper.bayou.core.dsl.DASTNode;
 import edu.rice.cs.caper.bayou.core.dsl.DSubTree;
 import edu.rice.cs.caper.bayou.core.dsl.Sequence;
+import edu.rice.cs.caper.bayou.core.sketch_metric.Metric;
 
 import java.util.*;
 
-public class JaccardSequencesMetric implements Metric {
+public class JaccardSequencesMetric implements Metric
+{
 
     /** Computes the minimum Jaccard distance on the set of sequences of API calls
      * between the original and the predicted ASTs.

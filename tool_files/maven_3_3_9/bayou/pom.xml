@@ -14,9 +14,28 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
   </properties>
   <build>
-    <sourceDirectory>../../../src/main/java</sourceDirectory>
-    <testSourceDirectory>../../../src/test/java</testSourceDirectory>
+    <sourceDirectory>../../../src/main/java/edu/rice/cs/caper/bayou</sourceDirectory>
+    <testSourceDirectory>../../../src/test/java/edu/rice/cs/caper/bayou</testSourceDirectory>
     <plugins>
+        <plugin>
+            <groupId>org.codehaus.mojo</groupId>
+            <artifactId>build-helper-maven-plugin</artifactId>
+            <version>1.7</version>
+            <executions>
+                <execution>
+                    <phase>generate-sources</phase>
+                    <goals>
+                        <goal>add-source</goal>
+                    </goals>
+                    <configuration>
+                        <sources>
+                            <source>../../../src/main/java/edu/rice/cs/caper/programming</source>
+                            <source>../../../src/main/java/edu/rice/cs/caper/servlet</source>
+                        </sources>
+                    </configuration>
+                </execution>
+            </executions>
+        </plugin>
         <plugin>
             <artifactId>maven-assembly-plugin</artifactId>
             <executions>
