@@ -36,7 +36,7 @@ if __name__ == '__main__':
         print("No such dir: " + model_dir)
         exit(1)
 
-    model_file = os.path.join(model_dir, model_name + ".ckpt.index")
+    model_file = os.path.join(model_dir, model_name + ".zip")
 
     # Check if we already have the model.
     if os.path.exists(model_file):
@@ -59,8 +59,4 @@ if __name__ == '__main__':
     # Unzip model files and delete ziped model.
     with zipfile.ZipFile(model_zip_file,"r") as zip_ref:
         zip_ref.extractall(model_dir)
-
-    os.unlink(model_zip_file)
-
-    
 
