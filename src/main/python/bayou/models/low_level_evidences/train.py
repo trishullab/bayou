@@ -71,7 +71,7 @@ def train(clargs):
     config_file = clargs.config if clargs.continue_from is None \
                                 else os.path.join(clargs.continue_from, 'config.json')
     with open(config_file) as f:
-        config = read_config(json.load(f), chars_vocab=clargs.continue_from)
+        config = read_config(json.load(f), chars_vocab=clargs.continue_from, save_dir=clargs.save)
     reader = Reader(clargs, config)
     
     jsconfig = dump_config(config)

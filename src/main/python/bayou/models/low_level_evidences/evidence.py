@@ -33,25 +33,8 @@ class Evidence(object):
         js = {attr: self.__getattribute__(attr) for attr in CONFIG_ENCODER + CONFIG_INFER}
         return js
 
-    # @staticmethod
-    # def read_config(js, chars_vocab):
-    #     evidences = []
-    #     for evidence in js:
-    #         name = evidence['name']
-    #         if name == 'apicalls':
-    #             e = APICalls()
-    #         elif name == 'types':
-    #             e = Types()
-    #         elif name == 'keywords':
-    #             e = Keywords()
-    #         else:
-    #             raise TypeError('Invalid evidence name: {}'.format(name))
-    #         e.init_config(evidence, chars_vocab)
-    #         evidences.append(e)
-    #     return evidences
-
     @staticmethod
-    def read_config(js, save_dir):
+    def read_config(js, chars_vocab, save_dir=None):
         evidences = []
         for evidence in js:
             name = evidence['name']
@@ -65,11 +48,35 @@ class Evidence(object):
             elif name[:7] == 'javadoc':
                 order = name[-1:]
                 e = Javadoc(order, evidence['max_length'], evidence['filter_sizes'], evidence['num_filters'])
+                e.init_config(evidence, save_dir)
+                evidences.append(e)
+                continue
             else:
                 raise TypeError('Invalid evidence name: {}'.format(name))
-            e.init_config(evidence, save_dir)
+            e.init_config(evidence, chars_vocab)
             evidences.append(e)
         return evidences
+
+    # @staticmethod
+    # def read_config(js, save_dir):
+    #     evidences = []
+    #     for evidence in js:
+    #         name = evidence['name']
+    #         if name == 'apicalls':
+    #             e = APICalls()
+    #         elif name == 'types':
+    #             e = Types()
+    #         elif name == 'keywords':
+    #             e = Keywords()
+    #         # javadoc_(No.)
+    #         elif name[:7] == 'javadoc':
+    #             order = name[-1:]
+    #             e = Javadoc(order, evidence['max_length'], evidence['filter_sizes'], evidence['num_filters'])
+    #         else:
+    #             raise TypeError('Invalid evidence name: {}'.format(name))
+    #         e.init_config(evidence, save_dir)
+    #         evidences.append(e)
+    #     return evidences
 
     def read_data_point(self, program):
         raise NotImplementedError('read_data() has not been implemented')
@@ -455,3 +462,12 @@ class Javadoc(Evidence):
         loss = 0.5 * (config.latent_size * tf.log(2 * np.pi * sigma_sq + 1e-10)
                       + tf.square(encoding - psi) / sigma_sq)
         return loss
+
+    def dump_config(self):
+        js = {attr: self.__getattribute__(attr) for attr in CONFIG_ENCODER}
+        return js
+
+    def init_config(self, evidence, save_dir):
+        for attr in CONFIG_ENCODER:
+            self.__setattr__(attr, evidence[attr])
+        self.load_embedding(save_dir)
