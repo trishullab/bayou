@@ -35,7 +35,7 @@ class BayesianPredictor(object):
 
         # load the saved config
         with open(os.path.join(save, 'config.json')) as f:
-            config = read_config(json.load(f), chars_vocab=True)
+            config = read_config(json.load(f), chars_vocab=True, save_dir=save)
         self.model = Model(config, True)
 
         # restore the saved model
