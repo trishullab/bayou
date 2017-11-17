@@ -34,7 +34,6 @@ import org.apache.logging.log4j.Logger;
 import org.json.JSONObject;
 
 import java.io.*;
-import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.concurrent.*;
 
@@ -80,18 +79,25 @@ public class ApiSynthesizerRemoteTensorFlowAsts implements ApiSynthesizer
     private final File _androidJarPath;
 
     /**
+     * The type of API synthesis that should be performed.
+     */
+    private final Synthesizer.Mode _synthMode;
+
+    /**
      * @param tensorFlowHost  The network name of the tensor flow host server. May not be null.
      * @param tensorFlowPort The port the tensor flow host server on which connections requests are expected.
      *                       May not be negative.
      * @param maxNetworkWaitTimeMs The max time in milliseconds to wait for a response from the tensor flow host.
      * @param evidenceClasspath A classpath string that includes the class edu.rice.cs.caper.bayou.annotations.Evidence.
-     *                          May not be null.
+*                          May not be null.
      * @param androidJarPath The path to android.jar. May not be null.
+     * @param synthMode The type of API synthesis that should be performed.
      */
     public ApiSynthesizerRemoteTensorFlowAsts(ContentString tensorFlowHost, NatNum32 tensorFlowPort,
                                               NatNum32 maxNetworkWaitTimeMs, ContentString evidenceClasspath,
-                                              File androidJarPath)
+                                              File androidJarPath, Synthesizer.Mode synthMode)
     {
+        _synthMode = synthMode;
         _logger.debug("entering");
 
         _androidJarPath = androidJarPath;
@@ -210,7 +216,7 @@ public class ApiSynthesizerRemoteTensorFlowAsts implements ApiSynthesizer
          * Synthesise results from the code and asts and return.
          */
         List<String> synthesizedPrograms;
-        synthesizedPrograms = new Synthesizer().execute(parser, astsJson);
+        synthesizedPrograms = new Synthesizer(_synthMode).execute(parser, astsJson);
 
         if(synthesizedPrograms.size() > maxProgramCount.AsInt) // unsure if execute always returns n output for n ast inputs.
             synthesizedPrograms = synthesizedPrograms.subList(0, maxProgramCount.AsInt);

@@ -53,7 +53,7 @@ class ApiSynthesizerFactory
             synthesizer = new ApiSynthesizerRemoteTensorFlowAsts(new ContentString("localhost"), new NatNum32(8084),
                                                                  Configuration.SynthesizeTimeoutMs,
                                                                  Configuration.EvidenceClasspath,
-                                                                 Configuration.AndroidJarPath);
+                                                                 Configuration.AndroidJarPath, Configuration.ApiSynthMode);
         }
 
         _logger.debug("exiting");

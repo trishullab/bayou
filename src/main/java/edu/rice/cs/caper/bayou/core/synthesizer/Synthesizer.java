@@ -29,7 +29,7 @@ public class Synthesizer {
 
     static ClassLoader classLoader;
 
-    enum Mode {
+    public enum Mode {
         COMBINATORIAL_ENUMERATOR,
         CONDITIONAL_PROGRAM_GENERATOR,
     }
