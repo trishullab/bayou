@@ -463,6 +463,9 @@ class Javadoc(Evidence):
                       + tf.square(encoding - psi) / sigma_sq)
         return loss
 
+    def set_chars_vocab(self, data):
+        pass
+
     def dump_config(self):
         js = {attr: self.__getattribute__(attr) for attr in CONFIG_ENCODER}
         return js
