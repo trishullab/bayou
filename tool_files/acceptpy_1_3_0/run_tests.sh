@@ -23,7 +23,7 @@ $SCRIPT_DIR/../build_binary_release/build.sh
 unzip -d $OUT_DIR ../build_binary_release/bayou-*.zip
 
 $OUT_DIR/start_bayou.sh &
-sleep 30
+sleep 60
 python3 accept.py tests/
 $OUT_DIR/stop_bayou.sh
 
