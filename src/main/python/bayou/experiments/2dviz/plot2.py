@@ -20,12 +20,21 @@ import numpy as np
 import tensorflow as tf
 from sklearn.manifold import TSNE
 
-from bayou.models.core.infer import BayesianPredictor
-
+# from bayou.models.core.infer import BayesianPredictor
+import bayou.models.core.infer
+import bayou.models.low_level_evidences.infer
 
 def plot(clargs):
+    model_type = clargs.model
+    if model_type == 'core':
+        model = bayou.models.core.infer.BayesianPredictor
+    elif model_type == 'lle':
+        model = bayou.models.low_level_evidences.infer.BayesianPredictor
+    else:
+        raise ValueError('Invalid model type in config: ' + model_type)
+
     with tf.Session() as sess:
-        predictor = BayesianPredictor(clargs.save, sess)
+        predictor = model(clargs.save, sess)
         with open(clargs.input_file[0]) as f:
             js = json.load(f)
         psis = np.array([predictor.psi_from_evidence(program) for program in js['programs']])
@@ -107,5 +116,7 @@ if __name__ == '__main__':
                         help='directory to load model from')
     parser.add_argument('--top', type=int, default=10,
                         help='plot only the top-k labels')
+    parser.add_argument('--model', type=str, default='core',
+                        help='use this option to select different models')
     clargs = parser.parse_args()
     plot(clargs)
