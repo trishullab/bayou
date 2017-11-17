@@ -15,6 +15,7 @@ limitations under the License.
 */
 package edu.rice.cs.caper.bayou.application.api_synthesis_server;
 
+import edu.rice.cs.caper.bayou.core.synthesizer.Synthesizer;
 import edu.rice.cs.caper.programming.ContentString;
 import edu.rice.cs.caper.programming.numbers.NatNum32;
 
@@ -49,6 +50,8 @@ public class Configuration
     public static NatNum32 CodeCompletionRequestBodyMaxBytesCount = new NatNum32(MEGA_BYTES_IN_BYTES);
 
     public static final String[] CorsAllowedOrigins;
+
+    public static final Synthesizer.Mode ApiSynthMode;
 
     static
     {
@@ -89,6 +92,7 @@ public class Configuration
         EvidenceClasspath = new ContentString(properties.getProperty("EvidenceClasspath"));
         AndroidJarPath = new File(properties.getProperty("AndroidJarPath"));
         CorsAllowedOrigins = properties.getProperty("CorsAllowedOrigins").split("\\s+"); // split by whitespace
+        ApiSynthMode = Synthesizer.Mode.valueOf(properties.getProperty("ApiSynthMode"));
 
 
     }
