@@ -47,13 +47,13 @@ import bayou.models.low_level_evidences.evidence
 
 
 # convert JSON to config
-def read_config(js, chars_vocab=False):
+def read_config(js, chars_vocab=False, save_dir=None):
     config = argparse.Namespace()
 
     for attr in CONFIG_GENERAL:
         config.__setattr__(attr, js[attr])
     
-    config.evidence = bayou.models.low_level_evidences.evidence.Evidence.read_config(js['evidence'], chars_vocab)
+    config.evidence = bayou.models.low_level_evidences.evidence.Evidence.read_config(js['evidence'], chars_vocab, save_dir)
     config.decoder = argparse.Namespace()
     for attr in CONFIG_DECODER:
         config.decoder.__setattr__(attr, js['decoder'][attr])
