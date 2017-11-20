@@ -133,10 +133,6 @@ public class Enumerator {
                 return new TypedExpression(ast.newSimpleName(v.getName()), v.getType());
             }
 
-        /* check if this is a functional interface */
-        if (isFunctionalInterface(targetType))
-            return new TypedExpression(createAnonymousClass(targetType), targetType);
-
         /* could not pick variable, so concretize target type */
         targetType.concretizeType(env);
 
@@ -323,16 +319,4 @@ public class Enumerator {
     private boolean isFunctionalInterface(Type type) {
         return type.C().isInterface() && type.C().getMethods().length == 1;
     }
-
-    private ClassInstanceCreation createAnonymousClass(Type targetType) {
-        ClassInstanceCreation creation = ast.newClassInstanceCreation();
-        creation.setType(ast.newSimpleType(ast.newSimpleName(targetType.C().getSimpleName())));
-        AnonymousClassDeclaration anonymousClass = ast.newAnonymousClassDeclaration();
-        creation.setAnonymousClassDeclaration(anonymousClass);
-
-        /* TODO: synthesize a stub of the (one) method in functional interface */
-        importsDuringSearch.add(targetType.C());
-        return creation;
-    }
-
 }
