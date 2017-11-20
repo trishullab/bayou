@@ -141,7 +141,11 @@ def connect_to_ip(ssh_private_key_file, ip):
     key = paramiko.RSAKey.from_private_key_file(ssh_private_key_file)
     ssh = paramiko.SSHClient()
     ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-    ssh.connect(ip, username='ubuntu', pkey=key, timeout=600, auth_timeout=600, banner_timeout=600)
+    for attempts in range(10):
+        try:
+            ssh.connect(ip, username='ubuntu', pkey=key, timeout=600, auth_timeout=600, banner_timeout=600)
+        except TimeoutError:
+            print('#{}...'.format(attempts+1), end='', flush=True)
     return ssh
 
 
