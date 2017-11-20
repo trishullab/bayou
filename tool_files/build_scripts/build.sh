@@ -33,8 +33,10 @@ VER="$(printf 'VERSION=${project.version}\n0\n' | mvn org.apache.maven.plugins:m
 
 # compile Bayou into a jar file
 #    copy Evidence.class between compile and package phase so unit tests run in 2nd phase apply to new class file
+#    also copy Feedback.class (@vijay-murali)
 mvn clean compile
 cp target/classes/edu/rice/cs/caper/bayou/annotations/Evidence.class ../../../src/main/resources/artifacts/classes/edu/rice/cs/caper/bayou/annotations/Evidence.class
+cp target/classes/edu/rice/cs/caper/bayou/annotations/Feedback.class ../../../src/main/resources/artifacts/classes/edu/rice/cs/caper/bayou/annotations/Feedback.class
 mvn package
 
 # copy and rename post build files into out directory

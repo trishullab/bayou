@@ -290,6 +290,32 @@ public class Type {
         }
     }
 
+    public org.eclipse.jdt.core.dom.Type simpleT(AST ast) {
+        if (t.isPrimitiveType())
+            return t;
+        if (t.isSimpleType() || t.isQualifiedType()) {
+            Name name = t.isSimpleType()? ((SimpleType) t).getName(): ((QualifiedType) t).getName();
+            SimpleName simple;
+            if (name.isSimpleName())
+                simple = ast.newSimpleName(((SimpleName) name).getIdentifier());
+            else
+                simple = ast.newSimpleName(((QualifiedName) name).getName().getIdentifier());
+            return ast.newSimpleType(simple);
+        }
+        if (t.isParameterizedType()) {
+            org.eclipse.jdt.core.dom.Type baseType = ((ParameterizedType) t).getType();
+            Name name = baseType.isSimpleType()? ((SimpleType) baseType).getName(): ((QualifiedType) baseType).getName();
+            SimpleName simple;
+            if (name.isSimpleName())
+                simple = ast.newSimpleName(((SimpleName) name).getIdentifier());
+            else
+                simple = ast.newSimpleName(((QualifiedName) name).getName().getIdentifier());
+            return ast.newSimpleType(simple);
+        }
+        // TODO: array type
+        throw new SynthesisException(SynthesisException.InvalidKindOfType);
+    }
+
     public boolean isConcretized() {
         return t != null;
     }
