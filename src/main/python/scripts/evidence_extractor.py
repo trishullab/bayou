@@ -18,6 +18,7 @@ import sys
 import json
 import math
 import random
+import numpy as np
 from itertools import chain
 
 import bayou.models.core.evidence
@@ -54,14 +55,24 @@ def extract_evidence(clargs):
             # put all evidences in the same bag (to avoid bias during sampling)
             evidences = [(e, 'apicalls') for e in apicalls] + [(e, 'types') for e in types] + \
                         [(e, 'keywords') for e in keywords]
+            num_samples = clargs.num_samples if clargs.num_samples > 0 else math.ceil(len(evidences)/-clargs.num_samples)
 
-            for i in range(clargs.num_samples):
+            for i in range(num_samples):
                 sample = dict(program)
                 sample['apicalls'] = []
                 sample['types'] = []
                 sample['keywords'] = []
-                observability = clargs.observability if clargs.observability > 0 else random.randint(1, 100)
-                choices = random.sample(evidences, math.ceil(len(evidences) * observability / 100))
+
+                if clargs.observability is not None:
+                    observability = clargs.observability if clargs.observability > 0 else random.randint(1, 100)
+                    choices = random.sample(evidences, math.ceil(len(evidences) * observability / 100))
+                elif clargs.distribution is not None:
+                    random.shuffle(evidences)
+                    num = np.random.choice(range(len(clargs.distribution)), p=clargs.distribution)
+                    choices = evidences[:num+1]
+                else:
+                    raise ValueError('Invalid option for sampling')
+
                 for choice, evidence in choices:
                     sample[evidence].append(choice)
                 programs.append(sample)
@@ -89,9 +100,16 @@ if __name__ == '__main__':
     parser.add_argument('--max_seq_length', type=int, default=9999,
                         help='maximum length of each sequence in a program')
     parser.add_argument('--num_samples', type=int, default=0,
-                        help='number of samples of evidences per program')
-    parser.add_argument('--observability', type=int, default=100,
+                        help='number of samples per program (< 0 = adaptive, e.g., -k = number of evidences/k)')
+    parser.add_argument('--observability', type=int, default=None,
                         help='percentage of observable evidence (e.g., 100, 75, 50, etc.. 0 = random)')
+    parser.add_argument('--distribution', nargs='+', type=float, default=None,
+                        help='distribution over number of evidences in each sample (e.g., 0.3 0.5 0.2). Must sum to 1.')
     clargs = parser.parse_args()
     sys.setrecursionlimit(clargs.python_recursion_limit)
+    if clargs.num_samples > 0:
+        if clargs.observability is not None and clargs.distribution is not None:
+            parser.error('Provide exactly one of --observability or --distribution')
+        if clargs.observability is None and clargs.distribution is None:
+            parser.error('Provide exactly one of --observability or --distribution')
     extract_evidence(clargs)
