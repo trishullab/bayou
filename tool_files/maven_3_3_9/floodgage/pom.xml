@@ -9,30 +9,25 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
   </properties>
   <build>
-    <sourceDirectory>../../../src/main/java/edu/rice/cs/caper/floodgage/</sourceDirectory>
-    <testSourceDirectory>../../../src/test/java/edu/rice/cs/caper/floodgage/</testSourceDirectory>
+    <sourceDirectory>../../../src/main/java</sourceDirectory>
     <plugins>
-       <plugin>
-            <groupId>org.codehaus.mojo</groupId>
-            <artifactId>build-helper-maven-plugin</artifactId>
-            <version>1.7</version>
-            <executions>
-                <execution>
-                    <phase>generate-sources</phase>
-                    <goals>
-                        <goal>add-source</goal>
-                    </goals>
-                    <configuration>
-                        <sources>
-                            <source>../../../src/main/java/edu/rice/cs/caper/bayou/core/bayou_services_client</source>
-                            <source>../../../src/main/java/edu/rice/cs/caper/bayou/core/dsl</source> 
-                            <source>../../../src/main/java/edu/rice/cs/caper/bayou/core/dom_driver</source>
-                            <source>../../../src/main/java/edu/rice/cs/caper/bayou/core/sketch_metric</source>
-                            <source>../../../src/main/java/edu/rice/cs/caper/bayou/core/synthesizer</source>
-                        </sources>
-                    </configuration>
-                </execution>
-            </executions>
+        <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-compiler-plugin</artifactId>
+            <version>2.0.2</version>
+            <configuration>
+                <source>1.8</source>
+                <target>1.8</target>
+                <includes>
+                    <include>edu/rice/cs/caper/bayou/annotations/**/*.java</include>
+                    <include>edu/rice/cs/caper/bayou/core/bayou_services_client/**/*.java</include>
+                    <include>edu/rice/cs/caper/floodgage/application/floodgage/**/*.java</include>
+                    <include>edu/rice/cs/caper/bayou/core/dom_driver/**/*.java</include>
+                    <include>edu/rice/cs/caper/bayou/core/dsl/**/*.java</include>
+                    <include>edu/rice/cs/caper/bayou/core/sketch_metric/**/*.java</include>
+                    <include>edu/rice/cs/caper/bayou/core/synthesizer/**/*.java</include>
+                </includes>
+            </configuration>
         </plugin>
         <plugin>
             <artifactId>maven-assembly-plugin</artifactId>
