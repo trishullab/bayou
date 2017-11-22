@@ -78,7 +78,7 @@ public class ViewConsole implements View
     }
 
     @Override
-    public void declareResult(boolean success)
+    public void declareTrialResult(boolean success)
     {
         if(success)
             System.out.print("\n[PASS]");

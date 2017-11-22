@@ -49,6 +49,12 @@ class FloodGage
      */
     void run(Synthesizer synthesizer, View view) throws IOException, ParseException, ClassNotFoundException
     {
+        if(synthesizer == null)
+            throw new NullPointerException("synthesizer");
+
+        if(view == null)
+            throw new NullPointerException("view");
+
         /*
          * Parse trials.xml from inside the trialpack (assumed to be on classpath) into a Directive structure.
          */
@@ -80,12 +86,12 @@ class FloodGage
             for (Failure f : result.getFailures())
                 view.declarePassProgramTestFailure(f.getTrace());
 
-            view.declareResult(false);
+            view.declareTrialResult(false);
         }
         else // pass program did pass the test suite, proceed to running the user specified trials
         {
             List<Trial> trials = makeTrials(directive, DraftBuilderBayou1_1_0::new);
-            TrailsRunner.runTrails(trials, synthesizer, view);
+            TrialsRunner.runTrails(trials, synthesizer, view);
         }
 
     }
@@ -262,6 +268,9 @@ class FloodGage
      */
     private byte[] getResource(String name) throws IOException
     {
+        if(name == null)
+            throw new NullPointerException("name");
+
         ClassLoader loader =  this.getClass().getClassLoader();
         InputStream resourceStream = loader.getResourceAsStream(name);
 

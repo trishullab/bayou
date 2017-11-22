@@ -9,7 +9,7 @@
       <sourceFolder url="file://$MODULE_DIR$/../../../src/main/java/edu/rice/cs/caper/bayou/core/sketch_metric" isTestSource="false" packagePrefix="edu.rice.cs.caper.bayou.core.sketch_metric" />
       <sourceFolder url="file://$MODULE_DIR$/../../../src/main/java/edu/rice/cs/caper/bayou/core/synthesizer" isTestSource="false" packagePrefix="edu.rice.cs.caper.bayou.core.synthesizer" />
       <sourceFolder url="file://$MODULE_DIR$/../../../src/main/java/edu/rice/cs/caper/bayou/core/bayou_services_client" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/../../../src/main/java/edu/rice/cs/caper/bayou/core/dom_driver" isTestSource="false" packagePrefix="edu.rice.cs.caper.bayou.core.bayou_services_client" />
+      <sourceFolder url="file://$MODULE_DIR$/../../../src/main/java/edu/rice/cs/caper/bayou/core/dom_driver" isTestSource="false" packagePrefix="edu.rice.cs.caper.bayou.core.dom_driver" />
       <sourceFolder url="file://$MODULE_DIR$/../../../src/main/java/edu/rice/cs/caper/bayou/annotations" isTestSource="false" packagePrefix="edu.rice.cs.caper.bayou.annotations" />
     </content>
     <content url="file://$MODULE_DIR$">
