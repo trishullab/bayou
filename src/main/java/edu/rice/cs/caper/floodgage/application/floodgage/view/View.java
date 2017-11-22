@@ -19,7 +19,7 @@ public interface View
 
     void declareTestingResult(Object resultId);
 
-    void declareResult(boolean success);
+    void declareTrialResult(boolean success);
 
     void declareClassDoesNotInstantiate(String classname);
 
