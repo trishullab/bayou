@@ -1,0 +1,12 @@
+<trials>
+  <trial>
+    <description>Read string contents of a file using the provided buffer.</description>
+    <draftProgramPath>FileReaderBufferedDraft.java</draftProgramPath>
+    <holes>
+      <hole id="1">
+        <evidence type="keywords">read line</evidence>
+        <evidence type="type">BufferedReader</evidence>
+      </hole>
+    </holes>
+  </trial>
+</trials>
