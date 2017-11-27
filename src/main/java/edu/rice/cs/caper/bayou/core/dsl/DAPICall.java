@@ -212,7 +212,15 @@ public class DAPICall extends DASTNode
         invocation.setName(metName);
 
         /* object on which method is invoked */
-        TypedExpression object = env.search(new Type(method.getDeclaringClass()));
+        TypedExpression object;
+        if (java.lang.reflect.Modifier.isStatic(method.getModifiers())) {
+            Type type = new Type(method.getDeclaringClass());
+            type.concretizeType(env);
+            object = new TypedExpression(ast.newName(method.getDeclaringClass().getSimpleName()), type);
+            env.addImport(method.getDeclaringClass());
+        } else {
+            object = env.search(new Type(method.getDeclaringClass()));
+        }
         invocation.setExpression(object.getExpression());
 
         /* concretizeType method argument types using the above object and search for them */
