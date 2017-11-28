@@ -1,36 +1,24 @@
+/*
+Copyright 2017 Rice University
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
 package edu.rice.cs.caper.floodgage.application.floodgage.view;
 
 public class ViewConsole implements View
 {
     private int _trailNumber = 0;
 
-    @Override
-    public void declareStartOfCompilingTestSuites()
-    {
-        System.out.println();
-        System.out.println("=====================");
-        System.out.println("Compiling Test Suites");
-        System.out.println("=====================");
-    }
-
-    @Override
-    public void declareCompiling(String path)
-    {
-        System.out.print("Compiling " + path + "...");
-    }
-
-    @Override
-    public void declareCompilationComplete(String path)
-    {
-        System.out.println("ok.");
-    }
-
-
-    @Override
-    public void declareInvoking(String name)
-    {
-        System.out.print("\n\n\tInvoking " + name);
-    }
 
     @Override
     public void declareTestingTestSuite(Class testSuite, Class passProgram)
@@ -86,11 +74,6 @@ public class ViewConsole implements View
             System.out.print("\n[FAIL]");
     }
 
-    @Override
-    public void declareClassDoesNotInstantiate(String classname)
-    {
-        System.out.print("\n" + classname + " does not instantiate.");
-    }
 
     @Override
     public void declareSyntResultDoesNotCompile(Object resultId)
