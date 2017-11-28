@@ -1,3 +1,18 @@
+/*
+Copyright 2017 Rice University
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
 package edu.rice.cs.caper.floodgage.application.floodgage.model.directive.parser.xml.v1;
 
 import edu.rice.cs.caper.floodgage.application.floodgage.model.directive.*;
@@ -12,10 +27,12 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 
+/**
+ * A DirectiveXmlV1Parser that is based on the javax.xml package for xml parsing.
+ */
 public class JavaxXmlParser implements DirectiveXmlV1Parser
 {
     @Override
@@ -23,46 +40,49 @@ public class JavaxXmlParser implements DirectiveXmlV1Parser
     {
         DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
 
-
-        DocumentBuilder dBuilder;
+        /*
+         * Parse directiveString into a Document and normalize.
+         */
+        Document doc;
         try
         {
-            dBuilder = dbFactory.newDocumentBuilder();
-        }
-        catch (ParserConfigurationException e)
-        {
-            throw new RuntimeException(e);
-        }
+            DocumentBuilder dBuilder;
+            try
+            {
+                dBuilder = dbFactory.newDocumentBuilder();
+            }
+            catch (ParserConfigurationException e)
+            {
+                throw new RuntimeException(e);
+            }
 
-
-        Document doc = null;
-        try
-        {
             doc = dBuilder.parse(new ByteArrayInputStream(directiveString.getBytes()));
+
+            //http://stackoverflow.com/questions/13786607/normalization-in-dom-parsing-with-java-how-does-it-work
+            doc.getDocumentElement().normalize();
         }
         catch (SAXException | IOException e)
         {
             throw new ParseException(e);
         }
 
-        //http://stackoverflow.com/questions/13786607/normalization-in-dom-parsing-with-java-how-does-it-work
-        doc.getDocumentElement().normalize();
 
-
-
-        List<Trial> trails;
+        /*
+         * Take the (assumed root) <trials> element and collect the child <trial> elements.
+         */
+        List<Trial> trials;
         {
             final String TRIALS = "trials";
             NodeList list = doc.getElementsByTagName(TRIALS);
 
             if(list.getLength() < 1)
             {
-                return null;
+                throw new ParseException("No " + TRIALS + " elements found");
             }
             else if(list.getLength() == 1)
             {
                 Element trialsElement = (Element)list.item(0);
-                trails = parseTrials(trialsElement);
+                trials = parseTrials(trialsElement);
             }
             else
             {
@@ -70,40 +90,17 @@ public class JavaxXmlParser implements DirectiveXmlV1Parser
             }
         }
 
-        return Directive.make(trails);
+        /*
+         * Return a Directive containing the trials.
+         */
+        return Directive.make(trials);
 
 
     }
 
-//    private TestSuite parseTestSuite(Element testSuiteNode) throws ParseException
-//    {
-//        String passProgramPath = getSingleChildElementTextContent(testSuiteNode, "passProgramPath");
-//        String testSuitePath = getSingleChildElementTextContent(testSuiteNode, "testSuitePath");
-//        String resourcePath = getSingleChildElementTextContent(testSuiteNode, "resourcePath");
-//
-//        List<Trial> trails;
-//        {
-//            final String TRIALS = "trials";
-//            NodeList list = testSuiteNode.getElementsByTagName(TRIALS);
-//
-//            if(list.getLength() < 1)
-//            {
-//                return null;
-//            }
-//            else if(list.getLength() == 1)
-//            {
-//                Element trialsElement = (Element)list.item(0);
-//                trails = parseTrials(trialsElement);
-//            }
-//            else
-//            {
-//                throw new ParseException("Multiple " + TRIALS + " elements found");
-//            }
-//        }
-//
-//        return TestSuite.make(testSuitePath, passProgramPath, resourcePath, trails);
-//    }
-
+    /*
+     * Collect the child <trial> elements.
+     */
     private List<Trial> parseTrials(Element trialsElement) throws ParseException
     {
         List<Trial> trials = new LinkedList<>();
@@ -119,11 +116,18 @@ public class JavaxXmlParser implements DirectiveXmlV1Parser
 
     }
 
+    /*
+     * Create a Trial from a <trial> element.
+     */
     private Trial parseTrial(Element trialElement) throws ParseException
     {
-        String description = getSingleChildElementTextContent(trialElement, "description");
-        String draftProgramPath = getSingleChildElementTextContent(trialElement, "draftProgramPath");
-        String expectedSketchProgramPath = getSingleChildElementTextContent(trialElement, "expectedSketchPath");
+        if(trialElement == null)
+            throw new NullPointerException("trialElement");
+
+        // nulls ok because they signal element not present
+        String description = getSingleChildElementTextContentOrNull(trialElement, "description");
+        String draftProgramPath = getSingleChildElementTextContentOrNull(trialElement, "draftProgramPath");
+        String expectedSketchProgramPath = getSingleChildElementTextContentOrNull(trialElement, "expectedSketchPath");
 
         List<Hole> holes = new LinkedList<>();
         {
@@ -149,6 +153,9 @@ public class JavaxXmlParser implements DirectiveXmlV1Parser
         return Trial.make(description, draftProgramPath, expectedSketchProgramPath, holes);
     }
 
+   /*
+    * Create a Hole from a <hole> element.
+    */
     private Hole parseHole(Element holeElement)
     {
         List<Evidence> evidences = new LinkedList<>();
@@ -160,17 +167,20 @@ public class JavaxXmlParser implements DirectiveXmlV1Parser
             evidences.add(evidence);
         }
 
-        String id = getAttribute(holeElement, "id");
+        String id = getAttributeOrNull(holeElement, "id");
         return Hole.make(id, evidences);
     }
 
-    private Evidence parseEvidence(Element item)
+    /*
+     * Create Evidence from evidenceElement
+     */
+    private Evidence parseEvidence(Element evidenceElement)
     {
-        String type = getAttribute(item, "type");
-        return Evidence.make(type, item.getTextContent());
+        String type = getAttributeOrNull(evidenceElement, "type");
+        return Evidence.make(type, evidenceElement.getTextContent());
     }
 
-    private String getAttribute(Element item, String name)
+    private String getAttributeOrNull(Element item, String name)
     {
         if(item.hasAttribute(name))
             return item.getAttribute(name);
@@ -178,7 +188,8 @@ public class JavaxXmlParser implements DirectiveXmlV1Parser
         return null;
     }
 
-    private String getSingleChildElementTextContent(Element parentElement, String childElementName) throws ParseException
+    private String getSingleChildElementTextContentOrNull(Element parentElement, String childElementName)
+            throws ParseException
     {
         NodeList list = parentElement.getElementsByTagName(childElementName);
         if(list.getLength() < 1)
