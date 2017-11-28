@@ -1,15 +1,22 @@
+/*
+Copyright 2017 Rice University
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
 package edu.rice.cs.caper.floodgage.application.floodgage.view;
 
 public interface View
 {
-    void declareStartOfCompilingTestSuites();
-
-    void declareCompiling(String path);
-
-    void declareCompilationComplete(String path);
-
-
-    void declareInvoking(String name);
 
     void declareTestingTestSuite(Class testSuite, Class passProgram);
 
@@ -20,8 +27,6 @@ public interface View
     void declareTestingResult(Object resultId);
 
     void declareTrialResult(boolean success);
-
-    void declareClassDoesNotInstantiate(String classname);
 
     void declareSyntResultDoesNotCompile(Object resultId);
 
