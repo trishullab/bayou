@@ -60,25 +60,57 @@ public class ViewConsole implements View
     }
 
     @Override
-    public void declareTestingResult(Object resultId)
+    public void declareTrialResultPassProgramDidntPass()
     {
-        System.out.print("\n\n[Testing Synthesis Result " + resultId + "]");
+        System.out.print("\n[FAIL] (Pass program didn't pass.)");
     }
 
     @Override
-    public void declareTrialResult(boolean success)
+    public void declareTrialResultSynthesisFailed()
     {
-        if(success)
+        System.out.print("\n[FAIL] (Synthesis failed.)");
+    }
+
+    @Override
+    public void declareTrialResultResultsDidntCompile()
+    {
+        System.out.print("\n[FAIL] (Results didn't compile.)");
+    }
+
+    @Override
+    public void declareSynthResultResult(boolean compiled, boolean testCasesPass, Boolean matchesSketch)
+    {
+        if(!compiled && testCasesPass)
+            throw new IllegalArgumentException("Cannot run tests against uncompiled program");
+
+        boolean sketchFailed = matchesSketch != null && !matchesSketch;
+
+        if(compiled && testCasesPass && !sketchFailed)
+        {
             System.out.print("\n[PASS]");
+        }
         else
+        {
             System.out.print("\n[FAIL]");
+
+            if(!compiled)
+                System.out.print("\n\tResult did not compile.");
+
+            if(!testCasesPass)
+                System.out.print("\n\tTest cases did not pass.");
+
+            if(sketchFailed)
+                System.out.print("\n\tNo sketches matched.");
+        }
+
+
     }
 
 
     @Override
     public void declareSyntResultDoesNotCompile(Object resultId)
     {
-        System.out.print("\n" + resultId + " does not compile. [FAIL]");
+        System.out.print("\n" + resultId + " does not compile.");
     }
 
     @Override
@@ -125,14 +157,22 @@ public class ViewConsole implements View
     @Override
     public void warnSketchesNullMismatch()
     {
-        System.out.print("\n[Warning] Only one sketch is null");
+        System.out.print("\n[Warning] Only one sketch is null.");
     }
 
     @Override
-    public void declareTally(int numPasses, int numFailures)
+    public void declarePointScore(int points, int possiblePoints)
     {
+        if(points < 0)
+            throw new IllegalArgumentException("points must be >=0");
+
+        if(possiblePoints < 0)
+            throw new IllegalArgumentException("possiblePoints must be >=0");
+
         System.out.println("\n==============================================");
-        System.out.println(numPasses + " passes and " + numFailures + " failures.");
+        System.out.print("Score: " + points + " / " + possiblePoints);
+        if(possiblePoints != 0)
+            System.out.print(" (" + (points / (double)possiblePoints)  + "%)");
     }
 
 }

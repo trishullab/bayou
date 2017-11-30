@@ -25,14 +25,36 @@ import org.junit.runner.notification.Failure;
  */
 class TestSuiteRunner
 {
+    static class RunResult
+    {
+        final int FailCount;
+
+        final int TestCaseCount;
+
+        RunResult(int failCount, int testCaseCount)
+        {
+            if(failCount < 0)
+                throw new IllegalArgumentException("failCount must be >=0");
+
+            if(testCaseCount < 0)
+                throw new IllegalArgumentException("testCaseCount must be >=0");
+
+            if(failCount > testCaseCount)
+                throw new IllegalArgumentException("cannot fail more testcases than exist");
+
+            FailCount = failCount;
+            TestCaseCount = testCaseCount;
+        }
+    }
+
     /**
      * Creates and runs a JUnit test runner for testSuite.
      *
      * @param testSuite the class defining test cases to run
      * @param view a UI component to report test failures to
-     * @return if all test cases passed
+     * @return the counts of failures and total test cases.
      */
-    static boolean runTestSuiteAgainst(Class testSuite, View view)
+    static RunResult runTestSuiteAgainst(Class testSuite, View view)
     {
         if(testSuite == null)
             throw new NullPointerException("testSuite");
@@ -46,11 +68,10 @@ class TestSuiteRunner
         {
             for (Failure f : result.getFailures())
                 view.declarePassProgramTestFailure(f.getTrace());
-
-            return false;
         }
 
-        return true;
+
+        return new RunResult(result.getFailureCount(), result.getRunCount());
     }
 
 }
