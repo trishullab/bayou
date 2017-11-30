@@ -26,13 +26,11 @@ public interface View
 
     void declareTrialResultPassProgramDidntPass();
 
+    void declareStartOfTestCases();
+
     void declareTrialResultSynthesisFailed();
 
-    void declareTrialResultResultsDidntCompile();
-
     void declareSynthResultResult(boolean compiled, boolean testCasesPass, Boolean matchesSketch);
-
-    void declareSyntResultDoesNotCompile(Object resultId);
 
     void declareSynthesisFailed();
 

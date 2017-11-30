@@ -66,16 +66,17 @@ public class ViewConsole implements View
     }
 
     @Override
+    public void declareStartOfTestCases()
+    {
+        System.out.print("\n[Starting to run test runner.]");
+    }
+
+    @Override
     public void declareTrialResultSynthesisFailed()
     {
         System.out.print("\n[FAIL] (Synthesis failed.)");
     }
 
-    @Override
-    public void declareTrialResultResultsDidntCompile()
-    {
-        System.out.print("\n[FAIL] (Results didn't compile.)");
-    }
 
     @Override
     public void declareSynthResultResult(boolean compiled, boolean testCasesPass, Boolean matchesSketch)
@@ -106,12 +107,6 @@ public class ViewConsole implements View
 
     }
 
-
-    @Override
-    public void declareSyntResultDoesNotCompile(Object resultId)
-    {
-        System.out.print("\n" + resultId + " does not compile.");
-    }
 
     @Override
     public void declareSynthesisFailed()
