@@ -211,16 +211,14 @@ class TrialsRunner
                 boolean resultCompiled;
                 try
                 {
+                    System.out.println(""); // ensure any compiler errors start on new line
                     CompilerUtils.CACHED_COMPILER.loadFromJava(result.className, result.classSource);
                     resultCompiled = true;
                     obtainedPointsAccum++; // for compiling
                 }
                 catch (ClassNotFoundException e)
                 {
-                    view.declareSyntResultDoesNotCompile(resultId);
-                    view.declareTrialResultResultsDidntCompile();
                     resultCompiled = false;
-
                 }
 
                 /*
@@ -232,6 +230,7 @@ class TrialsRunner
                 {
                     if(resultCompiled)
                     {
+                        view.declareStartOfTestCases();
                         Class resultSpecificTestSuite = makeResultSpecificTestSuite(result.className);
                         TestSuiteRunner.RunResult runResult =
                                 TestSuiteRunner.runTestSuiteAgainst(resultSpecificTestSuite, view);
@@ -282,7 +281,7 @@ class TrialsRunner
         view.declarePointScore(obtainedPointsAccum, possiblePointsAccum);
 
         if(anySynthesizeFailed)
-            view.declareSynthesisFailed();
+            view.declareSynthesisFailed(); // this can really influence the score by skipping points, so remind.
     }
 
     /*
