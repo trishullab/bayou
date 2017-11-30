@@ -24,9 +24,13 @@ public interface View
 
     void declareSynthesizeResult(Object id, String result);
 
-    void declareTestingResult(Object resultId);
+    void declareTrialResultPassProgramDidntPass();
 
-    void declareTrialResult(boolean success);
+    void declareTrialResultSynthesisFailed();
+
+    void declareTrialResultResultsDidntCompile();
+
+    void declareSynthResultResult(boolean compiled, boolean testCasesPass, Boolean matchesSketch);
 
     void declareSyntResultDoesNotCompile(Object resultId);
 
@@ -44,5 +48,5 @@ public interface View
 
     void warnSketchesNullMismatch();
 
-    void declareTally(int numPasses, int numFailures);
+    void declarePointScore(int points, int possiblePoints);
 }
