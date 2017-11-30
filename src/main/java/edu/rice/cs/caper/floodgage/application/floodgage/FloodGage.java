@@ -100,8 +100,6 @@ class FloodGage
         {
             for (Failure f : result.getFailures())
                 view.declarePassProgramTestFailure(f.getTrace());
-
-            view.declareTrialResult(false);
         }
         else // pass program did pass the test suite, proceed to running the user specified trials
         {

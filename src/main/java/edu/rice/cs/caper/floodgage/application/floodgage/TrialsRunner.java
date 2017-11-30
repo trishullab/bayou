@@ -33,6 +33,7 @@ import org.eclipse.jdt.core.dom.CompilationUnit;
 import org.json.JSONObject;
 
 import java.io.IOException;
+import java.lang.reflect.Method;
 import java.util.*;
 
 class TrialsRunner
@@ -79,8 +80,10 @@ class TrialsRunner
             throw new NullPointerException("view");
 
         int currentTrialId = 0; // unique number for the current trial.
-        int numPasses = 0;      // number of trials that executed without errors
-        int numFailures = 0;    // number of trials that executed with errors
+        int obtainedPointsAccum = 0; // track the number of points the trial has accumulated so far.
+        int possiblePointsAccum = 0; // track the most number of points the trial could accumulate.
+        boolean anySynthesizeFailed = false; // track any thrown SynthesizeException from synthesizer.synthesize(...)
+
         for(Trial trial : trials)
         {
             currentTrialId++;
@@ -98,9 +101,9 @@ class TrialsRunner
             }
             catch (SynthesizeException e)
             {
-                numFailures++;
                 view.declareSynthesisFailed();
-                view.declareTrialResult(false);
+                view.declareTrialResultSynthesisFailed();
+                anySynthesizeFailed = true;
                continue;
             }
             view.declareNumberOfResults(synthResults.size());
@@ -128,9 +131,13 @@ class TrialsRunner
 
             /*
              * If an expected sketch source was added to this trial, construct the sketch from the source.
+             * Also increment possiblePointsAccum if there is an expected sketch.
              *
              * If no expected sketch is defined, set expectedSketch to null.
              */
+            Boolean anySketchMatch; // true: sketch expected and a match found in some result.
+                                    // false: sketch expected but no match found so far among any result.
+                                    // null: no expected sketch.
             DSubTree expectedSketch;
             {
                 if(trial.containsSketchProgramSource())
@@ -138,12 +145,18 @@ class TrialsRunner
                     String expectedSketchSource = trial.tryGetSketchProgramSource(null);
                     expectedSketch = makeSketchFromSource(expectedSketchSource,
                                                           trial.getDraftProgramClassName() + ".java");
+                    anySketchMatch = false; // we will test to sketch matches, so init to none seen yet
+
                 }
                 else
                 {
                     expectedSketch = null;
+                    anySketchMatch = null; // we wont do sketch testing to singal no expected sketch
                 }
             }
+
+            if(trial.containsSketchProgramSource())
+                possiblePointsAccum++; // possible point for some result matching the sketch.
 
             /*
              * For each result:
@@ -156,44 +169,23 @@ class TrialsRunner
             for(SourceClass result : synthResultsWithUniqueClassNames)
             {
                 resultId++;
-                view.declareTestingResult(resultId);
+                possiblePointsAccum++; // possible point for result compiling.
+
+
                 view.declareSynthesizeResult(resultId, result.classSource);
-
-                /*
-                 * Check that the result compiles.
-                 */
-                try
-                {
-                    CompilerUtils.CACHED_COMPILER.loadFromJava(result.className, result.classSource);
-                }
-                catch (ClassNotFoundException e)
-                {
-                    view.declareSyntResultDoesNotCompile(resultId);
-                    view.declareTrialResult(false);
-                    numFailures++;
-                    continue;
-                }
-
-                boolean trialPassesSoFar = true; // track the current status of the trial passing all evaluations.
-
-                /*
-                 * Check that result passes the test suite.
-                 *
-                 * (Construct a test suite for result and run the result against the suite.)
-                 */
-                Class resultSpecificTestSuite = makeTrialSpecificTestSuite(result.className);
-                trialPassesSoFar = TestSuiteRunner.runTestSuiteAgainst(resultSpecificTestSuite, view);
 
                 /*
                  * If a sketch expectation is declared for this trial, perform sketch comparison.
                  */
-                if(trial.containsSketchProgramSource())
+                boolean sketchMatch = false;
+                if(anySketchMatch != null) // if there is an expected sketch
                 {
                     DSubTree resultSketch = makeSketchFromSource(result.classSource, result.className + ".java");
 
                     if(expectedSketch == null && resultSketch == null) // both null
                     {
                         view.warnSketchesNull();
+                        sketchMatch = true;
                     }
                     else if(expectedSketch != null && resultSketch != null) // both non-null
                     {
@@ -201,26 +193,84 @@ class TrialsRunner
                         float equalityResult = m.compute(expectedSketch, Collections.singletonList(resultSketch), "");
                         view.declareSketchMetricResult(equalityResult);
 
-                        if(equalityResult != 1)
-                            trialPassesSoFar = false;
+                        if(equalityResult == 1)
+                            sketchMatch = true;
 
                     }
                     else // one null
                     {
                         view.warnSketchesNullMismatch();
-                        trialPassesSoFar = false;
+                    }
+                    anySketchMatch = anySketchMatch || sketchMatch;
+                }
+
+
+                /*
+                 * Check that the result compiles.
+                 */
+                boolean resultCompiled;
+                try
+                {
+                    CompilerUtils.CACHED_COMPILER.loadFromJava(result.className, result.classSource);
+                    resultCompiled = true;
+                    obtainedPointsAccum++; // for compiling
+                }
+                catch (ClassNotFoundException e)
+                {
+                    view.declareSyntResultDoesNotCompile(resultId);
+                    view.declareTrialResultResultsDidntCompile();
+                    resultCompiled = false;
+
+                }
+
+                /*
+                 * If result compiles, run test cases.
+                 *
+                 * (Construct a test suite for result and run the result against the suite.)
+                 */
+                boolean testCasesPass;
+                {
+                    if(resultCompiled)
+                    {
+                        Class resultSpecificTestSuite = makeResultSpecificTestSuite(result.className);
+                        TestSuiteRunner.RunResult runResult =
+                                TestSuiteRunner.runTestSuiteAgainst(resultSpecificTestSuite, view);
+                        possiblePointsAccum+=runResult.TestCaseCount;
+                        obtainedPointsAccum+=runResult.TestCaseCount-runResult.FailCount;
+                        testCasesPass=runResult.FailCount==0;
+                    }
+                    else
+                    {
+                        testCasesPass = false; // even if no test cases we say uncompilable code fails the null t.c.
+
+                        /*
+                         * Count the number of test cases in TestSuite (since we didnt run JUnit) and add each
+                         * to the possiblePointsAccum count.
+                         */
+                        Class testSuiteClass;
+                        try
+                        {
+                            testSuiteClass = Class.forName("TestSuite");
+                        }
+                        catch (ClassNotFoundException e)
+                        {
+                            throw new RuntimeException(e); // TestSuite should be in the trialpack
+                        }
+
+                        for(Method m : testSuiteClass.getMethods())
+                        {
+                            if(m.getAnnotation(org.junit.Test.class) != null)
+                                possiblePointsAccum++;
+                        }
                     }
                 }
 
                 /*
-                 * Update tallies and report results.
+                 * Report results for the result.
                  */
-                if(trialPassesSoFar)
-                    numPasses++;
-                else
-                    numFailures++;
 
-                view.declareTrialResult(trialPassesSoFar);
+                Boolean reportSketchMatch = trial.containsSketchProgramSource() ? sketchMatch : null;
+                view.declareSynthResultResult(resultCompiled, testCasesPass, reportSketchMatch);
 
             }
 
@@ -229,7 +279,10 @@ class TrialsRunner
         /*
          * Report total tallies.
          */
-        view.declareTally(numPasses, numFailures);
+        view.declarePointScore(obtainedPointsAccum, possiblePointsAccum);
+
+        if(anySynthesizeFailed)
+            view.declareSynthesisFailed();
     }
 
     /*
@@ -291,7 +344,7 @@ class TrialsRunner
     /*
      * Compiles and loads a class named [resultName]Test extends the class TestSuite.
      */
-    private static Class makeTrialSpecificTestSuite(String resultName)
+    private static Class makeResultSpecificTestSuite(String resultName)
     {
         String className =  resultName + "Test";
         String source = "public class " + className + " extends TestSuite"  + "\n" +
