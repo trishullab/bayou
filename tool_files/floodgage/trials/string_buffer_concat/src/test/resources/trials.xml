@@ -1,0 +1,23 @@
+<trials>
+  <!-- define trails here -->
+  <trial>
+    <description>Read string contents of a file.</description>
+    <draftProgramPath>Foo.java</draftProgramPath>
+    <holes>
+      <hole id="1">
+        <evidence type="call">hasNext</evidence>
+        <evidence type="type">java.util.Iterator</evidence>
+      </hole>
+    </holes>
+  </trial>
+  <trial>
+    <description>Read string contents of a file.</description>
+    <draftProgramPath>Foo.java</draftProgramPath>
+    <holes>
+      <hole id="1">
+        <evidence type="keywords">append iterator isEmpty StringBuffer</evidence>
+      </hole>
+    </holes>
+  </trial>
+</trials>
+
