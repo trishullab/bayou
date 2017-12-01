@@ -46,5 +46,7 @@ public interface View
 
     void warnSketchesNullMismatch();
 
-    void declarePointScore(int points, int possiblePoints);
+    void declarePointScore(int possibleCompilePointsAccum, int obtainedCompilePointsAccum,
+                           int possibleTestCasePointsAccum, int obtainedTestCasePointsAccum,
+                           int possibleSketchMatchPointsAccum, int obtainedSketchMatchPointsAccum);
 }
