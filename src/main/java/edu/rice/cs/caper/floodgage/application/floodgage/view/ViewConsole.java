@@ -156,18 +156,47 @@ public class ViewConsole implements View
     }
 
     @Override
-    public void declarePointScore(int points, int possiblePoints)
+    public void declarePointScore(int possibleCompilePointsAccum, int obtainedCompilePointsAccum,
+                                  int possibleTestCasePointsAccum, int obtainedTestCasePointsAccum,
+                                  int possibleSketchMatchPointsAccum, int obtainedSketchMatchPointsAccum)
     {
-        if(points < 0)
-            throw new IllegalArgumentException("points must be >=0");
+        if(possibleCompilePointsAccum < 0)
+            throw new IllegalArgumentException("possibleCompilePointsAccum must be >=0");
 
-        if(possiblePoints < 0)
-            throw new IllegalArgumentException("possiblePoints must be >=0");
+        if(obtainedCompilePointsAccum < 0)
+            throw new IllegalArgumentException("obtainedCompilePointsAccum must be >=0");
+
+        if(obtainedCompilePointsAccum > possibleCompilePointsAccum)
+            throw new IllegalArgumentException("obtainedCompilePointsAccum may not excede possibleCompilePointsAccum");
+
+
+        if(possibleTestCasePointsAccum < 0)
+            throw new IllegalArgumentException("possibleTestCasePointsAccum must be >=0");
+
+        if(obtainedTestCasePointsAccum < 0)
+            throw new IllegalArgumentException("obtainedTestCasePointsAccum must be >=0");
+
+        if(obtainedTestCasePointsAccum > possibleTestCasePointsAccum)
+            throw new IllegalArgumentException("obtainedTestCasePointsAccum may not excede possibleTestCasePointsAccum");
+
+
+        if(possibleSketchMatchPointsAccum < 0)
+            throw new IllegalArgumentException("possibleSketchMatchPointsAccum must be >=0");
+
+        if(obtainedSketchMatchPointsAccum < 0)
+            throw new IllegalArgumentException("obtainedSketchMatchPointsAccum must be >=0");
+
+        if(obtainedSketchMatchPointsAccum > possibleSketchMatchPointsAccum)
+            throw new IllegalArgumentException("obtainedSketchMatchPointsAccum may not excede possibleSketchMatchPointsAccum");
+
 
         System.out.println("\n==============================================");
-        System.out.print("Score: " + points + " / " + possiblePoints);
-        if(possiblePoints != 0)
-            System.out.print(" (" + (points / (double)possiblePoints)  + "%)");
+        System.out.println("\nCompile Score: " + obtainedCompilePointsAccum + " / " + possibleCompilePointsAccum);
+        System.out.println("\nTest Case Score: " + obtainedTestCasePointsAccum + " / " + possibleTestCasePointsAccum);
+
+        if(possibleSketchMatchPointsAccum > 0)
+            System.out.println("\nSketch Match Score: " + obtainedSketchMatchPointsAccum + " / " + possibleSketchMatchPointsAccum);
+
     }
 
 }

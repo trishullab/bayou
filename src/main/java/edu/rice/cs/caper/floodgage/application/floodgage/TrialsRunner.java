@@ -80,8 +80,13 @@ class TrialsRunner
             throw new NullPointerException("view");
 
         int currentTrialId = 0; // unique number for the current trial.
-        int obtainedPointsAccum = 0; // track the number of points the trial has accumulated so far.
-        int possiblePointsAccum = 0; // track the most number of points the trial could accumulate.
+        int possibleCompilePointsAccum = 0;
+        int obtainedCompilePointsAccum = 0;
+        int possibleTestCasePointsAccum = 0;
+        int obtainedTestCasePointsAccum = 0;
+        int possibleSketchMatchPointsAccum = 0;
+        int obtainedSketchMatchPointsAccum = 0;
+
         boolean anySynthesizeFailed = false; // track any thrown SynthesizeException from synthesizer.synthesize(...)
 
         for(Trial trial : trials)
@@ -156,7 +161,7 @@ class TrialsRunner
             }
 
             if(trial.containsSketchProgramSource())
-                possiblePointsAccum++; // possible point for some result matching the sketch.
+                possibleSketchMatchPointsAccum++; // possible point for some result matching the sketch.
 
             /*
              * For each result:
@@ -169,7 +174,7 @@ class TrialsRunner
             for(SourceClass result : synthResultsWithUniqueClassNames)
             {
                 resultId++;
-                possiblePointsAccum++; // possible point for result compiling.
+                possibleCompilePointsAccum++; // possible point for result compiling.
 
 
                 view.declareSynthesizeResult(resultId, result.classSource);
@@ -214,7 +219,7 @@ class TrialsRunner
                     System.out.println(""); // ensure any compiler errors start on new line
                     CompilerUtils.CACHED_COMPILER.loadFromJava(result.className, result.classSource);
                     resultCompiled = true;
-                    obtainedPointsAccum++; // for compiling
+                    obtainedCompilePointsAccum++; // for compiling
                 }
                 catch (ClassNotFoundException e)
                 {
@@ -234,8 +239,8 @@ class TrialsRunner
                         Class resultSpecificTestSuite = makeResultSpecificTestSuite(result.className);
                         TestSuiteRunner.RunResult runResult =
                                 TestSuiteRunner.runTestSuiteAgainst(resultSpecificTestSuite, view);
-                        possiblePointsAccum+=runResult.TestCaseCount;
-                        obtainedPointsAccum+=runResult.TestCaseCount-runResult.FailCount;
+                        possibleTestCasePointsAccum+=runResult.TestCaseCount;
+                        obtainedTestCasePointsAccum+=runResult.TestCaseCount-runResult.FailCount;
                         testCasesPass=runResult.FailCount==0;
                     }
                     else
@@ -259,7 +264,7 @@ class TrialsRunner
                         for(Method m : testSuiteClass.getMethods())
                         {
                             if(m.getAnnotation(org.junit.Test.class) != null)
-                                possiblePointsAccum++;
+                                possibleTestCasePointsAccum++;
                         }
                     }
                 }
@@ -273,12 +278,21 @@ class TrialsRunner
 
             }
 
+            /*
+             * If any sketch matched among the results, award a point. 
+             */
+            if(anySketchMatch != null && anySketchMatch)
+                obtainedSketchMatchPointsAccum++;
+
+
         }
 
         /*
          * Report total tallies.
          */
-        view.declarePointScore(obtainedPointsAccum, possiblePointsAccum);
+        view.declarePointScore(possibleCompilePointsAccum, obtainedCompilePointsAccum, possibleTestCasePointsAccum,
+                               obtainedTestCasePointsAccum, possibleSketchMatchPointsAccum,
+                               obtainedSketchMatchPointsAccum);
 
         if(anySynthesizeFailed)
             view.declareSynthesisFailed(); // this can really influence the score by skipping points, so remind.
