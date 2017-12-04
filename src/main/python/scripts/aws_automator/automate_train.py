@@ -21,6 +21,9 @@ import json
 import time
 import os
 import textwrap
+import socket
+
+from paramiko import BadHostKeyException, AuthenticationException, SSHException
 
 HELP = """\
 Config options should be given as a JSON file:
@@ -144,7 +147,7 @@ def connect_to_ip(ssh_private_key_file, ip):
     for attempts in range(10):
         try:
             ssh.connect(ip, username='ubuntu', pkey=key, timeout=600, auth_timeout=600, banner_timeout=600)
-        except TimeoutError:
+        except (SSHException, AuthenticationException, BadHostKeyException, socket.error) as _:
             print('#{}...'.format(attempts+1), end='', flush=True)
     return ssh
 
