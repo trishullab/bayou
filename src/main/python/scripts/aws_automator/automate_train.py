@@ -253,7 +253,7 @@ def pingall():
         print()
 
 
-def wrapup(training_id, s3_model_location):
+def wrapup(training_id, checkpoint_epoch, s3_model_location):
     with open('instances.json') as f:
         js = json.load(f)
 
@@ -272,6 +272,12 @@ def wrapup(training_id, s3_model_location):
 
     with message('Connecting to public IP {}'.format(public_ip)):
         ssh = connect_to_ip(ssh_private_key_file, public_ip)
+
+    with message('Setting checkpoint to epoch {}'.format(checkpoint_epoch)):
+        exec_command_blocking(ssh, 'echo "model_checkpoint_path: \"model{}.ckpt\"" > save/checkpoint'
+                              .format(checkpoint_epoch))
+        exec_command_blocking(ssh, 'echo "all_model_checkpoint_paths: \"model{}.ckpt\"" >> save/checkpoint'
+                              .format(checkpoint_epoch))
 
     with message('Tarballing the model into {}.tar.gz'.format(training_id)):
         exec_command_blocking(ssh, 'tar czf {}.tar.gz -C save .'.format(training_id, training_id))
@@ -298,8 +304,9 @@ if __name__ == '__main__':
                         help='config file (see description above for help)')
     parser.add_argument('--pingall', action='store_true',
                         help='get training status of all instances')
-    parser.add_argument('--wrapup', type=str, nargs=2,
-                        help='save the given model training ID to the given S3 location, and terminate the instance')
+    parser.add_argument('--wrapup', type=str, nargs=3,
+                        help='save the given model training ID, with the given epoch number (int) as checkpoint,'
+                             ' to the given S3 location, and terminate the instance')
     clargs = parser.parse_args()
     nargs = (1 if clargs.config is not None else 0) + \
             (1 if clargs.pingall else 0) + \
@@ -318,4 +325,4 @@ if __name__ == '__main__':
     elif clargs.pingall:
         pingall()
     elif clargs.wrapup is not None:
-        wrapup(clargs.wrapup[0], clargs.wrapup[1])
+        wrapup(clargs.wrapup[0], clargs.wrapup[1], clargs.wrapup[2])
