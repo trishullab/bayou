@@ -15,6 +15,8 @@ limitations under the License.
 */
 package edu.rice.cs.caper.bayou.core.synthesizer;
 
+import com.google.googlejavaformat.java.Formatter;
+import com.google.googlejavaformat.java.FormatterException;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import edu.rice.cs.caper.bayou.core.dsl.*;
@@ -87,10 +89,11 @@ public class Synthesizer {
                     continue;
                 String program = visitor.synthesizedProgram.replaceAll("\\s", "");
                 if (! programs.contains(program)) {
+                    String formattedProgram = new Formatter().formatSource(visitor.synthesizedProgram);
                     programs.add(program);
-                    synthesizedPrograms.add(visitor.synthesizedProgram);
+                    synthesizedPrograms.add(formattedProgram);
                 }
-            } catch (SynthesisException e) {
+            } catch (SynthesisException|FormatterException e) {
                 // do nothing and try next ast
             }
         }
