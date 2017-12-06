@@ -84,8 +84,8 @@ public class Variable {
         cast.setType(type.simpleT(ast));
 
         MethodInvocation invocation = ast.newMethodInvocation();
-        invocation.setExpression(ast.newSimpleName("Feedback"));
-        invocation.setName(ast.newSimpleName("initialize"));
+        invocation.setExpression(ast.newSimpleName("Bayou"));
+        invocation.setName(ast.newSimpleName("$init"));
         cast.setExpression(invocation);
 
         return cast;

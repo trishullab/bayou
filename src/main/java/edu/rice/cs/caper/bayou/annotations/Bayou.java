@@ -15,8 +15,8 @@ limitations under the License.
 */
 package edu.rice.cs.caper.bayou.annotations;
 
-public class Feedback {
-    public static Object initialize() {
+public class Bayou {
+    public static Object $init() {
         return null;
     }
 }

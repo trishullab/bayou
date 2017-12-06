@@ -15,7 +15,7 @@ limitations under the License.
 */
 package edu.rice.cs.caper.bayou.core.synthesizer;
 
-import edu.rice.cs.caper.bayou.annotations.Feedback;
+import edu.rice.cs.caper.bayou.annotations.Bayou;
 import edu.rice.cs.caper.bayou.core.dsl.DSubTree;
 import org.eclipse.jdt.core.dom.*;
 import org.eclipse.jdt.core.dom.rewrite.ASTRewrite;
@@ -150,7 +150,7 @@ public class Visitor extends ASTVisitor {
 
             // set the default initializer if the variable is a dollar variable
             if (var.isDefaultInit()) {
-                env.addImport(Feedback.class); // import the "Feedback" class in Bayou
+                env.addImport(Bayou.class); // import the "Bayou" class in Bayou
                 varDeclFrag.setInitializer(var.createDefaultInitializer(ast));
             }
 
