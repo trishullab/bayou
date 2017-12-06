@@ -12,7 +12,7 @@ public class PassProgram implements BiConsumer<File, String>
             BufferedWriter bw = new BufferedWriter(fw);
             bw.write(content);
             bw.close();
-        } catch (IOException e) { }
+        } catch (Exception e) { throw new RuntimeException(e);}
     }
 }
 
