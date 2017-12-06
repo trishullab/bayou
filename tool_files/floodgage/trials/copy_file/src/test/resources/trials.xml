@@ -1,0 +1,15 @@
+<trials>
+  <trial>
+    <description>Delete a file.</description>
+    <draftProgramPath>Draft.java</draftProgramPath>
+    <holes>
+      <hole id="1">
+        <evidence type="keywords">copy file</evidence>
+        <evidence type="type">FileInputStream</evidence>
+        <evidence type="type">FileOutputStream</evidence>
+        <evidence type="call">read write</evidence>
+      </hole>
+    </holes>
+  </trial>
+</trials>
+
