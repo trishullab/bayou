@@ -28,22 +28,18 @@ import java.util.List;
 
 class ApiSynthesisLocalClient
 {
-    private static final String _testDialog =
-            "import edu.rice.cs.caper.bayou.annotations.Evidence;\n" +
-                    "import android.content.Context;\n" +
-                    "\n" +
-                    "public class TestDialog {\n" +
-                    "\n" +
-                    "    void createDialog(Context c) {\n" +
-                    "        String str1 = \"something here\";\n" +
-                    "        String str2 = \"another thing here\";\n" +
-                    "        {\n" +
-                    "            Evidence.apicalls(\"setTitle\", \"setMessage\");\n" +
-                    "            Evidence.types(\"AlertDialog\");\n" +
-                    "        }\n" +
-                    "    }\n" +
-                    "\n" +
-                    "}";
+    private static final String _testAddItemToList =
+        "import edu.rice.cs.caper.bayou.annotations.Evidence;\n" +
+        "import java.util.List;\n" +
+        "\n" +
+        "public class TestUtil {\n" +
+        "\n" +
+        "    void add(List<String> items, String item) {\n" +
+        "        { // Provide evidence within a separate block\n" +
+        "            /// call:add\n" +
+        "        } // Synthesized code will replace this block\n" +
+        "    }   \n" +
+        "}";
 
     private static void synthesise(String code, Integer sampleCount, int maxProgramCount) throws IOException, SynthesisError
     {
@@ -98,7 +94,7 @@ class ApiSynthesisLocalClient
         String code;
         if(args.length == 0)
         {
-            code = _testDialog;
+            code = _testAddItemToList;
         }
         else
         {
