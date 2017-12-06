@@ -30,16 +30,24 @@ class ApiSynthesisLocalClient
 {
     private static final String _testAddItemToList =
         "import edu.rice.cs.caper.bayou.annotations.Evidence;\n" +
-        "import java.util.List;\n" +
-        "\n" +
-        "public class TestUtil {\n" +
-        "\n" +
-        "    void add(List<String> items, String item) {\n" +
-        "        { // Provide evidence within a separate block\n" +
-        "            /// call:add\n" +
-        "        } // Synthesized code will replace this block\n" +
-        "    }   \n" +
-        "}";
+                "import java.util.List;\n" +
+                "\n" +
+                "// Bayou supports two types of evidence:\n" +
+                "// 1. apicalls - API methods the code should invoke\n" +
+                "// 2. types - datatypes of objects which invoke API methods\n" +
+                "\n" +
+                "public class TestUtil {\n" +
+                "\n" +
+                "    // NOTE: Bayou only supports one synthesis task in a given\n" +
+                "    // program at a time, so please comment out the rest.\n" +
+                "\n" +
+                "    /* Read from a file */\n" +
+                "    void add(List<String> items, String item) {\n" +
+                "        { // Provide evidence within a separate block\n" +
+                "            /// call:add\n" +
+                "        } // Synthesized code will replace this block\n" +
+                "    }   \n" +
+                "}";
 
     private static void synthesise(String code, Integer sampleCount, int maxProgramCount) throws IOException, SynthesisError
     {
