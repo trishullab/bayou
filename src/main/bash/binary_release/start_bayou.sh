@@ -30,7 +30,5 @@ if [ $# -eq 0 ]
     LOGS_DIR=$1
 fi
 
-mkdir -p "$LOGS_DIR"
-
 export PYTHONPATH=$SCRIPT_DIR/python
 python3 $SCRIPT_DIR/python/bayou/server/ast_server.py --save_dir "$SCRIPT_DIR/resources/model" --logs_dir "$LOGS_DIR"

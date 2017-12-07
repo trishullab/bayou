@@ -150,6 +150,11 @@ if __name__ == '__main__':
     else:
         log_paths = [(dir + "/ast_server.log") for dir in args.logs_dir.split(os.pathsep)]
 
+    # ensure the parent directory of each log path exists or create it
+    for log_path in log_paths:
+        if not os.path.exists(os.path.dirname(log_path)):
+            os.makedirs(os.path.dirname(log_path))
+
     # Create the logger for the application.
     logging.basicConfig(
         format='%(asctime)s,%(msecs)d %(levelname)-8s [%(threadName)s %(filename)s:%(lineno)d] %(message)s',
