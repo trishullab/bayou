@@ -8,6 +8,9 @@
       <sourceFolder url="file://$MODULE_DIR$/../../../src/main/java/edu/rice/cs/caper/programming" isTestSource="false" packagePrefix="edu.rice.cs.caper.programming" />
       <sourceFolder url="file://$MODULE_DIR$/../../../src/main/java/edu/rice/cs/caper/servlet" isTestSource="false" packagePrefix="edu.rice.cs.caper.servlet" />
     </content>
+    <content url="file://$MODULE_DIR$/../../../src/main/resources">
+      <sourceFolder url="file://$MODULE_DIR$/../../../src/main/resources" type="java-resource" />
+    </content>
     <content url="file://$MODULE_DIR$/../../maven_3_3_9/bayou">
       <excludeFolder url="file://$MODULE_DIR$/../../maven_3_3_9/bayou/target" />
     </content>

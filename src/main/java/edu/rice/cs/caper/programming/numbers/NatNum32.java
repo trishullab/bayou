@@ -39,6 +39,29 @@ public class NatNum32
     }
 
     /**
+     * Creates an integer with the same value as value.
+     * @param value the integer value i string form
+     * @throws IllegalArgumentException if value is <= 0 or not a number.
+     */
+    public NatNum32(String value)
+    {
+        int valueInt;
+        try
+        {
+            valueInt = Integer.parseInt(value);
+        }
+        catch (NumberFormatException e)
+        {
+            throw new IllegalArgumentException(e);
+        }
+
+        if(valueInt <= 0)
+            throw new IllegalArgumentException("A NatNum32 may not be zero or negative");
+
+        AsInt = valueInt;
+    }
+
+    /**
      * Compares this object to the specified object.  The result is
      * {@code true} if and only if the argument is not
      * {@code null} and is an {@code Integer} object that

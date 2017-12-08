@@ -53,6 +53,8 @@ public class Configuration
 
     public static final Synthesizer.Mode ApiSynthMode;
 
+    public static final String AstServerAuthority;
+
     static
     {
         Properties properties = new Properties();
@@ -93,6 +95,7 @@ public class Configuration
         AndroidJarPath = new File(properties.getProperty("AndroidJarPath"));
         CorsAllowedOrigins = properties.getProperty("CorsAllowedOrigins").split("\\s+"); // split by whitespace
         ApiSynthMode = Synthesizer.Mode.valueOf(properties.getProperty("ApiSynthMode"));
+        AstServerAuthority =  properties.getProperty("AstServerAuthority");
 
 
     }
