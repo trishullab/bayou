@@ -24,6 +24,8 @@ import edu.rice.cs.caper.programming.numbers.NatNum32;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import javax.swing.text.AbstractDocument;
+
 /**
  * A factory capable of constructing an ApiSynthesizer as specified by the system configuration.
  */
@@ -44,13 +46,14 @@ class ApiSynthesizerFactory
         ApiSynthesizer synthesizer;
         if(Configuration.UseSynthesizeEchoMode)
         {
-
             synthesizer = new ApiSynthesizerEcho(Configuration.EchoModeDelayMs);
         }
         else
         {
 
-            synthesizer = new ApiSynthesizerRemoteTensorFlowAsts(new ContentString("localhost"), new NatNum32(8084),
+            ContentString tensorFlowHost = new ContentString(Configuration.AstServerAuthority.split(":")[0]);
+            NatNum32 tensorFlowPort = new NatNum32(Configuration.AstServerAuthority.split(":")[1]);
+            synthesizer = new ApiSynthesizerRemoteTensorFlowAsts(tensorFlowHost, tensorFlowPort,
                                                                  Configuration.SynthesizeTimeoutMs,
                                                                  Configuration.EvidenceClasspath,
                                                                  Configuration.AndroidJarPath, Configuration.ApiSynthMode);
