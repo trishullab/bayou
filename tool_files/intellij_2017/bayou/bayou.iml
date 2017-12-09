@@ -3,17 +3,13 @@
   <component name="NewModuleRootManager" LANGUAGE_LEVEL="JDK_1_8">
     <output url="file://$MODULE_DIR$/../../maven_3_3_9/bayou/target/classes" />
     <output-test url="file://$MODULE_DIR$/../../maven_3_3_9/bayou/target/test-classes" />
-    <content url="file://$MODULE_DIR$/../../../examples" />
-    <content url="file://$MODULE_DIR$/../../../src/main/java/edu">
+    <content url="file://$MODULE_DIR$/../../../src/main/java">
       <sourceFolder url="file://$MODULE_DIR$/../../../src/main/java/edu/rice/cs/caper/bayou" isTestSource="false" packagePrefix="edu.rice.cs.caper.bayou" />
       <sourceFolder url="file://$MODULE_DIR$/../../../src/main/java/edu/rice/cs/caper/programming" isTestSource="false" packagePrefix="edu.rice.cs.caper.programming" />
       <sourceFolder url="file://$MODULE_DIR$/../../../src/main/java/edu/rice/cs/caper/servlet" isTestSource="false" packagePrefix="edu.rice.cs.caper.servlet" />
     </content>
-    <content url="file://$MODULE_DIR$/../../../src/main/resources/conf">
-      <sourceFolder url="file://$MODULE_DIR$/../../../src/main/resources/conf" type="java-resource" />
-    </content>
-    <content url="file://$MODULE_DIR$/../../../src/test/java">
-      <sourceFolder url="file://$MODULE_DIR$/../../../src/test/java/edu/rice/cs/caper/bayou" isTestSource="true" packagePrefix="edu.rice.cs.caper.bayou" />
+    <content url="file://$MODULE_DIR$/../../../src/main/resources">
+      <sourceFolder url="file://$MODULE_DIR$/../../../src/main/resources" type="java-resource" />
     </content>
     <content url="file://$MODULE_DIR$/../../maven_3_3_9/bayou">
       <excludeFolder url="file://$MODULE_DIR$/../../maven_3_3_9/bayou/target" />
