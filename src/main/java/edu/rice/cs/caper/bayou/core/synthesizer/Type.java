@@ -127,6 +127,11 @@ public class Type {
         else if (type instanceof TypeVariable) {
             // return the type the generic name was concretized to
             String name = ((TypeVariable) type).getName();
+
+            // FIXME: Add support for wildcard types and concretizing without a base parameterized type (e.g., Collections)
+            if (concretization == null)
+                throw new SynthesisException(SynthesisException.InvalidKindOfType);
+
             if (! concretization.containsKey(name))
                 throw new SynthesisException(SynthesisException.GenericTypeVariableMismatch);
             return concretization.get(name);
