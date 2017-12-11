@@ -1,5 +1,5 @@
-import java.io.File;
-import java.util.function.BiConsumer;
+import java.io.*;
+import java.util.function.*;
 
 public class Draft implements Consumer<String> {
 

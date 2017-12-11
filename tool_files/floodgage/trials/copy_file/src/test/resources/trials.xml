@@ -7,7 +7,9 @@
         <evidence type="keywords">copy file</evidence>
         <evidence type="type">FileInputStream</evidence>
         <evidence type="type">FileOutputStream</evidence>
-        <evidence type="call">read write</evidence>
+        <evidence type="call">read</evidence>
+        <evidence type="call">write</evidence>
+        <evidence type="call">close</evidence>
       </hole>
     </holes>
   </trial>

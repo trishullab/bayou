@@ -1,9 +1,9 @@
-import java.io.File;
-import java.util.function.BiConsumer;
+import java.io.*;
+import java.util.function.*;
 
-public class Draft implements Consumer<String> {
+public class Draft implements BiConsumer<String, String> {
 
-    public void accept(String filename) {
+    public void accept(String filename1, String filename2) {
         /// 1
     }
 

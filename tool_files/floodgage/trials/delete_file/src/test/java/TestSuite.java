@@ -15,7 +15,7 @@ public abstract class TestSuite
         File f = File.createTempFile("temp-file", ".tmp");
         f.deleteOnExit(); // ensure the file is removed on exit
         makeTestable().accept(f.toString());
-        Assert.assertFalse(f.exists());
+        Assert.assertFalse("Expecting file to be deleted, but file still exists.", f.exists());
     }
 
 	protected abstract Consumer<String> makeTestable();
