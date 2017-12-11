@@ -24,8 +24,6 @@ import edu.rice.cs.caper.programming.numbers.NatNum32;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import javax.swing.text.AbstractDocument;
-
 /**
  * A factory capable of constructing an ApiSynthesizer as specified by the system configuration.
  */
@@ -37,7 +35,7 @@ class ApiSynthesizerFactory
     private static final Logger _logger = LogManager.getLogger(ApiSynthesizerFactory.class.getName());
 
     /**
-     * @return a synthesiser in accordence with edu.rice.cs.caper.bayou.application.api_synthesis_server.Configuration
+     * @return a synthesiser in accordance with edu.rice.cs.caper.bayou.application.api_synthesis_server.Configuration
      */
     static ApiSynthesizer makeFromConfig()
     {
@@ -56,7 +54,9 @@ class ApiSynthesizerFactory
             synthesizer = new ApiSynthesizerRemoteTensorFlowAsts(tensorFlowHost, tensorFlowPort,
                                                                  Configuration.SynthesizeTimeoutMs,
                                                                  Configuration.EvidenceClasspath,
-                                                                 Configuration.AndroidJarPath, Configuration.ApiSynthMode);
+                                                                 Configuration.AndroidJarPath,
+                                                                 Configuration.ApiSynthMode,
+                                                                 Configuration.AstServerRequestCount);
         }
 
         _logger.debug("exiting");
