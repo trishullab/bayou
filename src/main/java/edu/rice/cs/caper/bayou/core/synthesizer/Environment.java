@@ -15,6 +15,7 @@ limitations under the License.
 */
 package edu.rice.cs.caper.bayou.core.synthesizer;
 
+import org.apache.commons.lang3.ClassUtils;
 import org.eclipse.jdt.core.dom.*;
 
 import java.util.*;
@@ -80,37 +81,12 @@ public class Environment {
         return scopes.pop();
     }
 
-    /**
-     * Attempts to find the Class representation of the given fully qualified <code>name</code> from
-     * <code>Synthesizer.classLoader</code>.
-     *
-     * If no such class is found and the given name contains the character '.', a new search name will
-     * be generated replacing the final '.' with a '$' and the search will continue in an iterative fashion.
-     *
-     * For example, if the given name is
-     *
-     *     foo.bar.baz
-     *
-     * then this method will effectively search for the following classes in order until one (or none) is found:
-     *
-     *     foo.bar.baz
-     *     foo.bar$baz
-     *     foo$bar$baz
-     *     << throws ClassNotFoundException  >>
-     *
-     * @param name the fully qualified class name to search for
-     * @return the Class representation of name (or an attempted alternate) if found
-     */
     public static Class getClass(String name) {
         try {
-            return Class.forName(name, false, Synthesizer.classLoader);
+            return ClassUtils.getClass(Synthesizer.classLoader, name);
         } catch (ClassNotFoundException e) {
-            int lastDotIndex = name.lastIndexOf('.');
-            if (lastDotIndex == -1)
-                throw new SynthesisException(SynthesisException.ClassNotFoundInLoader);
-            String possibleInnerClassName =
-                    new StringBuilder(name).replace(lastDotIndex, lastDotIndex+1, "$").toString();
-            return getClass(possibleInnerClassName);
+            System.out.println(name);
+            throw new SynthesisException(SynthesisException.ClassNotFoundInLoader);
         }
     }
 

@@ -15,29 +15,55 @@ limitations under the License.
 */
 package edu.rice.cs.caper.bayou.core.synthesizer;
 
+import org.apache.commons.lang3.ClassUtils;
 import org.eclipse.jdt.core.dom.*;
 import org.eclipse.jdt.core.dom.ParameterizedType;
 
 import java.lang.reflect.*;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
 public class Type {
-
-    /* TODO: add support for arrays (search for isArray) */
 
     private final Class c;
     private org.eclipse.jdt.core.dom.Type t;
     private Map<String, Type> concretization;
     int refCount;
 
+    static final Map<PrimitiveType.Code,Class> primitiveToClass;
+    static {
+        Map<PrimitiveType.Code,Class> map = new HashMap<>();
+        map.put(PrimitiveType.INT, int.class);
+        map.put(PrimitiveType.LONG, long.class);
+        map.put(PrimitiveType.DOUBLE, double.class);
+        map.put(PrimitiveType.FLOAT, float.class);
+        map.put(PrimitiveType.BOOLEAN, boolean.class);
+        map.put(PrimitiveType.CHAR, char.class);
+        map.put(PrimitiveType.BYTE, byte.class);
+        map.put(PrimitiveType.VOID, void.class);
+        map.put(PrimitiveType.SHORT, short.class);
+        primitiveToClass = Collections.unmodifiableMap(map);
+    }
+
+    static final Map<PrimitiveType.Code,String> primitiveToString;
+    static {
+        Map<PrimitiveType.Code,String> map = new HashMap<>();
+        map.put(PrimitiveType.INT, "int");
+        map.put(PrimitiveType.LONG, "long");
+        map.put(PrimitiveType.DOUBLE, "double");
+        map.put(PrimitiveType.FLOAT, "float");
+        map.put(PrimitiveType.BOOLEAN, "boolean");
+        map.put(PrimitiveType.CHAR, "char");
+        map.put(PrimitiveType.BYTE, "byte");
+        map.put(PrimitiveType.VOID, "void");
+        map.put(PrimitiveType.SHORT, "short");
+        primitiveToString = Collections.unmodifiableMap(map);
+    }
+
     public Type(org.eclipse.jdt.core.dom.Type t) {
         this.t = t;
         this.c = getClass(t);
-
-        if (this.c.isArray())
-            throw new SynthesisException(SynthesisException.InvalidKindOfType);
-
         this.refCount = 0;
         autoConcretize();
 
@@ -48,10 +74,6 @@ public class Type {
     public Type(org.eclipse.jdt.core.dom.Type t, Class c) {
         this.t = t;
         this.c = c;
-
-        if (this.c.isArray())
-            throw new SynthesisException(SynthesisException.InvalidKindOfType);
-
         this.refCount = 0;
         autoConcretize();
 
@@ -62,9 +84,6 @@ public class Type {
     public Type(Class c) {
         this.c = c;
         this.t = null;
-
-        if (this.c.isArray())
-            throw new SynthesisException(SynthesisException.InvalidKindOfType);
 
         // in this case, type has to be concretized manually with an environment before it can be used
     }
@@ -84,11 +103,16 @@ public class Type {
             return;
         AST ast = env.ast;
 
-        if (c.isArray())
-            throw new SynthesisException(SynthesisException.InvalidKindOfType);
-
         if (c.isPrimitive())
             t = ast.newPrimitiveType(PrimitiveType.toCode(c.getSimpleName()));
+        else if (c.isArray()) {
+            int dimensions = 0;
+            for (Class cls = c; cls.isArray(); cls = cls.getComponentType())
+                dimensions++;
+            Type componentType = new Type(c.getComponentType());
+            componentType.concretizeType(env);
+            t = ast.newArrayType(componentType.T(), dimensions);
+        }
         else if (c.getTypeParameters().length == 0) // simple type
             t = ast.newSimpleType(ast.newName(c.getCanonicalName()));
         else { // generic type
@@ -139,12 +163,12 @@ public class Type {
         else if (type instanceof Class) {
             Class cls = (Class) type;
 
-            if (cls.isArray())
-                throw new SynthesisException(SynthesisException.InvalidKindOfType);
-
-            if (cls.isPrimitive())
+            if (cls.isArray()) {
+                Type componentType = getConcretization(cls.getComponentType());
+                return new Type(ast.newArrayType(componentType.T(), 1), cls);
+            } else if (cls.isPrimitive()) {
                 return new Type(ast.newPrimitiveType(PrimitiveType.toCode(cls.getSimpleName())), cls);
-            else {
+            } else {
                 // no generics, just return a simple type with the class
                 org.eclipse.jdt.core.dom.Type retType = ast.newSimpleType(ast.newName(cls.getCanonicalName()));
                 return new Type(retType, cls);
@@ -156,7 +180,7 @@ public class Type {
     // same semantics as Class.isAssignableFrom for our type system but with generics
     // NOTE: assumes that the argument is a concretized type
     public boolean isAssignableFrom(Type type) {
-        if (! this.C().isAssignableFrom(type.C()))
+        if (! ClassUtils.isAssignable(type.C(), this.C()))
             return false;
         if (t == null || ! t.isParameterizedType()) // this type is not yet concretized or not parametric
             return true;
@@ -213,7 +237,7 @@ public class Type {
 
     // Class objects are type-erased, so cannot do generics here
     public boolean isAssignableFrom(Class type) {
-        if (! this.C().isAssignableFrom(type))
+        if (! ClassUtils.isAssignable(type, this.c))
             return false;
         if (t == null || ! t.isParameterizedType()) // this type is not yet concretized or not parametric
             return true;
@@ -227,6 +251,8 @@ public class Type {
         if (! t.isParameterizedType()) {
             if (c.getTypeParameters().length > 0)
                 throw new SynthesisException(SynthesisException.GenericTypeVariableMismatch);
+            if (t.isArrayType() && !c.isArray())
+                throw new SynthesisException(SynthesisException.InvalidKindOfType);
             return;
         }
         ParameterizedType pType = (ParameterizedType) t;
@@ -246,7 +272,7 @@ public class Type {
     Class getClass(org.eclipse.jdt.core.dom.Type type) {
         ITypeBinding binding = type.resolveBinding();
         if (type.isPrimitiveType())
-            return Visitor.primitiveToClass.get(((PrimitiveType) type).getPrimitiveTypeCode());
+            return primitiveToClass.get(((PrimitiveType) type).getPrimitiveTypeCode());
         else if (type.isSimpleType()) {
             if (binding != null)
                 return Environment.getClass(binding.getQualifiedName());
@@ -266,6 +292,25 @@ public class Type {
                 return Environment.getClass(t);
             }
         }
+        else if (type.isArrayType()) {
+            if (binding != null)
+                return Environment.getClass(binding.getErasure().getQualifiedName());
+            else {
+                org.eclipse.jdt.core.dom.Type elementType = ((ArrayType) type).getElementType();
+                StringBuilder name = new StringBuilder();
+                if (elementType.isPrimitiveType()) {
+                    name.append(primitiveToString.get(((PrimitiveType) elementType).getPrimitiveTypeCode()));
+                } else if (elementType.isSimpleType()) {
+                    name.append(((SimpleType) elementType).getName().getFullyQualifiedName());
+                } else if (elementType.isParameterizedType()) {
+                    name.append(((SimpleType) ((ParameterizedType) elementType).getType()).getName().getFullyQualifiedName());
+                } else
+                    throw new SynthesisException(SynthesisException.InvalidKindOfType);
+                for (int i = ((ArrayType) type).getDimensions(); i > 0; i--)
+                    name.append("[]"); // add "[]" to denote array type dimension
+                return Environment.getClass(name.toString());
+            }
+        }
         else
             throw new SynthesisException(SynthesisException.InvalidKindOfType);
     }
@@ -274,7 +319,7 @@ public class Type {
     org.eclipse.jdt.core.dom.Type releaseBinding(org.eclipse.jdt.core.dom.Type type, AST ast) {
         ITypeBinding binding = type.resolveBinding();
         if (type.isPrimitiveType())
-            return type;
+            return ast.newPrimitiveType(((PrimitiveType) type).getPrimitiveTypeCode());
         else if (type.isSimpleType())
             return ast.newSimpleType(ast.newName(binding.getQualifiedName()));
         else if (binding.isParameterizedType()) {
@@ -289,6 +334,12 @@ public class Type {
             }
 
             return retType;
+        }
+        else if (type.isArrayType()) {
+            ArrayType arrayType = (ArrayType) type;
+            org.eclipse.jdt.core.dom.Type elementType = releaseBinding(arrayType.getElementType(), ast);
+            int dimensions = arrayType.getDimensions();
+            return ast.newArrayType(elementType, dimensions);
         }
         else {
             throw new SynthesisException(SynthesisException.InvalidKindOfType);
@@ -317,7 +368,12 @@ public class Type {
                 simple = ast.newSimpleName(((QualifiedName) name).getName().getIdentifier());
             return ast.newSimpleType(simple);
         }
-        // TODO: array type
+        if (t.isArrayType()) {
+            org.eclipse.jdt.core.dom.Type elementType = ((ArrayType) t).getElementType();
+            org.eclipse.jdt.core.dom.Type simpleElementType = new Type(elementType).simpleT(ast);
+            return ast.newArrayType((org.eclipse.jdt.core.dom.Type) ASTNode.copySubtree(ast, simpleElementType),
+                    ((ArrayType) t).getDimensions());
+        }
         throw new SynthesisException(SynthesisException.InvalidKindOfType);
     }
 
