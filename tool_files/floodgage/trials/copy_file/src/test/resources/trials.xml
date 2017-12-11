@@ -1,6 +1,6 @@
 <trials>
   <trial>
-    <description>Delete a file.</description>
+    <description>Copy a file.</description>
     <draftProgramPath>Draft.java</draftProgramPath>
     <holes>
       <hole id="1">
@@ -10,6 +10,18 @@
         <evidence type="call">read</evidence>
         <evidence type="call">write</evidence>
         <evidence type="call">close</evidence>
+      </hole>
+    </holes>
+  </trial>
+  
+  <trial>
+    <description>Copy a file.</description>
+    <draftProgramPath>Draft.java</draftProgramPath>
+    <holes>
+      <hole id="1">
+        <evidence type="keywords">copy file</evidence>
+        <evidence type="type">Files</evidence>
+        <evidence type="call">copy</evidence>
       </hole>
     </holes>
   </trial>
