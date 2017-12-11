@@ -56,6 +56,7 @@ public class Scope {
 
     private String createNameFromType(Type type) {
         String name = type.C().getSimpleName();
+        name = name.replaceAll("\\[\\]", "s");
         name = Character.toLowerCase(name.charAt(0)) + name.substring(1);
 
         List<String> existingNames = new ArrayList<>();

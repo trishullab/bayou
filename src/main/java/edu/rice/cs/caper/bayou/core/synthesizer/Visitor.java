@@ -36,21 +36,6 @@ public class Visitor extends ASTVisitor {
     List<Variable> currentScope;
     final Synthesizer.Mode mode;
 
-    static final Map<PrimitiveType.Code,Class> primitiveToClass;
-    static {
-        Map<PrimitiveType.Code,Class> map = new HashMap<>();
-        map.put(PrimitiveType.INT, int.class);
-        map.put(PrimitiveType.LONG, long.class);
-        map.put(PrimitiveType.DOUBLE, double.class);
-        map.put(PrimitiveType.FLOAT, float.class);
-        map.put(PrimitiveType.BOOLEAN, boolean.class);
-        map.put(PrimitiveType.CHAR, char.class);
-        map.put(PrimitiveType.BYTE, byte.class);
-        map.put(PrimitiveType.VOID, void.class);
-        map.put(PrimitiveType.SHORT, short.class);
-        primitiveToClass = Collections.unmodifiableMap(map);
-    }
-
     public Visitor(DSubTree dAST, Document document, CompilationUnit cu, Synthesizer.Mode mode) {
         this.dAST = dAST;
         this.document = document;
@@ -164,7 +149,7 @@ public class Visitor extends ASTVisitor {
                         : ((QualifiedName) name).getName().getIdentifier();
                 varDeclStmt.setType(ast.newSimpleType(ast.newSimpleName(simpleName)));
             }
-            else if (var.getType().T().isParameterizedType()) {
+            else if (var.getType().T().isParameterizedType() || var.getType().T().isArrayType()) {
                 varDeclStmt.setType((org.eclipse.jdt.core.dom.Type) ASTNode.copySubtree(ast, var.getType().T()));
             }
             else throw new SynthesisException(SynthesisException.InvalidKindOfType);
@@ -183,6 +168,8 @@ public class Visitor extends ASTVisitor {
         Set<Class> toImport = new HashSet<>(env.imports);
         toImport.addAll(dAST.exceptionsThrown()); // add all catch(...) types to imports
         for (Class cls : toImport) {
+            while (cls.isArray())
+                cls = cls.getComponentType();
             if (cls.isPrimitive() || cls.getPackage().getName().equals("java.lang"))
                 continue;
             ImportDeclaration impDecl = cu.getAST().newImportDeclaration();
