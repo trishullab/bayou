@@ -20,11 +20,14 @@ import java.util.*;
 /**
  * When maven tests are run ensure that the pass program passes the test suite.
  */
-public class PassProgramTest extends TestSuite
-{
-	@Override
-	protected Function<List<String>,String> makeTestable()
-	{
-		return new PassProgram();
+public class PassProgram implements Function<List<String>,String> {
+	public String apply(List<String> x) {
+	    StringBuffer buff = new StringBuffer();
+	    Iterator<String> iter = x.iterator();
+	    while (iter.hasNext()) {
+	        buff.append(iter.next());
+	    }
+	    return buff.toString();
 	}
 }
+
