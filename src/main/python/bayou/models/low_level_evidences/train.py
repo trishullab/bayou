@@ -75,8 +75,8 @@ def train(clargs):
     reader = Reader(clargs, config)
     
     jsconfig = dump_config(config)
-#    print(clargs)
-    print(json.dumps(jsconfig, indent=2))
+    print(clargs)
+#    print(json.dumps(jsconfig, indent=2))
     with open(os.path.join(clargs.save, 'config.json'), 'w') as f:
         json.dump(jsconfig, fp=f, indent=2)
 
@@ -84,7 +84,7 @@ def train(clargs):
 
     with tf.Session() as sess:
         tf.global_variables_initializer().run()
-        static = True
+        static = False
         var_list = None
         if static:
             all_global_variables = tf.get_collection(tf.GraphKeys.GLOBAL_VARIABLES, scope='')
@@ -93,7 +93,13 @@ def train(clargs):
                                     + tf.get_collection(tf.GraphKeys.GLOBAL_VARIABLES, scope='embedding_0')            
             var_list = list(set(all_global_variables) - set(new_global_variables))
             print(var_list)
-        saver2 = tf.train.Saver(var_list, max_to_keep=None)
+            saver2 = tf.train.Saver(var_list, max_to_keep=None)
+        dynamic = True
+        if dynamic:
+            # hardcoded meta-file, no method known yet that can fetch the file automatically
+#            saver2 = tf.train.import_meta_graph(os.path.join(clargs.continue_from, 'model9.ckpt.meta'))
+            saver2 = tf.train.Saver(tf.trainable_variables(), max_to_keep=None)
+            print('dynamic flag')
         saver = tf.train.Saver(tf.global_variables(), max_to_keep=None)
         tf.train.write_graph(sess.graph_def, clargs.save, 'model.pbtxt')
         tf.train.write_graph(sess.graph_def, clargs.save, 'model.pb', as_text=False)

@@ -65,7 +65,7 @@ class Model():
 
         # The optimizer
         self.loss = self.gen_loss + self.latent_loss + self.evidence_loss
-        static = True
+        static = False
         var_list = None
         if static:
             var_list = tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES, "javadoc_0") \
