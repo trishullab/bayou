@@ -75,7 +75,7 @@ def train(clargs):
     reader = Reader(clargs, config)
     
     jsconfig = dump_config(config)
-    print(clargs)
+#    print(clargs)
     print(json.dumps(jsconfig, indent=2))
     with open(os.path.join(clargs.save, 'config.json'), 'w') as f:
         json.dump(jsconfig, fp=f, indent=2)
@@ -84,6 +84,16 @@ def train(clargs):
 
     with tf.Session() as sess:
         tf.global_variables_initializer().run()
+        static = True
+        var_list = None
+        if static:
+            all_global_variables = tf.get_collection(tf.GraphKeys.GLOBAL_VARIABLES, scope='')
+            new_global_variables =  tf.get_collection(tf.GraphKeys.GLOBAL_VARIABLES, scope='javadoc_0') \
+                                    + tf.get_collection(tf.GraphKeys.GLOBAL_VARIABLES, scope='mean/javadoc_0') \
+                                    + tf.get_collection(tf.GraphKeys.GLOBAL_VARIABLES, scope='embedding_0')            
+            var_list = list(set(all_global_variables) - set(new_global_variables))
+            print(var_list)
+        saver2 = tf.train.Saver(var_list, max_to_keep=None)
         saver = tf.train.Saver(tf.global_variables(), max_to_keep=None)
         tf.train.write_graph(sess.graph_def, clargs.save, 'model.pbtxt')
         tf.train.write_graph(sess.graph_def, clargs.save, 'model.pb', as_text=False)
@@ -91,7 +101,7 @@ def train(clargs):
         # restore model
         if clargs.continue_from is not None:
             ckpt = tf.train.get_checkpoint_state(clargs.continue_from)
-            saver.restore(sess, ckpt.model_checkpoint_path)
+            saver2.restore(sess, ckpt.model_checkpoint_path)
 
         # training
         for i in range(config.num_epochs):
@@ -108,6 +118,13 @@ def train(clargs):
                 for j in range(config.decoder.max_ast_depth):
                     feed[model.decoder.nodes[j].name] = n[j]
                     feed[model.decoder.edges[j].name] = e[j]
+
+                # get evidence sigma tensors
+                sigma_tensors = [ev.sigma for ev in config.evidence]
+                sigma_values = sess.run(sigma_tensors)
+                print({tensor.name: value for tensor, value in zip(sigma_tensors, sigma_values)})
+                # import pdb
+                # pdb.set_trace()
 
                 # run the optimizer
                 loss, evidence, latent, generation, mean, covariance, _ \

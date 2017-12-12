@@ -55,7 +55,10 @@ class Reader():
         self.edges = np.zeros((sz, config.decoder.max_ast_depth), dtype=np.bool)
         self.targets = np.zeros((sz, config.decoder.max_ast_depth), dtype=np.int32)
         for i, path in enumerate(raw_targets):
-            self.nodes[i, :len(path)] = list(map(config.decoder.vocab.get, [p[0] for p in path]))
+            try:
+                self.nodes[i, :len(path)] = list(map(config.decoder.vocab.get, [p[0] for p in path]))
+            except Exception as e:
+                import pdb; pdb.set_trace()
             self.edges[i, :len(path)] = [p[1] == CHILD_EDGE for p in path]
             self.targets[i, :len(path)-1] = self.nodes[i, 1:len(path)]  # shifted left by one
 

@@ -65,7 +65,15 @@ class Model():
 
         # The optimizer
         self.loss = self.gen_loss + self.latent_loss + self.evidence_loss
-        self.train_op = tf.train.AdamOptimizer(config.learning_rate).minimize(self.loss)
+        static = True
+        var_list = None
+        if static:
+            var_list = tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES, "javadoc_0") \
+                       + tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES, "mean/javadoc_0")
+        self.train_op = tf.train.AdamOptimizer(config.learning_rate).minimize(self.loss, var_list=var_list)
+        
+#        import pdb
+#        pdb.set_trace()
 
         var_params = [np.prod([dim.value for dim in var.get_shape()])
                       for var in tf.trainable_variables()]
