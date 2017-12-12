@@ -1,0 +1,26 @@
+{
+    "model": "lle",
+    "latent_size": 64,
+    "batch_size": 50,
+    "num_epochs": 100,
+    "learning_rate": 0.0006,
+    "print_step": 1,
+    "alpha": 0.001,
+    "beta": 1e-05,
+    "evidence": [
+        {
+            "name": "javadoc_0",
+            "units": 128,
+            "tile": 1,
+            "max_length": 10,
+            "filter_sizes": [3, 4, 5],
+            "num_layers": 1,
+            "num_filters": 100
+        }
+    ],
+    "decoder": {
+        "units": 256,
+        "num_layers": 1,
+        "max_ast_depth": 32
+    }
+}
