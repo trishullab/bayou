@@ -44,12 +44,15 @@ public class Scope {
         return phantomVariables;
     }
 
-    public Variable addVariable(Type type) {
+    public Variable addVariable(SearchTarget target) {
+        Type type = target.getType();
+
         // construct a nice name for the variable
         String name = createNameFromType(type);
 
         // add variable to scope and return it
-        Variable var = new Variable(name, type);
+        String uniqueName = makeUnique(name);
+        Variable var = new Variable(uniqueName, type);
         variables.add(var);
         return var;
     }
@@ -58,7 +61,10 @@ public class Scope {
         String name = type.C().getSimpleName();
         name = name.replaceAll("\\[\\]", "s");
         name = Character.toLowerCase(name.charAt(0)) + name.substring(1);
+        return name;
+    }
 
+    private String makeUnique(String name) {
         List<String> existingNames = new ArrayList<>();
         for (Variable var : variables)
             existingNames.add(var.getName());
