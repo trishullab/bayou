@@ -198,5 +198,5 @@ if __name__ == '__main__':
         print("===================================")
         print("            Bayou Ready            ")
         print("===================================")
-        http_server.run(host='127.0.0.1', port=8084)  # does not return
+        http_server.run(host='0.0.0.0', port=8084)  # does not return
         _shutdown()  # we don't shut down flask directly, but if for some reason it ever stops go ahead and stop Bayou
