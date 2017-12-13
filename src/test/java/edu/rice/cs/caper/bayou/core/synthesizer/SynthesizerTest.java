@@ -54,8 +54,8 @@ public class SynthesizerTest {
                 File.separator + "synthesizer";
 
 
-        Synthesizer synthesizer = new Synthesizer();
-        Synthesizer synthesizerCPG = new Synthesizer(Synthesizer.Mode.CONDITIONAL_PROGRAM_GENERATOR);
+        Synthesizer synthesizer = new Synthesizer(Synthesizer.Mode.CONDITIONAL_PROGRAM_GENERATOR);
+        Synthesizer synthesizerCPG = new Synthesizer(Synthesizer.Mode.COMBINATORIAL_ENUMERATOR);
 
         String code = new String(Files.readAllBytes(Paths.get(String.format("%s/%s.java", testDir, test))));
         String asts = new String(Files.readAllBytes(Paths.get(String.format("%s/%s.json", testDir, test))));
