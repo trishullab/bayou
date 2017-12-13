@@ -28,63 +28,7 @@ public class Enumerator {
 
     final AST ast;
     final Environment env;
-    static final int MAX_COMPOSE_LENGTH = 3; // a().b().c().d()...
-    static final int MAX_ARGUMENT_DEPTH = 2; // a(b(c(d(...))))
-    static final int K = 3; // number of arguments is given K times more weight than length of composition in cost
-
     Synthesizer.Mode mode;
-
-    class InvocationChain {
-        final Variable var;
-        final List<Method> methods;
-        final List<Type> types;
-
-        InvocationChain(Variable var) {
-            this.var = var;
-            methods = new ArrayList<>();
-            types = new ArrayList<>();
-        }
-
-        InvocationChain(InvocationChain chain) {
-            var = chain.var;
-            methods = new ArrayList<>(chain.methods);
-            types = new ArrayList<>(chain.types);
-        }
-
-        void addMethod(Method m) {
-            types.add(getCurrentType().getConcretization(m.getGenericReturnType()));
-            methods.add(m);
-        }
-
-        void pop() {
-            methods.remove(methods.size() - 1);
-            types.remove(types.size() - 1);
-        }
-
-        Type getCurrentType() {
-            return types.isEmpty()? var.getType() : types.get(types.size() - 1);
-        }
-
-        int structCost() {
-            int args = methods.stream().mapToInt(m -> m.getParameterTypes().length).sum();
-            int chainLength = methods.size();
-
-            return chainLength + K*args; // give some more weight to arguments because that involves further search
-        }
-
-        @Override
-        public boolean equals(Object o) {
-            if (o == null || ! (o instanceof InvocationChain))
-                return false;
-            return methods.equals(((InvocationChain) o).methods);
-        }
-
-        @Override
-        public int hashCode() {
-            return methods.hashCode();
-        }
-    }
-
     private final Set<Class> importsDuringSearch;
 
     public Enumerator(AST ast, Environment env, Synthesizer.Mode mode) {
@@ -121,7 +65,7 @@ public class Enumerator {
     }
 
     private TypedExpression search(Type targetType, int argDepth) {
-        if (argDepth > MAX_ARGUMENT_DEPTH)
+        if (argDepth > ExpressionChain.MAX_ARGUMENT_DEPTH)
             return null;
 
         /* see if a variable with the type already exists in scope */
@@ -202,13 +146,13 @@ public class Enumerator {
         }
 
         /* otherwise, start recursive search for expression of target type */
-        List<InvocationChain> chains = new ArrayList<>();
+        List<ExpressionChain> chains = new ArrayList<>();
         for (Variable var : toSearch)
             chains.addAll(searchForChains(targetType, var));
         sortChainsByCost(chains);
 
         int i, j;
-        for (InvocationChain chain : chains) {
+        for (ExpressionChain chain : chains) {
             /* for each chain, see if we can synthesize all arguments in all methods in the chain */
             MethodInvocation invocation = ast.newMethodInvocation();
             Expression expr = ast.newSimpleName(chain.var.getName());
@@ -244,17 +188,16 @@ public class Enumerator {
         return null;
     }
 
-    /* returns a list of method call chains that all produce the target type
-     * TODO : use a memoizer to prune even more of the search space */
-    private List<InvocationChain> searchForChains(Type targetType, Variable var) {
-        List<InvocationChain> chains = new ArrayList<>();
-        searchForChains(targetType, new InvocationChain(var), chains, 0);
+    /* returns a list of method call chains that all produce the target type */
+    private List<ExpressionChain> searchForChains(Type targetType, Variable var) {
+        List<ExpressionChain> chains = new ArrayList<>();
+        searchForChains(targetType, new ExpressionChain(var), chains, 0);
         return chains;
     }
 
-    private void searchForChains(Type targetType, InvocationChain chain, List<InvocationChain> chains, int composeLength) {
+    private void searchForChains(Type targetType, ExpressionChain chain, List<ExpressionChain> chains, int composeLength) {
         Type currType = chain.getCurrentType();
-        if (composeLength >= MAX_COMPOSE_LENGTH || currType.C().isPrimitive())
+        if (composeLength >= ExpressionChain.MAX_COMPOSE_LENGTH || currType.C().isPrimitive())
             return;
         List<Method> methods = Arrays.asList(currType.C().getMethods());
         sortMethodsByCost(methods);
@@ -267,7 +210,7 @@ public class Enumerator {
                 continue; // some problem with adding this method to chain, so ignore it
             }
             if (targetType.isAssignableFrom(chain.getCurrentType()))
-                chains.add(new InvocationChain(chain));
+                chains.add(new ExpressionChain(chain));
             else
                 searchForChains(targetType, chain, chains, composeLength+1);
             chain.pop();
@@ -312,7 +255,7 @@ public class Enumerator {
         variables.sort(Comparator.comparingInt(v -> v.getRefCount()));
     }
 
-    private void sortChainsByCost(List<InvocationChain> chains) {
+    private void sortChainsByCost(List<ExpressionChain> chains) {
         chains.sort(Comparator.comparingInt(chain -> chain.structCost()));
     }
 
