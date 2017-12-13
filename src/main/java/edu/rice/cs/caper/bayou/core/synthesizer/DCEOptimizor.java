@@ -106,9 +106,17 @@ public class DCEOptimizor extends ASTVisitor {
                     && ((Assignment)parent).getRightHandSide() instanceof ClassInstanceCreation
                     && parent.getParent() != null;
         }
+        boolean isArgAssignment = false;
+        while (parent != null) {
+            if (parent instanceof MethodInvocation || parent instanceof ClassInstanceCreation) {
+                isArgAssignment = true;
+                break;
+            }
+            parent = parent.getParent();
+        }
 
         if (varName != null && stmt != null) {
-            if (isDef)
+            if (isDef && !isArgAssignment)
                 // Add variable def
                 addToMap(varName, name.getParent(), defs);
             else
