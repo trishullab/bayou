@@ -39,20 +39,20 @@ public class Environment {
         imports = new HashSet<>();
     }
 
-    public TypedExpression addVariable(Type type) {
-        return addVariable(type, true, false);
+    public TypedExpression addVariable(SearchTarget target) {
+        return addVariable(target, true, false);
     }
 
-    public TypedExpression addVariable(Type type, boolean join, boolean defaultInit) {
+    public TypedExpression addVariable(SearchTarget target, boolean join, boolean defaultInit) {
         /* add variable to scope */
-        Variable var = scopes.peek().addVariable(type);
+        Variable var = scopes.peek().addVariable(target);
         var.setJoin(join);
         var.setDefaultInit(defaultInit);
 
         /* add type to imports */
-        imports.add(type.C());
+        imports.add(target.getType().C());
 
-        return new TypedExpression(ast.newSimpleName(var.getName()), type);
+        return new TypedExpression(ast.newSimpleName(var.getName()), target.getType());
     }
 
     public Type searchType() {
@@ -60,9 +60,9 @@ public class Environment {
         return enumerator.searchType();
     }
 
-    public TypedExpression search(Type type) throws SynthesisException {
+    public TypedExpression search(SearchTarget target) throws SynthesisException {
         Enumerator enumerator = new Enumerator(ast, this, mode);
-        TypedExpression tExpr = enumerator.search(type);
+        TypedExpression tExpr = enumerator.search(target);
         if (tExpr == null)
             throw new SynthesisException(SynthesisException.TypeNotFoundDuringSearch);
         return tExpr;

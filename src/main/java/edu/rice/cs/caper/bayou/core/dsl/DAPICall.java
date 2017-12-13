@@ -20,10 +20,7 @@ import edu.rice.cs.caper.bayou.core.synthesizer.*;
 import edu.rice.cs.caper.bayou.core.synthesizer.Type;
 import org.eclipse.jdt.core.dom.*;
 
-import java.lang.reflect.Constructor;
-import java.lang.reflect.Executable;
-import java.lang.reflect.Method;
-import java.lang.reflect.TypeVariable;
+import java.lang.reflect.*;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -181,14 +178,16 @@ public class DAPICall extends DASTNode
         creation.setType(type.T());
 
         /* constructor arguments */
-        for (java.lang.reflect.Type gType : constructor.getGenericParameterTypes()) {
-            Type argType = type.getConcretization(gType);
-            TypedExpression arg = env.search(argType);
+        for (int i = 0; i < constructor.getParameterCount(); i++) {
+            Parameter param = constructor.getParameters()[i];
+            Type argType = type.getConcretization(constructor.getGenericParameterTypes()[i]);
+            SearchTarget target = new SearchTarget(argType, param.getName());
+            TypedExpression arg = env.search(target);
             creation.arguments().add(arg.getExpression());
         }
 
         /* constructor return object */
-        TypedExpression ret = env.addVariable(type);
+        TypedExpression ret = env.addVariable(new SearchTarget(type));
 
         /* the assignment */
         Assignment assignment = ast.newAssignment();
@@ -219,14 +218,16 @@ public class DAPICall extends DASTNode
             object = new TypedExpression(ast.newName(method.getDeclaringClass().getSimpleName()), type);
             env.addImport(method.getDeclaringClass());
         } else {
-            object = env.search(new Type(method.getDeclaringClass()));
+            object = env.search(new SearchTarget(new Type(method.getDeclaringClass())));
         }
         invocation.setExpression(object.getExpression());
 
-        /* concretizeType method argument types using the above object and search for them */
-        for (java.lang.reflect.Type gType : method.getGenericParameterTypes()) {
-            Type argType = object.getType().getConcretization(gType);
-            TypedExpression arg = env.search(argType);
+        /* concretize method argument types using the above object and search for them */
+        for (int i = 0; i < method.getParameterCount(); i++) {
+            Parameter param = method.getParameters()[i];
+            Type argType = object.getType().getConcretization(method.getGenericParameterTypes()[i]);
+            SearchTarget target = new SearchTarget(argType, param.getName());
+            TypedExpression arg = env.search(target);
             invocation.arguments().add(arg.getExpression());
         }
 
@@ -235,7 +236,7 @@ public class DAPICall extends DASTNode
 
         /* method return value */
         Type retType = object.getType().getConcretization(method.getGenericReturnType());
-        TypedExpression ret = env.addVariable(retType);
+        TypedExpression ret = env.addVariable(new SearchTarget(retType));
 
         /* the assignment */
         Expression lhs = ret.getExpression();

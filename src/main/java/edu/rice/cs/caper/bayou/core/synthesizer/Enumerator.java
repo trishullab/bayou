@@ -38,8 +38,8 @@ public class Enumerator {
         this.mode = mode;
     }
 
-    public TypedExpression search(Type targetType) {
-        TypedExpression tExpr = search(targetType, 0);
+    public TypedExpression search(SearchTarget target) {
+        TypedExpression tExpr = search(target, 0);
         if (tExpr == null) {
             importsDuringSearch.clear();
             return null;
@@ -50,12 +50,10 @@ public class Enumerator {
 
         if (tExpr.getExpression() instanceof SimpleName)
             return tExpr; /* found a variable in scope, just return it */
-        if (isFunctionalInterface(targetType))
-            return tExpr; /* synthesized code will be an anonymous class */
 
         /* assign a variable to this expression so that we don't have to search for it again in future */
         Assignment assignment = ast.newAssignment();
-        assignment.setLeftHandSide(env.addVariable(targetType).getExpression()); // just the variable name
+        assignment.setLeftHandSide(env.addVariable(target).getExpression()); // just the variable name
         assignment.setOperator(Assignment.Operator.ASSIGN);
         assignment.setRightHandSide(tExpr.getExpression());
 
@@ -64,7 +62,7 @@ public class Enumerator {
         return new TypedExpression(parenExpr, tExpr.getType());
     }
 
-    private TypedExpression search(Type targetType, int argDepth) {
+    private TypedExpression search(SearchTarget target, int argDepth) {
         if (argDepth > ExpressionChain.MAX_ARGUMENT_DEPTH)
             return null;
 
@@ -72,24 +70,25 @@ public class Enumerator {
         List<Variable> toSearch = new ArrayList<>(env.getScope().getVariables());
         sortVariablesByCost(toSearch);
         for (Variable v : toSearch)
-            if (targetType.isAssignableFrom(v.getType())) {
+            if (target.getType().isAssignableFrom(v.getType())) {
                 v.addRefCount();
                 return new TypedExpression(ast.newSimpleName(v.getName()), v.getType());
             }
 
         /* could not pick variable, so concretize target type */
-        targetType.concretizeType(env);
+        target.getType().concretizeType(env);
 
         /* ... and start enumerative search or add variable (with default init) depending on enumeration mode */
         if (mode == Synthesizer.Mode.COMBINATORIAL_ENUMERATOR)
-            return enumerate(targetType, argDepth, toSearch);
+            return enumerate(target, argDepth, toSearch);
         else if (mode == Synthesizer.Mode.CONDITIONAL_PROGRAM_GENERATOR)
-            return env.addVariable(targetType, true, true);
+            return env.addVariable(target, true, true);
         throw new IllegalArgumentException("Invalid enumeration mode");
     }
 
-    private TypedExpression enumerate(Type targetType, int argDepth, List<Variable> toSearch) {
+    private TypedExpression enumerate(SearchTarget target, int argDepth, List<Variable> toSearch) {
         Enumerator enumerator = new Enumerator(ast, env, mode);
+        Type targetType = target.getType();
 
         /* first, see if we can create a new object of target type directly */
         List<Executable> constructors = new ArrayList<>(Arrays.asList(targetType.C().getConstructors()));
@@ -110,9 +109,11 @@ public class Enumerator {
 
                 int i;
                 enumerator.importsDuringSearch.clear();
-                for (i = 0; i < constructor.getParameterTypes().length; i++) {
+                for (i = 0; i < constructor.getParameterCount(); i++) {
                     Class argType = constructor.getParameterTypes()[i];
-                    TypedExpression tArg = enumerator.search(new Type(argType), argDepth + 1);
+                    String name = constructor.getParameters()[i].getName();
+                    SearchTarget newTarget = new SearchTarget(new Type(argType), name);
+                    TypedExpression tArg = enumerator.search(newTarget, argDepth + 1);
                     if (tArg == null)
                         break;
                     creation.arguments().add(tArg.getExpression());
@@ -130,9 +131,11 @@ public class Enumerator {
                 enumerator.importsDuringSearch.clear();
                 invocation.setExpression(ast.newSimpleName(targetType.C().getSimpleName()));
                 invocation.setName(ast.newSimpleName(constructor.getName()));
-                for (i = 0; i < constructor.getParameterTypes().length; i++) {
+                for (i = 0; i < constructor.getParameterCount(); i++) {
                     Class argType = constructor.getParameterTypes()[i];
-                    TypedExpression tArg = enumerator.search(new Type(argType), argDepth + 1);
+                    String name = constructor.getParameters()[i].getName();
+                    SearchTarget newTarget = new SearchTarget(new Type(argType), name);
+                    TypedExpression tArg = enumerator.search(newTarget, argDepth + 1);
                     if (tArg == null)
                         break;
                     invocation.arguments().add(tArg.getExpression());
@@ -162,11 +165,13 @@ public class Enumerator {
                 invocation.setExpression(expr);
                 invocation.setName(ast.newSimpleName(m.getName()));
 
-                for (j = 0; j < m.getParameterTypes().length; j++) {
+                for (j = 0; j < m.getParameterCount(); j++) {
                     Class argType  = m.getParameterTypes()[j];
+                    String name = m.getParameters()[j].getName();
+                    SearchTarget newTarget = new SearchTarget(new Type(argType), name);
                     TypedExpression  tArg;
                     try {
-                        tArg = enumerator.search(new Type(argType), argDepth + 1);
+                        tArg = enumerator.search(newTarget, argDepth + 1);
                     } catch (SynthesisException e) {
                         break; // could not synthesize some argument, ignore this chain
                     }
@@ -257,9 +262,5 @@ public class Enumerator {
 
     private void sortChainsByCost(List<ExpressionChain> chains) {
         chains.sort(Comparator.comparingInt(chain -> chain.structCost()));
-    }
-
-    private boolean isFunctionalInterface(Type type) {
-        return type.C().isInterface() && type.C().getMethods().length == 1;
     }
 }
