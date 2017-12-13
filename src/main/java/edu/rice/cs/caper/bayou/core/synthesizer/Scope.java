@@ -48,7 +48,7 @@ public class Scope {
         Type type = target.getType();
 
         // construct a nice name for the variable
-        String name = createNameFromType(type);
+        String name = target.hasName()? target.getName(): createNameFromType(type);
 
         // add variable to scope and return it
         String uniqueName = makeUnique(name);
