@@ -26,8 +26,8 @@ import bayou.models.low_level_evidences.infer
 from bayou.models.core.evidence import Keywords
 
 
-# called when a POST request is sent to the server for AST generation
-def _handle_http_request(predictor):
+# called when a POST request is sent to the server at the index path
+def _handle_http_post_request_index(predictor):
 
     request_json = request.data.decode("utf-8")  # read request string
     logging.debug("request_json:" + request_json)
@@ -42,6 +42,10 @@ def _handle_http_request(predictor):
         _shutdown()  # does not return
 
     return Response("")
+
+# called when a GET request is sent to the server at the /asthealth path
+def _handle_http_get_request_health():
+    return Response("Ok")
 
 
 # handle an asts generation request by generating asts
@@ -186,8 +190,10 @@ if __name__ == '__main__':
             raise ValueError('Invalid model type in config: ' + model_type)
         bp = model(args.save_dir, sess)  # create a predictor that can generates ASTs from evidence
 
-        # route POST requests to / to handle_http_request
-        http_server.add_url_rule("/", "index", lambda: _handle_http_request(bp), methods=['POST'])
+        # route POST requests to / to _handle_http_post_request_index(...)
+        http_server.add_url_rule("/", "index", lambda: _handle_http_post_request_index(bp), methods=['POST'])
+        # route GET requests to /asthealth to _handle_http_get_request_health
+        http_server.add_url_rule("/asthealth", "/asthealth", _handle_http_get_request_health, methods=['GET'])
 
         print("===================================")
         print("            Bayou Ready            ")
