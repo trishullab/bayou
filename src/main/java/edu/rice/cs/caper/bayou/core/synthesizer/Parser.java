@@ -55,7 +55,7 @@ public class Parser {
         for (String cp : classpath.split(File.pathSeparator)) {
             _logger.trace("cp: " + cp);
             try {
-                urlList.add(new URL("jar:file:" + cp + "!/"));
+                urlList.add(new File(cp).toURI().toURL());
             } catch (MalformedURLException e) {
                 throw new ParseException("Malformed URL in classpath.");
             }

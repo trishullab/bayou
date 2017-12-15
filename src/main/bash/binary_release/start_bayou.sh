@@ -21,7 +21,7 @@ SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 BAYOU_JAR="$(ls $SCRIPT_DIR/*.jar)"
 cd $SCRIPT_DIR # log4j treats config paths relataive to current directory.  we need this so logs is next to the jar file and not the directory from where the script is being run
-java -DconfigurationFile=$SCRIPT_DIR/resources/conf/apiSynthesisServerConfig.properties -Dlog4j.configurationFile=$SCRIPT_DIR/resources/conf/apiSynthesisServerLog4j2.xml -jar $BAYOU_JAR &
+java -Xbootclasspath/p:$SCRIPT_DIR/resources/artifacts/jar/rt_debug.jar -DconfigurationFile=$SCRIPT_DIR/resources/conf/apiSynthesisServerConfig.properties -Dlog4j.configurationFile=$SCRIPT_DIR/resources/conf/apiSynthesisServerLog4j2.xml -jar $BAYOU_JAR &
 
 if [ $# -eq 0 ]
   then
