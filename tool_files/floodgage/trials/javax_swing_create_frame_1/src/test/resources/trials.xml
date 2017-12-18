@@ -1,0 +1,15 @@
+<trials>
+  <trial>
+    <description>Read the lines of a file.</description>
+    <draftProgramPath>SwingCreateFrameDraft.java</draftProgramPath>
+    <expectedSketchPath>SwingCreateFrameSketch.java</expectedSketchPath>
+    <holes>
+      <hole id="1">
+        <evidence type="call">setDefaultCloseOperation</evidence>
+        <evidence type="call">pack</evidence>
+        <evidence type="call">setVisible</evidence>
+        <evidence type="type">JFrame</evidence>
+      </hole>
+    </holes>
+  </trial>
+</trials>
