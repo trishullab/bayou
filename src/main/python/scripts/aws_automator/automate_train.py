@@ -173,10 +173,10 @@ def start_training(ssh, config):
     else:
         raise ValueError('Invalid model type in config: ' + model_type)
     exec_command_blocking(ssh, """
-            export LD_LIBRARY_PATH=/usr/local/cuda-8.0/lib64:$LD_LIBRARY_PATH; \
+            (export LD_LIBRARY_PATH=/usr/local/cuda-8.0/lib64:$LD_LIBRARY_PATH; \
             export LD_LIBRARY_PATH=~/cuda/lib64:$LD_LIBRARY_PATH; \
-            export PYTHONPATH=~/bayou/src/main/python;
-            python3 -u {}/train.py DATA.json --config config.json --save save > save/train.out 2>&1 &"""
+            export PYTHONPATH=~/bayou/src/main/python; \
+            python3 -u {}/train.py DATA.json --config config.json --save save > save/train.out 2>&1) &"""
                           .format(model_dir))
 
 
