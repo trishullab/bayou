@@ -1,0 +1,12 @@
+<trials>
+  <trial>
+    <description>Write the contents to the file.</description>
+    <draftProgramPath>FileWriterDraft.java</draftProgramPath>
+    <holes>
+      <hole id="1">
+        <evidence type="call">write</evidence>
+        <evidence type="type">FileWriter</evidence>
+      </hole>
+    </holes>
+  </trial>
+</trials>

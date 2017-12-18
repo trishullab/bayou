@@ -1,0 +1,13 @@
+<trials>
+  <trial>
+    <description>Copy elements from one list to another.</description>
+    <draftProgramPath>CopyListDraft.java</draftProgramPath>
+    <holes>
+      <hole id="1">
+        <evidence type="call">next</evidence>
+        <evidence type="call">add</evidence>
+        <evidence type="type">List</evidence>
+      </hole>
+    </holes>
+  </trial>
+</trials>

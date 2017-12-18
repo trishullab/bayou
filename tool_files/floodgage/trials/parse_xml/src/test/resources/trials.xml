@@ -1,0 +1,11 @@
+<trials>
+  <trial>
+    <description>Parse XML input.</description>
+    <draftProgramPath>ParseXMLDraft.java</draftProgramPath>
+    <holes>
+      <hole id="1">
+        <evidence type="keywords">parse xml</evidence>
+      </hole>
+    </holes>
+  </trial>
+</trials>

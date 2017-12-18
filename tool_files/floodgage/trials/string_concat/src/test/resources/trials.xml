@@ -1,0 +1,26 @@
+<trials>
+  <!-- define trails here -->
+  <trial>
+    <description>Concatenate a list of strings into one string.</description>
+    <draftProgramPath>Foo.java</draftProgramPath>
+    <holes>
+      <hole id="1">
+        <evidence type="call">hasNext</evidence>
+        <evidence type="call">isEmpty</evidence>
+        <evidence type="call">append</evidence>
+        <evidence type="type">Iterator</evidence>
+        <evidence type="type">StringBuffer</evidence>
+      </hole>
+    </holes>
+  </trial>
+  <trial>
+    <description>Concatenate a list of strings into one string.</description>
+    <draftProgramPath>Foo.java</draftProgramPath>
+    <holes>
+      <hole id="1">
+        <evidence type="keywords">append iterator isEmpty StringBuffer</evidence>
+      </hole>
+    </holes>
+  </trial>
+</trials>
+

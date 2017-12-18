@@ -1,0 +1,11 @@
+<trials>
+  <trial>
+    <description>Create a file.</description>
+    <draftProgramPath>Draft.java</draftProgramPath>
+    <holes>
+      <hole id="1">
+        <evidence type="keywords">create file</evidence>
+      </hole>
+    </holes>
+  </trial>
+</trials>
