@@ -44,6 +44,7 @@ public class Options {
         "  ],                                  |\n" +
         "  `num-unrolls`: 1,                   | Max unroll of loops in sequences\n" +
         "  `max-seqs`: 10,                     | Max num of sequences in sketches\n" +
+        "  `max-seq-length`: 10,               | Max length of each sequence in sketches\n" +
         "  `javadoc-type`: `summary`           | `summary` (only first line),\n" +
         "                                      | `full` (everything)\n" +
         "}                                     |";
