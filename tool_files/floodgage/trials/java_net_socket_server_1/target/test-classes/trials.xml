@@ -1,0 +1,13 @@
+<trials>
+  <trial>
+    <description>Put an integer and string pair to a hash map.</description>
+    <draftProgramPath>PutObjectsToHashMapDraft.java</draftProgramPath>
+    <expectedSketchPath>PutObjectsToHashMapSketch.java</expectedSketchPath>
+    <holes>
+      <hole id="1">
+        <evidence type="call">put</evidence>
+        <evidence type="type">HashMap</evidence>
+      </hole>
+    </holes>
+  </trial>
+</trials>

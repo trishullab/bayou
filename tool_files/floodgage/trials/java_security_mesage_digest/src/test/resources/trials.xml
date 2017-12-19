@@ -1,0 +1,13 @@
+<trials>
+  <trial>
+    <description>Encrpty a string message.</description>
+    <draftProgramPath>SecurityMessageDigestDraft.java</draftProgramPath>
+    <expectedSketchPath>SecurityMessageDigestSketch.java</expectedSketchPath>
+    <holes>
+      <hole id="1">
+        <evidence type="call">update</evidence>
+        <evidence type="type">MessageDigest</evidence>
+      </hole>
+    </holes>
+  </trial>
+</trials>

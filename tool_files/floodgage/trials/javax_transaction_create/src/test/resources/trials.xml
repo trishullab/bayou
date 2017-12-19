@@ -1,0 +1,14 @@
+<trials>
+  <trial>
+    <description>Create a user transaction.</description>
+    <draftProgramPath>CreateTransactionDraft.java</draftProgramPath>
+    <expectedSketchPath>CreateTransactionSketch.java</expectedSketchPath>
+    <holes>
+      <hole id="1">
+        <evidence type="call">begin</evidence>
+        <evidence type="call">commit</evidence>
+        <evidence type="type">UserTransaction</evidence>
+      </hole>
+    </holes>
+  </trial>
+</trials>

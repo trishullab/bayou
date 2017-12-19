@@ -1,0 +1,13 @@
+<trials>
+  <trial>
+    <description>Create an xml dom.</description>
+    <draftProgramPath>XmlCreateDomDraft.java</draftProgramPath>
+    <expectedSketchPath>XmlCreateDomSketch.java</expectedSketchPath>
+    <holes>
+      <hole id="1">
+        <evidence type="call">newDocument</evidence>
+        <evidence type="type">DocumentBuilder</evidence>
+      </hole>
+    </holes>
+  </trial>
+</trials>

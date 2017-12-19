@@ -1,0 +1,46 @@
+<project>
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>edu.rice.cs.caper</groupId>
+  <artifactId>trialpack</artifactId>
+  <version>1</version>
+  <properties>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <maven.compiler.source>1.8</maven.compiler.source>
+    <maven.compiler.target>1.8</maven.compiler.target>
+  </properties>
+  <dependencies>
+    <!-- https://mvnrepository.com/artifact/junit/junit -->
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <version>4.11</version>
+    </dependency>
+    <!-- https://mvnrepository.com/artifact/javax.transaction/javax.transaction api -->
+    <dependency>
+      <groupId>javax.transaction</groupId>
+      <artifactId>javax.transaction-api</artifactId>
+      <version>1.2</version>
+    </dependency>
+  </dependencies>
+  <build>
+    <finalName>trialpack</finalName>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-jar-plugin</artifactId>
+        <version>3.0.2</version>
+        <executions>
+          <execution>
+            <phase>test</phase>
+            <goals>
+              <goal>test-jar</goal> <!-- preserve the tests in the jar -->
+            </goals>
+          </execution>
+        </executions>
+        <configuration>
+          <outputDirectory>${project.basedir}</outputDirectory>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
+</project>

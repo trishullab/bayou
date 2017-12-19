@@ -1,0 +1,13 @@
+<trials>
+  <trial>
+    <description>Create a socket server.</description>
+    <draftProgramPath>SocketServerDraft.java</draftProgramPath>
+    <expectedSketchPath>SocketServerSketch.java</expectedSketchPath>
+    <holes>
+      <hole id="1">
+        <evidence type="call">accept</evidence>
+        <evidence type="type">ServerSocket</evidence>
+      </hole>
+    </holes>
+  </trial>
+</trials>

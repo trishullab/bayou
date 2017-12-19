@@ -1,0 +1,13 @@
+<trials>
+  <trial>
+    <description>Create a cipher object.</description>
+    <draftProgramPath>CryptoCreateCipherDraft.java</draftProgramPath>
+    <expectedSketchPath>CryptoCreateCipherDraft.java</expectedSketchPath>
+    <holes>
+      <hole id="1">
+        <evidence type="call">init</evidence>
+        <evidence type="type">Cipher</evidence>
+      </hole>
+    </holes>
+  </trial>
+</trials>

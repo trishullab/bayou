@@ -1,0 +1,13 @@
+<trials>
+  <trial>
+    <description>Calculate POW of two double values.</description>
+    <draftProgramPath>MathPowDraft.java</draftProgramPath>
+    <expectedSketchPath>MathPowSketch.java</expectedSketchPath>
+    <holes>
+      <hole id="1">
+        <evidence type="call">pow</evidence>
+        <evidence type="type">Math</evidence>
+      </hole>
+    </holes>
+  </trial>
+</trials>
