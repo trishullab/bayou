@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<module type="JAVA_MODULE" version="4">
+  <component name="NewModuleRootManager" inherit-compiler-output="true">
+    <exclude-output />
+    <content url="file://$MODULE_DIR$/../../../../src/main/java">
+      <sourceFolder url="file://$MODULE_DIR$/../../../../src/main/java/edu/rice/cs/caper/floodgage" isTestSource="false" packagePrefix="edu.rice.cs.caper.floodgage" />
+      <sourceFolder url="file://$MODULE_DIR$/../../../../src/main/java/edu/rice/cs/caper/bayou/core/synthesizer" isTestSource="false" packagePrefix="edu.rice.cs.caper.bayou.core.synthesizer" />
+      <sourceFolder url="file://$MODULE_DIR$/../../../../src/main/java/edu/rice/cs/caper/bayou/core/dom_driver" isTestSource="false" packagePrefix="edu.rice.cs.caper.bayou.core.dom_driver" />
+      <sourceFolder url="file://$MODULE_DIR$/../../../../src/main/java/edu/rice/cs/caper/bayou/core/bayou_services_client" isTestSource="false" packagePrefix="edu.rice.cs.caper.bayou.core.bayou_services_client" />
+      <sourceFolder url="file://$MODULE_DIR$/../../../../src/main/java/edu/rice/cs/caper/bayou/core/dsl" isTestSource="false" packagePrefix="edu.rice.cs.caper.bayou.core.dsl" />
+      <sourceFolder url="file://$MODULE_DIR$/../../../../src/main/java/edu/rice/cs/caper/bayou/core/sketch_metric" isTestSource="false" packagePrefix="edu.rice.cs.caper.bayou.core.sketch_metric" />
+      <sourceFolder url="file://$MODULE_DIR$/../../../../src/main/java/edu/rice/cs/caper/bayou/annotations" isTestSource="false" packagePrefix="edu.rice.cs.caper.bayou.annotations" />
+      <excludeFolder url="file://$MODULE_DIR$/../../../../src/main/java/target" />
+    </content>
+    <orderEntry type="inheritedJdk" />
+    <orderEntry type="sourceFolder" forTests="false" />
+    <orderEntry type="module-library">
+      <library>
+        <CLASSES>
+          <root url="file://$MODULE_DIR$/../../../maven_3_3_9/floodgage/target/dependency" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES>
+          <root url="file://$MODULE_DIR$/../../../maven_3_3_9/floodgage/target/dependency" />
+        </SOURCES>
+        <jarDirectory url="file://$MODULE_DIR$/../../../maven_3_3_9/floodgage/target/dependency" recursive="false" />
+        <jarDirectory url="file://$MODULE_DIR$/../../../maven_3_3_9/floodgage/target/dependency" recursive="false" type="SOURCES" />
+      </library>
+    </orderEntry>
+  </component>
+</module>

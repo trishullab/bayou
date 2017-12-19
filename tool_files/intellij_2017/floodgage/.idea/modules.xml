@@ -2,6 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
+      <module fileurl="file://$PROJECT_DIR$/floodgage/floodgage.iml" filepath="$PROJECT_DIR$/floodgage/floodgage.iml" />
       <module fileurl="file://$PROJECT_DIR$/../../maven_3_3_9/floodgage/floodgage.iml" filepath="$PROJECT_DIR$/../../maven_3_3_9/floodgage/floodgage.iml" />
     </modules>
   </component>
