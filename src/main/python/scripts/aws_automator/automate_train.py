@@ -277,9 +277,9 @@ def wrapup(training_id, checkpoint_epoch, s3_model_location):
         ssh = connect_to_ip(ssh_private_key_file, public_ip)
 
     with message('Setting checkpoint to epoch {}'.format(checkpoint_epoch)):
-        exec_command_blocking(ssh, 'echo "model_checkpoint_path: \"model{}.ckpt\"" > save/checkpoint'
+        exec_command_blocking(ssh, 'echo "model_checkpoint_path: \\"model{}.ckpt\\"" > save/checkpoint'
                               .format(checkpoint_epoch))
-        exec_command_blocking(ssh, 'echo "all_model_checkpoint_paths: \"model{}.ckpt\"" >> save/checkpoint'
+        exec_command_blocking(ssh, 'echo "all_model_checkpoint_paths: \\"model{}.ckpt\\"" >> save/checkpoint'
                               .format(checkpoint_epoch))
 
     with message('Tarballing the model into {}.tar.gz'.format(training_id)):
