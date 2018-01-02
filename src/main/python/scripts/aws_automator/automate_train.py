@@ -266,27 +266,40 @@ def wrapup(training_id, checkpoint_epoch, s3_model_location):
 
     idx, instance = instances[0]
     public_ip = instance['public_ip']
+
+    with message('Connecting to public IP {}'.format(public_ip)):
+        ssh = connect_to_ip(ssh_private_key_file, public_ip)
+
+    with message('Preparing model at epoch {}'.format(checkpoint_epoch)):
+        exec_command_blocking(ssh, 'mkdir model{}'.format(checkpoint_epoch))
+        exec_command_blocking(ssh, 'echo "model_checkpoint_path: \\"model{}.ckpt\\"" > model{}/checkpoint'
+                              .format(checkpoint_epoch, checkpoint_epoch))
+        exec_command_blocking(ssh, 'echo "all_model_checkpoint_paths: \\"model{}.ckpt\\"" >> model{}/checkpoint'
+                              .format(checkpoint_epoch, checkpoint_epoch))
+        exec_command_blocking(ssh, 'cp save/config.json save/model{}.* save/model.* save/train.out model{}'
+                              .format(checkpoint_epoch, checkpoint_epoch))
+
+    with message('Tarballing the model into {}.tar.gz'.format(checkpoint_epoch)):
+        exec_command_blocking(ssh, 'tar czf {}.tar.gz -C model{} .'.format(checkpoint_epoch, checkpoint_epoch))
+
+    with message('Saving to {}'.format(s3_model_location)):
+        exec_command_blocking(ssh, 'aws s3 cp {}.tar.gz {}'.format(checkpoint_epoch, s3_model_location))
+
+
+def terminate(training_id):
+    with open('instances.json') as f:
+        js = json.load(f)
+
+    instances = [(i, instance) for i, instance in enumerate(js['instances']) if instance['training_id'] == training_id]
+    assert len(instances) == 1, 'Instance ID is not unique!'
+
+    idx, instance = instances[0]
     instance_id = instance['instance_id']
     spot_request_id = instance['spot_request_id']
 
     with message('Checking AWS config'):
         client = boto3.client('ec2')
         check_aws_config()
-
-    with message('Connecting to public IP {}'.format(public_ip)):
-        ssh = connect_to_ip(ssh_private_key_file, public_ip)
-
-    with message('Setting checkpoint to epoch {}'.format(checkpoint_epoch)):
-        exec_command_blocking(ssh, 'echo "model_checkpoint_path: \\"model{}.ckpt\\"" > save/checkpoint'
-                              .format(checkpoint_epoch))
-        exec_command_blocking(ssh, 'echo "all_model_checkpoint_paths: \\"model{}.ckpt\\"" >> save/checkpoint'
-                              .format(checkpoint_epoch))
-
-    with message('Tarballing the model into {}.tar.gz'.format(training_id)):
-        exec_command_blocking(ssh, 'tar czf {}.tar.gz -C save .'.format(training_id, training_id))
-
-    with message('Saving to {}'.format(s3_model_location)):
-        exec_command_blocking(ssh, 'aws s3 cp {}.tar.gz {}'.format(training_id, s3_model_location))
 
     with message('Terminating instance {}'.format(instance_id)):
         terminate_instance_blocking(client, instance_id)
@@ -309,11 +322,14 @@ if __name__ == '__main__':
                         help='get training status of all instances')
     parser.add_argument('--wrapup', type=str, nargs=3,
                         help='save the given model training ID, with the given epoch number (int) as checkpoint,'
-                             ' to the given S3 location, and terminate the instance')
+                             ' to the given S3 location')
+    parser.add_argument('--terminate', type=str, default=None,
+                        help='terminate instance with the given model training ID')
     clargs = parser.parse_args()
     nargs = (1 if clargs.config is not None else 0) + \
             (1 if clargs.pingall else 0) + \
-            (1 if clargs.wrapup is not None else 0)
+            (1 if clargs.wrapup is not None else 0) + \
+            (1 if clargs.terminate is not None else 0)
     if nargs != 1:
         parser.print_help()
         parser.error('Provide exactly one argument')
@@ -329,3 +345,5 @@ if __name__ == '__main__':
         pingall()
     elif clargs.wrapup is not None:
         wrapup(clargs.wrapup[0], clargs.wrapup[1], clargs.wrapup[2])
+    elif clargs.terminate is not None:
+        terminate(clargs.terminate)
