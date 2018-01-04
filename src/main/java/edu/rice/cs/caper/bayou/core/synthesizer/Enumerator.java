@@ -229,8 +229,9 @@ public class Enumerator {
                 .collect(Collectors.toList()); // only consider simple types
 
         sortTypesByCost(types);
-        if (types.isEmpty())
-            throw new SynthesisException(SynthesisException.TypeNotFoundDuringSearch);
+        if (types.isEmpty()) {
+            return new Type(ast.newSimpleType(ast.newName("java.lang.String")), String.class); // String is the default type
+        }
         Type type = types.get(0);
         type.addRefCount();
         return type;
