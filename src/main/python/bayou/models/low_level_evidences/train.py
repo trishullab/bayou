@@ -94,7 +94,7 @@ def train(clargs):
             var_list = list(set(all_global_variables) - set(new_global_variables))
             print(var_list)
             saver2 = tf.train.Saver(var_list, max_to_keep=None)
-        dynamic = True
+        dynamic = False
         if dynamic:
             # hardcoded meta-file, no method known yet that can fetch the file automatically
 #            saver2 = tf.train.import_meta_graph(os.path.join(clargs.continue_from, 'model9.ckpt.meta'))
