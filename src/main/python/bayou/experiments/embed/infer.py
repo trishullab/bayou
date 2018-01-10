@@ -16,8 +16,10 @@ import argparse
 import json
 import os
 from sklearn.manifold import TSNE
+import matplotlib
+matplotlib.use('Agg')
 from matplotlib import pylab
-
+import tensorflow as tf
 from bayou.experiments.embed.utils import read_config
 
 
