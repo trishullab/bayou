@@ -388,4 +388,27 @@ public class Type {
     public String toString() {
         return (t != null? t : c).toString();
     }
+
+    /**
+     * Checks for equality of two types by comparing the class AND the DOM type
+     * @param o the object to compare with
+     * @return whether they are equal
+     */
+    @Override
+    public boolean equals(Object o) {
+        if (o == null || ! (o instanceof Type))
+            return false;
+        Type type = (Type) o;
+        return C().equals(type.C()) && (T() == null? type.T() == null : T().subtreeMatch(new ASTMatcher(), type.T()));
+    }
+
+    /**
+     * Returns the hash code based only on class.
+     * This is fine since equals(t1, t2) => hashCode(t1) == hashCode(t2), but not the other way around.
+     * @return this type's hash code
+     */
+    @Override
+    public int hashCode() {
+        return 7*C().hashCode();
+    }
 }

@@ -131,7 +131,7 @@ public class Visitor extends ASTVisitor {
 
             // create the variable declaration fragment
             VariableDeclarationFragment varDeclFrag = ast.newVariableDeclarationFragment();
-            varDeclFrag.setName(ast.newSimpleName(var.getName()));
+            varDeclFrag.setName(var.createASTNode(ast));
 
             // set the default initializer if the variable is a dollar variable
             if (var.isDefaultInit()) {

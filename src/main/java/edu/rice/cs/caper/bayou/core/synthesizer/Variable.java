@@ -18,6 +18,8 @@ package edu.rice.cs.caper.bayou.core.synthesizer;
 import org.eclipse.jdt.core.dom.*;
 
 import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * A variable in the synthesizer's type system
@@ -27,7 +29,7 @@ public class Variable {
     /**
      * Name of the variable
      */
-    private final String name;
+    private String name;
 
     /**
      * Type of the variable
@@ -38,6 +40,12 @@ public class Variable {
      * Reference count of the variable (used for cost metric)
      */
     private int refCount;
+
+    /**
+     * Set of AST node references of this variable. If/when the variable is refactored, these
+     * AST nodes will be updated. Nodes are automatically added when createASTNode() is called.
+     */
+    private Set<SimpleName> astNodeRefs;
 
     /**
      * Properties of this variable
@@ -54,6 +62,7 @@ public class Variable {
         this.name = name;
         this.type = type;
         this.refCount = 0;
+        this.astNodeRefs = new HashSet<>();
         this.properties = properties;
     }
 
@@ -113,6 +122,29 @@ public class Variable {
     }
 
     /**
+     * Creates and associates an AST node (of type SimpleName) referring to this variable
+     * @param ast the owner of the node
+     * @return the AST node corresponding to this variable
+     */
+    public SimpleName createASTNode(AST ast) {
+        SimpleName node = ast.newSimpleName(getName());
+        astNodeRefs.add(node);
+        return node;
+    }
+
+    /**
+     * Refactors this variable's name and updates all AST nodes associated with this variable.
+     * It is the responsibility of the refactoring method to ensure the name is unique wherever
+     * this variable is referenced. Note: a variable's type cannot be refactored.
+     * @param newName the new name of this variable
+     */
+    public void refactor(String newName) {
+        this.name = newName;
+        for (SimpleName node : astNodeRefs)
+            node.setIdentifier(newName);
+    }
+
+    /**
      * Creates a default initializer expression for this variable
      * @param ast the owner of the expression
      * @return expression that initializes this variable
@@ -129,19 +161,28 @@ public class Variable {
         return cast;
     }
 
+    /**
+     * Compares two variables based on their name AND type
+     * @param o the object to compare with
+     * @return whether they are equal
+     */
     @Override
     public boolean equals(Object o) {
         if (o == null || ! (o instanceof Variable))
             return false;
         Variable v = (Variable) o;
-        return v.name.equals(name);
+        return v.getName().equals(getName()) && v.getType().equals(getType());
     }
 
     @Override
     public int hashCode() {
-        return name.hashCode();
+        return 7*name.hashCode() + 17*type.hashCode();
     }
 
+    /**
+     * Returns a string representation of this variable (for debug purposes only)
+     * @return string
+     */
     @Override
     public String toString() {
         return name + ":" + type;

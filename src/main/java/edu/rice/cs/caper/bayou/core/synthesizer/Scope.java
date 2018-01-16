@@ -73,6 +73,8 @@ public class Scope {
      * @param var the variable to be added
      */
     public void addVariable(Variable var) {
+        String uniqueName = makeUnique(var.getName());
+        var.refactor(uniqueName);
         variables.add(var);
     }
 
@@ -111,7 +113,7 @@ public class Scope {
      * @return the unique name
      */
     private String makeUnique(String name) {
-        List<String> existingNames = new ArrayList<>();
+        Set<String> existingNames = new HashSet<>();
         for (Variable var : variables)
             existingNames.add(var.getName());
         for (Variable var : phantomVariables)
@@ -129,6 +131,7 @@ public class Scope {
      * In the join operation, variables declared in ALL sub-scopes will be added to this scope.
      * Variables declared only in some sub-scopes will be added as phantom variables to this scope.
      * Variables that have their "join" flag set to false (e.g., catch clause vars) will be discarded.
+     * Finally, variables will be refactored if necessary.
      * @param subScopes list of sub-scopes that have to be joined into this scope
      */
     public void join(List<Scope> subScopes) {
@@ -140,14 +143,36 @@ public class Scope {
             if (var.isJoinVar())
                 variables.add(var);
 
+        Set<String> varNames = new HashSet<>();
+        Set<Variable> toRefactor = new HashSet<>();
+
         for (Scope subScope : subScopes) {
             Set<Variable> uncommon = subScope.getVariables();
             uncommon.removeAll(variables);
             uncommon.removeAll(common);
-            for (Variable var : uncommon)
-                if (var.isJoinVar())
-                    phantomVariables.add(var);
-            phantomVariables.addAll(subScope.getPhantomVariables());
+            for (Variable var : uncommon) {
+                if (! var.isJoinVar())
+                    continue;
+
+                // Check if another scope added a variable with the same name, and refactor if so.
+                // Note: if the other variable also had the same type (which is fine), it would've
+                // been added to "common" above, and then to the current variables in scope.
+                if (varNames.contains(var.getName()))
+                    toRefactor.add(var);
+
+                varNames.add(var.getName());
+                phantomVariables.add(var);
+            }
+
+            for (Variable var : subScope.getPhantomVariables()) {
+                if (varNames.contains(var.getName()))
+                    toRefactor.add(var);
+                varNames.add(var.getName());
+                phantomVariables.add(var);
+            }
         }
+
+        for (Variable var : toRefactor)
+            var.refactor(makeUnique(var.getName()));
     }
 }

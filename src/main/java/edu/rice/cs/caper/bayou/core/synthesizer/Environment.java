@@ -48,7 +48,7 @@ public class Environment {
         VariableProperties properties = new VariableProperties().setJoin(true); // default properties
         Variable var = scopes.peek().addVariable(type, properties);
         imports.add(var.getType().C());
-        return new TypedExpression(ast.newSimpleName(var.getName()), var.getType());
+        return new TypedExpression(var.createASTNode(ast), var.getType());
     }
 
     /**
@@ -60,7 +60,7 @@ public class Environment {
     public TypedExpression addVariable(Type type, VariableProperties properties) {
         Variable var = scopes.peek().addVariable(type, properties);
         imports.add(var.getType().C());
-        return new TypedExpression(ast.newSimpleName(var.getName()), var.getType());
+        return new TypedExpression(var.createASTNode(ast), var.getType());
     }
 
     /**
@@ -71,7 +71,7 @@ public class Environment {
     public TypedExpression addVariable(Variable var) {
         scopes.peek().addVariable(var);
         imports.add(var.getType().C());
-        return new TypedExpression(ast.newSimpleName(var.getName()), var.getType());
+        return new TypedExpression(var.createASTNode(ast), var.getType());
     }
 
     public Type searchType() {

@@ -67,7 +67,6 @@ public class SynthesizerTest {
         Assert.assertTrue(results.size() > 0);
 
         for(String resultProgram : results) {
-            System.out.println(resultProgram);
             Assert.assertTrue(resultProgram.contains("public class")); // some code was synthesized
         }
 
@@ -77,7 +76,6 @@ public class SynthesizerTest {
         Assert.assertTrue(results.size() > 0);
 
         for(String resultProgram : results) {
-            System.out.println(resultProgram);
             Assert.assertTrue(resultProgram.contains("public class")); // some code was synthesized
         }
     }

@@ -72,7 +72,7 @@ public class Enumerator {
         for (Variable v : toSearch)
             if (target.getType().isAssignableFrom(v.getType())) {
                 v.addRefCount();
-                return new TypedExpression(ast.newSimpleName(v.getName()), v.getType());
+                return new TypedExpression(v.createASTNode(ast), v.getType());
             }
 
         /* could not pick variable, so concretize target type */
@@ -166,7 +166,7 @@ public class Enumerator {
         for (ExpressionChain chain : chains) {
             /* for each chain, see if we can synthesize all arguments in all methods in the chain */
             MethodInvocation invocation = ast.newMethodInvocation();
-            Expression expr = ast.newSimpleName(chain.var.getName());
+            Expression expr = chain.var.createASTNode(ast);
             enumerator.importsDuringSearch.clear();
             for (i = 0; i < chain.methods.size(); i++) {
                 Method m = chain.methods.get(i);
