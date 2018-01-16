@@ -187,7 +187,7 @@ public class DAPICall extends DASTNode
         }
 
         /* constructor return object */
-        TypedExpression ret = env.addVariable(new SearchTarget(type));
+        TypedExpression ret = env.addVariable(type);
 
         /* the assignment */
         Assignment assignment = ast.newAssignment();
@@ -236,7 +236,7 @@ public class DAPICall extends DASTNode
 
         /* method return value */
         Type retType = object.getType().getConcretization(method.getGenericReturnType());
-        TypedExpression ret = env.addVariable(new SearchTarget(retType));
+        TypedExpression ret = env.addVariable(retType);
 
         /* the assignment */
         Expression lhs = ret.getExpression();

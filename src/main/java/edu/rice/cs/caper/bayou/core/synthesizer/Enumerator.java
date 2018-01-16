@@ -53,7 +53,7 @@ public class Enumerator {
 
         /* assign a variable to this expression so that we don't have to search for it again in future */
         Assignment assignment = ast.newAssignment();
-        assignment.setLeftHandSide(env.addVariable(target).getExpression()); // just the variable name
+        assignment.setLeftHandSide(env.addVariable(target.getType()).getExpression()); // just the variable name
         assignment.setOperator(Assignment.Operator.ASSIGN);
         assignment.setRightHandSide(tExpr.getExpression());
 
@@ -81,8 +81,16 @@ public class Enumerator {
         /* ... and start enumerative search or add variable (with default init) depending on enumeration mode */
         if (mode == Synthesizer.Mode.COMBINATORIAL_ENUMERATOR)
             return enumerate(target, argDepth, toSearch);
-        else if (mode == Synthesizer.Mode.CONDITIONAL_PROGRAM_GENERATOR)
-            return env.addVariable(target, true, true);
+        else if (mode == Synthesizer.Mode.CONDITIONAL_PROGRAM_GENERATOR) {
+            VariableProperties properties = new VariableProperties().setJoin(true).setDefaultInit(true);
+            if (target.hasName()) { // create variable with name here
+                Variable var = new Variable(target.getName(), target.getType(), properties);
+                return env.addVariable(var);
+            }
+            else {
+                return env.addVariable(target.getType(), properties);
+            }
+        }
         throw new IllegalArgumentException("Invalid enumeration mode");
     }
 

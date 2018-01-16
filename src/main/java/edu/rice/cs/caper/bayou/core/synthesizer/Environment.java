@@ -39,20 +39,39 @@ public class Environment {
         imports = new HashSet<>();
     }
 
-    public TypedExpression addVariable(SearchTarget target) {
-        return addVariable(target, true, false);
+    /**
+     * Adds a variable with the given type (and default properties) to the current scope
+     * @param type variable type, from which a variable name will be derived
+     * @return a TypedExpression with a simple name (variable name) and variable type
+     */
+    public TypedExpression addVariable(Type type) {
+        VariableProperties properties = new VariableProperties().setJoin(true); // default properties
+        Variable var = scopes.peek().addVariable(type, properties);
+        imports.add(var.getType().C());
+        return new TypedExpression(ast.newSimpleName(var.getName()), var.getType());
     }
 
-    public TypedExpression addVariable(SearchTarget target, boolean join, boolean defaultInit) {
-        /* add variable to scope */
-        Variable var = scopes.peek().addVariable(target);
-        var.setJoin(join);
-        var.setDefaultInit(defaultInit);
+    /**
+     * Adds a variable with the given type and properties to the current scope
+     * @param type variable type, from which a variable name will be derived
+     * @param properties variable properties
+     * @return a TypedExpression with a simple name (variable name) and variable type
+     */
+    public TypedExpression addVariable(Type type, VariableProperties properties) {
+        Variable var = scopes.peek().addVariable(type, properties);
+        imports.add(var.getType().C());
+        return new TypedExpression(ast.newSimpleName(var.getName()), var.getType());
+    }
 
-        /* add type to imports */
-        imports.add(target.getType().C());
-
-        return new TypedExpression(ast.newSimpleName(var.getName()), target.getType());
+    /**
+     * Adds the given variable, whose properties must already be set, to the current scope
+     * @param var the variable to be added
+     * @return a TypedExpression with a simple name (variable name) and variable type
+     */
+    public TypedExpression addVariable(Variable var) {
+        scopes.peek().addVariable(var);
+        imports.add(var.getType().C());
+        return new TypedExpression(ast.newSimpleName(var.getName()), var.getType());
     }
 
     public Type searchType() {

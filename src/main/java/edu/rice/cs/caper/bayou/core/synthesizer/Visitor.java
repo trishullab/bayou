@@ -188,8 +188,10 @@ public class Visitor extends ASTVisitor {
         /* add variables in the formal parameters */
         for (Object o : method.parameters()) {
             SingleVariableDeclaration param = (SingleVariableDeclaration) o;
-            Variable v = new Variable(param.getName().getIdentifier(), new Type(param.getType()));
-            v.setUserVar(true);
+            String name = param.getName().getIdentifier();
+            Type type = new Type(param.getType());
+            VariableProperties properties = new VariableProperties().setUserVar(true);
+            Variable v = new Variable(name, type, properties);
             currentScope.add(v);
         }
 
@@ -202,8 +204,10 @@ public class Visitor extends ASTVisitor {
             VariableDeclarationStatement varDecl = (VariableDeclarationStatement) stmt;
             for (Object f : varDecl.fragments()) {
                 VariableDeclarationFragment frag = (VariableDeclarationFragment) f;
-                Variable v = new Variable(frag.getName().getIdentifier(), new Type(varDecl.getType()));
-                v.setUserVar(true);
+                String name = frag.getName().getIdentifier();
+                Type type = new Type(varDecl.getType());
+                VariableProperties properties = new VariableProperties().setUserVar(true);
+                Variable v = new Variable(name, type, properties);
                 currentScope.add(v);
             }
         }

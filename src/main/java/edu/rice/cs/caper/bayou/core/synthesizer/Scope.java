@@ -17,46 +17,87 @@ package edu.rice.cs.caper.bayou.core.synthesizer;
 
 import java.util.*;
 
+/**
+ * A scope of variables for the synthesizer to work with
+ */
 public class Scope {
+    /**
+     * The set of variables in the scope
+     */
     private Set<Variable> variables;
 
-    /* Phantom variables are those that cannot be referenced because they
-     * don't appear in the current scope. But they need to be added to the
-     * method's variable declarations because they're used in some inner scope.
+    /**
+     * The set of phantom variables in the scope. Phantom variables are those
+     * that cannot be referenced during synthesis because they don't appear in
+     * the current scope. But they need to be added to the method's variable
+     * declarations because they're used in some inner scope.
      */
     private Set<Variable> phantomVariables;
 
+    /**
+     * Initializes the scope
+     * @param variables variables present in the scope
+     */
     public Scope(List<Variable> variables) {
         this.variables = new HashSet<>(variables);
         this.phantomVariables = new HashSet<>();
     }
 
+    /**
+     * Initializes the scope from another scope
+     * @param scope scope whose variables are used for initialization
+     */
     public Scope(Scope scope) {
         this.variables = new HashSet<>(scope.variables);
         this.phantomVariables = new HashSet<>(scope.phantomVariables);
     }
 
+    /**
+     * Gets the set of variables in the current scope
+     * @return set of variables
+     */
     public Set<Variable> getVariables() {
         return variables;
     }
 
+    /**
+     * Gets the set of phantom variables in the current scope
+     * @return set of phantom variables
+     */
     public Set<Variable> getPhantomVariables() {
         return phantomVariables;
     }
 
-    public Variable addVariable(SearchTarget target) {
-        Type type = target.getType();
+    /**
+     * Adds the given variable, whose properties must already be set, to the current scope
+     * @param var the variable to be added
+     */
+    public void addVariable(Variable var) {
+        variables.add(var);
+    }
 
+    /**
+     * Adds a variable with the given type and properties to the current scope
+     * @param type variable type, from which a variable name will be derived
+     * @param properties variable properties
+     * @return a TypedExpression with a simple name (variable name) and variable type
+     */
+    public Variable addVariable(Type type, VariableProperties properties) {
         // construct a nice name for the variable
-        String name = target.hasName()? target.getName(): createNameFromType(type);
+        String name = createNameFromType(type);
 
         // add variable to scope and return it
         String uniqueName = makeUnique(name);
-        Variable var = new Variable(uniqueName, type);
+        Variable var = new Variable(uniqueName, type, properties);
         variables.add(var);
         return var;
     }
 
+    /**
+     * Creates a pretty name from a type
+     * @param type type from which name is created
+     * @return the pretty name
+     */
     private String createNameFromType(Type type) {
         String name = type.C().getSimpleName();
         name = name.replaceAll("\\[\\]", "s");
@@ -64,6 +105,11 @@ public class Scope {
         return name;
     }
 
+    /**
+     * Make a given name unique in the current scope by appending an incrementing id to it
+     * @param name name that has to be made unique
+     * @return the unique name
+     */
     private String makeUnique(String name) {
         List<String> existingNames = new ArrayList<>();
         for (Variable var : variables)
@@ -78,10 +124,12 @@ public class Scope {
         return null;
     }
 
-    /* Given a list of sub-scopes, join all of them into this scope.
+    /**
+     * Join a list of sub-scopes into this scope.
      * In the join operation, variables declared in ALL sub-scopes will be added to this scope.
      * Variables declared only in some sub-scopes will be added as phantom variables to this scope.
      * Variables that have their "join" flag set to false (e.g., catch clause vars) will be discarded.
+     * @param subScopes list of sub-scopes that have to be joined into this scope
      */
     public void join(List<Scope> subScopes) {
         Set<Variable> common = new HashSet<>(subScopes.get(0).getVariables());

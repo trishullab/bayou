@@ -19,66 +19,116 @@ import org.eclipse.jdt.core.dom.*;
 
 import java.util.Arrays;
 
+/**
+ * A variable in the synthesizer's type system
+ */
 public class Variable {
 
-    /* TODO: add support for arrays (search for isArray) */
-
+    /**
+     * Name of the variable
+     */
     private final String name;
+
+    /**
+     * Type of the variable
+     */
     private final Type type;
+
+    /**
+     * Reference count of the variable (used for cost metric)
+     */
     private int refCount;
+
+    /**
+     * Denotes if the variable is a user-defined variable in the param/body of the method
+     */
     private boolean userVar;
+
+    /**
+     * Denotes if the variable should participate in joins (e.g., catch clause variables will not)
+     */
     private boolean join;
+
+    /**
+     * Denotes if the variable needs to be initialized to a default value using $init
+     */
     private boolean defaultInit;
 
-    Variable(String name, Type type) {
+    /**
+     * Initializes a variable with the given parameters
+     * @param name variable name
+     * @param type variable type
+     * @param properties variable properties
+     */
+    Variable(String name, Type type, VariableProperties properties) {
         this.name = name;
         this.type = type;
-        refCount = 0;
-        join = true;
-        userVar = false;
-        defaultInit = false;
+        this.refCount = 0;
+        this.join = properties.getJoin();
+        this.userVar = properties.getUserVar();
+        this.defaultInit = properties.getDefaultInit();
     }
 
+    /**
+     * Gets the variable name
+     * @return variable name
+     */
     public String getName() {
         return name;
     }
 
+    /**
+     * Gets the variable type
+     * @return variable type
+     */
     public Type getType() {
         return type;
     }
 
-    public void setJoin(boolean join) {
-        this.join = join;
-    }
-
+    /**
+     * Checks if this variable can participate in joins
+     * @return current value
+     */
     public boolean isJoinVar() {
         return join;
     }
 
-    public void setUserVar(boolean userVar) {
-        this.userVar = userVar;
-    }
-
+    /**
+     * Checks if this variable is a user-defined variable
+     * @return current value
+     */
     public boolean isUserVar() {
         return userVar;
     }
 
-    public void setDefaultInit(boolean defaultInit) {
-        this.defaultInit = defaultInit;
-    }
-
+    /**
+     * Checks if a default initializer needs to be synthesized for this variable
+     * @return current value
+     */
     public boolean isDefaultInit() {
         return defaultInit;
     }
 
+    /**
+     * Increments the reference counter of this variable
+     */
     public void addRefCount() {
         refCount += 1;
     }
 
+    /**
+     * Gets the reference counter of this variable
+     * @return current value
+     */
     public int getRefCount() {
         return refCount;
     }
 
+    /**
+     * Creates a default initializer expression for this variable
+     * @param ast the owner of the expression
+     * @return expression that initializes this variable
+     */
     public Expression createDefaultInitializer(AST ast) {
         CastExpression cast = ast.newCastExpression();
         cast.setType(type.simpleT(ast));
