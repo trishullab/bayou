@@ -101,10 +101,14 @@ public class Scope {
      * @return the pretty name
      */
     private String createNameFromType(Type type) {
-        String name = type.C().getSimpleName();
-        name = name.replaceAll("\\[\\]", "s");
-        name = Character.toLowerCase(name.charAt(0)) + name.substring(1);
-        return name;
+        if (type.C().isPrimitive())
+            return type.C().getCanonicalName().substring(0, 1);
+        String name = type.C().getCanonicalName();
+        StringBuilder sb = new StringBuilder();
+        for (char c : name.toCharArray())
+            if (Character.isUpperCase(c))
+                sb.append(c);
+        return sb.toString().toLowerCase();
     }
 
     /**
@@ -118,6 +122,9 @@ public class Scope {
             existingNames.add(var.getName());
         for (Variable var : phantomVariables)
             existingNames.add(var.getName());
+
+        if (!existingNames.contains(name))
+            return name;
 
         int i;
         for (i = 1; i < 9999; i++)
@@ -165,6 +172,8 @@ public class Scope {
             }
 
             for (Variable var : subScope.getPhantomVariables()) {
+                if (phantomVariables.contains(var))
+                    continue;
                 if (varNames.contains(var.getName()))
                     toRefactor.add(var);
                 varNames.add(var.getName());
