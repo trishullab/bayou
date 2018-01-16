@@ -40,19 +40,9 @@ public class Variable {
     private int refCount;
 
     /**
-     * Denotes if the variable is a user-defined variable in the param/body of the method
+     * Properties of this variable
      */
-    private boolean userVar;
-
-    /**
-     * Denotes if the variable should participate in joins (e.g., catch clause variables will not)
-     */
-    private boolean join;
-
-    /**
-     * Denotes if the variable needs to be initialized to a default value using $init
-     */
-    private boolean defaultInit;
+    private VariableProperties properties;
 
     /**
      * Initializes a variable with the given parameters
@@ -64,9 +54,7 @@ public class Variable {
         this.name = name;
         this.type = type;
         this.refCount = 0;
-        this.join = properties.getJoin();
-        this.userVar = properties.getUserVar();
-        this.defaultInit = properties.getDefaultInit();
+        this.properties = properties;
     }
 
     /**
@@ -90,7 +78,7 @@ public class Variable {
      * @return current value
      */
     public boolean isJoinVar() {
-        return join;
+        return properties.getJoin();
     }
 
     /**
@@ -98,7 +86,7 @@ public class Variable {
      * @return current value
      */
     public boolean isUserVar() {
-        return userVar;
+        return properties.getUserVar();
     }
 
     /**
@@ -106,7 +94,7 @@ public class Variable {
      * @return current value
      */
     public boolean isDefaultInit() {
-        return defaultInit;
+        return properties.getDefaultInit();
     }
 
     /**
