@@ -48,9 +48,13 @@ public class DOMMethodInvocation implements Handler {
         }
 
         IMethodBinding binding = invocation.resolveMethodBinding();
-        // get to the generic declaration, if this binding is an instantiation
-        while (binding != null && binding.getMethodDeclaration() != binding)
-            binding = binding.getMethodDeclaration();
+
+        /* commenting this in order to concretize generics
+        * // get to the generic declaration, if this binding is an instantiation
+        * while (binding != null && binding.getMethodDeclaration() != binding)
+        *     binding = binding.getMethodDeclaration();
+        */
+
         MethodDeclaration localMethod = Utils.checkAndGetLocalMethod(binding, visitor);
         if (localMethod != null) {
             Stack<MethodDeclaration> callStack = visitor.callStack;
