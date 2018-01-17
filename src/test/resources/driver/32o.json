@@ -6,30 +6,30 @@
         "_nodes": [
           {
             "node": "DAPICall",
-            "_call": "java.util.Stack\u003cTau_E\u003e.Stack()",
+            "_call": "java.util.Stack\u003cjava.lang.String\u003e.Stack\u003cString\u003e()",
             "_throws": [],
             "_returns": "void"
           },
           {
             "node": "DAPICall",
-            "_call": "java.util.Stack\u003cTau_E\u003e.push(Tau_E)",
+            "_call": "java.util.Stack\u003cjava.lang.String\u003e.push(java.lang.String)",
             "_throws": [],
-            "_returns": "Tau_E"
+            "_returns": "java.lang.String"
           },
           {
             "node": "DAPICall",
-            "_call": "java.util.Stack\u003cTau_E\u003e.pop()",
+            "_call": "java.util.Stack\u003cjava.lang.String\u003e.pop()",
             "_throws": [],
-            "_returns": "Tau_E"
+            "_returns": "java.lang.String"
           }
         ]
       },
       "sequences": [
         {
           "calls": [
-            "java.util.Stack\u003cTau_E\u003e.Stack()",
-            "java.util.Stack\u003cTau_E\u003e.push(Tau_E)",
-            "java.util.Stack\u003cTau_E\u003e.pop()"
+            "java.util.Stack\u003cjava.lang.String\u003e.Stack\u003cString\u003e()",
+            "java.util.Stack\u003cjava.lang.String\u003e.push(java.lang.String)",
+            "java.util.Stack\u003cjava.lang.String\u003e.pop()"
           ]
         }
       ],

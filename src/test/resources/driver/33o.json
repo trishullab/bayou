@@ -6,31 +6,31 @@
         "_nodes": [
           {
             "node": "DAPICall",
-            "_call": "java.util.HashMap\u003cTau_K,Tau_V\u003e.HashMap()",
+            "_call": "java.util.HashMap\u003cjava.lang.Integer,java.lang.String\u003e.HashMap\u003cInteger,String\u003e()",
             "_throws": [],
             "_returns": "void"
           },
           {
             "node": "DAPICall",
-            "_call": "java.util.Map\u003cTau_K,Tau_V\u003e.put(Tau_K,Tau_V)",
+            "_call": "java.util.Map\u003cjava.lang.Integer,java.lang.String\u003e.put(java.lang.Integer,java.lang.String)",
             "_throws": [],
-            "_returns": "Tau_V"
+            "_returns": "java.lang.String"
           },
           {
             "node": "DAPICall",
-            "_call": "java.util.Map\u003cTau_K,Tau_V\u003e.put(Tau_K,Tau_V)",
+            "_call": "java.util.Map\u003cjava.lang.Integer,java.lang.String\u003e.put(java.lang.Integer,java.lang.String)",
             "_throws": [],
-            "_returns": "Tau_V"
+            "_returns": "java.lang.String"
           },
           {
             "node": "DAPICall",
-            "_call": "java.util.Map\u003cTau_K,Tau_V\u003e.get(java.lang.Object)",
+            "_call": "java.util.Map\u003cjava.lang.Integer,java.lang.String\u003e.get(java.lang.Object)",
             "_throws": [],
-            "_returns": "Tau_V"
+            "_returns": "java.lang.String"
           },
           {
             "node": "DAPICall",
-            "_call": "java.util.Map\u003cTau_K,Tau_V\u003e.clear()",
+            "_call": "java.util.Map\u003cjava.lang.Integer,java.lang.String\u003e.clear()",
             "_throws": [],
             "_returns": "void"
           }
@@ -39,11 +39,11 @@
       "sequences": [
         {
           "calls": [
-            "java.util.HashMap\u003cTau_K,Tau_V\u003e.HashMap()",
-            "java.util.Map\u003cTau_K,Tau_V\u003e.put(Tau_K,Tau_V)",
-            "java.util.Map\u003cTau_K,Tau_V\u003e.put(Tau_K,Tau_V)",
-            "java.util.Map\u003cTau_K,Tau_V\u003e.get(java.lang.Object)",
-            "java.util.Map\u003cTau_K,Tau_V\u003e.clear()"
+            "java.util.HashMap\u003cjava.lang.Integer,java.lang.String\u003e.HashMap\u003cInteger,String\u003e()",
+            "java.util.Map\u003cjava.lang.Integer,java.lang.String\u003e.put(java.lang.Integer,java.lang.String)",
+            "java.util.Map\u003cjava.lang.Integer,java.lang.String\u003e.put(java.lang.Integer,java.lang.String)",
+            "java.util.Map\u003cjava.lang.Integer,java.lang.String\u003e.get(java.lang.Object)",
+            "java.util.Map\u003cjava.lang.Integer,java.lang.String\u003e.clear()"
           ]
         }
       ],
