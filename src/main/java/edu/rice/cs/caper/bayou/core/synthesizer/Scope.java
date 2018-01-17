@@ -108,14 +108,13 @@ public class Scope {
      * @return the pretty name
      */
     private String createNameFromType(Type type) {
-        if (type.C().isPrimitive())
-            return type.C().getCanonicalName().substring(0, 1);
         String name = type.C().getCanonicalName();
         StringBuilder sb = new StringBuilder();
         for (char c : name.toCharArray())
             if (Character.isUpperCase(c))
                 sb.append(c);
-        return sb.toString().toLowerCase();
+        String prettyName = sb.toString().toLowerCase();
+        return prettyName.equals("")? name.substring(0, 1) : prettyName;
     }
 
     /**
