@@ -17,10 +17,7 @@ package edu.rice.cs.caper.bayou.core.dom_driver;
 
 import edu.rice.cs.caper.bayou.core.dsl.DAPICall;
 import edu.rice.cs.caper.bayou.core.dsl.DSubTree;
-import org.eclipse.jdt.core.dom.Expression;
-import org.eclipse.jdt.core.dom.IMethodBinding;
-import org.eclipse.jdt.core.dom.MethodDeclaration;
-import org.eclipse.jdt.core.dom.MethodInvocation;
+import org.eclipse.jdt.core.dom.*;
 
 import java.util.Stack;
 
@@ -49,11 +46,19 @@ public class DOMMethodInvocation implements Handler {
 
         IMethodBinding binding = invocation.resolveMethodBinding();
 
-        /* commenting this in order to concretize generics
-        * // get to the generic declaration, if this binding is an instantiation
-        * while (binding != null && binding.getMethodDeclaration() != binding)
-        *     binding = binding.getMethodDeclaration();
-        */
+        // check if the binding is of a generic type that involves user-defined types
+        if (binding != null) {
+            ITypeBinding cls = binding.getDeclaringClass();
+            boolean userType = false;
+            if (cls.isParameterizedType())
+                for (int i = 0; i < cls.getTypeArguments().length; i++)
+                    userType |= !cls.getTypeArguments()[i].getQualifiedName().startsWith("java.")
+                            && !cls.getTypeArguments()[i].getQualifiedName().startsWith("javax.");
+
+            if (userType) // get to the generic declaration
+                while (binding != null && binding.getMethodDeclaration() != binding)
+                    binding = binding.getMethodDeclaration();
+        }
 
         MethodDeclaration localMethod = Utils.checkAndGetLocalMethod(binding, visitor);
         if (localMethod != null) {
