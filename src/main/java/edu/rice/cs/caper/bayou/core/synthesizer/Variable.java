@@ -54,8 +54,9 @@ public class Variable {
 
     /**
      * Initializes a variable with the given parameters
-     * @param name variable name
-     * @param type variable type
+     *
+     * @param name       variable name
+     * @param type       variable type
      * @param properties variable properties
      */
     Variable(String name, Type type, VariableProperties properties) {
@@ -68,6 +69,7 @@ public class Variable {
 
     /**
      * Gets the variable name
+     *
      * @return variable name
      */
     public String getName() {
@@ -76,6 +78,7 @@ public class Variable {
 
     /**
      * Gets the variable type
+     *
      * @return variable type
      */
     public Type getType() {
@@ -84,6 +87,7 @@ public class Variable {
 
     /**
      * Checks if this variable can participate in joins
+     *
      * @return current value
      */
     public boolean isJoinVar() {
@@ -92,6 +96,7 @@ public class Variable {
 
     /**
      * Checks if this variable is a user-defined variable
+     *
      * @return current value
      */
     public boolean isUserVar() {
@@ -100,10 +105,20 @@ public class Variable {
 
     /**
      * Checks if a default initializer needs to be synthesized for this variable
+     *
      * @return current value
      */
     public boolean isDefaultInit() {
         return properties.getDefaultInit();
+    }
+
+    /**
+     * Checks if this variable is a single use variable
+     *
+     * @return current value
+     */
+    public boolean isSingleUseVar() {
+        return properties.getSingleUse();
     }
 
     /**
@@ -115,6 +130,7 @@ public class Variable {
 
     /**
      * Gets the reference counter of this variable
+     *
      * @return current value
      */
     public int getRefCount() {
@@ -123,6 +139,7 @@ public class Variable {
 
     /**
      * Creates and associates an AST node (of type SimpleName) referring to this variable
+     *
      * @param ast the owner of the node
      * @return the AST node corresponding to this variable
      */
@@ -136,6 +153,7 @@ public class Variable {
      * Refactors this variable's name and updates all AST nodes associated with this variable.
      * It is the responsibility of the refactoring method to ensure the name is unique wherever
      * this variable is referenced. Note: a variable's type cannot be refactored.
+     *
      * @param newName the new name of this variable
      */
     public void refactor(String newName) {
@@ -146,6 +164,7 @@ public class Variable {
 
     /**
      * Creates a default initializer expression for this variable
+     *
      * @param ast the owner of the expression
      * @return expression that initializes this variable
      */
@@ -163,12 +182,13 @@ public class Variable {
 
     /**
      * Compares two variables based on their name AND type
+     *
      * @param o the object to compare with
      * @return whether they are equal
      */
     @Override
     public boolean equals(Object o) {
-        if (o == null || ! (o instanceof Variable))
+        if (o == null || !(o instanceof Variable))
             return false;
         Variable v = (Variable) o;
         return v.getName().equals(getName()) && v.getType().equals(getType());
@@ -176,11 +196,12 @@ public class Variable {
 
     @Override
     public int hashCode() {
-        return 7*name.hashCode() + 17*type.hashCode();
+        return 7 * name.hashCode() + 17 * type.hashCode();
     }
 
     /**
      * Returns a string representation of this variable (for debug purposes only)
+     *
      * @return string
      */
     @Override

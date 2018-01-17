@@ -183,9 +183,10 @@ public class DBranch extends DASTNode {
         }
         switch (clauses.size()) {
             case 0:
-                Expression var = env.search(new SearchTarget(
-                        new Type(ast.newPrimitiveType(PrimitiveType.toCode("boolean")), boolean.class)
-                )).getExpression();
+                SearchTarget target = new SearchTarget(
+                        new Type(ast.newPrimitiveType(PrimitiveType.toCode("boolean")), boolean.class));
+                target.setSingleUseVariable(true);
+                Expression var = env.search(target).getExpression();
                 statement.setExpression(var);
                 break;
             case 1:

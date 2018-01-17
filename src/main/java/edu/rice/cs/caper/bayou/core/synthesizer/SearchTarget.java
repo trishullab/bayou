@@ -32,7 +32,14 @@ public class SearchTarget {
     private final String name;
 
     /**
+     * Denotes whether the enumerator should create a single use variable or not
+     * if the search failed (e.g., API call arguments)
+     */
+    private boolean singleUseVariable;
+
+    /**
      * Initializes the search target type and parameter name
+     *
      * @param type type to search for
      * @param name parameter name for search
      */
@@ -43,6 +50,7 @@ public class SearchTarget {
 
     /**
      * Initializes the search target type
+     *
      * @param type type to search for
      */
     public SearchTarget(Type type) {
@@ -52,6 +60,7 @@ public class SearchTarget {
 
     /**
      * Checks if the search target has a parameter name
+     *
      * @return if name is not null
      */
     public boolean hasName() {
@@ -60,6 +69,7 @@ public class SearchTarget {
 
     /**
      * Gets the type for the search target
+     *
      * @return current value
      */
     public Type getType() {
@@ -68,10 +78,28 @@ public class SearchTarget {
 
     /**
      * Gets the name for the search target (if any)
+     *
      * @return current value
      */
     public String getName() {
         return name;
     }
 
+    /**
+     * Sets the value of singleUseVariable search property
+     *
+     * @param b value to set to
+     */
+    public void setSingleUseVariable(boolean b) {
+        singleUseVariable = b;
+    }
+
+    /**
+     * Gets the value of singleUseVariable search property
+     *
+     * @return current value
+     */
+    public boolean getSingleUseVariable() {
+        return singleUseVariable;
+    }
 }

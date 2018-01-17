@@ -70,7 +70,7 @@ public class Enumerator {
         List<Variable> toSearch = new ArrayList<>(env.getScope().getVariables());
         sortVariablesByCost(toSearch);
         for (Variable v : toSearch)
-            if (target.getType().isAssignableFrom(v.getType())) {
+            if (!v.isSingleUseVar() && target.getType().isAssignableFrom(v.getType())) {
                 v.addRefCount();
                 return new TypedExpression(v.createASTNode(ast), v.getType());
             }
@@ -82,7 +82,10 @@ public class Enumerator {
         if (mode == Synthesizer.Mode.COMBINATORIAL_ENUMERATOR)
             return enumerate(target, argDepth, toSearch);
         else if (mode == Synthesizer.Mode.CONDITIONAL_PROGRAM_GENERATOR) {
-            VariableProperties properties = new VariableProperties().setJoin(true).setDefaultInit(true);
+            VariableProperties properties = new VariableProperties()
+                                                            .setJoin(true)
+                                                            .setDefaultInit(true)
+                                                            .setSingleUse(target.getSingleUseVariable());
             if (target.hasName()) { // create variable with name here
                 Variable var = new Variable(target.getName(), target.getType(), properties);
                 return env.addVariable(var);

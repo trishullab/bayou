@@ -41,6 +41,7 @@ public class Environment {
 
     /**
      * Adds a variable with the given type (and default properties) to the current scope
+     *
      * @param type variable type, from which a variable name will be derived
      * @return a TypedExpression with a simple name (variable name) and variable type
      */
@@ -53,7 +54,8 @@ public class Environment {
 
     /**
      * Adds a variable with the given type and properties to the current scope
-     * @param type variable type, from which a variable name will be derived
+     *
+     * @param type       variable type, from which a variable name will be derived
      * @param properties variable properties
      * @return a TypedExpression with a simple name (variable name) and variable type
      */
@@ -65,6 +67,7 @@ public class Environment {
 
     /**
      * Adds the given variable, whose properties must already be set, to the current scope
+     *
      * @param var the variable to be added
      * @return a TypedExpression with a simple name (variable name) and variable type
      */

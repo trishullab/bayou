@@ -36,7 +36,13 @@ public class VariableProperties {
     private boolean defaultInit;
 
     /**
+     * Denotes if the variable is single use only (e.g., API call arguments that had to be synthesized)
+     */
+    private boolean singleUse;
+
+    /**
      * Sets the userVar property
+     *
      * @param b value to set to
      * @return this object for chaining
      */
@@ -47,6 +53,7 @@ public class VariableProperties {
 
     /**
      * Sets the join property
+     *
      * @param b value to set to
      * @return this object for chaining
      */
@@ -57,6 +64,7 @@ public class VariableProperties {
 
     /**
      * Sets the defaultInit property
+     *
      * @param b value to set to
      * @return this object for chaining
      */
@@ -66,7 +74,19 @@ public class VariableProperties {
     }
 
     /**
+     * Sets the singleUse property
+     *
+     * @param b value to set to
+     * @return this object for chaining
+     */
+    public VariableProperties setSingleUse(boolean b) {
+        singleUse = b;
+        return this;
+    }
+
+    /**
      * Gets the userVar property
+     *
      * @return current value
      */
     public boolean getUserVar() {
@@ -75,6 +95,7 @@ public class VariableProperties {
 
     /**
      * Gets the join property
+     *
      * @return current value
      */
     public boolean getJoin() {
@@ -83,9 +104,19 @@ public class VariableProperties {
 
     /**
      * Gets the defaultInit property
+     *
      * @return current value
      */
     public boolean getDefaultInit() {
         return defaultInit;
+    }
+
+    /**
+     * Gets the singleUse property
+     *
+     * @return current value
+     */
+    public boolean getSingleUse() {
+        return singleUse;
     }
 }

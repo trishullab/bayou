@@ -36,6 +36,7 @@ public class Scope {
 
     /**
      * Initializes the scope
+     *
      * @param variables variables present in the scope
      */
     public Scope(List<Variable> variables) {
@@ -45,6 +46,7 @@ public class Scope {
 
     /**
      * Initializes the scope from another scope
+     *
      * @param scope scope whose variables are used for initialization
      */
     public Scope(Scope scope) {
@@ -54,6 +56,7 @@ public class Scope {
 
     /**
      * Gets the set of variables in the current scope
+     *
      * @return set of variables
      */
     public Set<Variable> getVariables() {
@@ -62,6 +65,7 @@ public class Scope {
 
     /**
      * Gets the set of phantom variables in the current scope
+     *
      * @return set of phantom variables
      */
     public Set<Variable> getPhantomVariables() {
@@ -70,6 +74,7 @@ public class Scope {
 
     /**
      * Adds the given variable, whose properties must already be set, to the current scope
+     *
      * @param var the variable to be added
      */
     public void addVariable(Variable var) {
@@ -80,7 +85,8 @@ public class Scope {
 
     /**
      * Adds a variable with the given type and properties to the current scope
-     * @param type variable type, from which a variable name will be derived
+     *
+     * @param type       variable type, from which a variable name will be derived
      * @param properties variable properties
      * @return a TypedExpression with a simple name (variable name) and variable type
      */
@@ -97,6 +103,7 @@ public class Scope {
 
     /**
      * Creates a pretty name from a type
+     *
      * @param type type from which name is created
      * @return the pretty name
      */
@@ -113,6 +120,7 @@ public class Scope {
 
     /**
      * Make a given name unique in the current scope by appending an incrementing id to it
+     *
      * @param name name that has to be made unique
      * @return the unique name
      */
@@ -139,6 +147,7 @@ public class Scope {
      * Variables declared only in some sub-scopes will be added as phantom variables to this scope.
      * Variables that have their "join" flag set to false (e.g., catch clause vars) will be discarded.
      * Finally, variables will be refactored if necessary.
+     *
      * @param subScopes list of sub-scopes that have to be joined into this scope
      */
     public void join(List<Scope> subScopes) {
@@ -158,7 +167,7 @@ public class Scope {
             uncommon.removeAll(variables);
             uncommon.removeAll(common);
             for (Variable var : uncommon) {
-                if (! var.isJoinVar())
+                if (!var.isJoinVar())
                     continue;
 
                 // Check if another scope added a variable with the same name, and refactor if so.
