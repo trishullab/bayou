@@ -131,5 +131,9 @@ public class SynthesizerTest {
     public void testSpeech() throws IOException, ParseException {
         testExecute("TestSpeech");
     }
-    
+
+    @Test
+    public void testSecurity() throws IOException, ParseException {
+        testExecute("TestSecurity");
+    }
 }

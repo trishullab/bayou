@@ -1,0 +1,196 @@
+{
+  "asts": [
+    {
+      "node": "DSubTree",
+      "_nodes": [
+        {
+          "node": "DAPICall",
+          "_call": "java.security.KeyPairGenerator.getInstance(java.lang.String)"
+        },
+        {
+          "node": "DAPICall",
+          "_call": "java.security.KeyPairGenerator.initialize(java.security.spec.AlgorithmParameterSpec)"
+        },
+        {
+          "node": "DAPICall",
+          "_call": "java.security.KeyPairGenerator.generateKeyPair()"
+        },
+        {
+          "node": "DAPICall",
+          "_call": "java.security.KeyPair.getPublic()"
+        },
+        {
+          "node": "DAPICall",
+          "_call": "java.security.KeyPair.getPrivate()"
+        },
+        {
+          "node": "DAPICall",
+          "_call": "java.lang.Object.Object()"
+        }
+      ],
+      "calls": [
+        "java.security.KeyPair.getPublic()",
+        "java.security.KeyPairGenerator.getInstance(java.lang.String)",
+        "java.lang.Object.Object()",
+        "java.security.KeyPairGenerator.generateKeyPair()",
+        "java.security.KeyPair.getPrivate()",
+        "java.security.KeyPairGenerator.initialize(java.security.spec.AlgorithmParameterSpec)"
+      ],
+      "count": 28
+    },
+    {
+      "node": "DSubTree",
+      "_nodes": [
+        {
+          "node": "DAPICall",
+          "_call": "java.security.KeyPairGenerator.getInstance(java.lang.String)"
+        },
+        {
+          "node": "DAPICall",
+          "_call": "java.security.KeyPairGenerator.initialize(java.security.spec.AlgorithmParameterSpec)"
+        },
+        {
+          "node": "DAPICall",
+          "_call": "java.security.KeyPairGenerator.generateKeyPair()"
+        },
+        {
+          "node": "DAPICall",
+          "_call": "java.security.KeyPair.getPublic()"
+        },
+        {
+          "node": "DAPICall",
+          "_call": "java.security.KeyPair.getPrivate()"
+        }
+      ],
+      "calls": [
+        "java.security.KeyPair.getPublic()",
+        "java.security.KeyPair.getPrivate()",
+        "java.security.KeyPairGenerator.getInstance(java.lang.String)",
+        "java.security.KeyPairGenerator.initialize(java.security.spec.AlgorithmParameterSpec)",
+        "java.security.KeyPairGenerator.generateKeyPair()"
+      ],
+      "count": 13
+    },
+    {
+      "node": "DSubTree",
+      "_nodes": [
+        {
+          "node": "DAPICall",
+          "_call": "java.security.KeyPairGenerator.getInstance(java.lang.String)"
+        },
+        {
+          "node": "DAPICall",
+          "_call": "java.security.SecureRandom.SecureRandom()"
+        },
+        {
+          "node": "DAPICall",
+          "_call": "java.security.KeyPairGenerator.initialize(int,java.security.SecureRandom)"
+        }
+      ],
+      "calls": [
+        "java.security.SecureRandom.SecureRandom()",
+        "java.security.KeyPairGenerator.getInstance(java.lang.String)",
+        "java.security.KeyPairGenerator.initialize(int,java.security.SecureRandom)"
+      ],
+      "count": 8
+    },
+    {
+      "node": "DSubTree",
+      "_nodes": [
+        {
+          "node": "DAPICall",
+          "_call": "java.security.KeyPairGenerator.getInstance(java.lang.String)"
+        },
+        {
+          "node": "DAPICall",
+          "_call": "java.security.KeyPairGenerator.initialize(java.security.spec.AlgorithmParameterSpec)"
+        },
+        {
+          "node": "DAPICall",
+          "_call": "java.security.KeyPairGenerator.generateKeyPair()"
+        },
+        {
+          "node": "DAPICall",
+          "_call": "java.security.KeyPair.getPublic()"
+        },
+        {
+          "node": "DAPICall",
+          "_call": "java.lang.Object.Object()"
+        },
+        {
+          "node": "DExcept",
+          "_try": [
+            {
+              "node": "DAPICall",
+              "_call": "java.security.KeyPair.getPrivate()"
+            }
+          ],
+          "_catch": [
+            {
+              "node": "DAPICall",
+              "_call": "java.lang.Throwable.getMessage()"
+            }
+          ]
+        }
+      ],
+      "calls": [
+        "java.security.KeyPair.getPublic()",
+        "java.security.KeyPairGenerator.getInstance(java.lang.String)",
+        "java.lang.Object.Object()",
+        "java.security.KeyPairGenerator.generateKeyPair()",
+        "java.lang.Throwable.getMessage()",
+        "java.security.KeyPair.getPrivate()",
+        "java.security.KeyPairGenerator.initialize(java.security.spec.AlgorithmParameterSpec)"
+      ],
+      "count": 5
+    },
+    {
+      "node": "DSubTree",
+      "_nodes": [
+        {
+          "node": "DAPICall",
+          "_call": "java.security.KeyPairGenerator.getInstance(java.lang.String)"
+        },
+        {
+          "node": "DAPICall",
+          "_call": "java.security.KeyPairGenerator.initialize(java.security.spec.AlgorithmParameterSpec)"
+        },
+        {
+          "node": "DAPICall",
+          "_call": "java.security.KeyPairGenerator.generateKeyPair()"
+        },
+        {
+          "node": "DAPICall",
+          "_call": "java.security.KeyPair.getPublic()"
+        },
+        {
+          "node": "DAPICall",
+          "_call": "java.security.KeyPair.getPrivate()"
+        },
+        {
+          "node": "DAPICall",
+          "_call": "java.security.Key.getEncoded()"
+        }
+      ],
+      "calls": [
+        "java.security.KeyPair.getPublic()",
+        "java.security.Key.getEncoded()",
+        "java.security.KeyPairGenerator.getInstance(java.lang.String)",
+        "java.security.KeyPairGenerator.generateKeyPair()",
+        "java.security.KeyPair.getPrivate()",
+        "java.security.KeyPairGenerator.initialize(java.security.spec.AlgorithmParameterSpec)"
+      ],
+      "count": 3
+    }
+  ],
+  "evidences": {
+    "apicalls": [],
+    "keywords": [
+      "key",
+      "secure",
+      "pair",
+      "generate"
+    ],
+    "types": []
+  }
+}
