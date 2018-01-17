@@ -25,19 +25,68 @@ import org.eclipse.jface.text.Document;
 
 import java.util.*;
 
+/**
+ * Main class that implements the visitor pattern on the draft program's AST
+ */
 public class Visitor extends ASTVisitor {
 
-    final DSubTree dAST;
-    final Document document;
-    final CompilationUnit cu;
-    String synthesizedProgram;
-    protected ASTRewrite rewriter;
-    Block evidenceBlock;
-    List<Variable> currentScope;
-    final Synthesizer.Mode mode;
+    /**
+     * The sketch to synthesize
+     */
+    private final DSubTree sketch;
 
-    public Visitor(DSubTree dAST, Document document, CompilationUnit cu, Synthesizer.Mode mode) {
-        this.dAST = dAST;
+    /**
+     * The document object to store the synthesized code
+     */
+    private final Document document;
+
+    /**
+     * The compilation unit of the draft program
+     */
+    private final CompilationUnit cu;
+
+    /**
+     * Temporary store for the synthesized program. Gets updated with every invocation of visitor.
+     */
+    String synthesizedProgram;
+
+    /**
+     * The rewriter for the document
+     */
+    private ASTRewrite rewriter;
+
+    /**
+     * The block where the evidence is present (i.e., where the synthesized code should be placed)
+     */
+    private Block evidenceBlock;
+
+    /**
+     * Temporary list of variables in scope (formal params and local declarations) for synthesis.
+     * Gets cleared and updated as each method declaration is visited.
+     */
+    private List<Variable> currentScope;
+
+    /**
+     * Temporary store for the return type of the method for synthesis.
+     * Gets cleared and updated as each method declaration is visited.
+     */
+    private Type returnType;
+
+    /**
+     * The enumeration mode
+     */
+    private final Synthesizer.Mode mode;
+
+    /**
+     * Initializes the visitor
+     *
+     * @param sketch   sketch to be synthesized
+     * @param document draft program document
+     * @param cu       draft program compilation unit
+     * @param mode     enumeration mode
+     */
+    public Visitor(DSubTree sketch, Document document, CompilationUnit cu, Synthesizer.Mode mode) {
+        this.sketch = sketch;
         this.document = document;
         this.cu = cu;
 
@@ -46,6 +95,59 @@ public class Visitor extends ASTVisitor {
         this.mode = mode;
     }
 
+    /**
+     * Visits a method declaration and sets up the environment that may be used for synthesis:
+     * - the variables in scope (formal parameters, local declarations)
+     * - the return type of the method
+     *
+     * @param method the method declaration being visited
+     * @return boolean indicating if the AST node should be explored further
+     * @throws SynthesisException if there is an error with creating necessary types
+     */
+    @Override
+    public boolean visit(MethodDeclaration method) throws SynthesisException {
+        currentScope.clear();
+
+        /* add variables in the formal parameters */
+        for (Object o : method.parameters()) {
+            SingleVariableDeclaration param = (SingleVariableDeclaration) o;
+            String name = param.getName().getIdentifier();
+            Type type = new Type(param.getType());
+            VariableProperties properties = new VariableProperties().setUserVar(true);
+            Variable v = new Variable(name, type, properties);
+            currentScope.add(v);
+        }
+
+        /* add local variables declared in the (beginning of) method body */
+        Block body = method.getBody();
+        for (Object o : body.statements()) {
+            Statement stmt = (Statement) o;
+            if (!(stmt instanceof VariableDeclarationStatement))
+                break; // stop at the first non-variable declaration
+            VariableDeclarationStatement varDecl = (VariableDeclarationStatement) stmt;
+            for (Object f : varDecl.fragments()) {
+                VariableDeclarationFragment frag = (VariableDeclarationFragment) f;
+                String name = frag.getName().getIdentifier();
+                Type type = new Type(varDecl.getType());
+                VariableProperties properties = new VariableProperties().setUserVar(true);
+                Variable v = new Variable(name, type, properties);
+                currentScope.add(v);
+            }
+        }
+
+        /* set the return type */
+        returnType = new Type(method.getReturnType2());
+
+        return true;
+    }
+
+    /**
+     * Visits a method invocation and triggers synthesis of "sketch" if it's an evidence block
+     *
+     * @param invocation a method invocation
+     * @return boolean indicating if the AST node should be explored further
+     * @throws SynthesisException if evidence declaration is illegal
+     */
     @Override
     public boolean visit(MethodInvocation invocation) throws SynthesisException {
         IMethodBinding binding = invocation.resolveMethodBinding();
@@ -56,7 +158,7 @@ public class Visitor extends ASTVisitor {
         if (cls == null || !cls.getQualifiedName().equals("edu.rice.cs.caper.bayou.annotations.Evidence"))
             return false;
 
-        if (! (invocation.getParent().getParent() instanceof Block))
+        if (!(invocation.getParent().getParent() instanceof Block))
             throw new SynthesisException(SynthesisException.EvidenceNotInBlock);
         Block evidenceBlock = (Block) invocation.getParent().getParent();
 
@@ -70,16 +172,16 @@ public class Visitor extends ASTVisitor {
         this.evidenceBlock = evidenceBlock;
 
         String name = binding.getName();
-        if (! (name.equals("apicalls") || name.equals("types") || name.equals("keywords")))
+        if (!(name.equals("apicalls") || name.equals("types") || name.equals("keywords")))
             throw new SynthesisException(SynthesisException.InvalidEvidenceType);
 
         Environment env = new Environment(invocation.getAST(), currentScope, mode);
-        Block body = dAST.synthesize(env);
+        Block body = sketch.synthesize(env);
 
         // Apply dead code elimination here
         DCEOptimizor dce = new DCEOptimizor();
-        body = dce.apply(body, dAST);
-	
+        body = dce.apply(body, sketch);
+
         /* make rewrites to the local method body */
         body = postprocessLocal(invocation.getAST(), env, body, dce.getEliminatedVars());
         rewriter.replace(evidenceBlock, body, null);
@@ -98,16 +200,28 @@ public class Visitor extends ASTVisitor {
         return false;
     }
 
+    /**
+     * Performs local post-processing of synthesized code:
+     * - Adds try-catch for uncaught exceptions
+     * - Adds local variable declarations
+     * - Adds return statement
+     *
+     * @param ast            the owner of the block
+     * @param env            environment that was used for synthesis
+     * @param body           block containing synthesized code
+     * @param eliminatedVars variables eliminiated by DCE
+     * @return updated block containing synthesized code
+     */
     private Block postprocessLocal(AST ast, Environment env, Block body, Set<String> eliminatedVars) {
         /* add uncaught exeptions */
-        Set<Class> exceptions = dAST.exceptionsThrown(eliminatedVars);
+        Set<Class> exceptions = sketch.exceptionsThrown(eliminatedVars);
         env.imports.addAll(exceptions);
-        if (! exceptions.isEmpty()) {
+        if (!exceptions.isEmpty()) {
             TryStatement statement = ast.newTryStatement();
             statement.setBody(body);
 
             List<Class> exceptions_ = new ArrayList<>(exceptions);
-            exceptions_.sort((Class e1, Class e2) -> e1.isAssignableFrom(e2)? 1: -1);
+            exceptions_.sort((Class e1, Class e2) -> e1.isAssignableFrom(e2) ? 1 : -1);
             for (Class except : exceptions_) {
                 CatchClause catchClause = ast.newCatchClause();
                 SingleVariableDeclaration ex = ast.newSingleVariableDeclaration();
@@ -145,28 +259,58 @@ public class Visitor extends ASTVisitor {
                 varDeclStmt.setType((org.eclipse.jdt.core.dom.Type) ASTNode.copySubtree(ast, var.getType().T()));
             else if (var.getType().T().isSimpleType()) {
                 Name name = ((SimpleType) ASTNode.copySubtree(ast, var.getType().T())).getName();
-                String simpleName = name.isSimpleName()? ((SimpleName) name).getIdentifier()
+                String simpleName = name.isSimpleName() ? ((SimpleName) name).getIdentifier()
                         : ((QualifiedName) name).getName().getIdentifier();
                 varDeclStmt.setType(ast.newSimpleType(ast.newSimpleName(simpleName)));
-            }
-            else if (var.getType().T().isParameterizedType() || var.getType().T().isArrayType()) {
+            } else if (var.getType().T().isParameterizedType() || var.getType().T().isArrayType()) {
                 varDeclStmt.setType((org.eclipse.jdt.core.dom.Type) ASTNode.copySubtree(ast, var.getType().T()));
-            }
-            else throw new SynthesisException(SynthesisException.InvalidKindOfType);
+            } else throw new SynthesisException(SynthesisException.InvalidKindOfType);
 
             body.statements().add(0, varDeclStmt);
         }
 
+        /* add return statement */
+        org.eclipse.jdt.core.dom.Type ret = returnType.T();
+        List<Variable> toReturn = new ArrayList<>();
+        for (Variable var : env.getScope().getVariables())
+            if (returnType.isAssignableFrom(var.getType()))
+                toReturn.add(var);
+        toReturn.sort(Comparator.comparingInt(v -> v.getRefCount()));
+
+        ReturnStatement returnStmt = ast.newReturnStatement();
+        if (toReturn.isEmpty()) { // add "return null" (or primitive) in order to make the code compile
+            if (ret.isPrimitiveType()) {
+                PrimitiveType primitiveType = (PrimitiveType) ret;
+                if (primitiveType.getPrimitiveTypeCode() == PrimitiveType.BOOLEAN)
+                    returnStmt.setExpression(ast.newBooleanLiteral(false));
+                else if (primitiveType.getPrimitiveTypeCode() != PrimitiveType.VOID)
+                    returnStmt.setExpression(ast.newNumberLiteral("0"));
+            } else
+                returnStmt.setExpression(ast.newNullLiteral());
+        } else {
+            returnStmt.setExpression(toReturn.get(0).createASTNode(ast));
+        }
+        body.statements().add(returnStmt);
+
         return body;
     }
 
+    /**
+     * Performs global post-processing of synthesized code:
+     * - Adds import declarations
+     *
+     * @param ast      the owner of the document
+     * @param env      environment that was used for synthesis
+     * @param document draft program document
+     * @throws BadLocationException if an error occurred when rewriting document
+     */
     private void postprocessGlobal(AST ast, Environment env, Document document)
             throws BadLocationException {
         /* add imports */
         ASTRewrite rewriter = ASTRewrite.create(ast);
         ListRewrite lrw = rewriter.getListRewrite(cu, CompilationUnit.IMPORTS_PROPERTY);
         Set<Class> toImport = new HashSet<>(env.imports);
-        toImport.addAll(dAST.exceptionsThrown()); // add all catch(...) types to imports
+        toImport.addAll(sketch.exceptionsThrown()); // add all catch(...) types to imports
         for (Class cls : toImport) {
             while (cls.isArray())
                 cls = cls.getComponentType();
@@ -178,40 +322,5 @@ public class Visitor extends ASTVisitor {
             lrw.insertLast(impDecl, null);
         }
         rewriter.rewriteAST(document, null).apply(document);
-    }
-
-    /* setup the scope of variables for synthesis */
-    @Override
-    public boolean visit(MethodDeclaration method) throws SynthesisException {
-        currentScope.clear();
-
-        /* add variables in the formal parameters */
-        for (Object o : method.parameters()) {
-            SingleVariableDeclaration param = (SingleVariableDeclaration) o;
-            String name = param.getName().getIdentifier();
-            Type type = new Type(param.getType());
-            VariableProperties properties = new VariableProperties().setUserVar(true);
-            Variable v = new Variable(name, type, properties);
-            currentScope.add(v);
-        }
-
-        /* add local variables declared in the (beginning of) method body */
-        Block body = method.getBody();
-        for (Object o : body.statements()) {
-            Statement stmt = (Statement) o;
-            if (! (stmt instanceof VariableDeclarationStatement))
-                break; // stop at the first non-variable declaration
-            VariableDeclarationStatement varDecl = (VariableDeclarationStatement) stmt;
-            for (Object f : varDecl.fragments()) {
-                VariableDeclarationFragment frag = (VariableDeclarationFragment) f;
-                String name = frag.getName().getIdentifier();
-                Type type = new Type(varDecl.getType());
-                VariableProperties properties = new VariableProperties().setUserVar(true);
-                Variable v = new Variable(name, type, properties);
-                currentScope.add(v);
-            }
-        }
-
-        return true;
     }
 }

@@ -16,10 +16,11 @@ limitations under the License.
 
 import edu.rice.cs.caper.bayou.annotations.Evidence;
 import android.content.Context;
+import android.app.Dialog;
 
 public class TestDialog {
 
-    void createDialog(Context c) {
+    Dialog createDialog(Context c) {
         String title = "something here";
         String msg = "another thing here";
         {

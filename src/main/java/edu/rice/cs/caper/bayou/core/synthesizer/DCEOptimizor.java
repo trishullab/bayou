@@ -36,7 +36,7 @@ public class DCEOptimizor extends ASTVisitor {
     }
 
     // Apply the optimization here
-    public Block apply(Block body, DSubTree dAST) {
+    public Block apply(Block body, DSubTree sketch) {
         // Collect defs and uses
         collectDefUse(body);
 
@@ -63,8 +63,8 @@ public class DCEOptimizor extends ASTVisitor {
                 this.eliminatedVars.add(def);
             }
         }
-        // Apply post optimizations to dAST
-        dAST.cleanupCatchClauses(this.eliminatedVars);
+        // Apply post optimizations to sketch
+        sketch.cleanupCatchClauses(this.eliminatedVars);
 
         return body;
     }
