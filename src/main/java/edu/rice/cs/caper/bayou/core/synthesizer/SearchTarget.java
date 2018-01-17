@@ -16,12 +16,13 @@ limitations under the License.
 package edu.rice.cs.caper.bayou.core.synthesizer;
 
 /**
- * A thin wrapper for searching for an expression in the enumerator
+ * A wrapper for searching for a target type in the enumerator.
+ * Also contains fields useful for making a decision when the search passes/fails.
  */
 public class SearchTarget {
 
     /**
-     * The type to search for
+     * The type to search for -- the only required field for SearchTarget
      */
     private final Type type;
 
@@ -29,7 +30,7 @@ public class SearchTarget {
      * The parameter name (if any) for which the search is being conducted.
      * Used in order to create meaningful variable names if the search failed.
      */
-    private final String name;
+    private String paramName;
 
     /**
      * Denotes whether the enumerator should create a single use variable or not
@@ -38,15 +39,10 @@ public class SearchTarget {
     private boolean singleUseVariable;
 
     /**
-     * Initializes the search target type and parameter name
-     *
-     * @param type type to search for
-     * @param name parameter name for search
+     * The name of the API call whose argument is being searched for.
+     * Used for cost metric to order variables if the search passed.
      */
-    public SearchTarget(Type type, String name) {
-        this.type = type;
-        this.name = name;
-    }
+    private String apiCallName;
 
     /**
      * Initializes the search target type
@@ -55,16 +51,6 @@ public class SearchTarget {
      */
     public SearchTarget(Type type) {
         this.type = type;
-        this.name = null;
-    }
-
-    /**
-     * Checks if the search target has a parameter name
-     *
-     * @return if name is not null
-     */
-    public boolean hasName() {
-        return name != null;
     }
 
     /**
@@ -77,21 +63,34 @@ public class SearchTarget {
     }
 
     /**
+     * Sets the parameter name for the search
+     *
+     * @param s the name
+     * @return this object for chaining
+     */
+    public SearchTarget setParamName(String s) {
+        paramName = s;
+        return this;
+    }
+
+    /**
      * Gets the name for the search target (if any)
      *
      * @return current value
      */
-    public String getName() {
-        return name;
+    public String getParamName() {
+        return paramName;
     }
 
     /**
      * Sets the value of singleUseVariable search property
      *
      * @param b value to set to
+     * @return this object for chaining
      */
-    public void setSingleUseVariable(boolean b) {
+    public SearchTarget setSingleUseVariable(boolean b) {
         singleUseVariable = b;
+        return this;
     }
 
     /**
@@ -101,5 +100,25 @@ public class SearchTarget {
      */
     public boolean getSingleUseVariable() {
         return singleUseVariable;
+    }
+
+    /**
+     * Sets the API call name whose argument is being searched for
+     *
+     * @param s the API call name
+     * @return this object for chaining
+     */
+    public SearchTarget setAPICallName(String s) {
+        apiCallName = s;
+        return this;
+    }
+
+    /**
+     * Gets the API call name whose argument is being searched for
+     *
+     * @return the API call name
+     */
+    public String getAPICallName() {
+        return apiCallName;
     }
 }

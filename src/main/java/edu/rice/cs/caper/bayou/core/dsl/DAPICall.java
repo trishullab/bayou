@@ -181,8 +181,10 @@ public class DAPICall extends DASTNode
         for (int i = 0; i < constructor.getParameterCount(); i++) {
             Parameter param = constructor.getParameters()[i];
             Type argType = type.getConcretization(constructor.getGenericParameterTypes()[i]);
-            SearchTarget target = new SearchTarget(argType, param.getName());
-            target.setSingleUseVariable(true);
+            SearchTarget target = new SearchTarget(argType)
+                                        .setParamName(param.getName())
+                                        .setAPICallName(constructor.getName())
+                                        .setSingleUseVariable(true);
             TypedExpression arg = env.search(target);
             creation.arguments().add(arg.getExpression());
         }
@@ -227,8 +229,10 @@ public class DAPICall extends DASTNode
         for (int i = 0; i < method.getParameterCount(); i++) {
             Parameter param = method.getParameters()[i];
             Type argType = object.getType().getConcretization(method.getGenericParameterTypes()[i]);
-            SearchTarget target = new SearchTarget(argType, param.getName());
-            target.setSingleUseVariable(true);
+            SearchTarget target = new SearchTarget(argType)
+                                        .setParamName(param.getName())
+                                        .setAPICallName(method.getName())
+                                        .setSingleUseVariable(true);
             TypedExpression arg = env.search(target);
             invocation.arguments().add(arg.getExpression());
         }

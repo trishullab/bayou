@@ -15,6 +15,7 @@ limitations under the License.
 */
 package edu.rice.cs.caper.bayou.core.synthesizer;
 
+import org.apache.commons.text.similarity.LevenshteinDistance;
 import org.eclipse.jdt.core.dom.*;
 
 import java.lang.reflect.Constructor;
@@ -68,7 +69,7 @@ public class Enumerator {
 
         /* see if a variable with the type already exists in scope */
         List<Variable> toSearch = new ArrayList<>(env.getScope().getVariables());
-        sortVariablesByCost(toSearch);
+        sortVariablesByCost(toSearch, target);
         for (Variable v : toSearch)
             if (!v.isSingleUseVar() && target.getType().isAssignableFrom(v.getType())) {
                 v.addRefCount();
@@ -86,8 +87,8 @@ public class Enumerator {
                                                             .setJoin(true)
                                                             .setDefaultInit(true)
                                                             .setSingleUse(target.getSingleUseVariable());
-            if (target.hasName()) { // create variable with name here
-                Variable var = new Variable(target.getName(), target.getType(), properties);
+            if (target.getParamName() != null) { // create variable with name here, but note that it may be refactored
+                Variable var = new Variable(target.getParamName(), target.getType(), properties);
                 return env.addVariable(var);
             }
             else {
@@ -123,7 +124,7 @@ public class Enumerator {
                 for (i = 0; i < constructor.getParameterCount(); i++) {
                     Class argType = constructor.getParameterTypes()[i];
                     String name = constructor.getParameters()[i].getName();
-                    SearchTarget newTarget = new SearchTarget(new Type(argType), name);
+                    SearchTarget newTarget = new SearchTarget(new Type(argType)).setParamName(name);
                     TypedExpression tArg = enumerator.search(newTarget, argDepth + 1);
                     if (tArg == null)
                         break;
@@ -145,7 +146,7 @@ public class Enumerator {
                 for (i = 0; i < constructor.getParameterCount(); i++) {
                     Class argType = constructor.getParameterTypes()[i];
                     String name = constructor.getParameters()[i].getName();
-                    SearchTarget newTarget = new SearchTarget(new Type(argType), name);
+                    SearchTarget newTarget = new SearchTarget(new Type(argType)).setParamName(name);
                     TypedExpression tArg = enumerator.search(newTarget, argDepth + 1);
                     if (tArg == null)
                         break;
@@ -179,7 +180,7 @@ public class Enumerator {
                 for (j = 0; j < m.getParameterCount(); j++) {
                     Class argType  = m.getParameterTypes()[j];
                     String name = m.getParameters()[j].getName();
-                    SearchTarget newTarget = new SearchTarget(new Type(argType), name);
+                    SearchTarget newTarget = new SearchTarget(new Type(argType)).setParamName(name);
                     TypedExpression  tArg;
                     try {
                         tArg = enumerator.search(newTarget, argDepth + 1);
@@ -268,8 +269,20 @@ public class Enumerator {
         exes.sort(Comparator.comparingInt(e -> e.getParameterTypes().length));
     }
 
-    private void sortVariablesByCost(List<Variable> variables) {
-        variables.sort(Comparator.comparingInt(v -> v.getRefCount()));
+    private void sortVariablesByCost(List<Variable> variables, SearchTarget target) {
+        String compareWith = "";
+        if (target.getParamName() != null)
+            compareWith += target.getParamName().toLowerCase();
+        if (target.getAPICallName() != null)
+            compareWith += target.getAPICallName().toLowerCase();
+
+        if (compareWith.equals(""))
+            variables.sort(Comparator.comparingInt(v -> v.getRefCount()));
+        else {
+            String compare = compareWith;
+            variables.sort(Comparator.comparingInt(v ->
+                    LevenshteinDistance.getDefaultInstance().apply(compare, v.getName())));
+        }
     }
 
     private void sortChainsByCost(List<ExpressionChain> chains) {
