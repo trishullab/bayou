@@ -36,7 +36,7 @@ public final class Utils {
             return false;
         IPackageBinding pack = cls.getPackage();
         String[] packs = pack.getNameComponents();
-        if (Visitor.V().options.API_MODULES.contains(packs[0]))
+        if (packs.length > 0 && Visitor.V().options.API_MODULES.contains(packs[0]))
             return true;
         if (Visitor.V().options.API_PACKAGES.contains(pack.getName()))
             return true;
