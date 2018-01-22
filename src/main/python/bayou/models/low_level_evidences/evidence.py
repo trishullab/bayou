@@ -238,7 +238,7 @@ class Keywords(Evidence):
         wrangled = np.zeros((len(data), 1, self.vocab_size), dtype=np.int32)
         for i, keywords in enumerate(data):
             for k in keywords:
-                if k in self.vocab:
+                if k in self.vocab and k not in Keywords.STOP_WORDS:
                     wrangled[i, 0, self.vocab[k]] = 1
         return wrangled
 
