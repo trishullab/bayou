@@ -87,24 +87,7 @@ def _generate_asts(evidence_json: str, predictor, num_samples: int=100, max_ast_
     #
     # Generate ASTs from evidence.
     #
-    asts, counts = [], []
-    for i in range(num_samples):
-        try:
-            ast = predictor.infer(js)
-            ast['calls'] = list(set(predictor.calls_in_last_ast))
-
-            if ast in asts:
-                counts[asts.index(ast)] += 1
-            else:
-                asts.append(ast)
-                counts.append(1)
-        except AssertionError as e:
-            logging.debug("AssertionError: " + str(e))
-            continue
-
-    for ast, count in zip(asts, counts):
-        ast['count'] = count
-    asts.sort(key=lambda x: x['count'], reverse=True)
+    asts = predictor.infer(js)
 
     #
     # Retain up to max_ast_count asts that pass the okay(...) filter.
