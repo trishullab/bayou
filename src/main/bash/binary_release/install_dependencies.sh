@@ -24,9 +24,11 @@ then
 
 elif [ $OS == "Darwin" ] # Darwin for Mac OS X
 then
+        /usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
 	brew update
+        brew tap caskroom/versions
 	brew install python3
-	brew cask install java
+	brew cask install java8
 else
 	echo "Unknown OS."
 	exit
