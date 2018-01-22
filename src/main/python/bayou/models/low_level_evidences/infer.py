@@ -150,7 +150,7 @@ class BayesianPredictor(object):
         asts = []
         for (candidate, pr) in candidates:
             ast = self.paths_to_ast(candidate)
-            ast['probability'] = pr
+            ast['probability'] = float(str(pr)[:7])  # "0." + four digits of precision
             ast['calls'] = sorted(set(self.calls_in_last_ast))
             if ast not in asts:
                 asts.append(ast)
