@@ -96,8 +96,7 @@ public class ApiSynthesisServlet extends SizeConstrainedPostBodyServlet implemen
         {
             _logger.error(e.getMessage(), e);
             JSONObject responseBody = new ErrorJsonResponse("Unexpected exception during synthesis.");
-            if(resp != null)
-                resp.setStatus(HttpStatus.INTERNAL_SERVER_ERROR_500);
+            resp.setStatus(HttpStatus.INTERNAL_SERVER_ERROR_500);
             writeObjectToServletOutputStream(responseBody, resp);
         }
         finally
@@ -106,12 +105,10 @@ public class ApiSynthesisServlet extends SizeConstrainedPostBodyServlet implemen
         }
     }
 
-    private void doPostHelp(HttpServletRequest req, HttpServletResponse resp, String requestBody)
-            throws IOException, SynthesiseException
+    private void doPostHelp(HttpServletRequest req, HttpServletResponse resp, String requestBody) throws IOException
     {
         _logger.debug("entering");
         _logger.info("api synthesis request");
-        _logger.trace("body:" + requestBody);
 
         /*
          * Check inputs.
@@ -141,6 +138,7 @@ public class ApiSynthesisServlet extends SizeConstrainedPostBodyServlet implemen
 
         if(!requestFromAllowedOrigin)
         {
+            resp.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
             _logger.debug("exiting");
             return;
         }
@@ -153,49 +151,42 @@ public class ApiSynthesisServlet extends SizeConstrainedPostBodyServlet implemen
         _logger.trace(requestId + ": api synth request body " + requestBody);
 
         /*
-         * Parse message into a JSON object.
+         * Parse message body into a SynthesisRequest.
          */
-        JSONObject jsonMessage;
-        try
+        SynthesisRequest requestMsg;
         {
-            jsonMessage = new JSONObject(requestBody);
-        }
-        catch (JSONException e)
-        {
-            _logger.error(requestId, e);
-            JSONObject responseBody = new ErrorJsonResponse("Request body not JSON");
-            resp.setStatus(HttpStatus.BAD_REQUEST_400);
-            writeObjectToServletOutputStream(responseBody, resp);
-            _logger.debug("exiting");
-            return;
-        }
-
-        /*
-         * Extract the request code from the JSON message.
-         */
-        String code;
-        {
-            final String CODE = "code";
-            if (!jsonMessage.has(CODE))
+            JSONObject jsonMessage;
+            try
             {
-                _logger.warn(requestId + ": JSON message has no " + CODE + " field.");
+                jsonMessage = new JSONObject(requestBody);
+            }
+            catch (JSONException e)
+            {
+                _logger.error(requestId, e);
+                JSONObject responseBody = new ErrorJsonResponse("Request body not JSON");
+                resp.setStatus(HttpStatus.BAD_REQUEST_400);
+                writeObjectToServletOutputStream(responseBody, resp);
+                _logger.debug("exiting");
+                return;
+            }
+
+            final String MAX_PROGRAM_COUNT = "max program count";
+
+            try
+            {
+                requestMsg = SynthesisRequest.make(jsonMessage);
+            }
+            catch (SynthesisRequest.NoCodeFieldException e)
+            {
+                final String CODE = "code";
+                _logger.warn(requestId + ": message has no " + CODE + " field.");
                 JSONObject responseBody = new ErrorJsonResponse("Missing parameter " + CODE);
                 resp.setStatus(HttpStatus.BAD_REQUEST_400);
                 writeObjectToServletOutputStream(responseBody, resp);
                 _logger.debug("exiting");
                 return;
             }
-            code = jsonMessage.get(CODE).toString();
-
-        }
-
-        /*
-         * Extract max program count from the JSON message.
-         */
-        NatNum32 maxProgamCount;
-        {
-            final String MAX_PROGRAM_COUNT = "max program count";
-            if (!jsonMessage.has(MAX_PROGRAM_COUNT))
+            catch (SynthesisRequest.NoMaxProgramCountFieldException e)
             {
                 _logger.warn(requestId + ": JSON message has no " + MAX_PROGRAM_COUNT + " field.");
                 JSONObject responseBody = new ErrorJsonResponse("Missing parameter " + MAX_PROGRAM_COUNT);
@@ -204,33 +195,58 @@ public class ApiSynthesisServlet extends SizeConstrainedPostBodyServlet implemen
                 _logger.debug("exiting");
                 return;
             }
-
-            try
+            catch (SynthesisRequest.InvalidMaxProgramCountException e)
             {
-                maxProgamCount = new NatNum32(jsonMessage.getInt(MAX_PROGRAM_COUNT));
-            }
-            catch (JSONException e)
-            {
-                _logger.warn(requestId + ": JSON message has non-int " + MAX_PROGRAM_COUNT + " field.");
-                JSONObject responseBody = new ErrorJsonResponse("Parameter " + MAX_PROGRAM_COUNT + " is not an int.");
+                _logger.warn(requestId + ": JSON message has invalid " + MAX_PROGRAM_COUNT + " field.");
+                JSONObject responseBody = new ErrorJsonResponse("Bad parameter " + MAX_PROGRAM_COUNT);
                 resp.setStatus(HttpStatus.BAD_REQUEST_400);
                 writeObjectToServletOutputStream(responseBody, resp);
                 _logger.debug("exiting");
                 return;
             }
-
+            catch (SynthesisRequest.InvalidSampleCountException e)
+            {
+                final String SAMPLE_COUNT = "sample count";
+                _logger.warn(requestId + ": JSON message has invalid " + SAMPLE_COUNT + " field.");
+                JSONObject responseBody = new ErrorJsonResponse("Bad parameter " + SAMPLE_COUNT);
+                resp.setStatus(HttpStatus.BAD_REQUEST_400);
+                writeObjectToServletOutputStream(responseBody, resp);
+                _logger.debug("exiting");
+                return;
+            }
         }
 
         /*
-         * Extract sample count from request if present
+         * Process request in terms of SynthesisRequest.
          */
-        NatNum32 sampleCount;
+        boolean isRequestLocal = req.getRemoteAddr().equals("127.0.0.1");
+        doPostHelp(resp, requestId, requestMsg, isRequestLocal);
+
+        _logger.debug("exiting");
+
+    }
+
+    // isRequestLocal indicates if the origin of the request is the same machine as the http server.
+    private void doPostHelp(HttpServletResponse resp, UUID requestId, SynthesisRequest requestMsg,
+                            boolean isRequestLocal) throws IOException
+    {
+        _logger.debug("entering");
+
+        String code = requestMsg.getCode();
+        NatNum32 sampleCount = requestMsg.getOptionalSampleCount(null); // null means use default value
+
+        // honoring sampleCount in a request is only allowed if the request origin is local. i.e.
+        // desktop deployment. We don't honor this in an internet deployment because it can be abused
+        // by an attacker to eat up all the server's resources.
+        if(sampleCount != null && !isRequestLocal)
         {
             final String SAMPLE_COUNT = "sample count";
-            if (jsonMessage.has(SAMPLE_COUNT))
-                sampleCount = new NatNum32(jsonMessage.getInt(SAMPLE_COUNT));
-            else
-                sampleCount = null;
+            _logger.warn(requestId + ": attempt to request sample count from non-localhost.");
+            JSONObject responseBody = new ErrorJsonResponse(SAMPLE_COUNT + " only allowed from local host.");
+            resp.setStatus(HttpStatus.BAD_REQUEST_400);
+            writeObjectToServletOutputStream(responseBody, resp);
+            _logger.debug("exiting");
+            return;
         }
 
         /*
@@ -240,9 +256,9 @@ public class ApiSynthesisServlet extends SizeConstrainedPostBodyServlet implemen
         try
         {
             if(sampleCount != null)
-                results = _synthesisRequestProcessor.synthesise(code, maxProgamCount, sampleCount);
+                results = _synthesisRequestProcessor.synthesise(code, requestMsg.getMaxProgramCount(), sampleCount);
             else
-                results = _synthesisRequestProcessor.synthesise(code, maxProgamCount);
+                results = _synthesisRequestProcessor.synthesise(code, requestMsg.getMaxProgramCount());
         }
         catch (SynthesiseException e)
         {
@@ -272,7 +288,6 @@ public class ApiSynthesisServlet extends SizeConstrainedPostBodyServlet implemen
                 () -> new SynthesisLoggerS3(_synthesisLogBucketName).log(requestId, code, results));
 
         _logger.debug("exiting");
-
     }
 
 
