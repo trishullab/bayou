@@ -20,7 +20,15 @@ if [ $OS == "Linux" ]
 then
 
 	apt-get update
-	apt-get install openjdk-8-jdk maven python3
+        if [[ ($# -gt 0) && ($1 == "--oracle") ]]
+          then
+            add-apt-repository ppa:webupd8team/java
+            apt-get update
+            apt-get install oracle-java8-installer
+          else
+            apt-get install openjdk-8-jdk
+        fi
+        apt-get install maven python3
 
 elif [ $OS == "Darwin" ] # Darwin for Mac OS X
 then
@@ -35,4 +43,3 @@ else
 	echo "Unknown OS."
 	exit
 fi
-
