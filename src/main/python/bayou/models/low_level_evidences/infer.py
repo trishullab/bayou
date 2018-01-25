@@ -98,6 +98,7 @@ class BayesianPredictor(object):
 
         # each candidate is (list of production paths in the AST, likelihood of AST so far)
         candidates = [([[('DSubTree', CHILD_EDGE)]], 1.)]
+        complete_candidates = []
 
         partial_candidate = True
         while partial_candidate:
@@ -118,6 +119,7 @@ class BayesianPredictor(object):
 
                 # if candidate is a fully formed AST, add it to new candidates and continue
                 if len(incomplete_paths) == 0:
+                    complete_candidates.append((candidate, pr))
                     new_candidates.append((candidate, pr))
                     continue
                 partial_candidate = True
@@ -143,6 +145,7 @@ class BayesianPredictor(object):
                             new_candidates.append((new_candidate + [inc_path_step_SIBLING], pr * p))
 
             # bound candidates with the beam width
+            new_candidates += [c for c in complete_candidates if c not in new_candidates]
             new_candidates.sort(key=lambda x: x[1], reverse=True)
             candidates = new_candidates[:beam_width]
 
