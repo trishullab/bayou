@@ -130,9 +130,6 @@ public class Scope {
         for (Variable var : phantomVariables)
             existingNames.add(var.getName());
 
-        if (!existingNames.contains(name))
-            return name;
-
         int i;
         for (i = 1; i < 9999; i++)
             if (!existingNames.contains(name + i))
