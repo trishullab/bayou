@@ -14,8 +14,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-OS="$(uname)"
-
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 $SCRIPT_DIR/../build_scripts/install_dependencies.sh # build_scripts/build.sh is a substep so ensure all deps met for that script
 

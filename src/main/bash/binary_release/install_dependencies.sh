@@ -20,13 +20,23 @@ if [ $OS == "Linux" ]
 then
 
 	apt-get update
-	apt-get install openjdk-8-jre python3-pip
+        if [[ ($# -gt 0) && ($1 == "--oracle") ]]
+          then
+            add-apt-repository ppa:webupd8team/java
+            apt-get update
+            apt-get install oracle-java8-installer
+          else
+            apt-get install openjdk-8-jdk
+        fi
+	apt-get install python3-pip
 
 elif [ $OS == "Darwin" ] # Darwin for Mac OS X
 then
+        /usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
 	brew update
+        brew tap caskroom/versions
 	brew install python3
-	brew cask install java
+	brew cask install java8
 else
 	echo "Unknown OS."
 	exit

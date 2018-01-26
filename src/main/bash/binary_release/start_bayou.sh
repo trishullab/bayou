@@ -21,8 +21,30 @@ SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 BAYOU_JAR="$(ls $SCRIPT_DIR/*.jar)"
 cd $SCRIPT_DIR # log4j treats config paths relataive to current directory.  we need this so logs is next to the jar file and not the directory from where the script is being run
-java -Xbootclasspath/p:$SCRIPT_DIR/resources/artifacts/jar/rt_debug.jar -DconfigurationFile=$SCRIPT_DIR/resources/conf/apiSynthesisServerConfig.properties -Dlog4j.configurationFile=$SCRIPT_DIR/resources/conf/apiSynthesisServerLog4j2.xml -jar $BAYOU_JAR &
 
+#
+# Determine if the JVM vendor is Oracle and, if so, ensure java will be launched with rt_debug.jar loaded as the bootclasspath.  This is done so we can take advantage
+# of the extra debug information in re_debug when generating synthesis results. However, this jar is incompatable with openjdk.
+#
+# See https://github.com/capergroup/bayou/issues/166
+#
+JAVA_VENDOR="$(java -version 2>&1 | grep -o 'openjdk\|java')"
+if [ "$JAVA_VENDOR" == "java" ] # if vendor is Oracle
+    then
+      BOOT_CLASSPATH="-Xbootclasspath/p:$SCRIPT_DIR/resources/artifacts/jar/rt_debug.jar"
+    else
+      BOOT_CLASSPATH=""
+fi
+
+#
+# Start Java front end.
+#
+
+java $BOOT_CLASSPATH -DconfigurationFile=$SCRIPT_DIR/resources/conf/apiSynthesisServerConfig.properties -Dlog4j.configurationFile=$SCRIPT_DIR/resources/conf/apiSynthesisServerLog4j2.xml -jar $BAYOU_JAR &
+
+#
+# Start Python back end.
+#
 if [ $# -eq 0 ]
   then
     LOGS_DIR=$SCRIPT_DIR/logs
