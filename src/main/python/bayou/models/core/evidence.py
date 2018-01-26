@@ -17,7 +17,7 @@ import numpy as np
 import os
 import re
 import json
-import itertools
+from itertools import chain
 
 from bayou.models.core.utils import CONFIG_ENCODER, C0, UNK
 from bayou.lda.model import LDA
@@ -256,8 +256,14 @@ class Keywords(Evidence):
         call = re.sub('^\$.*\$', '', call)  # get rid of predicates
         qualified = call.split('(')[0]
         qualified = re.sub('<.*>', '', qualified).split('.')  # remove generics for keywords
-        kws = list(itertools.chain.from_iterable([Keywords.split_camel(s) for s in qualified]))
-        return [kw.lower() for kw in kws if kw.lower() not in Keywords.STOP_WORDS]
+
+        # add qualified names (java, util, xml, etc.), API calls and types
+        keywords = list(chain.from_iterable([Keywords.split_camel(s) for s in qualified])) + \
+            list(chain.from_iterable([Keywords.split_camel(c) for c in APICalls.from_call(call)])) + \
+            list(chain.from_iterable([Keywords.split_camel(t) for t in Types.from_call(call)]))
+
+        # convert to lower case, omit stop words and take the set
+        return list(set([k.lower() for k in keywords if k.lower() not in Keywords.STOP_WORDS]))
 
 
 # TODO: handle Javadoc with word2vec

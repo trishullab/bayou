@@ -17,7 +17,7 @@ import numpy as np
 import os
 import re
 import json
-import itertools
+from itertools import chain
 from collections import Counter
 
 from bayou.models.low_level_evidences.utils import CONFIG_ENCODER, CONFIG_INFER, C0, UNK
@@ -130,6 +130,7 @@ class APICalls(Evidence):
         call = re.sub('^\$.*\$', '', call)  # get rid of predicates
         split = call.split('(')[0].split('.')
         cls, name = split[-2:]
+        cls = cls.split('<')[0]  # class name might be generic but method name is never
         return [name] if not cls == name else []
 
 
@@ -283,8 +284,14 @@ class Keywords(Evidence):
         call = re.sub('^\$.*\$', '', call)  # get rid of predicates
         qualified = call.split('(')[0]
         qualified = re.sub('<.*>', '', qualified).split('.')  # remove generics for keywords
-        kws = list(itertools.chain.from_iterable([Keywords.split_camel(s) for s in qualified]))
-        return [kw.lower() for kw in kws if kw.lower() not in Keywords.STOP_WORDS]
+
+        # add qualified names (java, util, xml, etc.), API calls and types
+        keywords = list(chain.from_iterable([Keywords.split_camel(s) for s in qualified])) + \
+            list(chain.from_iterable([Keywords.split_camel(c) for c in APICalls.from_call(call)])) + \
+            list(chain.from_iterable([Keywords.split_camel(t) for t in Types.from_call(call)]))
+
+        # convert to lower case, omit stop words and take the set
+        return list(set([k.lower() for k in keywords if k.lower() not in Keywords.STOP_WORDS]))
 
 
 # TODO: handle Javadoc with word2vec

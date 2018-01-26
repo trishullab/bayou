@@ -20,10 +20,10 @@ from itertools import chain
 from flask import request, Response, Flask
 
 import tensorflow as tf
-import bayou.models.core.evidence
+import bayou.models.low_level_evidences.evidence
 import bayou.models.core.infer
 import bayou.models.low_level_evidences.infer
-from bayou.models.core.evidence import Keywords
+from bayou.models.low_level_evidences.evidence import Keywords
 
 
 # called when a POST request is sent to the server at the index path
@@ -79,10 +79,10 @@ def _generate_asts(evidence_json: str, predictor, num_samples: int=100, max_ast_
     js = json.loads(evidence_json)  # parse evidence as a JSON string
 
     # enhance keywords evidence from others
-    keywords = [Keywords.split_camel(c) for c in js['apicalls']] + \
-               [Keywords.split_camel(t) for t in js['types']]
-    keywords = [kw.lower() for kw in list(chain.from_iterable(keywords))]
-    js['keywords'] = list(set(js['keywords'] + keywords))
+    keywords = list(chain.from_iterable([Keywords.split_camel(c) for c in js['apicalls']])) + \
+        list(chain.from_iterable([Keywords.split_camel(t) for t in js['types']])) + \
+        js['keywords']
+    js['keywords'] = list(set([k.lower() for k in keywords if k.lower() not in Keywords.STOP_WORDS]))
 
     #
     # Generate ASTs from evidence.
@@ -124,10 +124,15 @@ def _generate_asts(evidence_json: str, predictor, num_samples: int=100, max_ast_
 # Include in here any conditions that dictate whether an AST should be returned or not
 def _okay(js, ast):
     calls = ast['calls']
-    apicalls = list(set(chain.from_iterable([bayou.models.core.evidence.APICalls.from_call(call) for call in calls])))
-    types = list(set(chain.from_iterable([bayou.models.core.evidence.Types.from_call(call) for call in calls])))
+    apicalls = list(set(chain.from_iterable(
+        [bayou.models.low_level_evidences.evidence.APICalls.from_call(call) for call in calls])))
+    types = list(set(chain.from_iterable(
+        [bayou.models.low_level_evidences.evidence.Types.from_call(call) for call in calls])))
+    keywords = list(set(chain.from_iterable(
+        [bayou.models.low_level_evidences.evidence.Keywords.from_call(call) for call in calls])))
 
-    ev_okay = all([c in apicalls for c in js['apicalls']]) and all([t in types for t in js['types']])
+    ev_okay = all([c in apicalls for c in js['apicalls']]) and all([t in types for t in js['types']]) \
+        and all([k in keywords for k in js['keywords']])
     return ev_okay
 
 
