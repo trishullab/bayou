@@ -41,7 +41,7 @@ public class ApiSynthesizerEchoTests
     @Test
     public void testSynthesise2() throws SynthesiseException
     {
-        String result = new ApiSynthesizerEcho(50).synthesise("code", ONE, ONE).iterator().next();
+        String result = new ApiSynthesizerEcho(50).synthesise("code", ONE).iterator().next();
 
         Assert.assertEquals("code", result);
     }

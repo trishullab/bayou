@@ -73,27 +73,11 @@ public class ApiSynthesizerRewriteEvidenceDecorator implements ApiSynthesizer
     @Override
     public Iterable<String> synthesise(String code, NatNum32 maxProgramCount) throws SynthesiseException
     {
-        return synthesiseHelp(code, maxProgramCount, null);
+        return synthesiseHelp(code, maxProgramCount);
     }
 
-    @Override
-    public Iterable<String> synthesise(String code, NatNum32 maxProgramCount, NatNum32 sampleCount)
-            throws SynthesiseException
-    {
-        _logger.debug("entering");
-        if(sampleCount == null)
-        {
-            _logger.debug("exiting");
-            throw new NullPointerException("sampleCount");
-        }
 
-        Iterable<String> results = synthesiseHelp(code, maxProgramCount, sampleCount);
-        _logger.debug("exiting");
-        return results;
-    }
-
-    private Iterable<String> synthesiseHelp(String code, NatNum32 maxProgramCount, NatNum32 sampleCount)
-            throws SynthesiseException
+    private Iterable<String> synthesiseHelp(String code, NatNum32 maxProgramCount) throws SynthesiseException
     {
         _logger.debug("entering");
 
@@ -115,9 +99,6 @@ public class ApiSynthesizerRewriteEvidenceDecorator implements ApiSynthesizer
         /*
          * Perform synthesis using inner synthesizer.
          */
-        if(sampleCount != null)
-            return _synthesizer.synthesise(rewrittenCode, maxProgramCount, sampleCount);
-
         Iterable<String> results = _synthesizer.synthesise(rewrittenCode, maxProgramCount);
         _logger.debug("exiting");
         return results;

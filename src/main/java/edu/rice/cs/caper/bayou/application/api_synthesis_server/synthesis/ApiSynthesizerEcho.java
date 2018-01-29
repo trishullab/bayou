@@ -76,10 +76,4 @@ public class ApiSynthesizerEcho implements ApiSynthesizer
         return Collections.singletonList(code);
     }
 
-    @Override
-    public Iterable<String> synthesise(String searchCode, NatNum32 maxProgramCount, NatNum32 sampleCount)
-            throws SynthesiseException
-    {
-        return synthesise(searchCode, maxProgramCount);
-    }
 }

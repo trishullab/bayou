@@ -178,22 +178,6 @@ public class ApiSynthesizerRemoteTensorFlowAsts implements ApiSynthesizer
         return synthesiseHelp(searchCode, maxProgramCount, new NatNum32(100));
     }
 
-    @Override
-    public Iterable<String> synthesise(String searchCode, NatNum32 maxProgramCount, NatNum32 sampleCount)
-            throws SynthesiseException
-    {
-        _logger.debug("entering");
-
-        if(sampleCount == null)
-        {
-            _logger.debug("exiting");
-            throw new NullPointerException("sampleCount");
-        }
-
-        _logger.debug("exiting");
-        return synthesiseHelp(searchCode, maxProgramCount, sampleCount);
-    }
-
     // sampleCount of null means don't send a sampleCount key in the request message.  Means use default sample count
     // server side.
     private Iterable<String> synthesiseHelp(String code, NatNum32 maxProgramCount, NatNum32 sampleCount)

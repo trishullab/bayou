@@ -36,13 +36,6 @@ public class ApiSynthesizerRewriteEvidenceDecoratorTests
         {
             return Collections.singletonList(code);
         }
-
-        @Override
-        public Iterable<String> synthesise(String code, NatNum32 maxProgramCount, NatNum32 sampleCount)
-                throws SynthesiseException
-        {
-            return Collections.singletonList(code);
-        }
     }
 
     @Test(expected = NullPointerException.class)
@@ -80,7 +73,7 @@ public class ApiSynthesizerRewriteEvidenceDecoratorTests
         String result = new ApiSynthesizerRewriteEvidenceDecorator(inner).synthesise(program, ONE).iterator().next();
         Assert.assertEquals(correct, result);
 
-        result = new ApiSynthesizerRewriteEvidenceDecorator(inner).synthesise(program, ONE, ONE).iterator().next();
+        result = new ApiSynthesizerRewriteEvidenceDecorator(inner).synthesise(program, ONE).iterator().next();
         Assert.assertEquals(correct, result);
     }
 
