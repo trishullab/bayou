@@ -87,11 +87,6 @@ public class ApiSynthesizerRemoteTensorFlowAsts implements ApiSynthesizer
     private final Synthesizer.Mode _synthMode;
 
     /**
-     * The number of network requests over which to spread the sample count when performing a synthesise(...) operation.
-     */
-    private final NatNum32 _astServerRequestsPerSynthesise;
-
-    /**
      * @param tensorFlowHost  The network name of the tensor flow host server. May not be null.
      * @param tensorFlowPort The port the tensor flow host server on which connections requests are expected.
      *                       May not be negative.
@@ -100,13 +95,10 @@ public class ApiSynthesizerRemoteTensorFlowAsts implements ApiSynthesizer
 *                          May not be null.
      * @param androidJarPath The path to android.jar. May not be null.
      * @param synthMode The type of API synthesis that should be performed.
-     * @param astServerRequestsPerSynthesise the number of network requests over which to spread the sample count when
-     *                                       performing a synthesise(...) operation.
      */
     public ApiSynthesizerRemoteTensorFlowAsts(ContentString tensorFlowHost, NatNum32 tensorFlowPort,
                                               NatNum32 maxNetworkWaitTimeMs, ContentString evidenceClasspath,
-                                              File androidJarPath, Synthesizer.Mode synthMode,
-                                              NatNum32 astServerRequestsPerSynthesise)
+                                              File androidJarPath, Synthesizer.Mode synthMode)
     {
         _logger.debug("entering");
 
@@ -152,19 +144,11 @@ public class ApiSynthesizerRemoteTensorFlowAsts implements ApiSynthesizer
             throw new NullPointerException("tensorFlowHost");
         }
 
-        if(astServerRequestsPerSynthesise == null)
-        {
-            _logger.debug("exiting");
-            throw new NullPointerException("astServerRequestsPerSynthesise");
-        }
-
-
         _tensorFlowHost = tensorFlowHost;
         _tensorFlowPort = tensorFlowPort;
         _maxNetworkWaitTimeMs = maxNetworkWaitTimeMs;
         _evidenceClasspath = evidenceClasspath;
         _androidJarPath = androidJarPath;
-        _astServerRequestsPerSynthesise = astServerRequestsPerSynthesise;
         _synthMode = synthMode;
 
 	    _logger.trace("_tensorFlowHost:" + _tensorFlowHost);
@@ -175,13 +159,12 @@ public class ApiSynthesizerRemoteTensorFlowAsts implements ApiSynthesizer
     @Override
     public Iterable<String> synthesise(String searchCode, NatNum32 maxProgramCount) throws SynthesiseException
     {
-        return synthesiseHelp(searchCode, maxProgramCount, new NatNum32(100));
+        return synthesiseHelp(searchCode, maxProgramCount);
     }
 
     // sampleCount of null means don't send a sampleCount key in the request message.  Means use default sample count
     // server side.
-    private Iterable<String> synthesiseHelp(String code, NatNum32 maxProgramCount, NatNum32 sampleCount)
-            throws SynthesiseException
+    private Iterable<String> synthesiseHelp(String code, NatNum32 maxProgramCount) throws SynthesiseException
     {
         _logger.debug("entering");
 
@@ -233,7 +216,15 @@ public class ApiSynthesizerRemoteTensorFlowAsts implements ApiSynthesizer
          * Contact the remote server (possibly multiple network requests) and provide evidence to be fed to Tensor Flow
          * to generate solution ASTs.
          */
-        JSONObject astsJson = sendGenerateAstRequest(evidence, maxProgramCount, sampleCount);
+        JSONObject astsJson = null;
+        try
+        {
+            astsJson = sendGenerateAstRequest(evidence, maxProgramCount);
+        }
+        catch (IOException e)
+        {
+            throw new SynthesiseException(e);
+        }
         _logger.trace("astsJson:" + astsJson);
 
         /*
@@ -250,9 +241,8 @@ public class ApiSynthesizerRemoteTensorFlowAsts implements ApiSynthesizer
         return synthesizedPrograms;
     }
 
-    // sampleCount of null means don't send a sampleCount key in the request message.  Means use default sample count.
-    private JSONObject sendGenerateAstRequest(String evidence, NatNum32 maxProgramCount, NatNum32 sampleCount)
-            throws SynthesiseException
+    private JSONObject sendGenerateAstRequest(String evidence, NatNum32 maxProgramCount)
+            throws IOException
     {
         _logger.debug("entering");
 
@@ -271,148 +261,42 @@ public class ApiSynthesizerRemoteTensorFlowAsts implements ApiSynthesizer
             throw new NullPointerException("maxProgramCount");
         }
 
-        /*
-         * Split sampleCount into _astServerRequestsPerSynthesise requests and send them concurrently to the remote
-         * server in parallel.
-         */
-        List<Future<String>> responseBodies = new LinkedList<>(); // the responses for each request
-        for(int i = 0; i<_astServerRequestsPerSynthesise.AsInt; i++)
+        String astServerHttpResponseBody;
         {
-            /*
-             * How many of the samples should be collected by this request?
-             *
-             * Evenly split sampleCount across all requests with the first request getting any extra.
-             */
-            Integer sampleCountForRequest;  // null means don't set sampleCount for the request. let remote server pick.
-            if(sampleCount != null)
+
+            RequestConfig config = RequestConfig.custom().setConnectTimeout(_maxNetworkWaitTimeMs.AsInt)
+                    .setSocketTimeout(_maxNetworkWaitTimeMs.AsInt)
+                    .build();
+
+            try (CloseableHttpClient client = HttpClientBuilder.create().setDefaultRequestConfig(config).build())
             {
-                sampleCountForRequest =sampleCount.AsInt / _astServerRequestsPerSynthesise.AsInt;
-                if (i == 0)
-                {
-                    sampleCountForRequest += sampleCount.AsInt % _astServerRequestsPerSynthesise.AsInt;
-                }
-            }
-            else
-            {
-                sampleCountForRequest = null; // sampleCount = null means don't set sampleCount for the request.
-            }
+                JSONObject requestObj = new JSONObject();
+                requestObj.put("request type", "generate asts");
+                requestObj.put("evidence", evidence);
+                requestObj.put("max ast count", maxProgramCount.AsInt);
 
-            Integer sampleCountForRequestCapture = sampleCountForRequest; // so sampleCountForRequest can be closed over
 
-            Future<String> responseBody = _sendRequestPool.submit(() ->
-            {
-                RequestConfig config = RequestConfig.custom().setConnectTimeout(_maxNetworkWaitTimeMs.AsInt)
-                                                             .setSocketTimeout(_maxNetworkWaitTimeMs.AsInt)
-                                                             .build();
+                HttpPost httppost = new HttpPost("http://" + _tensorFlowHost + ":" + _tensorFlowPort);
+                httppost.setEntity(new StringEntity(requestObj.toString(2)));
 
-                try (CloseableHttpClient client = HttpClientBuilder.create().setDefaultRequestConfig(config).build())
-                {
-                    JSONObject requestObj = new JSONObject();
-                    requestObj.put("request type", "generate asts");
-                    requestObj.put("evidence", evidence);
-                    requestObj.put("max ast count", maxProgramCount.AsInt);
+                HttpResponse response = client.execute(httppost);
+                int responseStatusCode = response.getStatusLine().getStatusCode();
 
-                    if (sampleCountForRequestCapture != null)
-                        requestObj.put("sample count", sampleCountForRequestCapture);
+                if (responseStatusCode != 200)
+                    throw new IOException("Unexpected http response code: " + responseStatusCode);
 
-                    HttpPost httppost = new HttpPost("http://" + _tensorFlowHost + ":" + _tensorFlowPort);
-                    httppost.setEntity(new StringEntity(requestObj.toString(2)));
+                HttpEntity entity = response.getEntity();
 
-                    HttpResponse response = client.execute(httppost);
-                    int responseStatusCode = response.getStatusLine().getStatusCode();
+                if (entity == null)
+                    throw new IOException("Expected response body.");
 
-                    if (responseStatusCode != 200)
-                        throw new IOException("Unexpected http response code: " + responseStatusCode);
-
-                    HttpEntity entity = response.getEntity();
-
-                    if (entity == null)
-                        throw new IOException("Expected response body.");
-
-                    return IOUtils.toString(entity.getContent(), "UTF-8");
-                }
-            });
-            responseBodies.add(responseBody);
-        }
-
-        /*
-         * Wait at most _maxNetworkWaitTimeMs ms for all responses to complete or throw exception.
-         */
-        List<JSONObject> responseObjects = new LinkedList<>();
-        long waitStartMoment = System.currentTimeMillis();
-        for(Future<String> responseBody : responseBodies)
-        {
-            long waitBudgetRemaining = _maxNetworkWaitTimeMs.AsInt - (System.currentTimeMillis() - waitStartMoment);
-            try
-            {
-                String value = responseBody.get(waitBudgetRemaining, TimeUnit.MILLISECONDS);
-                responseObjects.add(new JSONObject(value));
-            }
-            catch (InterruptedException | ExecutionException | TimeoutException  e)
-            {
-                _logger.debug("exiting");
-                throw new SynthesiseException(e);
+                astServerHttpResponseBody = IOUtils.toString(entity.getContent(), "UTF-8");
             }
         }
 
-        /*
-         * Aggregate the ASTs of each response object into a single response object and return.
-         *
-         * The "evidences" entry of the aggregateResponseObject will be the common entry among all response bodies.
-         * If any "evidences" entry differs from the first response object's entry, that response is discarded.
-         */
-        JSONObject aggregateResponseObject = new JSONObject();
-        {
-            final String ASTS = "asts";
-            final String EVIDENCES = "evidences";
-
-            JSONObject firstResponseObject = responseObjects.get(0);
-
-            if (!firstResponseObject.has(EVIDENCES))
-            {
-                _logger.debug("exiting");
-                throw new SynthesiseException("first response object did not contain a " + EVIDENCES + " member");
-            }
-
-            JSONObject firstEvidences;
-            try
-            {
-                firstEvidences = firstResponseObject.getJSONObject(EVIDENCES);
-            }
-            catch (JSONException e)
-            {
-                _logger.debug("exiting");
-                throw new SynthesiseException("first response object " + EVIDENCES + " member is not a JSON object");
-            }
-
-            aggregateResponseObject.put(EVIDENCES, firstEvidences);
-            aggregateResponseObject.put(ASTS, new JSONArray());
-
-            for (JSONObject responseObject : responseObjects)
-            {
-                if (!isWellFormedResponseObject(responseObject)) // check safe to direct access EVIDENCES and ASTS below
-                {
-                    _logger.warn("response object was not well formed");
-                    continue;
-                }
-
-                JSONObject evidences = responseObject.getJSONObject(EVIDENCES);
-
-                if (!firstEvidences.toString().equals(evidences.toString())) // JSONObject doesn't implement equals(...)
-                {
-                    _logger.warn("evidences mismatch");
-                    continue;
-                }
-
-                JSONArray responseAsts = responseObject.getJSONArray(ASTS);
-
-                for (int i = 0; i < responseAsts.length(); i++)
-                    aggregateResponseObject.getJSONArray(ASTS).put(responseAsts.getJSONObject(i));
-
-            }
-        }
-
-        return aggregateResponseObject;
+        JSONObject responseObject = new JSONObject(astServerHttpResponseBody);
+        _logger.debug("exiting");
+        return responseObject;
 
     }
 
