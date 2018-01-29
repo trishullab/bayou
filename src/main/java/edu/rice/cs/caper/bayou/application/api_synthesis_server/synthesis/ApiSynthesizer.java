@@ -34,14 +34,4 @@ public interface ApiSynthesizer
      */
     Iterable<String> synthesise(String code, NatNum32 maxProgramCount) throws SynthesiseException;
 
-    /**
-     * Takes the given code containing evidence an replaces the evidence with corresponding api calls.
-     *
-     * @param code the evidence containing code
-     * @param maxProgramCount the maximum number of possible completions to return
-     * @param sampleCount the number of samples to draw from the underlying model in persuit of performing synthesis
-     * @return copies of the given code with different possible replacements of the evidence with api calls
-     * @throws SynthesiseException if an error occurs in trying to synthesize the code completions
-     */
-    Iterable<String> synthesise(String code, NatNum32 maxProgramCount, NatNum32 sampleCount) throws SynthesiseException;
 }

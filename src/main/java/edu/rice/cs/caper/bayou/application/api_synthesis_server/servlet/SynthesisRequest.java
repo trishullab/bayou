@@ -32,8 +32,6 @@ interface SynthesisRequest
 
     NatNum32 getMaxProgramCount();
 
-    NatNum32 getOptionalSampleCount(NatNum32 onNotPresent);
-
     static SynthesisRequest make(JSONObject jsonMessage) throws NoCodeFieldException, NoMaxProgramCountFieldException,
             InvalidMaxProgramCountException, InvalidSampleCountException
     {
@@ -59,21 +57,6 @@ interface SynthesisRequest
             throw new InvalidMaxProgramCountException();
         }
 
-        NatNum32 sampleCount;
-        try
-        {
-            final String SAMPLE_COUNT = "sample count";
-
-            if (!jsonMessage.has(SAMPLE_COUNT))
-                sampleCount = null;
-            else
-                sampleCount = new NatNum32(jsonMessage.get(SAMPLE_COUNT).toString());
-        }
-        catch (IllegalArgumentException e)
-        {
-            throw new InvalidSampleCountException();
-        }
-
 
         return new SynthesisRequest()
         {
@@ -89,11 +72,6 @@ interface SynthesisRequest
                 return maxProgramCount;
             }
 
-            @Override
-            public NatNum32 getOptionalSampleCount(NatNum32 onNotPresent)
-            {
-                return sampleCount != null ? sampleCount : onNotPresent;
-            }
         };
     }
 

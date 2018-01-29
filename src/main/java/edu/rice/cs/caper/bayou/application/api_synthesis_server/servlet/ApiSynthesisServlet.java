@@ -219,35 +219,18 @@ public class ApiSynthesisServlet extends SizeConstrainedPostBodyServlet implemen
         /*
          * Process request in terms of SynthesisRequest.
          */
-        boolean isRequestLocal = req.getRemoteAddr().equals("127.0.0.1");
-        doPostHelp(resp, requestId, requestMsg, isRequestLocal);
+        doPostHelp(resp, requestId, requestMsg);
 
         _logger.debug("exiting");
 
     }
 
     // isRequestLocal indicates if the origin of the request is the same machine as the http server.
-    private void doPostHelp(HttpServletResponse resp, UUID requestId, SynthesisRequest requestMsg,
-                            boolean isRequestLocal) throws IOException
+    private void doPostHelp(HttpServletResponse resp, UUID requestId, SynthesisRequest requestMsg) throws IOException
     {
         _logger.debug("entering");
 
         String code = requestMsg.getCode();
-        NatNum32 sampleCount = requestMsg.getOptionalSampleCount(null); // null means use default value
-
-        // honoring sampleCount in a request is only allowed if the request origin is local. i.e.
-        // desktop deployment. We don't honor this in an internet deployment because it can be abused
-        // by an attacker to eat up all the server's resources.
-        if(sampleCount != null && !isRequestLocal)
-        {
-            final String SAMPLE_COUNT = "sample count";
-            _logger.warn(requestId + ": attempt to request sample count from non-localhost.");
-            JSONObject responseBody = new ErrorJsonResponse(SAMPLE_COUNT + " only allowed from local host.");
-            resp.setStatus(HttpStatus.BAD_REQUEST_400);
-            writeObjectToServletOutputStream(responseBody, resp);
-            _logger.debug("exiting");
-            return;
-        }
 
         /*
          * Perform synthesis.
@@ -255,10 +238,7 @@ public class ApiSynthesisServlet extends SizeConstrainedPostBodyServlet implemen
         Iterable<String> results;
         try
         {
-            if(sampleCount != null)
-                results = _synthesisRequestProcessor.synthesise(code, requestMsg.getMaxProgramCount(), sampleCount);
-            else
-                results = _synthesisRequestProcessor.synthesise(code, requestMsg.getMaxProgramCount());
+            results = _synthesisRequestProcessor.synthesise(code, requestMsg.getMaxProgramCount());
         }
         catch (SynthesiseException e)
         {
