@@ -55,8 +55,7 @@ class ApiSynthesizerFactory
                                                                  Configuration.SynthesizeTimeoutMs,
                                                                  Configuration.EvidenceClasspath,
                                                                  Configuration.AndroidJarPath,
-                                                                 Configuration.ApiSynthMode,
-                                                                 Configuration.AstServerRequestCount);
+                                                                 Configuration.ApiSynthMode);
         }
 
         _logger.debug("exiting");
