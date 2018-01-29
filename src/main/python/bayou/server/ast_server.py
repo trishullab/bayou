@@ -52,26 +52,17 @@ def _handle_http_get_request_health():
 def _handle_generate_asts_request(request_dict, predictor):
 
     evidence_json_str = request_dict['evidence']  # get the evidence string from the request (also JSON)
-    sample_count = request_dict.get('sample count', None)
-    sample_count = int(sample_count) if sample_count is not None else None
 
     max_ast_count = request_dict.get('max ast count')
     max_ast_count = int(max_ast_count) if max_ast_count is not None else None
 
-    if sample_count is not None:
-        asts = _generate_asts(evidence_json_str, predictor, num_samples=sample_count, max_ast_count=max_ast_count)
-    else:
-        asts = _generate_asts(evidence_json_str, predictor, max_ast_count=max_ast_count)
+    asts = _generate_asts(evidence_json_str, predictor, max_ast_count=max_ast_count)
     logging.debug(asts)
     return asts
 
 
-def _generate_asts(evidence_json: str, predictor, num_samples: int=100, max_ast_count: int=10, okay_check=True):
+def _generate_asts(evidence_json: str, predictor, max_ast_count: int=10, okay_check=True):
     logging.debug("entering")
-    logging.debug("num_samples:" + str(num_samples))
-
-    if num_samples < 1:
-        raise ValueError("num_samples must be a natural number")
 
     if max_ast_count < 1:
         raise ValueError("max_asts_count must be a natural number")
