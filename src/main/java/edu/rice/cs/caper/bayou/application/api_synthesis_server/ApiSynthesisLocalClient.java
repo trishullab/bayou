@@ -49,15 +49,12 @@ class ApiSynthesisLocalClient
                 "    }   \n" +
                 "}";
 
-    private static void synthesise(String code, Integer sampleCount, int maxProgramCount) throws IOException, SynthesisError
+    private static void synthesise(String code, int maxProgramCount) throws IOException, SynthesisError
     {
         List<String> results;
         {
             ApiSynthesisClient client = new ApiSynthesisClient("localhost", Configuration.ListenPort.AsInt);
-            if(sampleCount != null)
-                results = client.synthesise(code, maxProgramCount, sampleCount);
-            else
-                results = client.synthesise(code, maxProgramCount);
+            results = client.synthesise(code, maxProgramCount);
         }
 
         for(String result : results)
@@ -67,8 +64,6 @@ class ApiSynthesisLocalClient
         }
         System.out.print("\n"); // don't have next console prompt start on final line of code output.
     }
-
-    private static final String NUM_SAMPLES = "num_samples";
 
     private static final String NUM_PROGRAMS = "num_programs";
 
@@ -80,7 +75,6 @@ class ApiSynthesisLocalClient
          * Define the command line arguments for the application and parse args accordingly.
          */
         Options options = new Options();
-        options.addOption("s", NUM_SAMPLES, true, "the number of asts to sample from the model");
         options.addOption("p", NUM_PROGRAMS, true, "the maximum number of programs to return");
         options.addOption(HELP, HELP, false, "print this message");
 
@@ -116,26 +110,6 @@ class ApiSynthesisLocalClient
             code = new String(Files.readAllBytes(Paths.get(finalArg)));
         }
 
-        /*
-         * Determine the model sample count requrest, or null if a default should be used.
-         */
-        Integer sampleCount = null;
-        if(line.hasOption(NUM_SAMPLES) )
-        {
-            String numSamplesString = line.getOptionValue(NUM_SAMPLES);
-            try
-            {
-                sampleCount = Integer.parseInt(numSamplesString);
-                if(sampleCount < 1)
-                    throw new NumberFormatException();
-            }
-            catch (NumberFormatException e)
-            {
-                System.err.println(NUM_SAMPLES + " must be a natural number.");
-                System.exit(3);
-            }
-        }
-
         int maxProgramCount = Integer.MAX_VALUE;
         if(line.hasOption(NUM_PROGRAMS) )
         {
@@ -155,7 +129,7 @@ class ApiSynthesisLocalClient
 
         try
         {
-            synthesise(code, sampleCount, maxProgramCount);
+            synthesise(code, maxProgramCount);
         }
         catch (ParseError e)
         {
