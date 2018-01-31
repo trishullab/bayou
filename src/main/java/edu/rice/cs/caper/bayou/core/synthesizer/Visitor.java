@@ -181,6 +181,8 @@ public class Visitor extends ASTVisitor {
         // Apply dead code elimination here
         DCEOptimizor dce = new DCEOptimizor();
         body = dce.apply(body, sketch);
+        if (body.statements().size() == 0)
+            return false;
 
         /* make rewrites to the local method body */
         body = postprocessLocal(invocation.getAST(), env, body, dce.getEliminatedVars());
