@@ -170,6 +170,9 @@ class BayesianPredictor(object):
         try:
             if len(path) > 10:
                 raise TooLongPathError
+            nodes = [node for (node, edge) in path]
+            if nodes.count('DBranch') > 2 or nodes.count('DLoop') > 2 or nodes.count('DExcept') > 2:
+                raise InvalidSketchError
             self.consume_until_STOP(path, 1)
             return True
         except IncompletePathError:
