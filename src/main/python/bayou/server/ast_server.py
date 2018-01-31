@@ -43,6 +43,7 @@ def _handle_http_post_request_index(predictor):
 
     return Response("")
 
+
 # called when a GET request is sent to the server at the /asthealth path
 def _handle_http_get_request_health():
     return Response("Ok")
@@ -53,19 +54,13 @@ def _handle_generate_asts_request(request_dict, predictor):
 
     evidence_json_str = request_dict['evidence']  # get the evidence string from the request (also JSON)
 
-    max_ast_count = request_dict.get('max ast count')
-    max_ast_count = int(max_ast_count) if max_ast_count is not None else None
-
-    asts = _generate_asts(evidence_json_str, predictor, max_ast_count=max_ast_count)
+    asts = _generate_asts(evidence_json_str, predictor)
     logging.debug(asts)
     return asts
 
 
-def _generate_asts(evidence_json: str, predictor, max_ast_count: int=10, okay_check=True):
+def _generate_asts(evidence_json: str, predictor, okay_check=True):
     logging.debug("entering")
-
-    if max_ast_count < 1:
-        raise ValueError("max_asts_count must be a natural number")
 
     js = json.loads(evidence_json)  # parse evidence as a JSON string
 
@@ -81,15 +76,15 @@ def _generate_asts(evidence_json: str, predictor, max_ast_count: int=10, okay_ch
     asts = predictor.infer(js)
 
     #
-    # Retain up to max_ast_count asts that pass the okay(...) filter.
+    # If okay_check is set, retain only those asts that pass the _okay(...) filter. Otherwise retain all asts.
     #
-    okay_asts = []
-    i = 0
-    while i < len(asts) and len(okay_asts) < max_ast_count:
-        ast = asts[i]
-        if not okay_check or _okay(js, ast):
-            okay_asts.append(ast)
-        i = i + 1
+    if okay_check:
+        okay_asts = []
+        for ast in asts:
+            if _okay(js, ast):
+                okay_asts.append(ast)
+    else:
+        okay_asts = asts
 
     logging.debug("exiting")
     return json.dumps({'evidences': js, 'asts': okay_asts}, indent=2)
@@ -131,7 +126,7 @@ if __name__ == '__main__':
         dir_path = os.path.dirname(__file__)
         log_paths = [os.path.join(dir_path, "../../../logs/ast_server.log")]
     else:
-        log_paths = [(dir + "/ast_server.log") for dir in args.logs_dir.split(os.pathsep)]
+        log_paths = [(d + "/ast_server.log") for d in args.logs_dir.split(os.pathsep)]
 
     # ensure the parent directory of each log path exists or create it
     for log_path in log_paths:
