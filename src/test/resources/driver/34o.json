@@ -1,25 +1,32 @@
 {
   "programs": [
     {
-      "file": "/Users/vijay/Work/bayou/src/test/resources/driver/34f.java",
       "ast": {
         "node": "DSubTree",
         "_nodes": [
           {
             "node": "DAPICall",
-            "_call": "java.util.Stack\u003cTau_E\u003e.push(Tau_E)"
+            "_call": "java.util.Stack\u003cTau_E\u003e.push(Tau_E)",
+            "_throws": [],
+            "_returns": "Tau_E"
           },
           {
             "node": "DAPICall",
-            "_call": "java.util.Stack\u003cTau_E\u003e.pop()"
+            "_call": "java.util.Stack\u003cTau_E\u003e.pop()",
+            "_throws": [],
+            "_returns": "Tau_E"
           },
           {
             "node": "DAPICall",
-            "_call": "java.util.Stack\u003cTau_E\u003e.push(Tau_E)"
+            "_call": "java.util.Stack\u003cTau_E\u003e.push(Tau_E)",
+            "_throws": [],
+            "_returns": "Tau_E"
           },
           {
             "node": "DAPICall",
-            "_call": "java.util.Stack\u003cTau_E\u003e.pop()"
+            "_call": "java.util.Stack\u003cTau_E\u003e.pop()",
+            "_throws": [],
+            "_returns": "Tau_E"
           }
         ]
       },

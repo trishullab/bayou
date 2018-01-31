@@ -1,24 +1,33 @@
 {
   "programs": [
     {
-      "file": "/Users/vijay/Work/bayou/src/test/resources/driver/23f.java",
       "ast": {
         "node": "DSubTree",
         "_nodes": [
           {
             "node": "DAPICall",
-            "_call": "java.io.FileReader.FileReader(java.io.File)"
+            "_call": "java.io.FileReader.FileReader(java.io.File)",
+            "_throws": [
+              "java.io.FileNotFoundException"
+            ],
+            "_returns": "void"
           },
           {
             "node": "DAPICall",
-            "_call": "java.io.BufferedReader.BufferedReader(java.io.Reader)"
+            "_call": "java.io.BufferedReader.BufferedReader(java.io.Reader)",
+            "_throws": [],
+            "_returns": "void"
           },
           {
             "node": "DBranch",
             "_cond": [
               {
                 "node": "DAPICall",
-                "_call": "java.io.BufferedReader.ready()"
+                "_call": "java.io.BufferedReader.ready()",
+                "_throws": [
+                  "java.io.IOException"
+                ],
+                "_returns": "boolean"
               }
             ],
             "_then": [
@@ -27,14 +36,22 @@
                 "_cond": [
                   {
                     "node": "DAPICall",
-                    "_call": "java.io.BufferedReader.readLine()"
+                    "_call": "java.io.BufferedReader.readLine()",
+                    "_throws": [
+                      "java.io.IOException"
+                    ],
+                    "_returns": "java.lang.String"
                   }
                 ],
                 "_then": [],
                 "_else": [
                   {
                     "node": "DAPICall",
-                    "_call": "java.io.BufferedReader.close()"
+                    "_call": "java.io.BufferedReader.close()",
+                    "_throws": [
+                      "java.io.IOException"
+                    ],
+                    "_returns": "void"
                   }
                 ]
               }
@@ -42,7 +59,11 @@
             "_else": [
               {
                 "node": "DAPICall",
-                "_call": "java.io.BufferedReader.close()"
+                "_call": "java.io.BufferedReader.close()",
+                "_throws": [
+                  "java.io.IOException"
+                ],
+                "_returns": "void"
               }
             ]
           }

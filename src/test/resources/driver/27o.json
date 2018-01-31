@@ -1,7 +1,6 @@
 {
   "programs": [
     {
-      "file": "/Users/vijay/Work/bayou/src/test/resources/driver/27f.java",
       "ast": {
         "node": "DSubTree",
         "_nodes": [
@@ -10,13 +9,21 @@
             "_try": [
               {
                 "node": "DAPICall",
-                "_call": "android.bluetooth.BluetoothSocket.connect()"
+                "_call": "android.bluetooth.BluetoothSocket.connect()",
+                "_throws": [
+                  "java.io.IOException"
+                ],
+                "_returns": "void"
               }
             ],
             "_catch": [
               {
                 "node": "DAPICall",
-                "_call": "android.bluetooth.BluetoothSocket.close()"
+                "_call": "android.bluetooth.BluetoothSocket.close()",
+                "_throws": [
+                  "java.io.IOException"
+                ],
+                "_returns": "void"
               }
             ]
           }

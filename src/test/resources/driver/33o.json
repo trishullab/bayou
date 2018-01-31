@@ -1,29 +1,38 @@
 {
   "programs": [
     {
-      "file": "/Users/vijay/Work/bayou/src/test/resources/driver/33f.java",
       "ast": {
         "node": "DSubTree",
         "_nodes": [
           {
             "node": "DAPICall",
-            "_call": "java.util.HashMap\u003cTau_K,Tau_V\u003e.HashMap()"
+            "_call": "java.util.HashMap\u003cTau_K,Tau_V\u003e.HashMap()",
+            "_throws": [],
+            "_returns": "void"
           },
           {
             "node": "DAPICall",
-            "_call": "java.util.Map\u003cTau_K,Tau_V\u003e.put(Tau_K,Tau_V)"
+            "_call": "java.util.Map\u003cTau_K,Tau_V\u003e.put(Tau_K,Tau_V)",
+            "_throws": [],
+            "_returns": "Tau_V"
           },
           {
             "node": "DAPICall",
-            "_call": "java.util.Map\u003cTau_K,Tau_V\u003e.put(Tau_K,Tau_V)"
+            "_call": "java.util.Map\u003cTau_K,Tau_V\u003e.put(Tau_K,Tau_V)",
+            "_throws": [],
+            "_returns": "Tau_V"
           },
           {
             "node": "DAPICall",
-            "_call": "java.util.Map\u003cTau_K,Tau_V\u003e.get(java.lang.Object)"
+            "_call": "java.util.Map\u003cTau_K,Tau_V\u003e.get(java.lang.Object)",
+            "_throws": [],
+            "_returns": "Tau_V"
           },
           {
             "node": "DAPICall",
-            "_call": "java.util.Map\u003cTau_K,Tau_V\u003e.clear()"
+            "_call": "java.util.Map\u003cTau_K,Tau_V\u003e.clear()",
+            "_throws": [],
+            "_returns": "void"
           }
         ]
       },

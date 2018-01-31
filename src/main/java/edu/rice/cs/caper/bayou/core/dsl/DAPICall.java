@@ -30,6 +30,8 @@ public class DAPICall extends DASTNode
 
     String node = "DAPICall";
     String _call;
+    List<String> _throws;
+    String _returns;
     transient String retVarName = "";
     
     /* CAUTION: This field is only available during AST generation */
@@ -49,6 +51,11 @@ public class DAPICall extends DASTNode
     public DAPICall(IMethodBinding methodBinding, int linenum) {
         this.methodBinding = methodBinding;
         this._call = getClassName() + "." + getSignature();
+        this._throws = new ArrayList<>();
+        for (ITypeBinding exception : methodBinding.getExceptionTypes())
+            _throws.add(getTypeName(exception, exception.getQualifiedName()));
+        this._returns = getTypeName(methodBinding.getReturnType(),
+                                            methodBinding.getReturnType().getQualifiedName());
         this.linenum = linenum;
         this.node = "DAPICall";
     }
@@ -69,15 +76,19 @@ public class DAPICall extends DASTNode
         String className = cls.getQualifiedName();
         if (cls.isGenericType())
             className += "<" + String.join(",", Arrays.stream(cls.getTypeParameters()).map(
-                    t -> (t.isTypeVariable()? "Tau_": "") + t.getName()
+                    t -> getTypeName(t, t.getName())
             ).collect(Collectors.toList())) + ">";
         return className;
     }
 
     private String getSignature() {
         Stream<String> types = Arrays.stream(methodBinding.getParameterTypes()).map(
-                t -> (t.isTypeVariable()? "Tau_": "") + t.getQualifiedName());
+                t -> getTypeName(t, t.getQualifiedName()));
         return methodBinding.getName() + "(" + String.join(",", types.collect(Collectors.toCollection(ArrayList::new))) + ")";
+    }
+
+    private String getTypeName(ITypeBinding binding, String name) {
+        return (binding.isTypeVariable()? "Tau_" : "") + name;
     }
 
     public void setNotPredicate() {
