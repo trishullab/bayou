@@ -219,7 +219,7 @@ public class ApiSynthesizerRemoteTensorFlowAsts implements ApiSynthesizer
         JSONObject astsJson = null;
         try
         {
-            astsJson = sendGenerateAstRequest(evidence, maxProgramCount);
+            astsJson = sendGenerateAstRequest(evidence);
         }
         catch (IOException e)
         {
@@ -231,17 +231,19 @@ public class ApiSynthesizerRemoteTensorFlowAsts implements ApiSynthesizer
          * Synthesise results from the code and asts and return.
          */
         List<String> synthesizedPrograms;
-        synthesizedPrograms = new Synthesizer(_synthMode).execute(parser, astsJson.toString());
+        {
+            synthesizedPrograms = new Synthesizer(_synthMode).execute(parser, astsJson.toString());
 
-        if(synthesizedPrograms.size() > maxProgramCount.AsInt) // unsure if execute always returns n output for n input.
-            synthesizedPrograms = synthesizedPrograms.subList(0, maxProgramCount.AsInt);
+            if (synthesizedPrograms.size() > maxProgramCount.AsInt) // only return top maxProgramCount
+                synthesizedPrograms = synthesizedPrograms.subList(0, maxProgramCount.AsInt);
+        }
 
         _logger.trace("synthesizedPrograms: " + synthesizedPrograms);
         _logger.debug("exiting");
         return synthesizedPrograms;
     }
 
-    private JSONObject sendGenerateAstRequest(String evidence, NatNum32 maxProgramCount)
+    private JSONObject sendGenerateAstRequest(String evidence)
             throws IOException
     {
         _logger.debug("entering");
@@ -253,12 +255,6 @@ public class ApiSynthesizerRemoteTensorFlowAsts implements ApiSynthesizer
         {
             _logger.debug("exiting");
             throw new NullPointerException("evidence");
-        }
-
-        if(maxProgramCount == null)
-        {
-            _logger.debug("exiting");
-            throw new NullPointerException("maxProgramCount");
         }
 
         String astServerHttpResponseBody;
@@ -273,8 +269,6 @@ public class ApiSynthesizerRemoteTensorFlowAsts implements ApiSynthesizer
                 JSONObject requestObj = new JSONObject();
                 requestObj.put("request type", "generate asts");
                 requestObj.put("evidence", evidence);
-                requestObj.put("max ast count", maxProgramCount.AsInt);
-
 
                 HttpPost httppost = new HttpPost("http://" + _tensorFlowHost + ":" + _tensorFlowPort);
                 httppost.setEntity(new StringEntity(requestObj.toString(2)));
