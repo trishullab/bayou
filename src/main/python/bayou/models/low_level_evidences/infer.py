@@ -154,7 +154,6 @@ class BayesianPredictor(object):
         for (candidate, pr) in candidates:
             ast = self.paths_to_ast(candidate)
             ast['probability'] = float(str(pr)[:7])  # "0." + four digits of precision
-            ast['calls'] = sorted(set(self.calls_in_last_ast))
             if ast not in asts:
                 asts.append(ast)
         return asts
@@ -259,12 +258,11 @@ class BayesianPredictor(object):
 
     def paths_to_ast(self, paths):
         """
-        Converts a given set of paths into an AST. Updates self.calls_in_last_ast in the process.
+        Converts a given set of paths into an AST
 
         :param paths: the set of paths
         :return: the AST
         """
-        self.calls_in_last_ast = []
         nodes = []
         ast = {'node': 'DSubTree', '_nodes': nodes}
         for path in paths:
@@ -307,7 +305,6 @@ class BayesianPredictor(object):
                     nodes.append(astnode)
                 else:
                     nodes.append({'node': 'DAPICall', '_call': node})
-                    self.calls_in_last_ast.append(node)
                     nodeidx += 1
                     pathidx += 1
                     continue

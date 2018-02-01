@@ -24,6 +24,7 @@ import bayou.models.low_level_evidences.evidence
 import bayou.models.core.infer
 import bayou.models.low_level_evidences.infer
 from bayou.models.low_level_evidences.evidence import Keywords
+from bayou.models.low_level_evidences.utils import gather_calls
 
 
 # called when a POST request is sent to the server at the index path
@@ -92,7 +93,7 @@ def _generate_asts(evidence_json: str, predictor, okay_check=True):
 
 # Include in here any conditions that dictate whether an AST should be returned or not
 def _okay(js, ast):
-    calls = ast['calls']
+    calls = gather_calls(ast)
     apicalls = list(set(chain.from_iterable(
         [bayou.models.low_level_evidences.evidence.APICalls.from_call(call) for call in calls])))
     types = list(set(chain.from_iterable(

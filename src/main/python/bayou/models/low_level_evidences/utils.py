@@ -16,6 +16,7 @@ from __future__ import print_function
 import argparse
 import re
 import tensorflow as tf
+from itertools import chain
 
 CONFIG_GENERAL = ['model', 'latent_size', 'batch_size', 'num_epochs',
                   'learning_rate', 'print_step', 'alpha', 'beta']
@@ -76,3 +77,26 @@ def dump_config(config):
                      CONFIG_DECODER + CONFIG_INFER}
 
     return js
+
+
+def gather_calls(node):
+    """
+    Gathers all call nodes (recursively) in a given AST node
+
+    :param node: the node to gather calls from
+    :return: list of call nodes
+    """
+
+    if type(node) is list:
+        return list(chain.from_iterable([gather_calls(n) for n in node]))
+    node_type = node['node']
+    if node_type == 'DSubTree':
+        return gather_calls(node['_nodes'])
+    elif node_type == 'DBranch':
+        return gather_calls(node['_cond']) + gather_calls(node['_then']) + gather_calls(node['_else'])
+    elif node_type == 'DExcept':
+        return gather_calls(node['_try']) + gather_calls(node['_catch'])
+    elif node_type == 'DLoop':
+        return gather_calls(node['_cond']) + gather_calls(node['_body'])
+    else:  # this node itself is a call
+        return [node]
