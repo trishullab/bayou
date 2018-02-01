@@ -296,7 +296,7 @@ class BayesianPredictor(object):
                 elif node == 'DExcept':
                     astnode['node'] = node
                     astnode['_try'] = []
-                    astnode['_except'] = []
+                    astnode['_catch'] = []
                     nodes.append(astnode)
                 elif node == 'DLoop':
                     astnode['node'] = node
@@ -354,7 +354,7 @@ class BayesianPredictor(object):
         """
         pathidx = self.update_until_STOP(astnode['_try'], path, pathidx+1)
         if pathidx > 0:
-            self.update_until_STOP(astnode['_except'], path, pathidx+1)
+            self.update_until_STOP(astnode['_catch'], path, pathidx+1)
 
     def update_DLoop(self, astnode, path, pathidx):
         """
