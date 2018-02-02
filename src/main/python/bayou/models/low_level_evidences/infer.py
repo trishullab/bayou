@@ -55,7 +55,7 @@ class BayesianPredictor(object):
         ckpt = tf.train.get_checkpoint_state(save)
         saver.restore(self.sess, ckpt.model_checkpoint_path)
 
-    def infer(self, evidences, num_psi_samples=100, beam_width=10):
+    def infer(self, evidences, num_psi_samples=100, beam_width=25):
         """
         Returns an ordered (by probability) list of ASTs from the model, given evidences, using beam search
 
@@ -167,11 +167,11 @@ class BayesianPredictor(object):
         :raise: InvalidSketchError if there is a parse error in the path, TooLongPathError is path is too long
         """
         try:
-            if len(path) > 10:
+            if len(path) > 30:
                 raise TooLongPathError
             nodes = [node for (node, edge) in path]
             if nodes.count('DBranch') > 2 or nodes.count('DLoop') > 2 or nodes.count('DExcept') > 2:
-                raise InvalidSketchError
+                raise TooLongPathError
             self.consume_until_STOP(path, 1)
             return True
         except IncompletePathError:
