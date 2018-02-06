@@ -164,6 +164,8 @@ public class Type {
             Class cls = (Class) type;
 
             if (cls.isArray()) {
+                if (cls.getComponentType().isArray()) // no support for multidim arrays
+                    throw new SynthesisException(SynthesisException.InvalidKindOfType);
                 Type componentType = getConcretization(cls.getComponentType());
                 return new Type(ast.newArrayType(componentType.T(), 1), cls);
             } else if (cls.isPrimitive()) {
