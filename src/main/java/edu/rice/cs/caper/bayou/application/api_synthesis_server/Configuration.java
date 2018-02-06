@@ -57,6 +57,8 @@ public class Configuration
 
     public static final NatNum32 OutstandingSynthRequestCountLimit;
 
+    public static final NatNum32 JettyTaskQueueSize;
+
     static
     {
         Properties properties = new Properties();
@@ -99,5 +101,6 @@ public class Configuration
         ApiSynthMode = Synthesizer.Mode.valueOf(properties.getProperty("ApiSynthMode"));
         AstServerAuthority =  properties.getProperty("AstServerAuthority");
         OutstandingSynthRequestCountLimit = NatNum32.parse(properties.getProperty("OutstandingSynthRequestCountLimit"));
+        JettyTaskQueueSize = NatNum32.parse(properties.getProperty("JettyTaskQueueSize"));
     }
 }
