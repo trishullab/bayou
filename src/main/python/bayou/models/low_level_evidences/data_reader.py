@@ -16,9 +16,11 @@ from __future__ import print_function
 import json
 import numpy as np
 import random
+import os
+import pickle
 from collections import Counter
 
-from bayou.models.low_level_evidences.utils import C0, CHILD_EDGE, SIBLING_EDGE
+from bayou.models.low_level_evidences.utils import C0, CHILD_EDGE, SIBLING_EDGE, gather_calls
 
 
 class Reader():
@@ -27,7 +29,7 @@ class Reader():
 
         # read the raw evidences and targets
         print('Reading data file...')
-        raw_evidences, raw_targets = self.read_data(clargs.input_file[0])
+        raw_evidences, raw_targets = self.read_data(clargs.input_file[0], save=clargs.save)
         raw_evidences = [[raw_evidence[i] for raw_evidence in raw_evidences] for i, ev in
                          enumerate(config.evidence)]
 
@@ -111,10 +113,11 @@ class Reader():
             ph = [cons_calls + [('DLoop', SIBLING_EDGE)] + path for path in p]
             return ph + pv
 
-    def read_data(self, filename):
+    def read_data(self, filename, save=None):
         with open(filename) as f:
             js = json.load(f)
         data_points = []
+        callmap = dict()
         ignored, done = 0, 0
 
         for program in js['programs']:
@@ -127,6 +130,10 @@ class Reader():
                     path.insert(0, ('DSubTree', CHILD_EDGE))
                     assert len(path) <= self.config.decoder.max_ast_depth
                     data_points.append((evidence, path))
+                calls = gather_calls(program['ast'])
+                for call in calls:
+                    if call['_call'] not in callmap:
+                        callmap[call['_call']] = call
             except AssertionError:
                 ignored += 1
             done += 1
@@ -136,6 +143,11 @@ class Reader():
         # randomly shuffle to avoid bias towards initial data points during training
         random.shuffle(data_points)
         evidences, targets = zip(*data_points)
+
+        # save callmap if save location is given
+        if save is not None:
+            with open(os.path.join(save, 'callmap.pkl'), 'wb') as f:
+                pickle.dump(callmap, f)
 
         return evidences, targets
 

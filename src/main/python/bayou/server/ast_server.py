@@ -82,7 +82,7 @@ def _generate_asts(evidence_json: str, predictor, okay_check=True):
     if okay_check:
         okay_asts = []
         for ast in asts:
-            if _okay(js, ast):
+            if _okay(js, ast, predictor):
                 okay_asts.append(ast)
     else:
         okay_asts = asts
@@ -92,8 +92,8 @@ def _generate_asts(evidence_json: str, predictor, okay_check=True):
 
 
 # Include in here any conditions that dictate whether an AST should be returned or not
-def _okay(js, ast):
-    calls = gather_calls(ast)
+def _okay(js, ast, predictor):
+    calls = [predictor.callmap[call['_call']] for call in gather_calls(ast)]
     apicalls = list(set(chain.from_iterable(
         [bayou.models.low_level_evidences.evidence.APICalls.from_call(call) for call in calls])))
     types = list(set(chain.from_iterable(

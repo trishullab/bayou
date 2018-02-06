@@ -17,6 +17,7 @@ import tensorflow as tf
 import numpy as np
 
 import os
+import pickle
 import json
 
 from bayou.models.low_level_evidences.model import Model
@@ -48,6 +49,10 @@ class BayesianPredictor(object):
         with open(os.path.join(save, 'config.json')) as f:
             config = read_config(json.load(f), chars_vocab=True)
         self.model = Model(config, True)
+
+        # load the callmap
+        with open(os.path.join(save, 'callmap.pkl'), 'rb') as f:
+            self.callmap = pickle.load(f)
 
         # restore the saved model
         tf.global_variables_initializer().run()
