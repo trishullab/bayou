@@ -21,11 +21,12 @@ import edu.rice.cs.caper.bayou.application.api_synthesis_server.servlet.ApiSynth
 import edu.rice.cs.caper.programming.numbers.NatNum32;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.eclipse.jetty.server.Connector;
-import org.eclipse.jetty.server.HttpConfiguration;
-import org.eclipse.jetty.server.HttpConnectionFactory;
-import org.eclipse.jetty.server.Server;
+import org.eclipse.jetty.server.*;
 import org.eclipse.jetty.servlet.ServletHandler;
+import org.eclipse.jetty.util.thread.ExecutorThreadPool;
+
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.TimeUnit;
 
 /**
  * A REST server that accepts requests to synthesize holes in a given program when provided with API evidence of
@@ -62,6 +63,11 @@ class ApiSynthesisServerRest
     private static NatNum32 _codeCompletionRequestBodyMaxBytesCount =
             Configuration.CodeCompletionRequestBodyMaxBytesCount;
 
+    /*
+     * The number of tasks allowed in the Jetty task queue before new requests are rejected.
+     */
+    private static NatNum32 _jettyTaskQueueSize = Configuration.JettyTaskQueueSize;
+
     /**
      * Track whether start has been called.
      */
@@ -89,8 +95,22 @@ class ApiSynthesisServerRest
         /*
          * Create and configure the HTTP server.
          */
-        Server server = new Server(_httpListenPort.AsInt);
+        Server server;
         {
+            LinkedBlockingQueue<Runnable> queue = new LinkedBlockingQueue<>(_jettyTaskQueueSize.AsInt);
+            ExecutorThreadPool pool = new ExecutorThreadPool(10, 20, 60, TimeUnit.SECONDS, queue);
+            server = new Server(pool);
+
+            /*
+             * Configure server for http on listen port.
+             */
+            ServerConnector http = new ServerConnector(server, new HttpConnectionFactory());
+            http.setPort(_httpListenPort.AsInt);
+            server.addConnector(http);
+
+            /*
+             * Configure routes.
+             */
             // Pattern as per https://www.eclipse.org/jetty/documentation/9.4.x/embedding-jetty.html
             ServletHandler handler = new ServletHandler();
             server.setHandler(handler);
