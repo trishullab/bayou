@@ -34,6 +34,7 @@ import java.util.LinkedList;
 import java.util.UUID;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * A servlet for accepting api synthesis requests and returning synthesis results.
@@ -55,6 +56,16 @@ public class ApiSynthesisServlet extends SizeConstrainedPostBodyServlet implemen
      * // TODO: have a value in config distinct from code completion
      */
     private static NatNum32 API_SYNTH_MAX_REQUEST_BODY_SIZE_BYTES = Configuration.CodeCompletionRequestBodyMaxBytesCount;
+
+    /*
+     * The maximum number of concurrent POST requests that should be allowed among all instances of this servlet.
+     */
+    private static final NatNum32 OUTSTANDING_POST_REQUEST_COUNT_LIMIT = Configuration.OutstandingSynthRequestCountLimit;
+
+    /*
+     * The current number of POST requests being processed among all instances of the servlet.
+     */
+    private static final AtomicInteger _outstandingPostRequestsCount = new AtomicInteger(0);
 
     /**
      * An object for setting the response CORS headers in accordance with the configuration specified
@@ -90,7 +101,26 @@ public class ApiSynthesisServlet extends SizeConstrainedPostBodyServlet implemen
         _logger.debug("entering");
         try
         {
-            doPostHelp(req, resp, requestBody);
+            int outstandingRequestsCount = _outstandingPostRequestsCount.incrementAndGet();
+            try
+            {
+                // check if fulfilling this request would put us over the concurrent synth
+                // request processing limit.
+                if (outstandingRequestsCount > OUTSTANDING_POST_REQUEST_COUNT_LIMIT.AsInt)
+                {
+                    _logger.warn("Returning 429: too many requests");
+                    JSONObject responseBody = new ErrorJsonResponse("Too many requests.");
+                    resp.setStatus(HttpStatus.TOO_MANY_REQUESTS_429);
+                    writeObjectToServletOutputStream(responseBody, resp);
+                    return;
+                }
+
+                doPostHelp(req, resp, requestBody);
+            }
+            finally
+            {
+                _outstandingPostRequestsCount.decrementAndGet();
+            }
         }
         catch (Throwable e)
         {
@@ -269,7 +299,5 @@ public class ApiSynthesisServlet extends SizeConstrainedPostBodyServlet implemen
 
         _logger.debug("exiting");
     }
-
-
 }
 
