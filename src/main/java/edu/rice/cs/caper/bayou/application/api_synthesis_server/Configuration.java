@@ -55,6 +55,8 @@ public class Configuration
 
     public static final String AstServerAuthority;
 
+    public static final NatNum32 OutstandingSynthRequestCountLimit;
+
     static
     {
         Properties properties = new Properties();
@@ -96,5 +98,6 @@ public class Configuration
         CorsAllowedOrigins = properties.getProperty("CorsAllowedOrigins").split("\\s+"); // split by whitespace
         ApiSynthMode = Synthesizer.Mode.valueOf(properties.getProperty("ApiSynthMode"));
         AstServerAuthority =  properties.getProperty("AstServerAuthority");
+        OutstandingSynthRequestCountLimit = NatNum32.parse(properties.getProperty("OutstandingSynthRequestCountLimit"));
     }
 }
