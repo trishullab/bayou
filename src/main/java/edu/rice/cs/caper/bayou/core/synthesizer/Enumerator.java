@@ -54,7 +54,14 @@ public class Enumerator {
 
         /* assign a variable to this expression so that we don't have to search for it again in future */
         Assignment assignment = ast.newAssignment();
-        assignment.setLeftHandSide(env.addVariable(target.getType()).getExpression()); // just the variable name
+        VariableProperties properties = new VariableProperties()
+                .setJoin(true)
+                .setDefaultInit(false)
+                .setSingleUse(target.getSingleUseVariable());
+        TypedExpression expr = target.getParamName() != null?
+                env.addVariable(new Variable(target.getParamName(), target.getType(), properties)) :
+                env.addVariable(target.getType(), properties);
+        assignment.setLeftHandSide(expr.getExpression()); // just the variable name
         assignment.setOperator(Assignment.Operator.ASSIGN);
         assignment.setRightHandSide(tExpr.getExpression());
 
@@ -79,23 +86,23 @@ public class Enumerator {
         /* could not pick variable, so concretize target type */
         target.getType().concretizeType(env);
 
-        /* ... and start enumerative search or add variable (with default init) depending on enumeration mode */
-        if (mode == Synthesizer.Mode.COMBINATORIAL_ENUMERATOR)
-            return enumerate(target, argDepth, toSearch);
-        else if (mode == Synthesizer.Mode.CONDITIONAL_PROGRAM_GENERATOR) {
+        /* ... and start enumerative search or, if enumeration failed, add variable (with default init) */
+        TypedExpression expr = enumerate(target, argDepth, toSearch);
+        if (expr == null) {
             VariableProperties properties = new VariableProperties()
                                                             .setJoin(true)
                                                             .setDefaultInit(true)
                                                             .setSingleUse(target.getSingleUseVariable());
             if (target.getParamName() != null) { // create variable with name here, but note that it may be refactored
                 Variable var = new Variable(target.getParamName(), target.getType(), properties);
-                return env.addVariable(var);
+                expr = env.addVariable(var);
             }
             else {
-                return env.addVariable(target.getType(), properties);
+                expr = env.addVariable(target.getType(), properties);
             }
         }
-        throw new IllegalArgumentException("Invalid enumeration mode");
+
+        return expr;
     }
 
     private TypedExpression enumerate(SearchTarget target, int argDepth, List<Variable> toSearch) {
@@ -124,7 +131,10 @@ public class Enumerator {
                 for (i = 0; i < constructor.getParameterCount(); i++) {
                     Class argType = constructor.getParameterTypes()[i];
                     String name = constructor.getParameters()[i].getName();
-                    SearchTarget newTarget = new SearchTarget(new Type(argType)).setParamName(name);
+                    SearchTarget newTarget = new SearchTarget(new Type(argType))
+                            .setAPICallName(constructor.getName())
+                            .setParamName(name)
+                            .setSingleUseVariable(true);
                     TypedExpression tArg = enumerator.search(newTarget, argDepth + 1);
                     if (tArg == null)
                         break;
@@ -146,7 +156,10 @@ public class Enumerator {
                 for (i = 0; i < constructor.getParameterCount(); i++) {
                     Class argType = constructor.getParameterTypes()[i];
                     String name = constructor.getParameters()[i].getName();
-                    SearchTarget newTarget = new SearchTarget(new Type(argType)).setParamName(name);
+                    SearchTarget newTarget = new SearchTarget(new Type(argType))
+                            .setAPICallName(constructor.getName())
+                            .setParamName(name)
+                            .setSingleUseVariable(true);
                     TypedExpression tArg = enumerator.search(newTarget, argDepth + 1);
                     if (tArg == null)
                         break;
@@ -180,7 +193,10 @@ public class Enumerator {
                 for (j = 0; j < m.getParameterCount(); j++) {
                     Class argType  = m.getParameterTypes()[j];
                     String name = m.getParameters()[j].getName();
-                    SearchTarget newTarget = new SearchTarget(new Type(argType)).setParamName(name);
+                    SearchTarget newTarget = new SearchTarget(new Type(argType))
+                            .setAPICallName(m.getName())
+                            .setParamName(name)
+                            .setSingleUseVariable(true);
                     TypedExpression  tArg;
                     try {
                         tArg = enumerator.search(newTarget, argDepth + 1);

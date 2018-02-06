@@ -20,8 +20,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 class ExpressionChain {
-    static final int MAX_COMPOSE_LENGTH = 3; // a().b().c().d()...
-    static final int MAX_ARGUMENT_DEPTH = 2; // a(b(c(d(...))))
+    static final int MAX_COMPOSE_LENGTH = 1; // a().b().c().d()...
+    static final int MAX_ARGUMENT_DEPTH = 1; // a(b(c(d(...))))
     static final int K = 3; // number of arguments is given K times more weight than length of composition in cost
 
     final Variable var;

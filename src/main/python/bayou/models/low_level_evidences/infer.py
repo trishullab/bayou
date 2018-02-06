@@ -17,6 +17,7 @@ import tensorflow as tf
 import numpy as np
 
 import os
+import pickle
 import json
 
 from bayou.models.low_level_evidences.model import Model
@@ -49,13 +50,17 @@ class BayesianPredictor(object):
             config = read_config(json.load(f), chars_vocab=True)
         self.model = Model(config, True)
 
+        # load the callmap
+        with open(os.path.join(save, 'callmap.pkl'), 'rb') as f:
+            self.callmap = pickle.load(f)
+
         # restore the saved model
         tf.global_variables_initializer().run()
         saver = tf.train.Saver(tf.global_variables())
         ckpt = tf.train.get_checkpoint_state(save)
         saver.restore(self.sess, ckpt.model_checkpoint_path)
 
-    def infer(self, evidences, num_psi_samples=100, beam_width=10):
+    def infer(self, evidences, num_psi_samples=100, beam_width=25):
         """
         Returns an ordered (by probability) list of ASTs from the model, given evidences, using beam search
 
@@ -154,7 +159,6 @@ class BayesianPredictor(object):
         for (candidate, pr) in candidates:
             ast = self.paths_to_ast(candidate)
             ast['probability'] = float(str(pr)[:7])  # "0." + four digits of precision
-            ast['calls'] = sorted(set(self.calls_in_last_ast))
             if ast not in asts:
                 asts.append(ast)
         return asts
@@ -168,11 +172,11 @@ class BayesianPredictor(object):
         :raise: InvalidSketchError if there is a parse error in the path, TooLongPathError is path is too long
         """
         try:
-            if len(path) > 10:
+            if len(path) > 30:
                 raise TooLongPathError
             nodes = [node for (node, edge) in path]
             if nodes.count('DBranch') > 2 or nodes.count('DLoop') > 2 or nodes.count('DExcept') > 2:
-                raise InvalidSketchError
+                raise TooLongPathError
             self.consume_until_STOP(path, 1)
             return True
         except IncompletePathError:
@@ -259,12 +263,11 @@ class BayesianPredictor(object):
 
     def paths_to_ast(self, paths):
         """
-        Converts a given set of paths into an AST. Updates self.calls_in_last_ast in the process.
+        Converts a given set of paths into an AST
 
         :param paths: the set of paths
         :return: the AST
         """
-        self.calls_in_last_ast = []
         nodes = []
         ast = {'node': 'DSubTree', '_nodes': nodes}
         for path in paths:
@@ -298,7 +301,7 @@ class BayesianPredictor(object):
                 elif node == 'DExcept':
                     astnode['node'] = node
                     astnode['_try'] = []
-                    astnode['_except'] = []
+                    astnode['_catch'] = []
                     nodes.append(astnode)
                 elif node == 'DLoop':
                     astnode['node'] = node
@@ -307,7 +310,6 @@ class BayesianPredictor(object):
                     nodes.append(astnode)
                 else:
                     nodes.append({'node': 'DAPICall', '_call': node})
-                    self.calls_in_last_ast.append(node)
                     nodeidx += 1
                     pathidx += 1
                     continue
@@ -357,7 +359,7 @@ class BayesianPredictor(object):
         """
         pathidx = self.update_until_STOP(astnode['_try'], path, pathidx+1)
         if pathidx > 0:
-            self.update_until_STOP(astnode['_except'], path, pathidx+1)
+            self.update_until_STOP(astnode['_catch'], path, pathidx+1)
 
     def update_DLoop(self, astnode, path, pathidx):
         """
