@@ -83,7 +83,13 @@ class Model():
         psi = sess.run(self.psi, feed)
         return psi
 
-    def infer_ast(self, sess, psi, nodes, edges):
+    def infer_ast(self, sess, psi, nodes, edges, cache=None):
+        # check cache if provided
+        if cache is not None:
+            serialized = ','.join(['(' + node + ',' + edge + ')' for node, edge in zip(nodes, edges)])
+            if serialized in cache:
+                return cache[serialized]
+
         # use the given psi and get decoder's start state
         state = sess.run(self.initial_state, {self.psi: psi})
         state = [state] * self.config.decoder.num_layers
@@ -101,4 +107,9 @@ class Model():
             [probs, state] = sess.run([self.probs, self.decoder.state], feed)
 
         dist = probs[0]
+
+        # save in cache if provided
+        if cache is not None:
+            cache[serialized] = dist
+
         return dist

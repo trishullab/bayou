@@ -104,6 +104,7 @@ class BayesianPredictor(object):
         # each candidate is (list of production paths in the AST, likelihood of AST so far)
         candidates = [([[('DSubTree', CHILD_EDGE)]], 1.)]
         complete_candidates = []
+        cache = dict()
 
         partial_candidate = True
         while partial_candidate:
@@ -132,7 +133,7 @@ class BayesianPredictor(object):
                 # for every incomplete path, create k new candidates from the top k in the next step's dist
                 for i, inc_path in enumerate(incomplete_paths):
                     nodes, edges = zip(*inc_path)
-                    dist = list(enumerate(self.model.infer_ast(self.sess, psi, nodes, edges)))
+                    dist = list(enumerate(self.model.infer_ast(self.sess, psi, nodes, edges, cache=cache)))
                     dist.sort(key=lambda x: x[1], reverse=True)
                     topk = dist[:beam_width]
 
