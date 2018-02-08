@@ -173,6 +173,9 @@ public class Enumerator {
             }
         }
 
+        if (mode == Synthesizer.Mode.CONDITIONAL_PROGRAM_GENERATOR)
+            return null;
+
         /* otherwise, start recursive search for expression of target type */
         List<ExpressionChain> chains = new ArrayList<>();
         for (Variable var : toSearch)
