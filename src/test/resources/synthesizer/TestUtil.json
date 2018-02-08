@@ -1,108 +1,116 @@
 {
-  "evidences": {
-    "apicalls": [
-      "put"
-    ],
-    "types": [],
-    "context": []
-  },
   "asts": [
     {
-      "node": "DSubTree",
-      "_nodes": [
-        {
-          "node": "DAPICall",
-          "_call": "java.util.HashMap<Tau_K,Tau_V>.HashMap()"
-        },
-        {
-          "node": "DAPICall",
-          "_call": "java.util.HashMap<Tau_K,Tau_V>.put(Tau_K,Tau_V)"
-        }
-      ],
-      "calls": [
-        "java.util.HashMap<Tau_K,Tau_V>.put(Tau_K,Tau_V)",
-        "java.util.HashMap<Tau_K,Tau_V>.HashMap()"
-      ],
-      "count": 4
+      "ast": {
+        "count": 4,
+        "node": "DSubTree",
+        "calls": [
+          "java.util.HashMap<Tau_K,Tau_V>.put(Tau_K,Tau_V)",
+          "java.util.HashMap<Tau_K,Tau_V>.HashMap()"
+        ],
+        "_nodes": [
+          {
+            "_call": "java.util.HashMap<Tau_K,Tau_V>.HashMap()",
+            "node": "DAPICall"
+          },
+          {
+            "_call": "java.util.HashMap<Tau_K,Tau_V>.put(Tau_K,Tau_V)",
+            "node": "DAPICall"
+          }
+        ]
+      },
+      "probability": 0.1234
     },
     {
-      "node": "DSubTree",
-      "_nodes": [
-        {
-          "node": "DAPICall",
-          "_call": "java.util.HashMap<Tau_K,Tau_V>.HashMap()"
-        },
-        {
-          "node": "DAPICall",
-          "_call": "java.util.Map<Tau_K,Tau_V>.put(Tau_K,Tau_V)"
-        }
-      ],
-      "calls": [
-        "java.util.Map<Tau_K,Tau_V>.put(Tau_K,Tau_V)",
-        "java.util.HashMap<Tau_K,Tau_V>.HashMap()"
-      ],
-      "count": 3
+      "ast": {
+        "count": 3,
+        "node": "DSubTree",
+        "calls": [
+          "java.util.Map<Tau_K,Tau_V>.put(Tau_K,Tau_V)",
+          "java.util.HashMap<Tau_K,Tau_V>.HashMap()"
+        ],
+        "_nodes": [
+          {
+            "_call": "java.util.HashMap<Tau_K,Tau_V>.HashMap()",
+            "node": "DAPICall"
+          },
+          {
+            "_call": "java.util.Map<Tau_K,Tau_V>.put(Tau_K,Tau_V)",
+            "node": "DAPICall"
+          }
+        ]
+      },
+      "probability": 0.1234
     },
     {
-      "node": "DSubTree",
-      "_nodes": [
-        {
-          "node": "DAPICall",
-          "_call": "java.util.HashMap<Tau_K,Tau_V>.HashMap()"
-        },
-        {
-          "node": "DAPICall",
-          "_call": "java.util.HashMap<Tau_K,Tau_V>.HashMap()"
-        },
-        {
-          "node": "DAPICall",
-          "_call": "java.util.HashMap<Tau_K,Tau_V>.put(Tau_K,Tau_V)"
-        },
-        {
-          "node": "DAPICall",
-          "_call": "java.util.HashMap<Tau_K,Tau_V>.put(Tau_K,Tau_V)"
-        }
-      ],
-      "calls": [
-        "java.util.HashMap<Tau_K,Tau_V>.put(Tau_K,Tau_V)",
-        "java.util.HashMap<Tau_K,Tau_V>.HashMap()"
-      ],
-      "count": 3
+      "ast": {
+        "count": 3,
+        "node": "DSubTree",
+        "calls": [
+          "java.util.HashMap<Tau_K,Tau_V>.put(Tau_K,Tau_V)",
+          "java.util.HashMap<Tau_K,Tau_V>.HashMap()"
+        ],
+        "_nodes": [
+          {
+            "_call": "java.util.HashMap<Tau_K,Tau_V>.HashMap()",
+            "node": "DAPICall"
+          },
+          {
+            "_call": "java.util.HashMap<Tau_K,Tau_V>.HashMap()",
+            "node": "DAPICall"
+          },
+          {
+            "_call": "java.util.HashMap<Tau_K,Tau_V>.put(Tau_K,Tau_V)",
+            "node": "DAPICall"
+          },
+          {
+            "_call": "java.util.HashMap<Tau_K,Tau_V>.put(Tau_K,Tau_V)",
+            "node": "DAPICall"
+          }
+        ]
+      },
+      "probability": 0.1234
     },
     {
-      "node": "DSubTree",
-      "_nodes": [
-        {
-          "node": "DAPICall",
-          "_call": "java.util.Hashtable<Tau_K,Tau_V>.Hashtable()"
-        },
-        {
-          "node": "DAPICall",
-          "_call": "java.util.Hashtable<Tau_K,Tau_V>.put(Tau_K,Tau_V)"
-        }
-      ],
-      "calls": [
-        "java.util.Hashtable<Tau_K,Tau_V>.put(Tau_K,Tau_V)",
-        "java.util.Hashtable<Tau_K,Tau_V>.Hashtable()"
-      ],
-      "count": 2
+      "ast": {
+        "count": 2,
+        "node": "DSubTree",
+        "calls": [
+          "java.util.Hashtable<Tau_K,Tau_V>.put(Tau_K,Tau_V)",
+          "java.util.Hashtable<Tau_K,Tau_V>.Hashtable()"
+        ],
+        "_nodes": [
+          {
+            "_call": "java.util.Hashtable<Tau_K,Tau_V>.Hashtable()",
+            "node": "DAPICall"
+          },
+          {
+            "_call": "java.util.Hashtable<Tau_K,Tau_V>.put(Tau_K,Tau_V)",
+            "node": "DAPICall"
+          }
+        ]
+      },
+      "probability": 0.1234
     },
     {
-      "node": "DSubTree",
-      "_nodes": [
-        {
-          "node": "DAPICall",
-          "_call": "java.util.Map<Tau_K,Tau_V>.put(Tau_K,Tau_V)"
-        },
-        {
-          "node": "DAPICall",
-          "_call": "java.util.Map<Tau_K,Tau_V>.put(Tau_K,Tau_V)"
-        }
-      ],
-      "calls": [
-        "java.util.Map<Tau_K,Tau_V>.put(Tau_K,Tau_V)"
-      ],
-      "count": 2
+      "ast": {
+        "count": 2,
+        "node": "DSubTree",
+        "calls": [
+          "java.util.Map<Tau_K,Tau_V>.put(Tau_K,Tau_V)"
+        ],
+        "_nodes": [
+          {
+            "_call": "java.util.Map<Tau_K,Tau_V>.put(Tau_K,Tau_V)",
+            "node": "DAPICall"
+          },
+          {
+            "_call": "java.util.Map<Tau_K,Tau_V>.put(Tau_K,Tau_V)",
+            "node": "DAPICall"
+          }
+        ]
+      },
+      "probability": 0.1234
     }
   ]
 }

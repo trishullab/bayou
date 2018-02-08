@@ -1,52 +1,43 @@
 {
   "asts": [
     {
-      "node": "DSubTree",
-      "_nodes": [
-        {
-          "node": "DAPICall",
-          "_call": "java.io.File.File(java.lang.String)"
-        },
-        {
-          "node": "DBranch",
-          "_cond": [
-            {
-              "node": "DAPICall",
-              "_call": "$NOT$java.io.File.exists()"
-            }
-          ],
-          "_then": [],
-          "_else": [
-            {
-              "node": "DAPICall",
-              "_call": "java.io.File.getParentFile()"
-            },
-            {
-              "node": "DAPICall",
-              "_call": "java.io.File.getName()"
-            }
-          ]
-        }
-      ],
-      "calls": [
-        "java.io.File.getName()",
-        "java.io.File.File(java.lang.String)",
-        "$NOT$java.io.File.exists()",
-        "java.io.File.getParentFile()"
-      ],
-      "count": 1
+      "ast": {
+        "count": 1,
+        "node": "DSubTree",
+        "calls": [
+          "java.io.File.getName()",
+          "java.io.File.File(java.lang.String)",
+          "$NOT$java.io.File.exists()",
+          "java.io.File.getParentFile()"
+        ],
+        "_nodes": [
+          {
+            "_call": "java.io.File.File(java.lang.String)",
+            "node": "DAPICall"
+          },
+          {
+            "_cond": [
+              {
+                "_call": "$NOT$java.io.File.exists()",
+                "node": "DAPICall"
+              }
+            ],
+            "_else": [
+              {
+                "_call": "java.io.File.getParentFile()",
+                "node": "DAPICall"
+              },
+              {
+                "_call": "java.io.File.getName()",
+                "node": "DAPICall"
+              }
+            ],
+            "node": "DBranch",
+            "_then": []
+          }
+        ]
+      },
+      "probability": 0.1234
     }
-  ],
-  "evidences": {
-    "keywords": [
-      "exists",
-      "file"
-    ],
-    "apicalls": [
-      "exists"
-    ],
-    "types": [
-      "File"
-    ]
-  }
+  ]
 }

@@ -46,8 +46,13 @@ public class Synthesizer {
 
     Mode mode;
 
+    class JSONInput {
+        DSubTree ast;
+        float probability;
+    }
+
     class JSONInputWrapper {
-        List<DSubTree> asts;
+        List<JSONInput> asts;
     }
 
     public Synthesizer() {
@@ -58,7 +63,7 @@ public class Synthesizer {
         this.mode = mode;
     }
 
-    private List<DSubTree> getASTsFromNN(String astJson) {
+    private List<JSONInput> getASTsFromNN(String astJson) {
         RuntimeTypeAdapterFactory<DASTNode> nodeAdapter = RuntimeTypeAdapterFactory.of(DASTNode.class, "node")
                 .registerSubtype(DAPICall.class)
                 .registerSubtype(DBranch.class)
@@ -75,21 +80,22 @@ public class Synthesizer {
 
     public List<String> execute(Parser parser, String astJson) {
         List<String> synthesizedPrograms = new LinkedList<>();
-        List<DSubTree> asts = getASTsFromNN(astJson);
+        List<JSONInput> asts = getASTsFromNN(astJson);
 
         classLoader = URLClassLoader.newInstance(parser.classpathURLs);
 
         CompilationUnit cu = parser.cu;
         List<String> programs = new ArrayList<>();
-        for (DSubTree ast : asts) {
-            Visitor visitor = new Visitor(ast, new Document(parser.source), cu, mode);
+        for (JSONInput ast : asts) {
+            Visitor visitor = new Visitor(ast.ast, new Document(parser.source), cu, mode);
             try {
                 cu.accept(visitor);
                 if (visitor.synthesizedProgram == null)
                     continue;
                 String program = visitor.synthesizedProgram.replaceAll("\\s", "");
                 if (! programs.contains(program)) {
-                    String formattedProgram = new Formatter().formatSource(visitor.synthesizedProgram);
+                    String formattedProgram = "// Bayou confidence score: " + ast.probability + "\n"
+                                                + new Formatter().formatSource(visitor.synthesizedProgram);
                     programs.add(program);
                     synthesizedPrograms.add(formattedProgram);
                 }
