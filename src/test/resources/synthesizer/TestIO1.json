@@ -1,257 +1,279 @@
 {
   "asts": [
     {
-      "node": "DSubTree",
-      "_nodes": [
-        {
-          "node": "DLoop",
-          "_cond": [
-            {
-              "node": "DAPICall",
-              "_call": "java.io.BufferedReader.ready()"
-            }
-          ],
-          "_body": [
-            {
-              "node": "DAPICall",
-              "_call": "java.io.BufferedReader.readLine()"
-            }
-          ]
-        }
-      ],
-      "count": 21
+      "ast": {
+        "count": 21,
+        "node": "DSubTree",
+        "_nodes": [
+          {
+            "_body": [
+              {
+                "_call": "java.io.BufferedReader.readLine()",
+                "node": "DAPICall"
+              }
+            ],
+            "_cond": [
+              {
+                "_call": "java.io.BufferedReader.ready()",
+                "node": "DAPICall"
+              }
+            ],
+            "node": "DLoop"
+          }
+        ]
+      },
+      "probability": 0.1234
     },
     {
-      "node": "DSubTree",
-      "_nodes": [
-        {
-          "node": "DAPICall",
-          "_call": "java.io.FileReader.FileReader(java.io.File)"
-        },
-        {
-          "node": "DAPICall",
-          "_call": "java.io.BufferedReader.BufferedReader(java.io.Reader)"
-        },
-        {
-          "node": "DLoop",
-          "_cond": [
-            {
-              "node": "DAPICall",
-              "_call": "java.io.BufferedReader.ready()"
-            }
-          ],
-          "_body": [
-            {
-              "node": "DAPICall",
-              "_call": "java.io.BufferedReader.readLine()"
-            }
-          ]
-        }
-      ],
-      "count": 4
+      "ast": {
+        "count": 4,
+        "node": "DSubTree",
+        "_nodes": [
+          {
+            "_call": "java.io.FileReader.FileReader(java.io.File)",
+            "node": "DAPICall"
+          },
+          {
+            "_call": "java.io.BufferedReader.BufferedReader(java.io.Reader)",
+            "node": "DAPICall"
+          },
+          {
+            "_body": [
+              {
+                "_call": "java.io.BufferedReader.readLine()",
+                "node": "DAPICall"
+              }
+            ],
+            "_cond": [
+              {
+                "_call": "java.io.BufferedReader.ready()",
+                "node": "DAPICall"
+              }
+            ],
+            "node": "DLoop"
+          }
+        ]
+      },
+      "probability": 0.1234
     },
     {
-      "node": "DSubTree",
-      "_nodes": [
-        {
-          "node": "DLoop",
-          "_cond": [
-            {
-              "node": "DAPICall",
-              "_call": "java.io.BufferedReader.ready()"
-            }
-          ],
-          "_body": [
-            {
-              "node": "DAPICall",
-              "_call": "java.io.BufferedReader.read()"
-            }
-          ]
-        }
-      ],
-      "count": 4
+      "ast": {
+        "count": 4,
+        "node": "DSubTree",
+        "_nodes": [
+          {
+            "_body": [
+              {
+                "_call": "java.io.BufferedReader.read()",
+                "node": "DAPICall"
+              }
+            ],
+            "_cond": [
+              {
+                "_call": "java.io.BufferedReader.ready()",
+                "node": "DAPICall"
+              }
+            ],
+            "node": "DLoop"
+          }
+        ]
+      },
+      "probability": 0.1234
     },
     {
-      "node": "DSubTree",
-      "_nodes": [
-        {
-          "node": "DAPICall",
-          "_call": "java.io.FileReader.FileReader(java.lang.String)"
-        },
-        {
-          "node": "DAPICall",
-          "_call": "java.io.BufferedReader.BufferedReader(java.io.Reader)"
-        },
-        {
-          "node": "DLoop",
-          "_cond": [
-            {
-              "node": "DAPICall",
-              "_call": "java.io.BufferedReader.ready()"
-            }
-          ],
-          "_body": [
-            {
-              "node": "DAPICall",
-              "_call": "java.io.BufferedReader.readLine()"
-            }
-          ]
-        }
-      ],
-      "count": 4
+      "ast": {
+        "count": 4,
+        "node": "DSubTree",
+        "_nodes": [
+          {
+            "_call": "java.io.FileReader.FileReader(java.lang.String)",
+            "node": "DAPICall"
+          },
+          {
+            "_call": "java.io.BufferedReader.BufferedReader(java.io.Reader)",
+            "node": "DAPICall"
+          },
+          {
+            "_body": [
+              {
+                "_call": "java.io.BufferedReader.readLine()",
+                "node": "DAPICall"
+              }
+            ],
+            "_cond": [
+              {
+                "_call": "java.io.BufferedReader.ready()",
+                "node": "DAPICall"
+              }
+            ],
+            "node": "DLoop"
+          }
+        ]
+      },
+      "probability": 0.1234
     },
     {
-      "node": "DSubTree",
-      "_nodes": [
-        {
-          "node": "DLoop",
-          "_cond": [
-            {
-              "node": "DAPICall",
-              "_call": "java.io.BufferedReader.ready()"
-            }
-          ],
-          "_body": []
-        }
-      ],
-      "count": 3
+      "ast": {
+        "count": 3,
+        "node": "DSubTree",
+        "_nodes": [
+          {
+            "_body": [],
+            "_cond": [
+              {
+                "_call": "java.io.BufferedReader.ready()",
+                "node": "DAPICall"
+              }
+            ],
+            "node": "DLoop"
+          }
+        ]
+      },
+      "probability": 0.1234
     },
     {
-      "node": "DSubTree",
-      "_nodes": [
-        {
-          "node": "DLoop",
-          "_cond": [
-            {
-              "node": "DAPICall",
-              "_call": "java.io.BufferedReader.ready()"
-            }
-          ],
-          "_body": [
-            {
-              "node": "DAPICall",
-              "_call": "java.io.BufferedReader.readLine()"
-            },
-            {
-              "node": "DAPICall",
-              "_call": "java.io.BufferedReader.readLine()"
-            }
-          ]
-        }
-      ],
-      "count": 3
+      "ast": {
+        "count": 3,
+        "node": "DSubTree",
+        "_nodes": [
+          {
+            "_body": [
+              {
+                "_call": "java.io.BufferedReader.readLine()",
+                "node": "DAPICall"
+              },
+              {
+                "_call": "java.io.BufferedReader.readLine()",
+                "node": "DAPICall"
+              }
+            ],
+            "_cond": [
+              {
+                "_call": "java.io.BufferedReader.ready()",
+                "node": "DAPICall"
+              }
+            ],
+            "node": "DLoop"
+          }
+        ]
+      },
+      "probability": 0.1234
     },
     {
-      "node": "DSubTree",
-      "_nodes": [
-        {
-          "node": "DLoop",
-          "_cond": [
-            {
-              "node": "DAPICall",
-              "_call": "java.io.BufferedReader.ready()"
-            },
-            {
-              "node": "DAPICall",
-              "_call": "java.io.BufferedReader.readLine()"
-            }
-          ],
-          "_body": []
-        }
-      ],
-      "count": 3
+      "ast": {
+        "count": 3,
+        "node": "DSubTree",
+        "_nodes": [
+          {
+            "_body": [],
+            "_cond": [
+              {
+                "_call": "java.io.BufferedReader.ready()",
+                "node": "DAPICall"
+              },
+              {
+                "_call": "java.io.BufferedReader.readLine()",
+                "node": "DAPICall"
+              }
+            ],
+            "node": "DLoop"
+          }
+        ]
+      },
+      "probability": 0.1234
     },
     {
-      "node": "DSubTree",
-      "_nodes": [
-        {
-          "node": "DAPICall",
-          "_call": "java.io.FileReader.FileReader(java.io.File)"
-        },
-        {
-          "node": "DAPICall",
-          "_call": "java.io.BufferedReader.BufferedReader(java.io.Reader)"
-        },
-        {
-          "node": "DLoop",
-          "_cond": [
-            {
-              "node": "DAPICall",
-              "_call": "java.io.BufferedReader.ready()"
-            }
-          ],
-          "_body": [
-            {
-              "node": "DAPICall",
-              "_call": "java.io.BufferedReader.readLine()"
-            }
-          ]
-        },
-        {
-          "node": "DAPICall",
-          "_call": "java.io.BufferedReader.close()"
-        }
-      ],
-      "count": 2
+      "ast": {
+        "count": 2,
+        "node": "DSubTree",
+        "_nodes": [
+          {
+            "_call": "java.io.FileReader.FileReader(java.io.File)",
+            "node": "DAPICall"
+          },
+          {
+            "_call": "java.io.BufferedReader.BufferedReader(java.io.Reader)",
+            "node": "DAPICall"
+          },
+          {
+            "_body": [
+              {
+                "_call": "java.io.BufferedReader.readLine()",
+                "node": "DAPICall"
+              }
+            ],
+            "_cond": [
+              {
+                "_call": "java.io.BufferedReader.ready()",
+                "node": "DAPICall"
+              }
+            ],
+            "node": "DLoop"
+          },
+          {
+            "_call": "java.io.BufferedReader.close()",
+            "node": "DAPICall"
+          }
+        ]
+      },
+      "probability": 0.1234
     },
     {
-      "node": "DSubTree",
-      "_nodes": [
-        {
-          "node": "DAPICall",
-          "_call": "java.io.FileWriter.FileWriter(java.io.File)"
-        },
-        {
-          "node": "DAPICall",
-          "_call": "java.io.BufferedWriter.BufferedWriter(java.io.Writer)"
-        },
-        {
-          "node": "DAPICall",
-          "_call": "java.io.BufferedWriter.write(int)"
-        },
-        {
-          "node": "DAPICall",
-          "_call": "java.io.BufferedWriter.close()"
-        }
-      ],
-      "count": 2
+      "ast": {
+        "count": 2,
+        "node": "DSubTree",
+        "_nodes": [
+          {
+            "_call": "java.io.FileWriter.FileWriter(java.io.File)",
+            "node": "DAPICall"
+          },
+          {
+            "_call": "java.io.BufferedWriter.BufferedWriter(java.io.Writer)",
+            "node": "DAPICall"
+          },
+          {
+            "_call": "java.io.BufferedWriter.write(int)",
+            "node": "DAPICall"
+          },
+          {
+            "_call": "java.io.BufferedWriter.close()",
+            "node": "DAPICall"
+          }
+        ]
+      },
+      "probability": 0.1234
     },
     {
-      "node": "DSubTree",
-      "_nodes": [
-        {
-          "node": "DLoop",
-          "_cond": [
-            {
-              "node": "DAPICall",
-              "_call": "java.io.BufferedReader.ready()"
-            }
-          ],
-          "_body": [
-            {
-              "node": "DAPICall",
-              "_call": "java.io.BufferedReader.readLine()"
-            },
-            {
-              "node": "DAPICall",
-              "_call": "java.io.BufferedReader.readLine()"
-            },
-            {
-              "node": "DAPICall",
-              "_call": "java.io.BufferedReader.readLine()"
-            }
-          ]
-        }
-      ],
-      "count": 2
+      "ast": {
+        "count": 2,
+        "node": "DSubTree",
+        "_nodes": [
+          {
+            "_body": [
+              {
+                "_call": "java.io.BufferedReader.readLine()",
+                "node": "DAPICall"
+              },
+              {
+                "_call": "java.io.BufferedReader.readLine()",
+                "node": "DAPICall"
+              },
+              {
+                "_call": "java.io.BufferedReader.readLine()",
+                "node": "DAPICall"
+              }
+            ],
+            "_cond": [
+              {
+                "_call": "java.io.BufferedReader.ready()",
+                "node": "DAPICall"
+              }
+            ],
+            "node": "DLoop"
+          }
+        ]
+      },
+      "probability": 0.1234
     }
-  ],
-  "evidences": {
-    "context": [],
-    "types": [],
-    "apicalls": [
-      "readLine",
-      "ready"
-    ]
-  }
+  ]
 }

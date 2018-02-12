@@ -1,213 +1,234 @@
 {
   "asts": [
     {
-      "node": "DSubTree",
-      "_nodes": [
-        {
-          "node": "DAPICall",
-          "_call": "android.hardware.Camera.setPreviewDisplay(android.view.SurfaceHolder)"
-        },
-        {
-          "node": "DAPICall",
-          "_call": "android.hardware.Camera.startPreview()"
-        }
-      ],
-      "count": 11
+      "ast": {
+        "count": 11,
+        "node": "DSubTree",
+        "_nodes": [
+          {
+            "_call": "android.hardware.Camera.setPreviewDisplay(android.view.SurfaceHolder)",
+            "node": "DAPICall"
+          },
+          {
+            "_call": "android.hardware.Camera.startPreview()",
+            "node": "DAPICall"
+          }
+        ]
+      },
+      "probability": 0.1234
     },
     {
-      "node": "DSubTree",
-      "_nodes": [
-        {
-          "node": "DAPICall",
-          "_call": "android.hardware.Camera.getParameters()"
-        },
-        {
-          "node": "DAPICall",
-          "_call": "android.hardware.Camera.Parameters.setPreviewSize(int,int)"
-        },
-        {
-          "node": "DAPICall",
-          "_call": "android.hardware.Camera.setParameters(android.hardware.Camera.Parameters)"
-        },
-        {
-          "node": "DAPICall",
-          "_call": "android.hardware.Camera.startPreview()"
-        }
-      ],
-      "count": 9
+      "ast": {
+        "count": 9,
+        "node": "DSubTree",
+        "_nodes": [
+          {
+            "_call": "android.hardware.Camera.getParameters()",
+            "node": "DAPICall"
+          },
+          {
+            "_call": "android.hardware.Camera.Parameters.setPreviewSize(int,int)",
+            "node": "DAPICall"
+          },
+          {
+            "_call": "android.hardware.Camera.setParameters(android.hardware.Camera.Parameters)",
+            "node": "DAPICall"
+          },
+          {
+            "_call": "android.hardware.Camera.startPreview()",
+            "node": "DAPICall"
+          }
+        ]
+      },
+      "probability": 0.1234
     },
     {
-      "node": "DSubTree",
-      "_nodes": [
-        {
-          "node": "DAPICall",
-          "_call": "android.hardware.Camera.setPreviewDisplay(android.view.SurfaceHolder)"
-        },
-        {
-          "node": "DAPICall",
-          "_call": "android.hardware.Camera.startPreview()"
-        },
-        {
-          "node": "DAPICall",
-          "_call": "android.hardware.Camera.autoFocus(android.hardware.Camera.AutoFocusCallback)"
-        }
-      ],
-      "count": 6
+      "ast": {
+        "count": 6,
+        "node": "DSubTree",
+        "_nodes": [
+          {
+            "_call": "android.hardware.Camera.setPreviewDisplay(android.view.SurfaceHolder)",
+            "node": "DAPICall"
+          },
+          {
+            "_call": "android.hardware.Camera.startPreview()",
+            "node": "DAPICall"
+          },
+          {
+            "_call": "android.hardware.Camera.autoFocus(android.hardware.Camera.AutoFocusCallback)",
+            "node": "DAPICall"
+          }
+        ]
+      },
+      "probability": 0.1234
     },
     {
-      "node": "DSubTree",
-      "_nodes": [
-        {
-          "node": "DAPICall",
-          "_call": "android.hardware.Camera.stopPreview()"
-        },
-        {
-          "node": "DAPICall",
-          "_call": "android.hardware.Camera.release()"
-        }
-      ],
-      "count": 4
+      "ast": {
+        "count": 4,
+        "node": "DSubTree",
+        "_nodes": [
+          {
+            "_call": "android.hardware.Camera.stopPreview()",
+            "node": "DAPICall"
+          },
+          {
+            "_call": "android.hardware.Camera.release()",
+            "node": "DAPICall"
+          }
+        ]
+      },
+      "probability": 0.1234
     },
     {
-      "node": "DSubTree",
-      "_nodes": [
-        {
-          "node": "DAPICall",
-          "_call": "android.hardware.Camera.CameraInfo.CameraInfo()"
-        },
-        {
-          "node": "DAPICall",
-          "_call": "android.hardware.Camera.getCameraInfo(int,android.hardware.Camera.CameraInfo)"
-        },
-        {
-          "node": "DAPICall",
-          "_call": "android.hardware.Camera.setDisplayOrientation(int)"
-        }
-      ],
-      "count": 3
+      "ast": {
+        "count": 3,
+        "node": "DSubTree",
+        "_nodes": [
+          {
+            "_call": "android.hardware.Camera.CameraInfo.CameraInfo()",
+            "node": "DAPICall"
+          },
+          {
+            "_call": "android.hardware.Camera.getCameraInfo(int,android.hardware.Camera.CameraInfo)",
+            "node": "DAPICall"
+          },
+          {
+            "_call": "android.hardware.Camera.setDisplayOrientation(int)",
+            "node": "DAPICall"
+          }
+        ]
+      },
+      "probability": 0.1234
     },
     {
-      "node": "DSubTree",
-      "_nodes": [
-        {
-          "node": "DAPICall",
-          "_call": "android.hardware.Camera.getParameters()"
-        },
-        {
-          "node": "DAPICall",
-          "_call": "android.hardware.Camera.Parameters.setFlashMode(java.lang.String)"
-        },
-        {
-          "node": "DAPICall",
-          "_call": "android.hardware.Camera.Parameters.setPreviewSize(int,int)"
-        },
-        {
-          "node": "DAPICall",
-          "_call": "android.hardware.Camera.stopPreview()"
-        },
-        {
-          "node": "DAPICall",
-          "_call": "android.hardware.Camera.setParameters(android.hardware.Camera.Parameters)"
-        },
-        {
-          "node": "DAPICall",
-          "_call": "android.hardware.Camera.startPreview()"
-        }
-      ],
-      "count": 3
+      "ast": {
+        "count": 3,
+        "node": "DSubTree",
+        "_nodes": [
+          {
+            "_call": "android.hardware.Camera.getParameters()",
+            "node": "DAPICall"
+          },
+          {
+            "_call": "android.hardware.Camera.Parameters.setFlashMode(java.lang.String)",
+            "node": "DAPICall"
+          },
+          {
+            "_call": "android.hardware.Camera.Parameters.setPreviewSize(int,int)",
+            "node": "DAPICall"
+          },
+          {
+            "_call": "android.hardware.Camera.stopPreview()",
+            "node": "DAPICall"
+          },
+          {
+            "_call": "android.hardware.Camera.setParameters(android.hardware.Camera.Parameters)",
+            "node": "DAPICall"
+          },
+          {
+            "_call": "android.hardware.Camera.startPreview()",
+            "node": "DAPICall"
+          }
+        ]
+      },
+      "probability": 0.1234
     },
     {
-      "node": "DSubTree",
-      "_nodes": [
-        {
-          "node": "DAPICall",
-          "_call": "android.hardware.Camera.CameraInfo.CameraInfo()"
-        },
-        {
-          "node": "DAPICall",
-          "_call": "android.hardware.Camera.getCameraInfo(int,android.hardware.Camera.CameraInfo)"
-        }
-      ],
-      "count": 3
+      "ast": {
+        "count": 3,
+        "node": "DSubTree",
+        "_nodes": [
+          {
+            "_call": "android.hardware.Camera.CameraInfo.CameraInfo()",
+            "node": "DAPICall"
+          },
+          {
+            "_call": "android.hardware.Camera.getCameraInfo(int,android.hardware.Camera.CameraInfo)",
+            "node": "DAPICall"
+          }
+        ]
+      },
+      "probability": 0.1234
     },
     {
-      "node": "DSubTree",
-      "_nodes": [
-        {
-          "node": "DAPICall",
-          "_call": "android.hardware.Camera.setPreviewDisplay(android.view.SurfaceHolder)"
-        },
-        {
-          "node": "DAPICall",
-          "_call": "android.hardware.Camera.getParameters()"
-        },
-        {
-          "node": "DAPICall",
-          "_call": "android.hardware.Camera.Parameters.setFocusMode(java.lang.String)"
-        },
-        {
-          "node": "DAPICall",
-          "_call": "android.hardware.Camera.setParameters(android.hardware.Camera.Parameters)"
-        },
-        {
-          "node": "DAPICall",
-          "_call": "android.hardware.Camera.startPreview()"
-        }
-      ],
-      "count": 3
+      "ast": {
+        "count": 3,
+        "node": "DSubTree",
+        "_nodes": [
+          {
+            "_call": "android.hardware.Camera.setPreviewDisplay(android.view.SurfaceHolder)",
+            "node": "DAPICall"
+          },
+          {
+            "_call": "android.hardware.Camera.getParameters()",
+            "node": "DAPICall"
+          },
+          {
+            "_call": "android.hardware.Camera.Parameters.setFocusMode(java.lang.String)",
+            "node": "DAPICall"
+          },
+          {
+            "_call": "android.hardware.Camera.setParameters(android.hardware.Camera.Parameters)",
+            "node": "DAPICall"
+          },
+          {
+            "_call": "android.hardware.Camera.startPreview()",
+            "node": "DAPICall"
+          }
+        ]
+      },
+      "probability": 0.1234
     },
     {
-      "node": "DSubTree",
-      "_nodes": [
-        {
-          "node": "DAPICall",
-          "_call": "android.hardware.Camera.stopPreview()"
-        },
-        {
-          "node": "DAPICall",
-          "_call": "android.hardware.Camera.release()"
-        },
-        {
-          "node": "DAPICall",
-          "_call": "android.hardware.Camera.setPreviewDisplay(android.view.SurfaceHolder)"
-        },
-        {
-          "node": "DAPICall",
-          "_call": "android.hardware.Camera.startPreview()"
-        }
-      ],
-      "count": 2
+      "ast": {
+        "count": 2,
+        "node": "DSubTree",
+        "_nodes": [
+          {
+            "_call": "android.hardware.Camera.stopPreview()",
+            "node": "DAPICall"
+          },
+          {
+            "_call": "android.hardware.Camera.release()",
+            "node": "DAPICall"
+          },
+          {
+            "_call": "android.hardware.Camera.setPreviewDisplay(android.view.SurfaceHolder)",
+            "node": "DAPICall"
+          },
+          {
+            "_call": "android.hardware.Camera.startPreview()",
+            "node": "DAPICall"
+          }
+        ]
+      },
+      "probability": 0.1234
     },
     {
-      "node": "DSubTree",
-      "_nodes": [
-        {
-          "node": "DAPICall",
-          "_call": "android.hardware.Camera.getParameters()"
-        },
-        {
-          "node": "DAPICall",
-          "_call": "android.hardware.Camera.Parameters.setPreviewSize(int,int)"
-        },
-        {
-          "node": "DAPICall",
-          "_call": "android.hardware.Camera.setParameters(android.hardware.Camera.Parameters)"
-        },
-        {
-          "node": "DAPICall",
-          "_call": "android.hardware.Camera.Parameters.getPreviewSize()"
-        }
-      ],
-      "count": 2
+      "ast": {
+        "count": 2,
+        "node": "DSubTree",
+        "_nodes": [
+          {
+            "_call": "android.hardware.Camera.getParameters()",
+            "node": "DAPICall"
+          },
+          {
+            "_call": "android.hardware.Camera.Parameters.setPreviewSize(int,int)",
+            "node": "DAPICall"
+          },
+          {
+            "_call": "android.hardware.Camera.setParameters(android.hardware.Camera.Parameters)",
+            "node": "DAPICall"
+          },
+          {
+            "_call": "android.hardware.Camera.Parameters.getPreviewSize()",
+            "node": "DAPICall"
+          }
+        ]
+      },
+      "probability": 0.1234
     }
-  ],
-  "evidences": {
-    "context": [],
-    "types": [
-      "Camera"
-    ],
-    "apicalls": [
-      "startPreview"
-    ]
-  }
+  ]
 }

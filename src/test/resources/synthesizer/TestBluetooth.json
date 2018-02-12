@@ -1,233 +1,254 @@
 {
   "asts": [
     {
-      "node": "DSubTree",
-      "_nodes": [
-        {
-          "node": "DBranch",
-          "_cond": [],
-          "_then": [
-            {
-              "node": "DAPICall",
-              "_call": "android.widget.PopupWindow.PopupWindow(android.content.Context,android.util.AttributeSet,int)"
-            }
-          ],
-          "_else": [
-            {
-              "node": "DAPICall",
-              "_call": "android.widget.PopupWindow.PopupWindow(android.content.Context,android.util.AttributeSet,int,int)"
-            }
-          ]
-        },
-        {
-          "node": "DAPICall",
-          "_call": "android.widget.PopupWindow.setInputMethodMode(int)"
-        }
-      ],
-      "count": 19
+      "ast": {
+        "count": 19,
+        "node": "DSubTree",
+        "_nodes": [
+          {
+            "_cond": [],
+            "_else": [
+              {
+                "_call": "android.widget.PopupWindow.PopupWindow(android.content.Context,android.util.AttributeSet,int,int)",
+                "node": "DAPICall"
+              }
+            ],
+            "node": "DBranch",
+            "_then": [
+              {
+                "_call": "android.widget.PopupWindow.PopupWindow(android.content.Context,android.util.AttributeSet,int)",
+                "node": "DAPICall"
+              }
+            ]
+          },
+          {
+            "_call": "android.widget.PopupWindow.setInputMethodMode(int)",
+            "node": "DAPICall"
+          }
+        ]
+      },
+      "probability": 0.1234
     },
     {
-      "node": "DSubTree",
-      "_nodes": [
-        {
-          "node": "DAPICall",
-          "_call": "android.bluetooth.BluetoothSocket.getInputStream()"
-        },
-        {
-          "node": "DAPICall",
-          "_call": "android.bluetooth.BluetoothSocket.getOutputStream()"
-        }
-      ],
-      "count": 16
+      "ast": {
+        "count": 16,
+        "node": "DSubTree",
+        "_nodes": [
+          {
+            "_call": "android.bluetooth.BluetoothSocket.getInputStream()",
+            "node": "DAPICall"
+          },
+          {
+            "_call": "android.bluetooth.BluetoothSocket.getOutputStream()",
+            "node": "DAPICall"
+          }
+        ]
+      },
+      "probability": 0.1234
     },
     {
-      "node": "DSubTree",
-      "_nodes": [
-        {
-          "node": "DBranch",
-          "_cond": [],
-          "_then": [
-            {
-              "node": "DAPICall",
-              "_call": "android.widget.PopupWindow.PopupWindow(android.content.Context,android.util.AttributeSet,int)"
-            }
-          ],
-          "_else": [
-            {
-              "node": "DAPICall",
-              "_call": "android.widget.PopupWindow.PopupWindow(android.content.Context,android.util.AttributeSet,int,int)"
-            }
-          ]
-        },
-        {
-          "node": "DAPICall",
-          "_call": "android.widget.PopupWindow.setInputMethodMode(int)"
-        },
-        {
-          "node": "DAPICall",
-          "_call": "android.widget.PopupWindow.isShowing()"
-        }
-      ],
-      "count": 16
+      "ast": {
+        "count": 16,
+        "node": "DSubTree",
+        "_nodes": [
+          {
+            "_cond": [],
+            "_else": [
+              {
+                "_call": "android.widget.PopupWindow.PopupWindow(android.content.Context,android.util.AttributeSet,int,int)",
+                "node": "DAPICall"
+              }
+            ],
+            "node": "DBranch",
+            "_then": [
+              {
+                "_call": "android.widget.PopupWindow.PopupWindow(android.content.Context,android.util.AttributeSet,int)",
+                "node": "DAPICall"
+              }
+            ]
+          },
+          {
+            "_call": "android.widget.PopupWindow.setInputMethodMode(int)",
+            "node": "DAPICall"
+          },
+          {
+            "_call": "android.widget.PopupWindow.isShowing()",
+            "node": "DAPICall"
+          }
+        ]
+      },
+      "probability": 0.1234
     },
     {
-      "node": "DSubTree",
-      "_nodes": [
-        {
-          "node": "DBranch",
-          "_cond": [],
-          "_then": [
-            {
-              "node": "DAPICall",
-              "_call": "android.widget.PopupWindow.PopupWindow(android.content.Context,android.util.AttributeSet,int)"
-            }
-          ],
-          "_else": [
-            {
-              "node": "DAPICall",
-              "_call": "android.widget.PopupWindow.PopupWindow(android.content.Context,android.util.AttributeSet,int,int)"
-            }
-          ]
-        }
-      ],
-      "count": 9
+      "ast": {
+        "count": 9,
+        "node": "DSubTree",
+        "_nodes": [
+          {
+            "_cond": [],
+            "_else": [
+              {
+                "_call": "android.widget.PopupWindow.PopupWindow(android.content.Context,android.util.AttributeSet,int,int)",
+                "node": "DAPICall"
+              }
+            ],
+            "node": "DBranch",
+            "_then": [
+              {
+                "_call": "android.widget.PopupWindow.PopupWindow(android.content.Context,android.util.AttributeSet,int)",
+                "node": "DAPICall"
+              }
+            ]
+          }
+        ]
+      },
+      "probability": 0.1234
     },
     {
-      "node": "DSubTree",
-      "_nodes": [
-        {
-          "node": "DAPICall",
-          "_call": "android.widget.PopupWindow.PopupWindow(android.content.Context,android.util.AttributeSet,int)"
-        },
-        {
-          "node": "DAPICall",
-          "_call": "android.widget.PopupWindow.setInputMethodMode(int)"
-        },
-        {
-          "node": "DAPICall",
-          "_call": "android.widget.PopupWindow.isShowing()"
-        }
-      ],
-      "count": 7
+      "ast": {
+        "count": 7,
+        "node": "DSubTree",
+        "_nodes": [
+          {
+            "_call": "android.widget.PopupWindow.PopupWindow(android.content.Context,android.util.AttributeSet,int)",
+            "node": "DAPICall"
+          },
+          {
+            "_call": "android.widget.PopupWindow.setInputMethodMode(int)",
+            "node": "DAPICall"
+          },
+          {
+            "_call": "android.widget.PopupWindow.isShowing()",
+            "node": "DAPICall"
+          }
+        ]
+      },
+      "probability": 0.1234
     },
     {
-      "node": "DSubTree",
-      "_nodes": [
-        {
-          "node": "DAPICall",
-          "_call": "android.bluetooth.BluetoothSocket.getInputStream()"
-        },
-        {
-          "node": "DAPICall",
-          "_call": "android.bluetooth.BluetoothSocket.getOutputStream()"
-        },
-        {
-          "node": "DAPICall",
-          "_call": "android.bluetooth.BluetoothServerSocket.close()"
-        }
-      ],
-      "count": 5
+      "ast": {
+        "count": 5,
+        "node": "DSubTree",
+        "_nodes": [
+          {
+            "_call": "android.bluetooth.BluetoothSocket.getInputStream()",
+            "node": "DAPICall"
+          },
+          {
+            "_call": "android.bluetooth.BluetoothSocket.getOutputStream()",
+            "node": "DAPICall"
+          },
+          {
+            "_call": "android.bluetooth.BluetoothServerSocket.close()",
+            "node": "DAPICall"
+          }
+        ]
+      },
+      "probability": 0.1234
     },
     {
-      "node": "DSubTree",
-      "_nodes": [
-        {
-          "node": "DAPICall",
-          "_call": "android.widget.PopupWindow.PopupWindow(android.content.Context,android.util.AttributeSet,int)"
-        },
-        {
-          "node": "DAPICall",
-          "_call": "android.widget.PopupWindow.setInputMethodMode(int)"
-        }
-      ],
-      "count": 5
+      "ast": {
+        "count": 5,
+        "node": "DSubTree",
+        "_nodes": [
+          {
+            "_call": "android.widget.PopupWindow.PopupWindow(android.content.Context,android.util.AttributeSet,int)",
+            "node": "DAPICall"
+          },
+          {
+            "_call": "android.widget.PopupWindow.setInputMethodMode(int)",
+            "node": "DAPICall"
+          }
+        ]
+      },
+      "probability": 0.1234
     },
     {
-      "node": "DSubTree",
-      "_nodes": [
-        {
-          "node": "DAPICall",
-          "_call": "android.bluetooth.BluetoothSocket.getInputStream()"
-        },
-        {
-          "node": "DAPICall",
-          "_call": "android.bluetooth.BluetoothSocket.getOutputStream()"
-        },
-        {
-          "node": "DAPICall",
-          "_call": "android.bluetooth.BluetoothSocket.close()"
-        }
-      ],
-      "count": 3
+      "ast": {
+        "count": 3,
+        "node": "DSubTree",
+        "_nodes": [
+          {
+            "_call": "android.bluetooth.BluetoothSocket.getInputStream()",
+            "node": "DAPICall"
+          },
+          {
+            "_call": "android.bluetooth.BluetoothSocket.getOutputStream()",
+            "node": "DAPICall"
+          },
+          {
+            "_call": "android.bluetooth.BluetoothSocket.close()",
+            "node": "DAPICall"
+          }
+        ]
+      },
+      "probability": 0.1234
     },
     {
-      "node": "DSubTree",
-      "_nodes": [
-        {
-          "node": "DBranch",
-          "_cond": [],
-          "_then": [
-            {
-              "node": "DAPICall",
-              "_call": "android.widget.PopupWindow.PopupWindow(android.content.Context,android.util.AttributeSet,int)"
-            }
-          ],
-          "_else": [
-            {
-              "node": "DAPICall",
-              "_call": "android.widget.PopupWindow.PopupWindow(android.content.Context,android.util.AttributeSet,int,int)"
-            }
-          ]
-        },
-        {
-          "node": "DAPICall",
-          "_call": "android.widget.PopupWindow.setInputMethodMode(int)"
-        },
-        {
-          "node": "DAPICall",
-          "_call": "android.widget.PopupWindow.setInputMethodMode(int)"
-        }
-      ],
-      "count": 3
+      "ast": {
+        "count": 3,
+        "node": "DSubTree",
+        "_nodes": [
+          {
+            "_cond": [],
+            "_else": [
+              {
+                "_call": "android.widget.PopupWindow.PopupWindow(android.content.Context,android.util.AttributeSet,int,int)",
+                "node": "DAPICall"
+              }
+            ],
+            "node": "DBranch",
+            "_then": [
+              {
+                "_call": "android.widget.PopupWindow.PopupWindow(android.content.Context,android.util.AttributeSet,int)",
+                "node": "DAPICall"
+              }
+            ]
+          },
+          {
+            "_call": "android.widget.PopupWindow.setInputMethodMode(int)",
+            "node": "DAPICall"
+          },
+          {
+            "_call": "android.widget.PopupWindow.setInputMethodMode(int)",
+            "node": "DAPICall"
+          }
+        ]
+      },
+      "probability": 0.1234
     },
     {
-      "node": "DSubTree",
-      "_nodes": [
-        {
-          "node": "DBranch",
-          "_cond": [],
-          "_then": [
-            {
-              "node": "DAPICall",
-              "_call": "android.widget.PopupWindow.PopupWindow(android.content.Context,android.util.AttributeSet,int)"
-            }
-          ],
-          "_else": [
-            {
-              "node": "DAPICall",
-              "_call": "android.widget.PopupWindow.PopupWindow(android.content.Context,android.util.AttributeSet,int,int)"
-            }
-          ]
-        },
-        {
-          "node": "DAPICall",
-          "_call": "android.widget.PopupWindow.setInputMethodMode(int)"
-        },
-        {
-          "node": "DAPICall",
-          "_call": "android.widget.PopupWindow.getBackground()"
-        }
-      ],
-      "count": 2
+      "ast": {
+        "count": 2,
+        "node": "DSubTree",
+        "_nodes": [
+          {
+            "_cond": [],
+            "_else": [
+              {
+                "_call": "android.widget.PopupWindow.PopupWindow(android.content.Context,android.util.AttributeSet,int,int)",
+                "node": "DAPICall"
+              }
+            ],
+            "node": "DBranch",
+            "_then": [
+              {
+                "_call": "android.widget.PopupWindow.PopupWindow(android.content.Context,android.util.AttributeSet,int)",
+                "node": "DAPICall"
+              }
+            ]
+          },
+          {
+            "_call": "android.widget.PopupWindow.setInputMethodMode(int)",
+            "node": "DAPICall"
+          },
+          {
+            "_call": "android.widget.PopupWindow.getBackground()",
+            "node": "DAPICall"
+          }
+        ]
+      },
+      "probability": 0.1234
     }
-  ],
-  "evidences": {
-    "context": [],
-    "types": [
-      "BluetoothSocket"
-    ],
-    "apicalls": [
-      "getInputStream"
-    ]
-  }
+  ]
 }

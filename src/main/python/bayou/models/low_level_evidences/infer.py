@@ -158,8 +158,8 @@ class BayesianPredictor(object):
         # convert each set of paths into an AST
         asts = []
         for (candidate, pr) in candidates:
-            ast = self.paths_to_ast(candidate)
-            ast['probability'] = float(str(pr)[:7])  # "0." + four digits of precision
+            ast = {'ast': self.paths_to_ast(candidate),
+                   'probability': float(str(pr)[:7])}  # "0." + four digits of precision
             if ast not in asts:
                 asts.append(ast)
         return asts

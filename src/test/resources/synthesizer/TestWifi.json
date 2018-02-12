@@ -1,277 +1,298 @@
 {
   "asts": [
     {
-      "node": "DSubTree",
-      "_nodes": [
-        {
-          "node": "DAPICall",
-          "_call": "android.net.wifi.WifiManager.getScanResults()"
-        },
-        {
-          "node": "DAPICall",
-          "_call": "android.net.wifi.WifiManager.startScan()"
-        },
-        {
-          "node": "DAPICall",
-          "_call": "android.net.wifi.WifiManager.getScanResults()"
-        },
-        {
-          "node": "DAPICall",
-          "_call": "android.net.wifi.WifiManager.startScan()"
-        }
-      ],
-      "count": 55
+      "ast": {
+        "count": 55,
+        "node": "DSubTree",
+        "_nodes": [
+          {
+            "_call": "android.net.wifi.WifiManager.getScanResults()",
+            "node": "DAPICall"
+          },
+          {
+            "_call": "android.net.wifi.WifiManager.startScan()",
+            "node": "DAPICall"
+          },
+          {
+            "_call": "android.net.wifi.WifiManager.getScanResults()",
+            "node": "DAPICall"
+          },
+          {
+            "_call": "android.net.wifi.WifiManager.startScan()",
+            "node": "DAPICall"
+          }
+        ]
+      },
+      "probability": 0.1234
     },
     {
-      "node": "DSubTree",
-      "_nodes": [
-        {
-          "node": "DBranch",
-          "_cond": [
-            {
-              "node": "DAPICall",
-              "_call": "android.net.wifi.WifiManager.startScan()"
-            }
-          ],
-          "_then": [
-            {
-              "node": "DAPICall",
-              "_call": "android.net.wifi.WifiManager.getScanResults()"
-            }
-          ],
-          "_else": []
-        }
-      ],
-      "count": 13
+      "ast": {
+        "count": 13,
+        "node": "DSubTree",
+        "_nodes": [
+          {
+            "_cond": [
+              {
+                "_call": "android.net.wifi.WifiManager.startScan()",
+                "node": "DAPICall"
+              }
+            ],
+            "_else": [],
+            "node": "DBranch",
+            "_then": [
+              {
+                "_call": "android.net.wifi.WifiManager.getScanResults()",
+                "node": "DAPICall"
+              }
+            ]
+          }
+        ]
+      },
+      "probability": 0.1234
     },
     {
-      "node": "DSubTree",
-      "_nodes": [
-        {
-          "node": "DAPICall",
-          "_call": "android.net.wifi.WifiManager.getScanResults()"
-        },
-        {
-          "node": "DAPICall",
-          "_call": "android.net.wifi.WifiManager.startScan()"
-        }
-      ],
-      "count": 6
+      "ast": {
+        "count": 6,
+        "node": "DSubTree",
+        "_nodes": [
+          {
+            "_call": "android.net.wifi.WifiManager.getScanResults()",
+            "node": "DAPICall"
+          },
+          {
+            "_call": "android.net.wifi.WifiManager.startScan()",
+            "node": "DAPICall"
+          }
+        ]
+      },
+      "probability": 0.1234
     },
     {
-      "node": "DSubTree",
-      "_nodes": [
-        {
-          "node": "DBranch",
-          "_cond": [
-            {
-              "node": "DAPICall",
-              "_call": "android.net.wifi.WifiManager.isWifiEnabled()"
-            },
-            {
-              "node": "DAPICall",
-              "_call": "android.net.wifi.WifiManager.startScan()"
-            }
-          ],
-          "_then": [
-            {
-              "node": "DAPICall",
-              "_call": "android.net.wifi.WifiManager.getScanResults()"
-            }
-          ],
-          "_else": []
-        }
-      ],
-      "count": 3
+      "ast": {
+        "count": 3,
+        "node": "DSubTree",
+        "_nodes": [
+          {
+            "_cond": [
+              {
+                "_call": "android.net.wifi.WifiManager.isWifiEnabled()",
+                "node": "DAPICall"
+              },
+              {
+                "_call": "android.net.wifi.WifiManager.startScan()",
+                "node": "DAPICall"
+              }
+            ],
+            "_else": [],
+            "node": "DBranch",
+            "_then": [
+              {
+                "_call": "android.net.wifi.WifiManager.getScanResults()",
+                "node": "DAPICall"
+              }
+            ]
+          }
+        ]
+      },
+      "probability": 0.1234
     },
     {
-      "node": "DSubTree",
-      "_nodes": [
-        {
-          "node": "DBranch",
-          "_cond": [
-            {
-              "node": "DAPICall",
-              "_call": "android.net.wifi.WifiManager.isWifiEnabled()"
-            }
-          ],
-          "_then": [
-            {
-              "node": "DAPICall",
-              "_call": "android.net.wifi.WifiManager.getScanResults()"
-            },
-            {
-              "node": "DAPICall",
-              "_call": "android.net.wifi.WifiManager.startScan()"
-            },
-            {
-              "node": "DAPICall",
-              "_call": "android.net.wifi.WifiManager.startScan()"
-            }
-          ],
-          "_else": []
-        }
-      ],
-      "count": 2
+      "ast": {
+        "count": 2,
+        "node": "DSubTree",
+        "_nodes": [
+          {
+            "_cond": [
+              {
+                "_call": "android.net.wifi.WifiManager.isWifiEnabled()",
+                "node": "DAPICall"
+              }
+            ],
+            "_else": [],
+            "node": "DBranch",
+            "_then": [
+              {
+                "_call": "android.net.wifi.WifiManager.getScanResults()",
+                "node": "DAPICall"
+              },
+              {
+                "_call": "android.net.wifi.WifiManager.startScan()",
+                "node": "DAPICall"
+              },
+              {
+                "_call": "android.net.wifi.WifiManager.startScan()",
+                "node": "DAPICall"
+              }
+            ]
+          }
+        ]
+      },
+      "probability": 0.1234
     },
     {
-      "node": "DSubTree",
-      "_nodes": [
-        {
-          "node": "DAPICall",
-          "_call": "android.widget.ProgressBar.getIndeterminateDrawable()"
-        },
-        {
-          "node": "DAPICall",
-          "_call": "android.widget.ProgressBar.getProgressDrawable()"
-        }
-      ],
-      "count": 2
+      "ast": {
+        "count": 2,
+        "node": "DSubTree",
+        "_nodes": [
+          {
+            "_call": "android.widget.ProgressBar.getIndeterminateDrawable()",
+            "node": "DAPICall"
+          },
+          {
+            "_call": "android.widget.ProgressBar.getProgressDrawable()",
+            "node": "DAPICall"
+          }
+        ]
+      },
+      "probability": 0.1234
     },
     {
-      "node": "DSubTree",
-      "_nodes": [
-        {
-          "node": "DBranch",
-          "_cond": [],
-          "_then": [
-            {
-              "node": "DAPICall",
-              "_call": "android.net.wifi.WifiManager.isWifiEnabled()"
-            },
-            {
-              "node": "DAPICall",
-              "_call": "android.net.wifi.WifiManager.isWifiEnabled()"
-            }
-          ],
-          "_else": [
-            {
-              "node": "DBranch",
-              "_cond": [],
-              "_then": [
-                {
-                  "node": "DAPICall",
-                  "_call": "android.net.wifi.WifiManager.isWifiEnabled()"
-                }
-              ],
-              "_else": [
-                {
-                  "node": "DAPICall",
-                  "_call": "android.net.wifi.WifiManager.isWifiEnabled()"
-                }
-              ]
-            }
-          ]
-        }
-      ],
-      "count": 1
+      "ast": {
+        "count": 1,
+        "node": "DSubTree",
+        "_nodes": [
+          {
+            "_cond": [],
+            "_else": [
+              {
+                "_cond": [],
+                "_else": [
+                  {
+                    "_call": "android.net.wifi.WifiManager.isWifiEnabled()",
+                    "node": "DAPICall"
+                  }
+                ],
+                "node": "DBranch",
+                "_then": [
+                  {
+                    "_call": "android.net.wifi.WifiManager.isWifiEnabled()",
+                    "node": "DAPICall"
+                  }
+                ]
+              }
+            ],
+            "node": "DBranch",
+            "_then": [
+              {
+                "_call": "android.net.wifi.WifiManager.isWifiEnabled()",
+                "node": "DAPICall"
+              },
+              {
+                "_call": "android.net.wifi.WifiManager.isWifiEnabled()",
+                "node": "DAPICall"
+              }
+            ]
+          }
+        ]
+      },
+      "probability": 0.1234
     },
     {
-      "node": "DSubTree",
-      "_nodes": [
-        {
-          "node": "DBranch",
-          "_cond": [],
-          "_then": [
-            {
-              "node": "DAPICall",
-              "_call": "android.net.wifi.WifiManager.getScanResults()"
-            },
-            {
-              "node": "DAPICall",
-              "_call": "android.net.wifi.WifiManager.getConfiguredNetworks()"
-            }
-          ],
-          "_else": [
-            {
-              "node": "DAPICall",
-              "_call": "android.net.wifi.WifiManager.getConnectionInfo()"
-            },
-            {
-              "node": "DAPICall",
-              "_call": "android.net.wifi.WifiManager.getConfiguredNetworks()"
-            }
-          ]
-        }
-      ],
-      "count": 1
+      "ast": {
+        "count": 1,
+        "node": "DSubTree",
+        "_nodes": [
+          {
+            "_cond": [],
+            "_else": [
+              {
+                "_call": "android.net.wifi.WifiManager.getConnectionInfo()",
+                "node": "DAPICall"
+              },
+              {
+                "_call": "android.net.wifi.WifiManager.getConfiguredNetworks()",
+                "node": "DAPICall"
+              }
+            ],
+            "node": "DBranch",
+            "_then": [
+              {
+                "_call": "android.net.wifi.WifiManager.getScanResults()",
+                "node": "DAPICall"
+              },
+              {
+                "_call": "android.net.wifi.WifiManager.getConfiguredNetworks()",
+                "node": "DAPICall"
+              }
+            ]
+          }
+        ]
+      },
+      "probability": 0.1234
     },
     {
-      "node": "DSubTree",
-      "_nodes": [
-        {
-          "node": "DAPICall",
-          "_call": "android.net.wifi.WifiInfo.getMacAddress()"
-        }
-      ],
-      "count": 1
+      "ast": {
+        "count": 1,
+        "node": "DSubTree",
+        "_nodes": [
+          {
+            "_call": "android.net.wifi.WifiInfo.getMacAddress()",
+            "node": "DAPICall"
+          }
+        ]
+      },
+      "probability": 0.1234
     },
     {
-      "node": "DSubTree",
-      "_nodes": [
-        {
-          "node": "DBranch",
-          "_cond": [],
-          "_then": [
-            {
-              "node": "DAPICall",
-              "_call": "android.net.wifi.WifiManager.isWifiEnabled()"
-            },
-            {
-              "node": "DAPICall",
-              "_call": "android.net.wifi.WifiManager.isWifiEnabled()"
-            }
-          ],
-          "_else": [
-            {
-              "node": "DBranch",
-              "_cond": [],
-              "_then": [
-                {
-                  "node": "DAPICall",
-                  "_call": "android.net.wifi.WifiManager.isWifiEnabled()"
-                },
-                {
-                  "node": "DAPICall",
-                  "_call": "android.net.wifi.WifiManager.isWifiEnabled()"
-                }
-              ],
-              "_else": [
-                {
-                  "node": "DBranch",
-                  "_cond": [],
-                  "_then": [
-                    {
-                      "node": "DAPICall",
-                      "_call": "android.net.wifi.WifiManager.isWifiEnabled()"
-                    }
-                  ],
-                  "_else": [
-                    {
-                      "node": "DAPICall",
-                      "_call": "android.net.wifi.WifiManager.isWifiEnabled()"
-                    }
-                  ]
-                }
-              ]
-            }
-          ]
-        },
-        {
-          "node": "DAPICall",
-          "_call": "android.net.wifi.WifiManager.setWifiEnabled(boolean)"
-        }
-      ],
-      "count": 1
+      "ast": {
+        "count": 1,
+        "node": "DSubTree",
+        "_nodes": [
+          {
+            "_cond": [],
+            "_else": [
+              {
+                "_cond": [],
+                "_else": [
+                  {
+                    "_cond": [],
+                    "_else": [
+                      {
+                        "_call": "android.net.wifi.WifiManager.isWifiEnabled()",
+                        "node": "DAPICall"
+                      }
+                    ],
+                    "node": "DBranch",
+                    "_then": [
+                      {
+                        "_call": "android.net.wifi.WifiManager.isWifiEnabled()",
+                        "node": "DAPICall"
+                      }
+                    ]
+                  }
+                ],
+                "node": "DBranch",
+                "_then": [
+                  {
+                    "_call": "android.net.wifi.WifiManager.isWifiEnabled()",
+                    "node": "DAPICall"
+                  },
+                  {
+                    "_call": "android.net.wifi.WifiManager.isWifiEnabled()",
+                    "node": "DAPICall"
+                  }
+                ]
+              }
+            ],
+            "node": "DBranch",
+            "_then": [
+              {
+                "_call": "android.net.wifi.WifiManager.isWifiEnabled()",
+                "node": "DAPICall"
+              },
+              {
+                "_call": "android.net.wifi.WifiManager.isWifiEnabled()",
+                "node": "DAPICall"
+              }
+            ]
+          },
+          {
+            "_call": "android.net.wifi.WifiManager.setWifiEnabled(boolean)",
+            "node": "DAPICall"
+          }
+        ]
+      },
+      "probability": 0.1234
     }
-  ],
-  "evidences": {
-    "context": [],
-    "types": [
-      "WifiManager"
-    ],
-    "apicalls": [
-      "startScan"
-    ]
-  }
+  ]
 }
