@@ -19,12 +19,16 @@ import edu.rice.cs.caper.bayou.application.api_synthesis_server.servlet.ApiSynth
 import edu.rice.cs.caper.bayou.application.api_synthesis_server.servlet.ApiSynthesisResultQualityFeedbackServlet;
 import edu.rice.cs.caper.bayou.application.api_synthesis_server.servlet.ApiSynthesisServlet;
 import edu.rice.cs.caper.programming.numbers.NatNum32;
+import edu.rice.cs.caper.servlet.RequestPortFilter;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.eclipse.jetty.server.*;
+import org.eclipse.jetty.servlet.FilterHolder;
+import org.eclipse.jetty.servlet.FilterMapping;
 import org.eclipse.jetty.servlet.ServletHandler;
 import org.eclipse.jetty.util.thread.ExecutorThreadPool;
 
+import java.util.Arrays;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 
@@ -53,9 +57,14 @@ class ApiSynthesisServerRest
     private static final Logger _logger = LogManager.getLogger(ApiSynthesisServerRest.class.getName());
 
     /**
-     * The port on which to listen for incoming http connections.
+     * The port on which to listen for incoming http connections to service non-heartbeat requests.
      */
-    private static final NatNum32 _httpListenPort = Configuration.ListenPort;
+    private static final NatNum32 _httpRequestListenPort = Configuration.RequestListenPort;
+
+    /**
+     * The port on which to listen for incoming http connections to service heartbeat requests.
+     */
+    private static final NatNum32 _httpHeartbeatListenPort = Configuration.HeartbeatListenPort;
 
     /**
      * That maximum supported size of the body of a HTTP code completion request.
@@ -93,36 +102,38 @@ class ApiSynthesisServerRest
         _startCalled = true;
 
         /*
-         * Create and configure the HTTP server.
+         * Create and configure the HTTP server that processes non-heartbeat related requests.
          */
-        Server server;
+        Server apiSynthServer;
         {
+            /*
+             * Set a bounded request queue because the default Jetty queue is unbounded and we want to defend
+             * against an attack that makes a large volume of requests and exhausts the process' memory.
+             */
             LinkedBlockingQueue<Runnable> queue = new LinkedBlockingQueue<>(_jettyTaskQueueSize.AsInt);
             ExecutorThreadPool pool = new ExecutorThreadPool(10, 20, 60, TimeUnit.SECONDS, queue);
-            server = new Server(pool);
+            apiSynthServer = new Server(pool);
 
             /*
-             * Configure server for http on listen port.
+             * Configure the server to listen for requests on port _httpRequestListenPort.
              */
-            ServerConnector http = new ServerConnector(server, new HttpConnectionFactory());
-            http.setPort(_httpListenPort.AsInt);
-            server.addConnector(http);
+            ServerConnector connector = new ServerConnector(apiSynthServer, new HttpConnectionFactory());
+            connector.setPort(_httpRequestListenPort.AsInt);
+            apiSynthServer.addConnector(connector);
 
             /*
              * Configure routes.
+             *
+             * Pattern as per https://www.eclipse.org/jetty/documentation/9.4.x/embedding-jetty.html
              */
-            // Pattern as per https://www.eclipse.org/jetty/documentation/9.4.x/embedding-jetty.html
             ServletHandler handler = new ServletHandler();
-            server.setHandler(handler);
+            apiSynthServer.setHandler(handler);
 
             // register a servlet for performing apisynthesis
             handler.addServletWithMapping(ApiSynthesisServlet.class, "/apisynthesis");
 
-            // register a servlet for collecting user feedback on result quatliy
+            // register a servlet for collecting user feedback on result quality
             handler.addServletWithMapping(ApiSynthesisResultQualityFeedbackServlet.class, "/apisynthesisfeedback");
-
-            // register a servlet for checking on the health of the entire apisynthesis process
-            handler.addServletWithMapping(ApiSynthesisHealthCheckServlet.class, "/apisynthesishealth");
 
             /*
              * Code completion requests are sent via POST to ApiSynthesisServlet, however,
@@ -132,7 +143,7 @@ class ApiSynthesisServerRest
              *
              * As such ensure that we can accept headers as large as our max body size.
              */
-            for (Connector c : server.getConnectors())
+            for (Connector c : apiSynthServer.getConnectors())
             {
                 HttpConfiguration config = c.getConnectionFactory(HttpConnectionFactory.class).getHttpConfiguration();
                 config.setRequestHeaderSize(_codeCompletionRequestBodyMaxBytesCount.AsInt);
@@ -140,15 +151,41 @@ class ApiSynthesisServerRest
         }
 
         /*
-         * Start the HTTP server.
+         * Create and configure the HTTP server that processes heart beat requests.
+         *
+         * Use a different server than apiSynthServer because we don't want heart beat checks to be rejected
+         * due to the bounded task queue used for apiSynthServer and inadvertently signal the system is unhealthy.
+         *
+         * We assume that the system is deployed in a way such that attackers do not have access to the heart beat
+         * port and as such all heart beat requests are genuine (e.g. rate limited) and non-abusive.
+         */
+        Server healthCheckServer = new Server(_httpHeartbeatListenPort.AsInt);
+        {
+            /*
+             * Configure routes.
+             */
+            // Pattern as per https://www.eclipse.org/jetty/documentation/9.4.x/embedding-jetty.html
+            ServletHandler handler = new ServletHandler();
+            healthCheckServer.setHandler(handler);
+
+            // register a servlet for checking on the health of the entire apisynthesis process
+            // only allow requests on port _httpHeartbeatListenPort
+            handler.addServletWithMapping(ApiSynthesisHealthCheckServlet.class, "/apisynthesishealth");
+        }
+
+        /*
+         * Start the HTTP servers.
          */
         try
         {
-            server.start(); // returns immediately
-            _logger.info("Started HTTP server on port " + _httpListenPort);
+            healthCheckServer.start(); // returns immediately
+            _logger.info("Started HTTP heartbeat server on port " + _httpHeartbeatListenPort);
+            apiSynthServer.start(); // returns immediately
+            _logger.info("Started HTTP synth server on port " + _httpRequestListenPort);
         }
         catch (Throwable e)
         {
+            _logger.debug("exiting");
             throw new StartErrorException(e);
         }
 
