@@ -19,7 +19,6 @@ import edu.rice.cs.caper.bayou.application.api_synthesis_server.servlet.ApiSynth
 import edu.rice.cs.caper.bayou.application.api_synthesis_server.servlet.ApiSynthesisResultQualityFeedbackServlet;
 import edu.rice.cs.caper.bayou.application.api_synthesis_server.servlet.ApiSynthesisServlet;
 import edu.rice.cs.caper.programming.numbers.NatNum32;
-import edu.rice.cs.caper.servlet.RequestPortFilter;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.eclipse.jetty.server.*;
