@@ -46,6 +46,7 @@ public class ThreadSchedulerFifoCompete implements ThreadScheduler
             {
                 _inActionOperationsCount = _inActionOperationsCount.decrement();
                 _operationCompletedCondition.notifyAll();
+
             }
         }
     }
@@ -53,7 +54,8 @@ public class ThreadSchedulerFifoCompete implements ThreadScheduler
     private void awaitTurn()
     {
         waitOnOperationCompleted();
-        if(_waitingThreads.getFirst() == Thread.currentThread())
+        if(_inActionOperationsCount.AsInt < _concurrentLimit.AsInt &&
+           _waitingThreads.getFirst() == Thread.currentThread())
         {
             _waitingThreads.remove();
             return;
