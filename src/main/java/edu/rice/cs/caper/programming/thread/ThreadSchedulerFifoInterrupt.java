@@ -13,7 +13,7 @@ public class ThreadSchedulerFifoInterrupt implements ThreadScheduler
 
     private final Object _operationCompletedCondition = new Object();
 
-    private NatNum32 _inActionOperationsCount = new NatNum32(0);
+    private int _inActionOperationsCount = 0;
 
     private final LinkedList<Thread> _waitingThreads = new LinkedList<>();
 
@@ -28,12 +28,12 @@ public class ThreadSchedulerFifoInterrupt implements ThreadScheduler
     {
         synchronized (_operationCompletedCondition)
         {
-            if(!_waitingThreads.isEmpty() || _inActionOperationsCount.AsInt == _concurrentLimit.AsInt)
+            if(!_waitingThreads.isEmpty() || _inActionOperationsCount == _concurrentLimit.AsInt)
             {
                 _waitingThreads.add(Thread.currentThread());
                 awaitTurn();
             }
-            _inActionOperationsCount = _inActionOperationsCount.increment();
+            _inActionOperationsCount++;
         }
 
         try
@@ -44,7 +44,7 @@ public class ThreadSchedulerFifoInterrupt implements ThreadScheduler
         {
             synchronized (_operationCompletedCondition)
             {
-                _inActionOperationsCount = _inActionOperationsCount.decrement();
+                _inActionOperationsCount--;
                 if(!_waitingThreads.isEmpty())
                 {
                     Thread nextToGo = _waitingThreads.remove();
