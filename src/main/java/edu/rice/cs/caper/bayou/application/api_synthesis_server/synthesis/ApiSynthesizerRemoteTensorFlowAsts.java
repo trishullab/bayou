@@ -21,6 +21,9 @@ import edu.rice.cs.caper.bayou.core.synthesizer.Parser;
 import edu.rice.cs.caper.bayou.core.synthesizer.Synthesizer;
 import edu.rice.cs.caper.programming.ContentString;
 import edu.rice.cs.caper.programming.numbers.NatNum32;
+import edu.rice.cs.caper.programming.thread.Operation;
+import edu.rice.cs.caper.programming.thread.ThreadScheduler;
+import edu.rice.cs.caper.programming.thread.ThreadSchedulerFifoInterrupt;
 import org.apache.commons.io.IOUtils;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
@@ -39,6 +42,7 @@ import java.io.*;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.*;
+import java.util.function.Supplier;
 
 /**
  * A synthesis strategy that relies on a remote server that uses TensorFlow to create ASTs from extracted evidence.
@@ -51,10 +55,12 @@ public class ApiSynthesizerRemoteTensorFlowAsts implements ApiSynthesizer
     private static final Logger _logger = LogManager.getLogger(ApiSynthesizerRemoteTensorFlowAsts.class.getName());
 
     /**
-     * Each network request to the remote server happens in a different thread provided by this pool such that
-     * requests can operate in parallel.
+     * Thread scheduler to ensure that the TensorFlow synthesizer has 1 client at a time
+     * *NOTE*: This restriction is a property of Python being single threaded.
+     *         If the synthesizer moves to a multithreaded implementation, the thread scheduler
+     *         might be obviated.
      */
-    private final ExecutorService _sendRequestPool = Executors.newCachedThreadPool();
+    private static final ThreadScheduler _scheduler = new ThreadSchedulerFifoInterrupt(new NatNum32(1));
 
     /**
      * The network name of the tensor flow host server.
@@ -217,9 +223,16 @@ public class ApiSynthesizerRemoteTensorFlowAsts implements ApiSynthesizer
          * to generate solution ASTs.
          */
         JSONObject astsJson = null;
+        /*
+         * For the current implementation of this synthesizer, we must serialize the request to the python layer.
+         *
+         */
         try
         {
-            astsJson = sendGenerateAstRequest(evidence);
+            /*
+             * Send sendGenerate... to our thread scheduler
+             */
+            astsJson = _scheduler.schedule(() -> sendGenerateAstRequest(evidence));
         }
         catch (IOException e)
         {
