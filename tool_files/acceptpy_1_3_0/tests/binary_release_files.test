@@ -1,5 +1,5 @@
 {
   "test type": "shell command",
-  "command" : "find ../out/ -maxdepth 1 -name bayou-*.jar -o -name example_inputs -o -name install_dependencies.sh -o -name python -o -name resources -o -name start_bayou.sh -o -name stop_bayou.sh -o -name synthesize.sh | wc -l",
+  "command" : "find ../out/ -maxdepth 1 -name bayou-*.jar -o -name example_inputs -o -name install_dependencies.sh -o -name python -o -name resources -o -name start_bayou.sh -o -name stop_bayou.sh -o -name synthesize.sh | wc -l | sed -e 's/^[^0-9]*//'",
   "expect stdout": "8\n"
 }
