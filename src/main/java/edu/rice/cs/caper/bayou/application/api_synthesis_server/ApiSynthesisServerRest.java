@@ -110,7 +110,7 @@ class ApiSynthesisServerRest
              * against an attack that makes a large volume of requests and exhausts the process' memory.
              */
             LinkedBlockingQueue<Runnable> queue = new LinkedBlockingQueue<>(_jettyTaskQueueSize.AsInt);
-            ExecutorThreadPool pool = new ExecutorThreadPool(10, 20, 60, TimeUnit.SECONDS, queue);
+            ExecutorThreadPool pool = new ExecutorThreadPool(100, 100, 60, TimeUnit.SECONDS, queue);
             apiSynthServer = new Server(pool);
 
             /*
