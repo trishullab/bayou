@@ -29,7 +29,9 @@ import java.util.Properties;
  */
 public class Configuration
 {
-    static final NatNum32 ListenPort;
+    static final NatNum32 RequestListenPort;
+
+    static final NatNum32 HeartbeatListenPort;
 
     public static final NatNum32 SynthesizeTimeoutMs;
 
@@ -89,7 +91,8 @@ public class Configuration
             }
         }
 
-        ListenPort= NatNum32.parse(properties.getProperty("ListenPort"));
+        RequestListenPort= NatNum32.parse(properties.getProperty("RequestListenPort"));
+        HeartbeatListenPort= NatNum32.parse(properties.getProperty("HeartbeatListenPort"));
         SynthesizeTimeoutMs = NatNum32.parse(properties.getProperty("SynthesizeTimeoutMs"));
         UseSynthesizeEchoMode = Boolean.parseBoolean(properties.getProperty("UseSynthesizeEchoMode"));
         EchoModeDelayMs = Long.parseLong(properties.getProperty("EchoModeDelayMs"));
