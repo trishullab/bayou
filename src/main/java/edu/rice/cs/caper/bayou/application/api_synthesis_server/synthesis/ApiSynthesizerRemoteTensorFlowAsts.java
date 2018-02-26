@@ -91,6 +91,7 @@ public class ApiSynthesizerRemoteTensorFlowAsts implements ApiSynthesizer
      * The type of API synthesis that should be performed.
      */
     private final Synthesizer.Mode _synthMode;
+    private final boolean _useThreadScheduler;
 
     /**
      * @param tensorFlowHost  The network name of the tensor flow host server. May not be null.
@@ -101,10 +102,12 @@ public class ApiSynthesizerRemoteTensorFlowAsts implements ApiSynthesizer
 *                          May not be null.
      * @param androidJarPath The path to android.jar. May not be null.
      * @param synthMode The type of API synthesis that should be performed.
+     * @param useThreadScheduler High priority synthesis requests (currently only the AWS heartbeat) should skip
+     *                           the thread scheduler. useThreadScheduler is true for all other instances of this class.
      */
     public ApiSynthesizerRemoteTensorFlowAsts(ContentString tensorFlowHost, NatNum32 tensorFlowPort,
                                               NatNum32 maxNetworkWaitTimeMs, ContentString evidenceClasspath,
-                                              File androidJarPath, Synthesizer.Mode synthMode)
+                                              File androidJarPath, Synthesizer.Mode synthMode, boolean useThreadScheduler)
     {
         _logger.debug("entering");
 
@@ -156,6 +159,7 @@ public class ApiSynthesizerRemoteTensorFlowAsts implements ApiSynthesizer
         _evidenceClasspath = evidenceClasspath;
         _androidJarPath = androidJarPath;
         _synthMode = synthMode;
+        _useThreadScheduler = useThreadScheduler;
 
 	    _logger.trace("_tensorFlowHost:" + _tensorFlowHost);
         _logger.trace("_evidenceClasspath:" + _evidenceClasspath);
@@ -230,9 +234,17 @@ public class ApiSynthesizerRemoteTensorFlowAsts implements ApiSynthesizer
         try
         {
             /*
-             * Send sendGenerate... to our thread scheduler
+             * if we should useThreadScheduler, send sendGenerate... to our thread scheduler
              */
-            astsJson = _scheduler.schedule(() -> sendGenerateAstRequest(evidence));
+            if (_useThreadScheduler)
+            {
+                astsJson = _scheduler.schedule(() -> sendGenerateAstRequest(evidence));
+            }
+            else
+            {
+                astsJson = sendGenerateAstRequest(evidence);
+            }
+
         }
         catch (IOException e)
         {

@@ -90,7 +90,7 @@ public class ApiSynthesisServlet extends SizeConstrainedPostBodyServlet implemen
     {
         super(API_SYNTH_MAX_REQUEST_BODY_SIZE_BYTES, false);
 
-        ApiSynthesizer synthesisStrategy = ApiSynthesizerFactory.makeFromConfig();
+        ApiSynthesizer synthesisStrategy = ApiSynthesizerFactory.makeFromConfig(true);
         _synthesisRequestProcessor = new ApiSynthesizerRewriteEvidenceDecorator(synthesisStrategy);
         _logger.debug("exiting");
     }
