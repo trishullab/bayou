@@ -42,10 +42,13 @@ def extract_evidence(clargs):
             continue
 
         calls = gather_calls(program['ast'])
-
-        apicalls = list(set(chain.from_iterable([bayou.models.core.evidence.APICalls.from_call(call) for call in calls])))
-        types = list(set(chain.from_iterable([bayou.models.core.evidence.Types.from_call(call) for call in calls])))
-        keywords = list(set(chain.from_iterable([bayou.models.core.evidence.Keywords.from_call(call) for call in calls])))
+        try:
+            apicalls = list(set(chain.from_iterable([bayou.models.core.evidence.APICalls.from_call(call) for call in calls])))
+            types = list(set(chain.from_iterable([bayou.models.core.evidence.Types.from_call(call) for call in calls])))
+            keywords = list(set(chain.from_iterable([bayou.models.core.evidence.Keywords.from_call(call) for call in calls])))
+        except Exception:
+            # import pdb; pdb.set_trace()
+            continue
 
         if clargs.num_samples == 0:
             program['apicalls'] = apicalls

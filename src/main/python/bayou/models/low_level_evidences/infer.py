@@ -144,6 +144,7 @@ class BayesianPredictor(object):
 
                         inc_path_step_SIBLING = inc_path + [(prediction, SIBLING_EDGE)]
                         if prediction in ['DBranch', 'DExcept', 'DLoop']:
+                            raise Exception('complex control flows should never appear!!!')
                             inc_path_step_CHILD = inc_path + [(prediction, CHILD_EDGE)]
                             new_candidates.append((new_candidate + [inc_path_step_CHILD, inc_path_step_SIBLING],
                                                    pr * p * p))

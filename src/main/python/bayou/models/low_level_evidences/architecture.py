@@ -57,12 +57,13 @@ class BayesianEncoder(object):
 class BayesianDecoder(object):
     def __init__(self, config, initial_state, infer=False):
 
-        cells1, cells2 = [], []
+        # cells1, cells2 = [], []
+        cells1 = []
         for _ in range(config.decoder.num_layers):
             cells1.append(tf.nn.rnn_cell.GRUCell(config.decoder.units))
-            cells2.append(tf.nn.rnn_cell.GRUCell(config.decoder.units))
+            # cells2.append(tf.nn.rnn_cell.GRUCell(config.decoder.units))
         self.cell1 = tf.nn.rnn_cell.MultiRNNCell(cells1)
-        self.cell2 = tf.nn.rnn_cell.MultiRNNCell(cells2)
+        # self.cell2 = tf.nn.rnn_cell.MultiRNNCell(cells2)
 
         # placeholders
         self.initial_state = [initial_state] * config.decoder.num_layers
@@ -102,11 +103,14 @@ class BayesianDecoder(object):
                         tf.get_variable_scope().reuse_variables()
                     with tf.variable_scope('cell1'):  # handles CHILD_EDGE
                         output1, state1 = self.cell1(inp, self.state)
-                    with tf.variable_scope('cell2'):  # handles SIBLING_EDGE
-                        output2, state2 = self.cell2(inp, self.state)
-                    output = tf.where(self.edges[i], output1, output2)
-                    self.state = [tf.where(self.edges[i], state1[j], state2[j])
-                                  for j in range(config.decoder.num_layers)]
-                    self.outputs.append(output)
+                    # with tf.variable_scope('cell2'):  # handles SIBLING_EDGE
+                    #     output2, state2 = self.cell2(inp, self.state)
+                    # output = tf.where(self.edges[i], output1, output2)
+                    # self.state = [tf.where(self.edges[i], state1[j], state2[j])
+                    #               for j in range(config.decoder.num_layers)]
+                    self.state = [state1[j] for j in range(config.decoder.num_layers)]
+                    # self.outputs.append(output)
+                    self.outputs.append(output1)
                     if loop_function is not None:
-                        prev = output
+                        # prev = output
+                        prev = output1
