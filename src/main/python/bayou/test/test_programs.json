@@ -1,0 +1,18 @@
+{
+  "programs": [
+    {
+      "types": [
+        "ArrayList",
+        "ConcurrentHashMap",
+        "Collection",
+        "int",
+        "Object"
+      ],
+      "apicalls": [
+        "values",
+        "remove",
+        "size"
+      ]
+    }
+  ]
+}
