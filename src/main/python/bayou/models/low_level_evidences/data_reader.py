@@ -23,6 +23,14 @@ from collections import Counter
 from bayou.models.low_level_evidences.utils import C0, CHILD_EDGE, SIBLING_EDGE, gather_calls
 
 
+class TooLongPathError(Exception):
+    pass
+
+
+class InvalidSketchError(Exception):
+    pass
+
+
 class Reader():
     def __init__(self, clargs, config):
         self.config = config
@@ -113,6 +121,42 @@ class Reader():
             ph = [cons_calls + [('DLoop', SIBLING_EDGE)] + path for path in p]
             return ph + pv
 
+    def validate_sketch_paths(self, program, ast_paths):
+        """
+        Checks if a sketch along with its paths is good training data:
+        1. No API call should be repeated successively more than twice (twice is for loops)
+        2. No path in the sketch should be of length more than max_ast_depth hyper-parameter
+        3. No branch, loop or except should occur more than once along a single path
+
+        :param program: the sketch
+        :param ast_paths: paths in the sketch
+        :return: None
+        :raise: TooLongPathError or InvalidSketchError if sketch or its paths is invalid
+        """
+        if 'sequences' in program:
+            for sequence in program['sequences']:
+                calls = sequence['calls']
+                if len(calls) == 0:
+                    raise InvalidSketchError
+                curr_call = calls[0]
+                count = 1
+                for call in calls[1:]:
+                    if call == curr_call:
+                        count += 1
+                    else:
+                        curr_call = call
+                        count = 1
+                    if count > 2:
+                        raise InvalidSketchError
+        else:
+            raise InvalidSketchError
+        for path in ast_paths:
+            if len(path) >= self.config.decoder.max_ast_depth:
+                raise TooLongPathError
+            nodes = [node for (node, edge) in path]
+            if nodes.count('DBranch') > 1 or nodes.count('DLoop') > 1 or nodes.count('DExcept') > 1:
+                raise TooLongPathError
+
     def read_data(self, filename, save=None):
         with open(filename) as f:
             js = json.load(f)
@@ -126,19 +170,20 @@ class Reader():
             try:
                 evidence = [ev.read_data_point(program) for ev in self.config.evidence]
                 ast_paths = self.get_ast_paths(program['ast']['_nodes'])
+                self.validate_sketch_paths(program, ast_paths)
                 for path in ast_paths:
                     path.insert(0, ('DSubTree', CHILD_EDGE))
-                    assert len(path) <= self.config.decoder.max_ast_depth
                     data_points.append((evidence, path))
                 calls = gather_calls(program['ast'])
                 for call in calls:
                     if call['_call'] not in callmap:
                         callmap[call['_call']] = call
-            except AssertionError:
+            except (TooLongPathError, InvalidSketchError) as e:
                 ignored += 1
             done += 1
         print('{:8d} programs in training data'.format(done))
         print('{:8d} programs ignored by given config'.format(ignored))
+        print('{:8d} data points total'.format(len(data_points)))
 
         # randomly shuffle to avoid bias towards initial data points during training
         random.shuffle(data_points)
