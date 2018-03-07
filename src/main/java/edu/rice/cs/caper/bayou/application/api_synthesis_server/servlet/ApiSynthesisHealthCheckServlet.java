@@ -17,6 +17,7 @@ package edu.rice.cs.caper.bayou.application.api_synthesis_server.servlet;
 
 import edu.rice.cs.caper.bayou.application.api_synthesis_server.synthesis.*;
 import edu.rice.cs.caper.programming.numbers.NatNum32;
+import edu.rice.cs.caper.servlet.ServerIdHttpServlet;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.eclipse.jetty.http.HttpStatus;
@@ -28,7 +29,7 @@ import javax.servlet.http.HttpServletResponse;
 /**
  * When a HTTP GET is received, synthesize a small program to ensure no major errors occur.
  */
-public class ApiSynthesisHealthCheckServlet extends HttpServlet
+public class ApiSynthesisHealthCheckServlet extends ServerIdHttpServlet
 {
     /**
      * Place to send logging information.
