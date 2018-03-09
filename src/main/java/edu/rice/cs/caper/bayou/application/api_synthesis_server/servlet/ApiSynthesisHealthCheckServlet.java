@@ -46,7 +46,7 @@ public class ApiSynthesisHealthCheckServlet extends HttpServlet
     public ApiSynthesisHealthCheckServlet()
     {
         _logger.debug("entering");
-        _synthesisRequestProcessor = ApiSynthesizerFactory.makeFromConfig(falsex);
+        _synthesisRequestProcessor = ApiSynthesizerFactory.makeFromConfig(false);
         _logger.debug("exiting");
     }
 
