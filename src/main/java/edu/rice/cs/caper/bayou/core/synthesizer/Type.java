@@ -348,7 +348,14 @@ public class Type {
         }
     }
 
-    public org.eclipse.jdt.core.dom.Type simpleT(AST ast) {
+    /**
+     * Returns a simple representation of the current type (i.e., without fully qualified names)
+     *
+     * @param ast the AST node that should own the simple type
+     * @param env if provided (not null), then add imports of classes in generic type
+     * @return a DOM type representing the simple type
+     */
+    public org.eclipse.jdt.core.dom.Type simpleT(AST ast, Environment env) {
         if (t.isPrimitiveType())
             return t;
         if (t.isSimpleType() || t.isQualifiedType()) {
@@ -368,11 +375,18 @@ public class Type {
                 simple = ast.newSimpleName(((SimpleName) name).getIdentifier());
             else
                 simple = ast.newSimpleName(((QualifiedName) name).getName().getIdentifier());
-            return ast.newSimpleType(simple);
+            ParameterizedType pType = ast.newParameterizedType(ast.newSimpleType(simple));
+            for (Object o : ((ParameterizedType) t).typeArguments()) {
+                Type p = new Type((org.eclipse.jdt.core.dom.Type) o);
+                if (env != null)
+                    env.addImport(p.C());
+                pType.typeArguments().add(p.simpleT(ast, env));
+            }
+            return pType;
         }
         if (t.isArrayType()) {
             org.eclipse.jdt.core.dom.Type elementType = ((ArrayType) t).getElementType();
-            org.eclipse.jdt.core.dom.Type simpleElementType = new Type(elementType).simpleT(ast);
+            org.eclipse.jdt.core.dom.Type simpleElementType = new Type(elementType).simpleT(ast, env);
             return ast.newArrayType((org.eclipse.jdt.core.dom.Type) ASTNode.copySubtree(ast, simpleElementType),
                     ((ArrayType) t).getDimensions());
         }

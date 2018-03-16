@@ -186,7 +186,7 @@ public class DAPICall extends DASTNode
         /* constructor type */
         Type type = new Type(constructor.getDeclaringClass());
         type.concretizeType(env);
-        creation.setType(type.T());
+        creation.setType(type.simpleT(ast, null));
 
         /* constructor arguments */
         for (int i = 0; i < constructor.getParameterCount(); i++) {

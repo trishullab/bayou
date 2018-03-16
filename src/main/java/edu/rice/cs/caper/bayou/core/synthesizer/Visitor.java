@@ -265,7 +265,7 @@ public class Visitor extends ASTVisitor {
                         : ((QualifiedName) name).getName().getIdentifier();
                 varDeclStmt.setType(ast.newSimpleType(ast.newSimpleName(simpleName)));
             } else if (var.getType().T().isParameterizedType() || var.getType().T().isArrayType()) {
-                varDeclStmt.setType((org.eclipse.jdt.core.dom.Type) ASTNode.copySubtree(ast, var.getType().T()));
+                varDeclStmt.setType((org.eclipse.jdt.core.dom.Type) ASTNode.copySubtree(ast, var.getType().simpleT(ast, env)));
             } else throw new SynthesisException(SynthesisException.InvalidKindOfType);
 
             body.statements().add(0, varDeclStmt);

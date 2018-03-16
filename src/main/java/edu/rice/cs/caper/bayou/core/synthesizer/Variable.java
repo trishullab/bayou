@@ -170,7 +170,7 @@ public class Variable {
      */
     public Expression createDefaultInitializer(AST ast) {
         CastExpression cast = ast.newCastExpression();
-        cast.setType(type.simpleT(ast));
+        cast.setType(type.simpleT(ast, null));
 
         MethodInvocation invocation = ast.newMethodInvocation();
         invocation.setExpression(ast.newSimpleName("Bayou"));
