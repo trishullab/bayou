@@ -129,10 +129,9 @@ class APICalls(Evidence):
     def from_call(callnode):
         call = callnode['_call']
         call = re.sub('^\$.*\$', '', call)  # get rid of predicates
-        split = call.split('(')[0].split('.')
-        cls, name = split[-2:]
-        cls = cls.split('<')[0]  # class name might be generic but method name is never
-        return [name] if not cls == name else []
+        name = call.split('(')[0].split('.')[-1]
+        name = name.split('<')[0]  # remove generics from call name
+        return [name] if name[0].islower() else []  # Java convention
 
 
 class Types(Evidence):
