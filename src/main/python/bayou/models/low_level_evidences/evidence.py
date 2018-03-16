@@ -186,7 +186,7 @@ class Types(Evidence):
 
     @staticmethod
     def get_types_re(s):
-        patt = re.compile('java[x]?\.(\w*)\.(\w*)(\.(\w*))*')
+        patt = re.compile('java[x]?\.(\w*)\.(\w*)(\.([A-Z]\w*))*')
         types = [match.group(4) if match.group(4) is not None else match.group(2)
                  for match in re.finditer(patt, s)]
         primitives = ['byte', 'short', 'int', 'long', 'float', 'double', 'boolean', 'char']
