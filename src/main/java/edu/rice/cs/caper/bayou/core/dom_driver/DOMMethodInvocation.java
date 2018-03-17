@@ -50,12 +50,12 @@ public class DOMMethodInvocation implements Handler {
         if (binding != null) {
             ITypeBinding cls = binding.getDeclaringClass();
             boolean userType = false;
-            if (cls.isParameterizedType())
+            if (cls != null && cls.isParameterizedType())
                 for (int i = 0; i < cls.getTypeArguments().length; i++)
                     userType |= !cls.getTypeArguments()[i].getQualifiedName().startsWith("java.")
                             && !cls.getTypeArguments()[i].getQualifiedName().startsWith("javax.");
 
-            if (userType) // get to the generic declaration
+            if (userType || cls == null) // get to the generic declaration
                 while (binding != null && binding.getMethodDeclaration() != binding)
                     binding = binding.getMethodDeclaration();
         }
