@@ -276,8 +276,8 @@ def wrapup(training_id, checkpoint_epoch, s3_model_location):
                               .format(checkpoint_epoch, checkpoint_epoch))
         exec_command_blocking(ssh, 'echo "all_model_checkpoint_paths: \\"model{}.ckpt\\"" >> model{}/checkpoint'
                               .format(checkpoint_epoch, checkpoint_epoch))
-        exec_command_blocking(ssh, 'cp save/config.json save/model{}.* save/model.* save/train.out model{}'
-                              .format(checkpoint_epoch, checkpoint_epoch))
+        exec_command_blocking(ssh, 'cp save/callmap.pkl save/config.json save/model{}.* save/model.* save/train.out '
+                                   'model{}'.format(checkpoint_epoch, checkpoint_epoch))
 
     with message('Tarballing the model into {}.tar.gz'.format(checkpoint_epoch)):
         exec_command_blocking(ssh, 'tar czf {}.tar.gz -C model{} .'.format(checkpoint_epoch, checkpoint_epoch))
