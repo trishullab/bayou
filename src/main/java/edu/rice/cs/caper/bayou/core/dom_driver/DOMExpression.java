@@ -22,29 +22,31 @@ import org.eclipse.jdt.core.dom.*;
 public class DOMExpression implements Handler {
 
     final Expression expression;
+    final Visitor visitor;
 
-    public DOMExpression(Expression expression) {
+    public DOMExpression(Expression expression, Visitor visitor) {
         this.expression = expression;
+        this.visitor = visitor;
     }
 
     @Override
     public DSubTree handle() {
         if (expression instanceof MethodInvocation)
-            return new DOMMethodInvocation((MethodInvocation) expression).handle();
+            return new DOMMethodInvocation((MethodInvocation) expression, visitor).handle();
         if (expression instanceof ClassInstanceCreation)
-            return new DOMClassInstanceCreation((ClassInstanceCreation) expression).handle();
+            return new DOMClassInstanceCreation((ClassInstanceCreation) expression, visitor).handle();
         if (expression instanceof InfixExpression)
-            return new DOMInfixExpression((InfixExpression) expression).handle();
+            return new DOMInfixExpression((InfixExpression) expression, visitor).handle();
         if (expression instanceof PrefixExpression)
-            return new DOMPrefixExpression((PrefixExpression) expression).handle();
+            return new DOMPrefixExpression((PrefixExpression) expression, visitor).handle();
         if (expression instanceof ConditionalExpression)
-            return new DOMConditionalExpression((ConditionalExpression) expression).handle();
+            return new DOMConditionalExpression((ConditionalExpression) expression, visitor).handle();
         if (expression instanceof VariableDeclarationExpression)
-            return new DOMVariableDeclarationExpression((VariableDeclarationExpression) expression).handle();
+            return new DOMVariableDeclarationExpression((VariableDeclarationExpression) expression, visitor).handle();
         if (expression instanceof Assignment)
-            return new DOMAssignment((Assignment) expression).handle();
+            return new DOMAssignment((Assignment) expression, visitor).handle();
         if (expression instanceof ParenthesizedExpression)
-            return new DOMParenthesizedExpression((ParenthesizedExpression) expression).handle();
+            return new DOMParenthesizedExpression((ParenthesizedExpression) expression, visitor).handle();
 
         return new DSubTree();
     }

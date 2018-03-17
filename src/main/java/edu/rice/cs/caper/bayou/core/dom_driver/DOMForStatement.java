@@ -24,9 +24,11 @@ import org.eclipse.jdt.core.dom.ForStatement;
 public class DOMForStatement implements Handler {
 
     final ForStatement statement;
+    final Visitor visitor;
 
-    public DOMForStatement(ForStatement statement) {
+    public DOMForStatement(ForStatement statement, Visitor visitor) {
         this.statement = statement;
+        this.visitor = visitor;
     }
 
     @Override
@@ -34,13 +36,13 @@ public class DOMForStatement implements Handler {
         DSubTree tree = new DSubTree();
 
         for (Object o : statement.initializers()) {
-            DSubTree init = new DOMExpression((Expression) o).handle();
+            DSubTree init = new DOMExpression((Expression) o, visitor).handle();
             tree.addNodes(init.getNodes());
         }
-        DSubTree cond = new DOMExpression(statement.getExpression()).handle();
-        DSubTree body = new DOMStatement(statement.getBody()).handle();
+        DSubTree cond = new DOMExpression(statement.getExpression(), visitor).handle();
+        DSubTree body = new DOMStatement(statement.getBody(), visitor).handle();
         for (Object o : statement.updaters()) {
-            DSubTree update = new DOMExpression((Expression) o).handle();
+            DSubTree update = new DOMExpression((Expression) o, visitor).handle();
             body.addNodes(update.getNodes()); // updaters are part of body
         }
 

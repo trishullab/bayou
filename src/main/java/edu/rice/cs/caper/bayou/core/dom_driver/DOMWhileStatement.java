@@ -22,17 +22,19 @@ import org.eclipse.jdt.core.dom.WhileStatement;
 public class DOMWhileStatement implements Handler {
 
     final WhileStatement statement;
+    final Visitor visitor;
 
-    public DOMWhileStatement(WhileStatement statement) {
+    public DOMWhileStatement(WhileStatement statement, Visitor visitor) {
         this.statement = statement;
+        this.visitor = visitor;
     }
 
     @Override
     public DSubTree handle() {
         DSubTree tree = new DSubTree();
 
-        DSubTree cond = new DOMExpression(statement.getExpression()).handle();
-        DSubTree body = new DOMStatement(statement.getBody()).handle();
+        DSubTree cond = new DOMExpression(statement.getExpression(), visitor).handle();
+        DSubTree body = new DOMStatement(statement.getBody(), visitor).handle();
 
         boolean loop = cond.isValid();
 

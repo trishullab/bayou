@@ -21,41 +21,43 @@ import org.eclipse.jdt.core.dom.*;
 public class DOMStatement implements Handler {
 
     final Statement statement;
+    final Visitor visitor;
 
-    public DOMStatement(Statement statement) {
+    public DOMStatement(Statement statement, Visitor visitor) {
         this.statement = statement;
+        this.visitor = visitor;
     }
 
     @Override
     public DSubTree handle() {
         if (statement instanceof Block)
-            return new DOMBlock((Block) statement).handle();
+            return new DOMBlock((Block) statement, visitor).handle();
         if (statement instanceof ExpressionStatement)
-            return new DOMExpressionStatement((ExpressionStatement) statement).handle();
+            return new DOMExpressionStatement((ExpressionStatement) statement, visitor).handle();
         if (statement instanceof IfStatement)
-            return new DOMIfStatement((IfStatement) statement).handle();
+            return new DOMIfStatement((IfStatement) statement, visitor).handle();
         if (statement instanceof SwitchStatement)
-            return new DOMSwitchStatement((SwitchStatement) statement).handle();
+            return new DOMSwitchStatement((SwitchStatement) statement, visitor).handle();
         if (statement instanceof SwitchCase)
-            return new DOMSwitchCase((SwitchCase) statement).handle();
+            return new DOMSwitchCase((SwitchCase) statement, visitor).handle();
         if (statement instanceof DoStatement)
-            return new DOMDoStatement((DoStatement) statement).handle();
+            return new DOMDoStatement((DoStatement) statement, visitor).handle();
         if (statement instanceof ForStatement)
-            return new DOMForStatement((ForStatement) statement).handle();
+            return new DOMForStatement((ForStatement) statement, visitor).handle();
         if (statement instanceof EnhancedForStatement)
-            return new DOMEnhancedForStatement((EnhancedForStatement) statement).handle();
+            return new DOMEnhancedForStatement((EnhancedForStatement) statement, visitor).handle();
         if (statement instanceof WhileStatement)
-            return new DOMWhileStatement((WhileStatement) statement).handle();
+            return new DOMWhileStatement((WhileStatement) statement, visitor).handle();
         if (statement instanceof TryStatement)
-            return new DOMTryStatement((TryStatement) statement).handle();
+            return new DOMTryStatement((TryStatement) statement, visitor).handle();
         if (statement instanceof VariableDeclarationStatement)
-            return new DOMVariableDeclarationStatement((VariableDeclarationStatement) statement).handle();
+            return new DOMVariableDeclarationStatement((VariableDeclarationStatement) statement, visitor).handle();
         if (statement instanceof SynchronizedStatement)
-            return new DOMSynchronizedStatement((SynchronizedStatement) statement).handle();
+            return new DOMSynchronizedStatement((SynchronizedStatement) statement, visitor).handle();
         if (statement instanceof ReturnStatement)
-            return new DOMReturnStatement((ReturnStatement) statement).handle();
+            return new DOMReturnStatement((ReturnStatement) statement, visitor).handle();
         if (statement instanceof LabeledStatement)
-            return new DOMLabeledStatement((LabeledStatement) statement).handle();
+            return new DOMLabeledStatement((LabeledStatement) statement, visitor).handle();
 
         return new DSubTree();
     }

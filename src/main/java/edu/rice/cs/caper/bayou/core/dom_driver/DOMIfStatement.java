@@ -22,18 +22,20 @@ import org.eclipse.jdt.core.dom.IfStatement;
 public class DOMIfStatement implements Handler {
 
     final IfStatement statement;
+    final Visitor visitor;
 
-    public DOMIfStatement(IfStatement statement) {
+    public DOMIfStatement(IfStatement statement, Visitor visitor) {
         this.statement = statement;
+        this.visitor = visitor;
     }
 
     @Override
     public DSubTree handle() {
         DSubTree tree = new DSubTree();
 
-        DSubTree Tcond = new DOMExpression(statement.getExpression()).handle();
-        DSubTree Tthen = new DOMStatement(statement.getThenStatement()).handle();
-        DSubTree Telse = new DOMStatement(statement.getElseStatement()).handle();
+        DSubTree Tcond = new DOMExpression(statement.getExpression(), visitor).handle();
+        DSubTree Tthen = new DOMStatement(statement.getThenStatement(), visitor).handle();
+        DSubTree Telse = new DOMStatement(statement.getElseStatement(), visitor).handle();
 
         boolean branch = (Tcond.isValid() && Tthen.isValid()) || (Tcond.isValid() && Telse.isValid())
                 || (Tthen.isValid() && Telse.isValid());

@@ -30,28 +30,28 @@ public final class Utils {
         throw new AssertionError("Do not instantiate this class!");
     }
 
-    public static boolean isRelevantCall(IMethodBinding binding) {
+    public static boolean isRelevantCall(IMethodBinding binding, Visitor visitor) {
         ITypeBinding cls;
         if (binding == null || (cls = binding.getDeclaringClass()) == null)
             return false;
         IPackageBinding pack = cls.getPackage();
         String[] packs = pack.getNameComponents();
-        if (packs.length > 0 && Visitor.V().options.API_MODULES.contains(packs[0]))
+        if (packs.length > 0 && visitor.options.API_MODULES.contains(packs[0]))
             return true;
-        if (Visitor.V().options.API_PACKAGES.contains(pack.getName()))
+        if (visitor.options.API_PACKAGES.contains(pack.getName()))
             return true;
         String className = cls.getQualifiedName();
         if (className.contains("<")) /* be agnostic to generic versions */
             className = className.substring(0, className.indexOf("<"));
-        if (Visitor.V().options.API_CLASSES.contains(className))
+        if (visitor.options.API_CLASSES.contains(className))
             return true;
 
         return false;
     }
 
-    public static MethodDeclaration checkAndGetLocalMethod(IMethodBinding binding) {
+    public static MethodDeclaration checkAndGetLocalMethod(IMethodBinding binding, Visitor visitor) {
         if (binding != null)
-            for (MethodDeclaration method : Visitor.V().allMethods)
+            for (MethodDeclaration method : visitor.allMethods)
                 if (binding.isEqualTo(method.resolveBinding()))
                     return method;
         return null;

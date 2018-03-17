@@ -23,18 +23,20 @@ import org.eclipse.jdt.core.dom.ConditionalExpression;
 public class DOMConditionalExpression implements Handler {
 
     final ConditionalExpression expression;
+    final Visitor visitor;
 
-    public DOMConditionalExpression(ConditionalExpression expression) {
+    public DOMConditionalExpression(ConditionalExpression expression, Visitor visitor) {
         this.expression = expression;
+        this.visitor = visitor;
     }
 
     @Override
     public DSubTree handle() {
         DSubTree tree = new DSubTree();
 
-        DSubTree Tcond = new DOMExpression(expression.getExpression()).handle();
-        DSubTree Tthen = new DOMExpression(expression.getThenExpression()).handle();
-        DSubTree Telse = new DOMExpression(expression.getElseExpression()).handle();
+        DSubTree Tcond = new DOMExpression(expression.getExpression(), visitor).handle();
+        DSubTree Tthen = new DOMExpression(expression.getThenExpression(), visitor).handle();
+        DSubTree Telse = new DOMExpression(expression.getElseExpression(), visitor).handle();
 
         boolean branch = (Tcond.isValid() && Tthen.isValid()) || (Tcond.isValid() && Telse.isValid())
                 || (Tthen.isValid() && Telse.isValid());

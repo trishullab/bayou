@@ -21,13 +21,15 @@ import org.eclipse.jdt.core.dom.MethodDeclaration;
 public class DOMMethodDeclaration implements Handler {
 
     final MethodDeclaration method;
+    final Visitor visitor;
 
-    public DOMMethodDeclaration(MethodDeclaration method) {
+    public DOMMethodDeclaration(MethodDeclaration method, Visitor visitor) {
         this.method = method;
+        this.visitor = visitor;
     }
 
     @Override
     public DSubTree handle() {
-        return new DOMBlock(method.getBody()).handle();
+        return new DOMBlock(method.getBody(), visitor).handle();
     }
 }

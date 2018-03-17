@@ -21,17 +21,19 @@ import org.eclipse.jdt.core.dom.InfixExpression;
 public class DOMInfixExpression implements Handler {
 
     final InfixExpression expr;
+    final Visitor visitor;
 
-    public DOMInfixExpression(InfixExpression expr) {
+    public DOMInfixExpression(InfixExpression expr, Visitor visitor) {
         this.expr = expr;
+        this.visitor = visitor;
     }
 
     @Override
     public DSubTree handle() {
         DSubTree tree = new DSubTree();
 
-        DSubTree Tleft = new DOMExpression(expr.getLeftOperand()).handle();
-        DSubTree Tright = new DOMExpression(expr.getRightOperand()).handle();
+        DSubTree Tleft = new DOMExpression(expr.getLeftOperand(), visitor).handle();
+        DSubTree Tright = new DOMExpression(expr.getRightOperand(), visitor).handle();
 
         tree.addNodes(Tleft.getNodes());
         tree.addNodes(Tright.getNodes());

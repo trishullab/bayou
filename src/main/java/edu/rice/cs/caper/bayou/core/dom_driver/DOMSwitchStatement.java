@@ -26,14 +26,16 @@ import org.eclipse.jdt.core.dom.SwitchStatement;
 public class DOMSwitchStatement implements Handler {
 
 	final SwitchStatement statement;
+	final Visitor visitor;
 
 	DSubTree tree = new DSubTree();
 
 	ArrayList<List<DASTNode>> bodies = new ArrayList<>();
 	ArrayList<Integer> nodeType = new ArrayList<>();
 
-	public DOMSwitchStatement(SwitchStatement statement) {
+	public DOMSwitchStatement(SwitchStatement statement, Visitor visitor) {
 		this.statement = statement;
+		this.visitor = visitor;
 	}
 
 	private DSubTree BuildTree(DSubTree Sexpr, int itPos) {
@@ -57,13 +59,13 @@ public class DOMSwitchStatement implements Handler {
 
 	@Override
 	public DSubTree handle() {
-		DSubTree Sexpr = new DOMExpression(statement.getExpression()).handle();
+		DSubTree Sexpr = new DOMExpression(statement.getExpression(), visitor).handle();
 		boolean branch = Sexpr.isValid();
 
 		for (Object o : statement.statements()) {
 			int type = ((Statement) o).getNodeType();
 			nodeType.add(type);
-			DSubTree body = new DOMStatement((Statement) o).handle();
+			DSubTree body = new DOMStatement((Statement) o, visitor).handle();
 			bodies.add(body.getNodes());
 			if (type != 49) // excludes 'case' statement
 				branch |= body.isValid();
@@ -77,7 +79,7 @@ public class DOMSwitchStatement implements Handler {
 			tree.addNodes(Sexpr.getNodes());
 			for (Iterator<Object> iter = statement.statements().iterator(); iter.hasNext(); ) {
 				Object o = iter.next();
-				DSubTree body = new DOMStatement((Statement) o).handle();
+				DSubTree body = new DOMStatement((Statement) o, visitor).handle();
 				tree.addNodes(body.getNodes());
 			}
 		}

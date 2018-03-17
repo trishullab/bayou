@@ -22,9 +22,11 @@ import org.eclipse.jdt.core.dom.EnhancedForStatement;
 public class DOMEnhancedForStatement implements Handler {
 
     final EnhancedForStatement statement;
+    final Visitor visitor;
 
-    public DOMEnhancedForStatement(EnhancedForStatement statement) {
+    public DOMEnhancedForStatement(EnhancedForStatement statement, Visitor visitor) {
         this.statement = statement;
+        this.visitor = visitor;
     }
 
     /* TODO: handle this properly, by creating a call to Iterator.hasNext() and next() in a loop */
@@ -32,8 +34,8 @@ public class DOMEnhancedForStatement implements Handler {
     public DSubTree handle() {
         DSubTree tree = new DSubTree();
 
-        DSubTree Texpr = new DOMExpression(statement.getExpression()).handle();
-        DSubTree Tbody = new DOMStatement(statement.getBody()).handle();
+        DSubTree Texpr = new DOMExpression(statement.getExpression(), visitor).handle();
+        DSubTree Tbody = new DOMStatement(statement.getBody(), visitor).handle();
 
         tree.addNodes(Texpr.getNodes());
         tree.addNodes(Tbody.getNodes());

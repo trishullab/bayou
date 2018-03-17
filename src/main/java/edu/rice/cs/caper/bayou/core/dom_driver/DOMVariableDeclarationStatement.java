@@ -22,9 +22,11 @@ import org.eclipse.jdt.core.dom.VariableDeclarationStatement;
 public class DOMVariableDeclarationStatement implements Handler {
 
     final VariableDeclarationStatement statement;
+    final Visitor visitor;
 
-    public DOMVariableDeclarationStatement(VariableDeclarationStatement statement) {
+    public DOMVariableDeclarationStatement(VariableDeclarationStatement statement, Visitor visitor) {
         this.statement = statement;
+        this.visitor = visitor;
     }
 
     @Override
@@ -32,7 +34,7 @@ public class DOMVariableDeclarationStatement implements Handler {
         DSubTree tree = new DSubTree();
         for (Object o : statement.fragments()) {
             VariableDeclarationFragment fragment = (VariableDeclarationFragment) o;
-            DSubTree t = new DOMVariableDeclarationFragment(fragment).handle();
+            DSubTree t = new DOMVariableDeclarationFragment(fragment, visitor).handle();
             tree.addNodes(t.getNodes());
         }
 

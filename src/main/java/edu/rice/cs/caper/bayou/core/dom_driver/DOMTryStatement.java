@@ -23,9 +23,11 @@ import org.eclipse.jdt.core.dom.TryStatement;
 public class DOMTryStatement implements Handler {
 
     final TryStatement statement;
+    final Visitor visitor;
 
-    public DOMTryStatement(TryStatement statement) {
+    public DOMTryStatement(TryStatement statement, Visitor visitor) {
         this.statement = statement;
+        this.visitor = visitor;
     }
 
     @Override
@@ -33,13 +35,13 @@ public class DOMTryStatement implements Handler {
         DSubTree tree = new DSubTree();
 
         // restriction: considering only the first catch clause
-        DSubTree Ttry = new DOMBlock(statement.getBody()).handle();
+        DSubTree Ttry = new DOMBlock(statement.getBody(), visitor).handle();
         DSubTree Tcatch;
         if (! statement.catchClauses().isEmpty())
-            Tcatch = new DOMCatchClause((CatchClause) statement.catchClauses().get(0)).handle();
+            Tcatch = new DOMCatchClause((CatchClause) statement.catchClauses().get(0), visitor).handle();
         else
             Tcatch = new DSubTree();
-        DSubTree Tfinally = new DOMBlock(statement.getFinally()).handle();
+        DSubTree Tfinally = new DOMBlock(statement.getFinally(), visitor).handle();
 
         boolean except = Ttry.isValid() && Tcatch.isValid();
 

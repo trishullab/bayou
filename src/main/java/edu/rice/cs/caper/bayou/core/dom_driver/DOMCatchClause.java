@@ -22,13 +22,15 @@ import org.eclipse.jdt.core.dom.CatchClause;
 public class DOMCatchClause implements Handler {
 
     final CatchClause clause;
+    final Visitor visitor;
 
-    public DOMCatchClause(CatchClause clause) {
+    public DOMCatchClause(CatchClause clause, Visitor visitor) {
         this.clause = clause;
+        this.visitor = visitor;
     }
 
     @Override
     public DSubTree handle() {
-        return new DOMBlock(clause.getBody()).handle();
+        return new DOMBlock(clause.getBody(), visitor).handle();
     }
 }

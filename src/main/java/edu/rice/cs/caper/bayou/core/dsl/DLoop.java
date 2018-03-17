@@ -50,7 +50,7 @@ public class DLoop extends DASTNode {
         for (DAPICall call : _cond)
             call.updateSequences(soFar, max, max_length);
 
-        int num_unrolls = Visitor.V() == null? 1: Visitor.V().options.NUM_UNROLLS;
+        int num_unrolls = 1;
         for (int i = 0; i < num_unrolls; i++) {
             for (DASTNode node : _body)
                 node.updateSequences(soFar, max, max_length);

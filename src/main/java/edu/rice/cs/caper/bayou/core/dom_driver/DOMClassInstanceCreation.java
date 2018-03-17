@@ -26,21 +26,23 @@ import org.eclipse.jdt.core.dom.MethodDeclaration;
 public class DOMClassInstanceCreation implements Handler {
 
     final ClassInstanceCreation creation;
+    final Visitor visitor;
 
-    public DOMClassInstanceCreation(ClassInstanceCreation creation) {
+    public DOMClassInstanceCreation(ClassInstanceCreation creation, Visitor visitor) {
         this.creation = creation;
+        this.visitor = visitor;
     }
 
     @Override
     public DSubTree handle() {
         DSubTree tree = new DSubTree();
         // add the expression's subtree (e.g: foo(..).bar() should handle foo(..) first)
-        DSubTree Texp = new DOMExpression(creation.getExpression()).handle();
+        DSubTree Texp = new DOMExpression(creation.getExpression(), visitor).handle();
         tree.addNodes(Texp.getNodes());
 
         // evaluate arguments first
         for (Object o : creation.arguments()) {
-            DSubTree Targ = new DOMExpression((Expression) o).handle();
+            DSubTree Targ = new DOMExpression((Expression) o, visitor).handle();
             tree.addNodes(Targ.getNodes());
         }
 
@@ -48,14 +50,14 @@ public class DOMClassInstanceCreation implements Handler {
         // get to the generic declaration, if this binding is an instantiation
         while (binding != null && binding.getMethodDeclaration() != binding)
             binding = binding.getMethodDeclaration();
-        MethodDeclaration localMethod = Utils.checkAndGetLocalMethod(binding);
+        MethodDeclaration localMethod = Utils.checkAndGetLocalMethod(binding, visitor);
         if (localMethod != null) {
-            DSubTree Tmethod = new DOMMethodDeclaration(localMethod).handle();
+            DSubTree Tmethod = new DOMMethodDeclaration(localMethod, visitor).handle();
             tree.addNodes(Tmethod.getNodes());
         }
-        else if (Utils.isRelevantCall(binding)) {
+        else if (Utils.isRelevantCall(binding, visitor)) {
             try {
-                tree.addNode(new DAPICall(binding, Visitor.V().getLineNumber(creation)));
+                tree.addNode(new DAPICall(binding, visitor.getLineNumber(creation)));
             } catch (DAPICall.InvalidAPICallException e) {
                 // continue without adding the node
             }

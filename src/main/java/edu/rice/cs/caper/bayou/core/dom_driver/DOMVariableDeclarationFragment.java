@@ -21,13 +21,15 @@ import org.eclipse.jdt.core.dom.VariableDeclarationFragment;
 public class DOMVariableDeclarationFragment implements Handler {
 
     final VariableDeclarationFragment fragment;
+    final Visitor visitor;
 
-    public DOMVariableDeclarationFragment(VariableDeclarationFragment fragment) {
+    public DOMVariableDeclarationFragment(VariableDeclarationFragment fragment, Visitor visitor) {
         this.fragment = fragment;
+        this.visitor = visitor;
     }
 
     @Override
     public DSubTree handle() {
-        return new DOMExpression(fragment.getInitializer()).handle();
+        return new DOMExpression(fragment.getInitializer(), visitor).handle();
     }
 }

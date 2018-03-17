@@ -21,9 +21,11 @@ import org.eclipse.jdt.core.dom.SwitchCase;
 public class DOMSwitchCase implements Handler {
 
     final SwitchCase statement;
+    final Visitor visitor;
 
-    public DOMSwitchCase(SwitchCase statement) {
+    public DOMSwitchCase(SwitchCase statement, Visitor visitor) {
         this.statement = statement;
+        this.visitor = visitor;
     }
 
     @Override

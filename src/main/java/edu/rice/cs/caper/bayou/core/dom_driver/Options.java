@@ -42,7 +42,6 @@ public class Options {
         "      `java`,                         | word) that driver should extract\n" +
         "      `javax`                         | data on.\n" +
         "  ],                                  |\n" +
-        "  `num-unrolls`: 1,                   | Max unroll of loops in sequences\n" +
         "  `max-seqs`: 10,                     | Max num of sequences in sketches\n" +
         "  `max-seq-length`: 10,               | Max length of each sequence in sketches\n" +
         "  `javadoc-type`: `summary`           | `summary` (only first line),\n" +
@@ -83,7 +82,6 @@ public class Options {
     public final Map<String, Boolean> KNOWN_CONSTANTS_BOOLEAN;
     public final Map<String, Float> KNOWN_CONSTANTS_NUMBER;
     public final Map<String, String> KNOWN_CONSTANTS_STRING;
-    public final int NUM_UNROLLS;
     public final int MAX_SEQS;
     public final int MAX_SEQ_LENGTH;
     public final String JAVADOC_TYPE;
@@ -100,7 +98,6 @@ public class Options {
                 "java.io.File");
 
         API_PACKAGES = Arrays.asList("android.bluetooth");
-        NUM_UNROLLS = 1;
         JAVADOC_TYPE= "full";
         MAX_SEQS = 10;
         MAX_SEQ_LENGTH = 10;
@@ -163,12 +160,6 @@ public class Options {
                 ks.put(e.getKey(), e.getValue().getAsString());
         }
         this.KNOWN_CONSTANTS_STRING = Collections.unmodifiableMap(ks);
-
-        // NUM_UNROLLS
-        if (this.config.has("num-unrolls"))
-            this.NUM_UNROLLS = this.config.getAsJsonPrimitive("num-unrolls").getAsInt();
-        else
-            this.NUM_UNROLLS = 1;
 
         // MAX_SEQS
         if (this.config.has("max-seqs"))

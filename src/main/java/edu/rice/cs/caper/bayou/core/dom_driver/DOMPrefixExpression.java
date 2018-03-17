@@ -23,14 +23,16 @@ import org.eclipse.jdt.core.dom.PrefixExpression;
 public class DOMPrefixExpression implements Handler {
 
     final PrefixExpression expression;
+    final Visitor visitor;
 
-    public DOMPrefixExpression(PrefixExpression expression) {
+    public DOMPrefixExpression(PrefixExpression expression, Visitor visitor) {
         this.expression = expression;
+        this.visitor = visitor;
     }
 
     @Override
     public DSubTree handle() {
-        DSubTree sub = new DOMExpression(expression.getOperand()).handle();
+        DSubTree sub = new DOMExpression(expression.getOperand(), visitor).handle();
         if (expression.getOperator() == PrefixExpression.Operator.NOT && sub.getNodes().size() == 1) {
             // encode the ! predicate into the API call name
             DAPICall call = (DAPICall) sub.getNodes().get(0);

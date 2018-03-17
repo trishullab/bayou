@@ -42,12 +42,6 @@ public class Visitor extends ASTVisitor {
     // call stack during driver execution
     public final Stack<MethodDeclaration> callStack = new Stack<>();
 
-    private static Visitor V;
-
-    public static Visitor V() {
-        return V;
-    }
-
     class JSONOutput {
         List<JSONOutputWrapper> programs;
 
@@ -89,7 +83,6 @@ public class Visitor extends ASTVisitor {
 
         _js = new JSONOutput();
         allMethods = new ArrayList<>();
-        V = this;
     }
 
     @Override
@@ -128,9 +121,9 @@ public class Visitor extends ASTVisitor {
                 for (MethodDeclaration m : publicMethods) {
                     String javadoc = Utils.getJavadoc(m, options.JAVADOC_TYPE);
                     callStack.push(c);
-                    DSubTree ast = new DOMMethodDeclaration(c).handle();
+                    DSubTree ast = new DOMMethodDeclaration(c, this).handle();
                     callStack.push(m);
-                    ast.addNodes(new DOMMethodDeclaration(m).handle().getNodes());
+                    ast.addNodes(new DOMMethodDeclaration(m, this).handle().getNodes());
                     callStack.pop();
                     callStack.pop();
                     if (ast.isValid())
@@ -140,7 +133,7 @@ public class Visitor extends ASTVisitor {
             for (MethodDeclaration c : constructors) {
                 String javadoc = Utils.getJavadoc(c, options.JAVADOC_TYPE);
                 callStack.push(c);
-                DSubTree ast = new DOMMethodDeclaration(c).handle();
+                DSubTree ast = new DOMMethodDeclaration(c, this).handle();
                 callStack.pop();
                 if (ast.isValid())
                     astsWithJavadoc.add(new ImmutablePair<>(ast, javadoc));
@@ -149,7 +142,7 @@ public class Visitor extends ASTVisitor {
             for (MethodDeclaration m : publicMethods) {
                 String javadoc = Utils.getJavadoc(m, options.JAVADOC_TYPE);
                 callStack.push(m);
-                DSubTree ast = new DOMMethodDeclaration(m).handle();
+                DSubTree ast = new DOMMethodDeclaration(m, this).handle();
                 callStack.pop();
                 if (ast.isValid())
                     astsWithJavadoc.add(new ImmutablePair<>(ast, javadoc));
