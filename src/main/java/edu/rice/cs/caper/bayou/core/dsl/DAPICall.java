@@ -28,6 +28,8 @@ import java.util.stream.Stream;
 public class DAPICall extends DASTNode
 {
 
+    public class InvalidAPICallException extends Exception {}
+
     String node = "DAPICall";
     String _call;
     List<String> _throws;
@@ -48,7 +50,7 @@ public class DAPICall extends DASTNode
         this.node = "DAPICall";
     }
 
-    public DAPICall(IMethodBinding methodBinding, int linenum) {
+    public DAPICall(IMethodBinding methodBinding, int linenum) throws InvalidAPICallException {
         this.methodBinding = methodBinding;
         this._call = getClassName() + "." + getSignature();
         this._throws = new ArrayList<>();
@@ -71,19 +73,23 @@ public class DAPICall extends DASTNode
         }
     }
 
-    private String getClassName() {
+    private String getClassName() throws InvalidAPICallException {
         ITypeBinding cls = methodBinding.getDeclaringClass();
         String className = cls.getQualifiedName();
         if (cls.isGenericType())
             className += "<" + String.join(",", Arrays.stream(cls.getTypeParameters()).map(
                     t -> getTypeName(t, t.getName())
             ).collect(Collectors.toList())) + ">";
+        if (className.equals(""))
+            throw new InvalidAPICallException();
         return className;
     }
 
-    private String getSignature() {
+    private String getSignature() throws InvalidAPICallException {
         Stream<String> types = Arrays.stream(methodBinding.getParameterTypes()).map(
                 t -> getTypeName(t, t.getQualifiedName()));
+        if (methodBinding.getName().equals(""))
+            throw new InvalidAPICallException();
         return methodBinding.getName() + "(" + String.join(",", types.collect(Collectors.toCollection(ArrayList::new))) + ")";
     }
 

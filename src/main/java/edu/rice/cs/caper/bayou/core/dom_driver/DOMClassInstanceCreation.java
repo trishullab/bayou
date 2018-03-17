@@ -53,8 +53,13 @@ public class DOMClassInstanceCreation implements Handler {
             DSubTree Tmethod = new DOMMethodDeclaration(localMethod).handle();
             tree.addNodes(Tmethod.getNodes());
         }
-        else if (Utils.isRelevantCall(binding))
-            tree.addNode(new DAPICall(binding, Visitor.V().getLineNumber(creation)));
+        else if (Utils.isRelevantCall(binding)) {
+            try {
+                tree.addNode(new DAPICall(binding, Visitor.V().getLineNumber(creation)));
+            } catch (DAPICall.InvalidAPICallException e) {
+                // continue without adding the node
+            }
+        }
         return tree;
     }
 }
