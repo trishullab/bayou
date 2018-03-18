@@ -25,7 +25,7 @@ import argparse
 
 def merge(clargs):
     programs = []
-    with open(clargs.file_list[0]) as f:
+    with open(clargs.file_list[0], errors='ignore') as f:
         file_list = f.readlines()
     for filename in file_list:
         filename = filename[:-1]  # ignore '\n'
