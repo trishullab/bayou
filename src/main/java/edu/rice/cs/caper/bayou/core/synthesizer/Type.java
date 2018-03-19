@@ -23,6 +23,8 @@ import java.lang.reflect.*;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class Type {
 
@@ -61,6 +63,21 @@ public class Type {
         primitiveToString = Collections.unmodifiableMap(map);
     }
 
+    static final Map<String,PrimitiveType.Code> stringToPrimitive;
+    static {
+        Map<String,PrimitiveType.Code> map = new HashMap<>();
+        map.put("int", PrimitiveType.INT);
+        map.put("long", PrimitiveType.LONG);
+        map.put("double", PrimitiveType.DOUBLE);
+        map.put("float", PrimitiveType.FLOAT);
+        map.put("boolean", PrimitiveType.BOOLEAN);
+        map.put("char", PrimitiveType.CHAR);
+        map.put("byte", PrimitiveType.BYTE);
+        map.put("void", PrimitiveType.VOID);
+        map.put("short", PrimitiveType.SHORT);
+        stringToPrimitive = Collections.unmodifiableMap(map);
+    }
+
     public Type(org.eclipse.jdt.core.dom.Type t) {
         this.t = t;
         this.c = getClass(t);
@@ -96,6 +113,76 @@ public class Type {
 
     public Class C() {
         return c;
+    }
+
+    public static class TypeParseException extends Exception { }
+
+    /**
+     * Parses the given string to form a Type object. The string should not contain predicates ($),
+     * Tau_s or wildcard types (?)
+     *
+     * @param typeStr the string to parse as a type
+     * @param ast the AST that should own the type
+     * @return the Type after parsing
+     * @throws TypeParseException if there was a parse error
+     */
+    public static Type fromString(String typeStr, AST ast) throws TypeParseException {
+        if (typeStr.contains("\\$") || typeStr.contains("Tau_") || typeStr.contains("?"))
+            throw new SynthesisException(SynthesisException.InvalidKindOfType);
+
+        Matcher sTypePattern = Pattern.compile("\\w+(\\.\\w+)+").matcher(typeStr);
+        Matcher aTypePattern = Pattern.compile("([^\\[]*)([\\[\\]]+)").matcher(typeStr);
+        Matcher pTypePattern = Pattern.compile("([^<]*)<(.*)>").matcher(typeStr);
+
+        // primitive type
+        if (stringToPrimitive.containsKey(typeStr))
+            return new Type(ast.newPrimitiveType(stringToPrimitive.get(typeStr)));
+
+        // simple type
+        if (sTypePattern.matches())
+            return new Type(ast.newSimpleType(ast.newName(typeStr)));
+
+        // array type
+        if (aTypePattern.matches()) {
+            String base = aTypePattern.group(1);
+            String dimensions = aTypePattern.group(2);
+            org.eclipse.jdt.core.dom.Type baseType = ast.newSimpleType(ast.newName(base));
+            ArrayType arrayType = ast.newArrayType(baseType, dimensions.length() / 2 /* number of []s */);
+            return new Type(arrayType);
+        }
+
+        // generic type
+        if (pTypePattern.matches()) {
+            String base = pTypePattern.group(1);
+            String args = pTypePattern.group(2);
+            org.eclipse.jdt.core.dom.Type baseType = ast.newSimpleType(ast.newName(base));
+            Class baseClass = Environment.getClass(base);
+            ParameterizedType pType = ast.newParameterizedType(baseType);
+
+            // in principle there should be a (push-down) parser for this, but since we know that the arguments
+            // are separated by ","s, a hack is to just try substring'ing each ","  until it parses.
+            int currIdx = 0;
+            for (int i = 0; i < baseClass.getTypeParameters().length; i++) {
+                int nextIdx = currIdx;
+                if (i == baseClass.getTypeParameters().length - 1)
+                    pType.typeArguments().add(Type.fromString(args.substring(currIdx), ast).T());
+                else
+                    while (true)
+                        try {
+                            nextIdx = args.indexOf(",", nextIdx + 1);
+                            String paramStr = args.substring(currIdx, nextIdx);
+                            Type param = Type.fromString(paramStr, ast);
+                            pType.typeArguments().add(param.T());
+                            currIdx = nextIdx + 1;
+                            break;
+                        } catch (TypeParseException e) {
+                            // try the next index of ,
+                        }
+            }
+            return new Type(pType);
+        }
+
+        throw new TypeParseException();
     }
 
     public void concretizeType(Environment env) {

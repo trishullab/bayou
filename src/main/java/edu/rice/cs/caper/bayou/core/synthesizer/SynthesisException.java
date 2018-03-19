@@ -34,6 +34,7 @@ public class SynthesisException extends RuntimeException {
     public static final int GenericTypeVariableMismatch = 1009;
     public static final int InvalidKindOfType = 1010;
     public static final int MalformedASTFromNN = 1011;
+    public static final int TypeParseException = 1012;
 
     private static final Map<Integer,String> toMessage;
     static {
@@ -62,6 +63,8 @@ public class SynthesisException extends RuntimeException {
             "Invalid kind of type.");
         _toMessage.put(MalformedASTFromNN,
                 "Malformed AST predicted by neural network.");
+        _toMessage.put(TypeParseException,
+                "Malformed type from AST.");
         toMessage = Collections.unmodifiableMap(_toMessage);
     }
 

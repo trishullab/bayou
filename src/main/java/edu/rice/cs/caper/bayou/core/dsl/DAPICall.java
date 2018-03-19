@@ -190,7 +190,16 @@ public class DAPICall extends DASTNode
         ClassInstanceCreation creation = ast.newClassInstanceCreation();
 
         /* constructor type */
-        Type type = new Type(constructor.getDeclaringClass());
+        String qualifiedName = _call.substring(0, _call.indexOf("("));
+        String className = qualifiedName.substring(0, qualifiedName.lastIndexOf("."));
+        Type type;
+        try {
+            type = className.contains("Tau_")? new Type(constructor.getDeclaringClass())
+                    : Type.fromString(className, env.ast());
+        } catch (Type.TypeParseException e) {
+            System.out.println(className);
+            throw new SynthesisException(SynthesisException.TypeParseException);
+        }
         type.concretizeType(env);
         creation.setType(type.simpleT(ast, null));
 
@@ -238,7 +247,17 @@ public class DAPICall extends DASTNode
             object = new TypedExpression(ast.newName(method.getDeclaringClass().getSimpleName()), type);
             env.addImport(method.getDeclaringClass());
         } else {
-            object = env.search(new SearchTarget(new Type(method.getDeclaringClass())));
+            String qualifiedName = _call.substring(0, _call.indexOf("("));
+            String className = qualifiedName.substring(0, qualifiedName.lastIndexOf("."));
+            Type type;
+            try {
+                type = className.contains("Tau_")? new Type(method.getDeclaringClass())
+                        : Type.fromString(className, env.ast());
+            } catch (Type.TypeParseException e) {
+                System.out.println(className);
+                throw new SynthesisException(SynthesisException.TypeParseException);
+            }
+            object = env.search(new SearchTarget(type));
         }
         invocation.setExpression(object.getExpression());
 
