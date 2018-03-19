@@ -338,8 +338,14 @@ public class Type {
 
         // check sanity of types
         if (! t.isParameterizedType()) {
-            if (c.getTypeParameters().length > 0)
-                throw new SynthesisException(SynthesisException.GenericTypeVariableMismatch);
+            if (c.getTypeParameters().length > 0) {
+                // commenting this check, as there are cases where synthesis succeeds even if there is a
+                // mismatch here (e.g., when there is a variable in scope that has already resolved the type).
+                // In other cases when this check would have failed, the failure would now occur elsewhere,
+                // typically in the getConcretization(..) case that handles TypeVariable.
+
+                // throw new SynthesisException(SynthesisException.GenericTypeVariableMismatch);
+            }
             if (t.isArrayType() && !c.isArray())
                 throw new SynthesisException(SynthesisException.InvalidKindOfType);
             return;
