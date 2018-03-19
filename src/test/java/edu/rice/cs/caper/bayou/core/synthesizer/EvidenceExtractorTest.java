@@ -103,4 +103,24 @@ public class EvidenceExtractorTest
     public void testSpeech() throws IOException, ParseException {
         testExecute("TestSpeech");
     }
+
+    @Test
+    public void testUtil() throws IOException, ParseException {
+        testExecute("TestUtil");
+    }
+
+    @Test
+    public void testSecurity() throws IOException, ParseException {
+        testExecute("TestSecurity");
+    }
+
+    @Test
+    public void testIO_exception() throws IOException, ParseException {
+        testExecute("TestIO_exception");
+    }
+
+    @Test
+    public void testIO_not() throws IOException, ParseException {
+        testExecute("TestIO_not");
+    }
 }
