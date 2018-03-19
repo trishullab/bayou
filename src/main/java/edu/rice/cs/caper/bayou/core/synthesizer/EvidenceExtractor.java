@@ -19,18 +19,20 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import org.eclipse.jdt.core.dom.*;
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class EvidenceExtractor extends ASTVisitor {
 
     class JSONOutputWrapper {
-        List<String> apicalls;
-        List<String> types;
-        List<String> keywords;
+        Set<String> apicalls;
+        Set<String> types;
+        Set<String> keywords;
 
         public JSONOutputWrapper() {
-            this.apicalls = new ArrayList<>();
-            this.types = new ArrayList<>();
-            this.keywords = new ArrayList<>();
+            this.apicalls = new HashSet<>();
+            this.types = new HashSet<>();
+            this.keywords = new HashSet<>();
         }
     }
 
@@ -41,6 +43,28 @@ public class EvidenceExtractor extends ASTVisitor {
         Gson gson = new GsonBuilder().setPrettyPrinting().serializeNulls().create();
         parser.cu.accept(this);
         return gson.toJson(output);
+    }
+
+    @Override
+    public boolean visit(MethodDeclaration declaration) throws SynthesisException {
+        if (evidenceBlock != null)
+            return false; // already extracted evidence
+
+        IMethodBinding binding = declaration.resolveBinding();
+        if (binding == null)
+            throw new SynthesisException(SynthesisException.CouldNotResolveBinding);
+
+        // add formal parameters to types evidence
+        output.types.clear();
+        Pattern pattern = Pattern.compile("\\w+");
+        for (ITypeBinding param : binding.getParameterTypes()) {
+            String p = param.getName();
+            Matcher matcher = pattern.matcher(p);
+            while (matcher.find())
+                output.types.add(matcher.group());
+        }
+
+        return true;
     }
 
     @Override
