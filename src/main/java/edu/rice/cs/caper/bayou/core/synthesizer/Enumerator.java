@@ -302,6 +302,17 @@ public class Enumerator {
             variables.sort(Comparator.comparingInt(v ->
                     LevenshteinDistance.getDefaultInstance().apply(compare, v.getName())));
         }
+
+        // give more precedence to user-defined variables by moving them to the front
+        List<Variable> precedenced = new ArrayList<>();
+        for (Variable v : variables)
+            if (v.isUserVar())
+                precedenced.add(v);
+        for (Variable v : variables)
+            if (!v.isUserVar())
+                precedenced.add(v);
+        for (int i = 0; i < precedenced.size(); i++)
+            variables.set(i, precedenced.get(i));
     }
 
     private void sortChainsByCost(List<ExpressionChain> chains) {
