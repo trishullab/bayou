@@ -121,10 +121,36 @@ class Reader():
             ph = [cons_calls + [('DLoop', SIBLING_EDGE)] + path for path in p]
             return ph + pv
 
+    def _check_DAPICall_repeats(self, nodelist):
+        """
+        Checks if an API call node repeats in succession twice in a list of nodes
+
+        :param nodelist: list of nodes to check
+        :return: None
+        :raise: InvalidSketchError if some API call node repeats, ValueError if a node is of invalid type
+        """
+        for i in range(1, len(nodelist)):
+            node = nodelist[i]['_node']
+            if node == 'DAPICall':
+                if nodelist[i] == nodelist[i-1]:
+                    raise InvalidSketchError
+            elif node == 'DBranch':
+                self._check_DAPICall_repeats(node['_cond'])
+                self._check_DAPICall_repeats(node['_then'])
+                self._check_DAPICall_repeats(node['_else'])
+            elif node == 'DExcept':
+                self._check_DAPICall_repeats(node['_try'])
+                self._check_DAPICall_repeats(node['_catch'])
+            elif node == 'DLoop':
+                self._check_DAPICall_repeats(node['_cond'])
+                self._check_DAPICall_repeats(node['_body'])
+            else:
+                raise ValueError('Invalid node type: ' + node)
+
     def validate_sketch_paths(self, program, ast_paths):
         """
         Checks if a sketch along with its paths is good training data:
-        1. No API call should be repeated successively more than twice (twice is for loops)
+        1. No API call should be repeated successively
         2. No path in the sketch should be of length more than max_ast_depth hyper-parameter
         3. No branch, loop or except should occur more than once along a single path
 
@@ -133,23 +159,7 @@ class Reader():
         :return: None
         :raise: TooLongPathError or InvalidSketchError if sketch or its paths is invalid
         """
-        if 'sequences' in program:
-            for sequence in program['sequences']:
-                calls = sequence['calls']
-                if len(calls) == 0:
-                    raise InvalidSketchError
-                curr_call = calls[0]
-                count = 1
-                for call in calls[1:]:
-                    if call == curr_call:
-                        count += 1
-                    else:
-                        curr_call = call
-                        count = 1
-                    if count > 2:
-                        raise InvalidSketchError
-        else:
-            raise InvalidSketchError
+        self._check_DAPICall_repeats(program['ast']['_nodes'])
         for path in ast_paths:
             if len(path) >= self.config.decoder.max_ast_depth:
                 raise TooLongPathError
