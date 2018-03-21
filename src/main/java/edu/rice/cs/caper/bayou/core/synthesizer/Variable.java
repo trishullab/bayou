@@ -17,9 +17,7 @@ package edu.rice.cs.caper.bayou.core.synthesizer;
 
 import org.eclipse.jdt.core.dom.*;
 
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 
 /**
  * A variable in the synthesizer's type system
@@ -53,6 +51,14 @@ public class Variable {
     private VariableProperties properties;
 
     /**
+     * List of variables are variables that are .equals() to this variable but not ==. Typically,
+     * these were created in different a scope, and when joining scopes, this variable was kept,
+     * whereas the ones in this list were discarded. Used when refactoring this variable to correctly
+     * refactor these aliases too.
+     */
+    private List<Variable> aliases;
+
+    /**
      * Initializes a variable with the given parameters
      *
      * @param name       variable name
@@ -65,6 +71,7 @@ public class Variable {
         this.refCount = 0;
         this.astNodeRefs = new HashSet<>();
         this.properties = properties;
+        this.aliases = new ArrayList<>();
     }
 
     /**
@@ -138,6 +145,15 @@ public class Variable {
     }
 
     /**
+     * Adds a variable that is an alias to this variable
+     *
+     * @param v the alias variable
+     */
+    public void addAlias(Variable v) {
+        aliases.add(v);
+    }
+
+    /**
      * Creates and associates an AST node (of type SimpleName) referring to this variable
      *
      * @param ast the owner of the node
@@ -160,6 +176,34 @@ public class Variable {
         this.name = newName;
         for (SimpleName node : astNodeRefs)
             node.setIdentifier(newName);
+        List<Variable> refactorDone = new ArrayList<>();
+        refactorDone.add(this);
+        for (Variable v : aliases)
+            v.refactor(newName, refactorDone);
+    }
+
+    /**
+     * Same as refactor(String) but uses an additional argument to detect and stop cycles in calling refactor
+     *
+     * @param newName the new name of this variable
+     * @param refactorDone list of variables for which refactoring has already been done for this refactor task
+     */
+    private void refactor(String newName, List<Variable> refactorDone) {
+        this.name = newName;
+        for (SimpleName node : astNodeRefs)
+            node.setIdentifier(newName);
+        refactorDone.add(this);
+        for (Variable v : aliases) {
+            boolean done = false;
+            for (Variable v2 : refactorDone) {
+                if (v == v2) {
+                    done = true;
+                    break;
+                }
+            }
+            if (! done)
+                v.refactor(newName, refactorDone);
+        }
     }
 
     /**

@@ -148,8 +148,15 @@ public class Scope {
      */
     public void join(List<Scope> subScopes) {
         Set<Variable> common = new HashSet<>(subScopes.get(0).getVariables());
-        for (Scope subScope : subScopes)
+        for (Scope subScope : subScopes) {
             common.retainAll(subScope.getVariables());
+            for (Variable v2 : subScope.getVariables())
+                for (Variable v : common)
+                    if (v.equals(v2)) {
+                        v.addAlias(v2);
+                        v2.addAlias(v);
+                    }
+        }
         common.removeAll(variables);
         for (Variable var : common)
             if (var.isJoinVar())
