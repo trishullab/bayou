@@ -107,7 +107,6 @@ public class Environment {
         try {
             return ClassUtils.getClass(Synthesizer.classLoader, name);
         } catch (ClassNotFoundException e) {
-            System.out.println(name);
             throw new SynthesisException(SynthesisException.ClassNotFoundInLoader);
         }
     }

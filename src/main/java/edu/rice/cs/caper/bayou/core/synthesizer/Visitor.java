@@ -73,6 +73,12 @@ public class Visitor extends ASTVisitor {
     private Type returnType;
 
     /**
+     * Temporary store for the current method in which synthesis takes place.
+     * Gets cleared and updated as each method declaration is visited.
+     */
+    private MethodDeclaration method;
+
+    /**
      * The enumeration mode
      */
     private final Synthesizer.Mode mode;
@@ -99,6 +105,7 @@ public class Visitor extends ASTVisitor {
      * Visits a method declaration and sets up the environment that may be used for synthesis:
      * - the variables in scope (formal parameters, local declarations)
      * - the return type of the method
+     * - the method itself (to update formal parameters if needed)
      *
      * @param method the method declaration being visited
      * @return boolean indicating if the AST node should be explored further
@@ -137,6 +144,9 @@ public class Visitor extends ASTVisitor {
 
         /* set the return type */
         returnType = new Type(method.getReturnType2());
+
+        /* store the current method */
+        this.method = method;
 
         return true;
     }
@@ -185,7 +195,7 @@ public class Visitor extends ASTVisitor {
             return false;
 
         /* make rewrites to the local method body */
-        body = postprocessLocal(invocation.getAST(), env, body, dce.getEliminatedVars());
+        body = postprocessLocal(method.getAST(), env, body, dce.getEliminatedVars());
         rewriter.replace(evidenceBlock, body, null);
 
         try {
@@ -241,34 +251,26 @@ public class Visitor extends ASTVisitor {
         /* add variable declarations */
         Set<Variable> toDeclare = env.getScope().getVariables();
         toDeclare.addAll(env.getScope().getPhantomVariables());
+        ListRewrite paramsRewriter = rewriter.getListRewrite(method, MethodDeclaration.PARAMETERS_PROPERTY);
         for (Variable var : toDeclare) {
             if (eliminatedVars.contains(var.getName()) || var.isUserVar())
                 continue;
 
-            // create the variable declaration fragment
-            VariableDeclarationFragment varDeclFrag = ast.newVariableDeclarationFragment();
-            varDeclFrag.setName(var.createASTNode(ast));
-
-            // set the default initializer if the variable is a dollar variable
+            // add the variable declaration to either the method's formal params or the body
+            org.eclipse.jdt.core.dom.Type varDeclType = var.getType().simpleT(ast, env);
             if (var.isDefaultInit()) {
-                env.addImport(Bayou.class); // import the "Bayou" class in Bayou
-                varDeclFrag.setInitializer(var.createDefaultInitializer(ast));
+                SingleVariableDeclaration varDecl = ast.newSingleVariableDeclaration();
+                varDecl.setType(varDeclType);
+                varDecl.setName(var.createASTNode(ast));
+                var.refactor("$" + var.getName());
+                paramsRewriter.insertLast(varDecl, null);
+            } else {
+                VariableDeclarationFragment varDeclFrag = ast.newVariableDeclarationFragment();
+                varDeclFrag.setName(var.createASTNode(ast));
+                VariableDeclarationStatement varDeclStmt = ast.newVariableDeclarationStatement(varDeclFrag);
+                varDeclStmt.setType(varDeclType);
+                body.statements().add(0, varDeclStmt);
             }
-
-            // set the type for the statement
-            VariableDeclarationStatement varDeclStmt = ast.newVariableDeclarationStatement(varDeclFrag);
-            if (var.getType().T().isPrimitiveType())
-                varDeclStmt.setType((org.eclipse.jdt.core.dom.Type) ASTNode.copySubtree(ast, var.getType().T()));
-            else if (var.getType().T().isSimpleType()) {
-                Name name = ((SimpleType) ASTNode.copySubtree(ast, var.getType().T())).getName();
-                String simpleName = name.isSimpleName() ? ((SimpleName) name).getIdentifier()
-                        : ((QualifiedName) name).getName().getIdentifier();
-                varDeclStmt.setType(ast.newSimpleType(ast.newSimpleName(simpleName)));
-            } else if (var.getType().T().isParameterizedType() || var.getType().T().isArrayType()) {
-                varDeclStmt.setType((org.eclipse.jdt.core.dom.Type) ASTNode.copySubtree(ast, var.getType().simpleT(ast, env)));
-            } else throw new SynthesisException(SynthesisException.InvalidKindOfType);
-
-            body.statements().add(0, varDeclStmt);
         }
 
         /* add return statement */

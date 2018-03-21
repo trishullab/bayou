@@ -450,7 +450,7 @@ public class Type {
      */
     public org.eclipse.jdt.core.dom.Type simpleT(AST ast, Environment env) {
         if (t.isPrimitiveType())
-            return t;
+            return ast.newPrimitiveType(((PrimitiveType) t).getPrimitiveTypeCode());
         if (t.isSimpleType() || t.isQualifiedType()) {
             Name name = t.isSimpleType()? ((SimpleType) t).getName(): ((QualifiedType) t).getName();
             SimpleName simple;
