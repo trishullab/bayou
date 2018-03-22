@@ -130,18 +130,19 @@ class Reader():
         :raise: InvalidSketchError if some API call node repeats, ValueError if a node is of invalid type
         """
         for i in range(1, len(nodelist)):
-            node = nodelist[i]['_node']
-            if node == 'DAPICall':
+            node = nodelist[i]
+            node_type = node['node']
+            if node_type == 'DAPICall':
                 if nodelist[i] == nodelist[i-1]:
                     raise InvalidSketchError
-            elif node == 'DBranch':
+            elif node_type == 'DBranch':
                 self._check_DAPICall_repeats(node['_cond'])
                 self._check_DAPICall_repeats(node['_then'])
                 self._check_DAPICall_repeats(node['_else'])
-            elif node == 'DExcept':
+            elif node_type == 'DExcept':
                 self._check_DAPICall_repeats(node['_try'])
                 self._check_DAPICall_repeats(node['_catch'])
-            elif node == 'DLoop':
+            elif node_type == 'DLoop':
                 self._check_DAPICall_repeats(node['_cond'])
                 self._check_DAPICall_repeats(node['_body'])
             else:
