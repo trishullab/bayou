@@ -20,6 +20,7 @@ import org.eclipse.jdt.core.dom.*;
 import org.eclipse.jdt.core.dom.ParameterizedType;
 
 import java.lang.reflect.*;
+import java.lang.reflect.WildcardType;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -229,8 +230,12 @@ public class Type {
             ParameterizedType retType = ast.newParameterizedType(rawType);
 
             for (java.lang.reflect.Type arg : pType.getActualTypeArguments()) {
-                org.eclipse.jdt.core.dom.Type argType = getConcretization(arg).T();
-                retType.typeArguments().add(ASTNode.copySubtree(ast, argType));
+                try {
+                    org.eclipse.jdt.core.dom.Type argType = getConcretization(arg).T();
+                    retType.typeArguments().add(ASTNode.copySubtree(ast, argType));
+                } catch (SynthesisException e) {
+                    return new Type(rawType, (Class) rawType_);
+                }
             }
 
             return new Type(retType, (Class) rawType_);
