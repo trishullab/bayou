@@ -17,15 +17,17 @@ package edu.rice.cs.caper.bayou.core.synthesizer;
 
 import org.apache.commons.lang3.ClassUtils;
 import org.eclipse.jdt.core.dom.*;
+import org.reflections.Reflections;
 
 import java.util.*;
 
 public class Environment {
 
     private final Stack<Scope> scopes;
-    Set<Class> imports;
+    private Set<Class> imports;
     final AST ast;
     final Synthesizer.Mode mode;
+    final Reflections reflections;
 
     public AST ast() {
         return ast;
@@ -36,6 +38,7 @@ public class Environment {
         this.scopes = new Stack<>();
         this.scopes.push(new Scope(variables));
         this.mode = mode;
+        this.reflections = new Reflections("java.io", "java.util");
         imports = new HashSet<>();
     }
 
@@ -48,8 +51,9 @@ public class Environment {
     public TypedExpression addVariable(Type type) {
         VariableProperties properties = new VariableProperties().setJoin(true); // default properties
         Variable var = scopes.peek().addVariable(type, properties);
-        imports.add(var.getType().C());
-        return new TypedExpression(var.createASTNode(ast), var.getType());
+        return new TypedExpression(var.createASTNode(ast), var.getType())
+                .addReferencedVariable(var)
+                .addAssociatedImport(var.getType().C());
     }
 
     /**
@@ -61,8 +65,9 @@ public class Environment {
      */
     public TypedExpression addVariable(Type type, VariableProperties properties) {
         Variable var = scopes.peek().addVariable(type, properties);
-        imports.add(var.getType().C());
-        return new TypedExpression(var.createASTNode(ast), var.getType());
+        return new TypedExpression(var.createASTNode(ast), var.getType())
+                .addReferencedVariable(var)
+                .addAssociatedImport(var.getType().C());
     }
 
     /**
@@ -73,8 +78,19 @@ public class Environment {
      */
     public TypedExpression addVariable(Variable var) {
         scopes.peek().addVariable(var);
-        imports.add(var.getType().C());
-        return new TypedExpression(var.createASTNode(ast), var.getType());
+        return new TypedExpression(var.createASTNode(ast), var.getType())
+                .addReferencedVariable(var)
+                .addAssociatedImport(var.getType().C());
+    }
+
+    /**
+     * Removes a variable from the current scope if it exists, otherwise does nothing
+     *
+     * @param var the variable to be removed
+     * @return boolean denoting if the variable existed or not
+     */
+    public boolean removeVariable(Variable var) {
+        return scopes.peek().removeVariable(var);
     }
 
     public Type searchType() {
@@ -87,6 +103,7 @@ public class Environment {
         TypedExpression tExpr = enumerator.search(target);
         if (tExpr == null)
             throw new SynthesisException(SynthesisException.TypeNotFoundDuringSearch);
+        imports.addAll(tExpr.getAssociatedImports());
         return tExpr;
     }
 
@@ -115,4 +132,7 @@ public class Environment {
         imports.add(c);
     }
 
+    public Set<Class> getImports() {
+        return imports;
+    }
 }

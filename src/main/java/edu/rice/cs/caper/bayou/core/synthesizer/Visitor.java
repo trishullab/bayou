@@ -227,7 +227,7 @@ public class Visitor extends ASTVisitor {
     private Block postprocessLocal(AST ast, Environment env, Block body, Set<String> eliminatedVars) {
         /* add uncaught exeptions */
         Set<Class> exceptions = sketch.exceptionsThrown(eliminatedVars);
-        env.imports.addAll(exceptions);
+        env.getImports().addAll(exceptions);
         if (!exceptions.isEmpty()) {
             TryStatement statement = ast.newTryStatement();
             statement.setBody(body);
@@ -313,7 +313,7 @@ public class Visitor extends ASTVisitor {
         /* add imports */
         ASTRewrite rewriter = ASTRewrite.create(ast);
         ListRewrite lrw = rewriter.getListRewrite(cu, CompilationUnit.IMPORTS_PROPERTY);
-        Set<Class> toImport = new HashSet<>(env.imports);
+        Set<Class> toImport = new HashSet<>(env.getImports());
         toImport.addAll(sketch.exceptionsThrown()); // add all catch(...) types to imports
         for (Class cls : toImport) {
             while (cls.isArray())
