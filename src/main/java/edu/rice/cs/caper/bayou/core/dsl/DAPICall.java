@@ -217,6 +217,7 @@ public class DAPICall extends DASTNode
 
         /* constructor return object */
         TypedExpression ret = env.addVariable(type);
+        env.addImport(type.C());
 
         /* the assignment */
         Assignment assignment = ast.newAssignment();
@@ -279,6 +280,7 @@ public class DAPICall extends DASTNode
         /* method return value */
         Type retType = object.getType().getConcretization(method.getGenericReturnType());
         TypedExpression ret = env.addVariable(retType);
+        env.addImport(retType.C());
 
         /* the assignment */
         Expression lhs = ret.getExpression();

@@ -84,6 +84,19 @@ public class Scope {
     }
 
     /**
+     * Removes a variable from this scope if it exists, otherwise does nothing
+     *
+     * @param var the variable to be removed
+     * @return boolean denoting if the variable existed or not
+     */
+    public boolean removeVariable(Variable var) {
+        if (variables.contains(var)) {
+            variables.remove(var);
+            return true;
+        } else return false;
+    }
+
+    /**
      * Adds a variable with the given type and properties to the current scope
      *
      * @param type       variable type, from which a variable name will be derived
