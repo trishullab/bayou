@@ -137,6 +137,12 @@ class BayesianPredictor(object):
                     dist.sort(key=lambda x: x[1], reverse=True)
                     topk = dist[:beam_width]
 
+                    debug
+                    debug_dist = [(self.model.config.decoder.chars[idx], p) for (idx, p) in topk]
+                    print(inc_path)
+                    print(debug_dist)
+                    import pdb; pdb.set_trace()
+
                     for (idx, p) in topk:
                         new_candidate = [path for path in complete_paths] + \
                                         [path for (j, path) in enumerate(incomplete_paths) if i != j]
