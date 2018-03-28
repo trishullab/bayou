@@ -1,0 +1,54 @@
+{
+  "programs": [
+    {
+      "ast": {
+        "node": "DSubTree",
+        "_nodes": [
+          {
+            "node": "DAPICall",
+            "_call": "java.util.List\u003cjava.lang.String\u003e.add(java.lang.String)",
+            "_throws": [],
+            "_returns": "boolean"
+          },
+          {
+            "node": "DLoop",
+            "_cond": [
+              {
+                "node": "DAPICall",
+                "_call": "$MINUS1$java.util.List\u003cjava.lang.String\u003e.size()",
+                "_throws": [],
+                "_returns": "int"
+              }
+            ],
+            "_body": [
+              {
+                "node": "DAPICall",
+                "_call": "$MINUS1$java.util.List\u003cjava.lang.String\u003e.size()",
+                "_throws": [],
+                "_returns": "int"
+              },
+              {
+                "node": "DAPICall",
+                "_call": "java.util.List\u003cjava.lang.String\u003e.remove(int)",
+                "_throws": [],
+                "_returns": "java.lang.String"
+              }
+            ]
+          }
+        ]
+      },
+      "sequences": [
+        {
+          "calls": [
+            "java.util.List\u003cjava.lang.String\u003e.add(java.lang.String)",
+            "$MINUS1$java.util.List\u003cjava.lang.String\u003e.size()",
+            "$MINUS1$java.util.List\u003cjava.lang.String\u003e.size()",
+            "java.util.List\u003cjava.lang.String\u003e.remove(int)",
+            "$MINUS1$java.util.List\u003cjava.lang.String\u003e.size()"
+          ]
+        }
+      ],
+      "javadoc": null
+    }
+  ]
+}

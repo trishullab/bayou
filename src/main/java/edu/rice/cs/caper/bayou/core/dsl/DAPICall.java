@@ -103,6 +103,10 @@ public class DAPICall extends DASTNode
         this._call = "$NOT$" + this._call;
     }
 
+    public void setMinusOnePredicate() {
+        this._call = "$MINUS1$" + this._call;
+    }
+
     @Override
     public int numStatements() {
         return 1;

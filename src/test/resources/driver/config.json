@@ -7,6 +7,7 @@
         "java.io.InputStreamReader",
         "java.io.FileReader",
         "java.util.Stack",
+        "java.util.List",
         "java.util.Map",
         "java.util.HashMap",
         "java.io.File"

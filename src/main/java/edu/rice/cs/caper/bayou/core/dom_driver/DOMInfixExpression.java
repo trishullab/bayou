@@ -15,8 +15,10 @@ limitations under the License.
 */
 package edu.rice.cs.caper.bayou.core.dom_driver;
 
+import edu.rice.cs.caper.bayou.core.dsl.DAPICall;
 import edu.rice.cs.caper.bayou.core.dsl.DSubTree;
 import org.eclipse.jdt.core.dom.InfixExpression;
+import org.eclipse.jdt.core.dom.NumberLiteral;
 
 public class DOMInfixExpression implements Handler {
 
@@ -34,6 +36,16 @@ public class DOMInfixExpression implements Handler {
 
         DSubTree Tleft = new DOMExpression(expr.getLeftOperand(), visitor).handle();
         DSubTree Tright = new DOMExpression(expr.getRightOperand(), visitor).handle();
+
+        if (expr.getOperator() == InfixExpression.Operator.MINUS
+                && (expr.getRightOperand() instanceof NumberLiteral)
+                && ((NumberLiteral) expr.getRightOperand()).getToken().equals("1")
+                && Tleft.getNodes().size() == 1
+                && Tleft.getNodes().get(0) instanceof DAPICall) {
+            DAPICall call = (DAPICall) Tleft.getNodes().get(0);
+            call.setMinusOnePredicate();
+        }
+
 
         tree.addNodes(Tleft.getNodes());
         tree.addNodes(Tright.getNodes());
