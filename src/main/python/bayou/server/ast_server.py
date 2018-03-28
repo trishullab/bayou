@@ -55,7 +55,7 @@ def _handle_generate_asts_request(request_dict, predictor):
 
     evidence_json_str = request_dict['evidence']  # get the evidence string from the request (also JSON)
 
-    asts = _generate_asts(evidence_json_str, predictor)
+    asts = _generate_asts(evidence_json_str, predictor, okay_check=False)
     logging.debug(asts)
     return asts
 
