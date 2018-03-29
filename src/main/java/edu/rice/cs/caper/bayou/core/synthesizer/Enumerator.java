@@ -123,8 +123,11 @@ public class Enumerator {
                 for (Object o : env.reflections.getSubTypesOf(targetType.C())) {
                     TypedExpression tExpr = enumerator.enumerate(
                             new SearchTarget(new Type((Class) o)), argDepth, toSearch);
-                    if (tExpr != null)
+                    if (tExpr != null) {
+                        // concretize the type before finalizing candidate
+                        tExpr.getType().concretizeType(env);
                         candidates.add(tExpr);
+                    }
                 }
                 break;
             }
