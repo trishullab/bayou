@@ -99,4 +99,14 @@ public class NatNum32
     {
         return new NatNum32(Integer.parseInt(value));
     }
+
+    public NatNum32 increment()
+    {
+        return new NatNum32(AsInt+1);
+    }
+
+    public NatNum32 decrement()
+    {
+        return new NatNum32(AsInt-1);
+    }
 }

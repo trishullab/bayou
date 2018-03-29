@@ -90,7 +90,7 @@ public class ApiSynthesisServlet extends SizeConstrainedPostBodyServlet implemen
     {
         super(API_SYNTH_MAX_REQUEST_BODY_SIZE_BYTES, false);
 
-        ApiSynthesizer synthesisStrategy = ApiSynthesizerFactory.makeFromConfig();
+        ApiSynthesizer synthesisStrategy = ApiSynthesizerFactory.makeFromConfig(true);
         _synthesisRequestProcessor = new ApiSynthesizerRewriteEvidenceDecorator(synthesisStrategy);
         _logger.debug("exiting");
     }
@@ -104,6 +104,7 @@ public class ApiSynthesisServlet extends SizeConstrainedPostBodyServlet implemen
             int outstandingRequestsCount = _outstandingPostRequestsCount.incrementAndGet();
             try
             {
+                _logger.trace("Outstanding request count = " + _outstandingPostRequestsCount);
                 // check if fulfilling this request would put us over the concurrent synth
                 // request processing limit.
                 if (outstandingRequestsCount > OUTSTANDING_POST_REQUEST_COUNT_LIMIT.AsInt)
@@ -120,6 +121,7 @@ public class ApiSynthesisServlet extends SizeConstrainedPostBodyServlet implemen
             finally
             {
                 _outstandingPostRequestsCount.decrementAndGet();
+                _logger.trace("Decrement");
             }
         }
         catch (Throwable e)

@@ -37,7 +37,7 @@ class ApiSynthesizerFactory
     /**
      * @return a synthesiser in accordance with edu.rice.cs.caper.bayou.application.api_synthesis_server.Configuration
      */
-    static ApiSynthesizer makeFromConfig()
+    static ApiSynthesizer makeFromConfig(boolean enableThreadSchedulingIfSupported)
     {
         _logger.debug("entering");
 
@@ -55,7 +55,8 @@ class ApiSynthesizerFactory
                                                                  Configuration.SynthesizeTimeoutMs,
                                                                  Configuration.EvidenceClasspath,
                                                                  Configuration.AndroidJarPath,
-                                                                 Configuration.ApiSynthMode);
+                                                                 Configuration.ApiSynthMode,
+                                                                 enableThreadSchedulingIfSupported);
         }
 
         _logger.debug("exiting");

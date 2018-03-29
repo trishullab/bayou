@@ -33,5 +33,4 @@ public interface ApiSynthesizer
      * @throws SynthesiseException if an error occurs in trying to synthesize the code completions
      */
     Iterable<String> synthesise(String code, NatNum32 maxProgramCount) throws SynthesiseException;
-
 }
