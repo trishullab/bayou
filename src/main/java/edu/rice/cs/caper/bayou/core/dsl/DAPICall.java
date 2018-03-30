@@ -178,8 +178,11 @@ public class DAPICall extends DASTNode
     public ASTNode synthesize(Environment env) throws SynthesisException
     {
         boolean notPredicate = _call.contains("$NOT$");
+        boolean minus1Predicate = _call.contains("$MINUS1$");
         if (notPredicate)
             _call = _call.replaceAll("\\$NOT\\$", "");
+        if (minus1Predicate)
+            _call = _call.replaceAll("\\$MINUS1\\$", "");
         Executable executable = getConstructorOrMethod();
         if (executable instanceof Constructor) {
             constructor = (Constructor) executable;
@@ -187,7 +190,7 @@ public class DAPICall extends DASTNode
         }
         else {
             method = (Method) executable;
-            return synthesizeMethodInvocation(env, notPredicate);
+            return synthesizeMethodInvocation(env, notPredicate, minus1Predicate);
         }
     }
 
@@ -237,7 +240,8 @@ public class DAPICall extends DASTNode
         return assignment;
     }
 
-    private ASTNode synthesizeMethodInvocation(Environment env, boolean toBeNegated) throws SynthesisException {
+    private ASTNode synthesizeMethodInvocation(Environment env, boolean toBeNegated, boolean toAddMinus1)
+            throws SynthesisException {
         AST ast = env.ast();
         MethodInvocation invocation = ast.newMethodInvocation();
 
@@ -293,6 +297,11 @@ public class DAPICall extends DASTNode
             rhs = ast.newPrefixExpression();
             ((PrefixExpression) rhs).setOperator(PrefixExpression.Operator.NOT);
             ((PrefixExpression) rhs).setOperand(invocation);
+        } else if (toAddMinus1) {
+            rhs = ast.newInfixExpression();
+            ((InfixExpression) rhs).setLeftOperand(invocation);
+            ((InfixExpression) rhs).setRightOperand(ast.newNumberLiteral("1"));
+            ((InfixExpression) rhs).setOperator(InfixExpression.Operator.MINUS);
         } else
             rhs = invocation;
         Assignment assignment = ast.newAssignment();
