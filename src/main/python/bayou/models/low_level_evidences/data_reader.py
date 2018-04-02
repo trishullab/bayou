@@ -21,7 +21,7 @@ import pickle
 from collections import Counter
 
 from bayou.models.low_level_evidences.utils import C0, CHILD_EDGE, SIBLING_EDGE, gather_calls
-
+from bayou.models.low_level_evidences.evidence import Keywords_Embed
 
 class TooLongPathError(Exception):
     pass
@@ -52,7 +52,12 @@ class Reader():
         # setup input and target chars/vocab
         if clargs.continue_from is None:
             for ev, data in zip(config.evidence, raw_evidences):
-                ev.set_chars_vocab(data)
+                # for keywords-embed branch
+                if isinstance(ev, Keywords_Embed):
+                    ev.set_chars_vocab(config.embedding_file)
+                else:
+                    ev.set_chars_vocab(data)
+
             counts = Counter([n for path in raw_targets for (n, _) in path])
             counts[C0] = 1
             config.decoder.chars = sorted(counts.keys(), key=lambda w: counts[w], reverse=True)

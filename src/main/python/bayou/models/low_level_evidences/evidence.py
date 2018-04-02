@@ -44,6 +44,8 @@ class Evidence(object):
                 e = Types()
             elif name == 'keywords':
                 e = Keywords()
+            elif name == 'keywords_embed':
+                e = Keywords_Embed()
             else:
                 raise TypeError('Invalid evidence name: {}'.format(name))
             e.init_config(evidence, chars_vocab)
@@ -208,6 +210,199 @@ class Types(Evidence):
             types += Types.get_types_re(callnode['_returns'])
 
         return list(set(types))
+
+
+class Keywords_Embed(Evidence):
+
+    STOP_WORDS = {  # CoreNLP English stop words
+        "'ll", "'s", "'m", "a", "about", "above", "after", "again", "against", "all", "am", "an", "and",
+        "any", "are", "aren't", "as", "at", "be", "because", "been", "before", "being", "below", "between",
+        "both", "but", "by", "can", "can't", "cannot", "could", "couldn't", "did", "didn't", "do", "does",
+        "doesn't", "doing", "don't", "down", "during", "each", "few", "for", "from", "further", "had",
+        "hadn't", "has", "hasn't", "have", "haven't", "having", "he", "he'd", "he'll", "he's", "her",
+        "here", "here's", "hers", "herself", "him", "himself", "his", "how", "how's", "i", "i'd", "i'll",
+        "i'm", "i've", "if", "in", "into", "is", "isn't", "it", "it's", "its", "itself", "let's", "me",
+        "more", "most", "mustn't", "my", "myself", "no", "nor", "not", "of", "off", "on", "once", "only",
+        "or", "other", "ought", "our", "ours", "ourselves", "out", "over", "own", "same", "shan't", "she",
+        "she'd", "she'll", "she's", "should", "shouldn't", "so", "some", "such", "than", "that", "that's",
+        "the", "their", "theirs", "them", "themselves", "then", "there", "there's", "these", "they",
+        "they'd", "they'll", "they're", "they've", "this", "those", "through", "to", "too", "under",
+        "until", "up", "very", "was", "wasn't", "we", "we'd", "we'll", "we're", "we've", "were", "weren't",
+        "what", "what's", "when", "when's", "where", "where's", "which", "while", "who", "who's", "whom",
+        "why", "why's", "with", "won't", "would", "wouldn't", "you", "you'd", "you'll", "you're", "you've",
+        "your", "yours", "yourself", "yourselves", "return", "arent", "cant", "couldnt", "didnt", "doesnt",
+        "dont", "hadnt", "hasnt", "havent", "hes", "heres", "hows", "im", "isnt", "its", "lets", "mustnt",
+        "shant", "shes", "shouldnt", "thats", "theres", "theyll", "theyre", "theyve", "wasnt", "were",
+        "werent", "whats", "whens", "wheres", "whos", "whys", "wont", "wouldnt", "youd", "youll", "youre",
+        "youve"
+    }
+
+    KEYWORDS_ATT = ['words_max', 'embed_dim']
+
+    def init_config(self, evidence, chars_vocab):
+        for attr in CONFIG_ENCODER + Keywords_Embed.KEYWORDS_ATT + (CONFIG_INFER if chars_vocab else []):
+            self.__setattr__(attr, evidence[attr])
+
+    def dump_config(self):
+        js = {attr: self.__getattribute__(attr) for attr in CONFIG_ENCODER + Keywords_Embed.KEYWORDS_ATT + CONFIG_INFER}
+        return js
+
+    def read_data_point(self, program):
+        keywords = program['keywords_embed'] if 'keywords_embed' in program else []
+        return list(set(keywords))
+
+    def set_chars_vocab(self, embedding_file):
+        # for keywords-embed branch
+        self.chars = []
+        self.chars.append('<unk>')
+        self.vocab_embeddings = []
+        file = open(embedding_file)
+        for line in file.readlines():
+            row = line.strip().split()
+            self.chars.append(row[0])
+            self.vocab_embeddings.append(row[1:])
+        self.vocab = dict(zip(self.chars, range(len(self.chars))))
+        self.vocab_size = len(self.vocab)
+        self.vocab_embeddings.insert(0, np.random.rand(self.embed_dim))
+        self.vocab_embeddings = np.asarray(self.vocab_embeddings, np.float32)
+
+    # def wrangle(self, data):
+    #     wrangled = np.zeros((len(data), 1, self.vocab_size), dtype=np.int32)
+    #     for i, keywords in enumerate(data):
+    #         for k in keywords:
+    #             if k in self.vocab and k not in Keywords.STOP_WORDS:
+    #                 wrangled[i, 0, self.vocab[k]] = 1
+    #     return wrangled
+
+    def wrangle(self, data):
+        wrangled = np.zeros((len(data), self.words_max + 1), dtype=np.int32)
+        for i, keywords in enumerate(data):
+            cursor = 0
+            for k in keywords:
+                if k in self.vocab and k not in Keywords_Embed.STOP_WORDS and cursor < self.words_max:
+                    wrangled[i, cursor]= self.vocab[k]
+                cursor += 1
+            wrangled[i, self.words_max] = cursor
+        return wrangled
+
+    # def placeholder(self, config):
+    #     return tf.placeholder(tf.float32, [config.batch_size, 1, self.vocab_size])
+
+    def placeholder(self, config):
+        # 21 = words_max(20) + words_len(1)
+        return tf.placeholder(tf.float32, [config.batch_size, self.words_max + 1])
+
+    # def exists(self, inputs):
+    #     i = tf.reduce_sum(inputs, axis=2)
+    #     return tf.not_equal(tf.count_nonzero(i, axis=1), 0)
+
+    # check instances in the batch being zero
+    def exists(self, inputs):
+        i = tf.reduce_sum(inputs, axis=1)
+        return tf.not_equal(i, 0)
+
+    def init_sigma(self, config):
+        with tf.variable_scope('keywords_embed'):
+            self.sigma = tf.get_variable('sigma', [])
+
+    # def encode(self, inputs, config):
+    #     with tf.variable_scope('keywords'):
+    #         latent_encoding = tf.zeros([config.batch_size, config.latent_size])
+    #         inp = tf.slice(inputs, [0, 0, 0], [config.batch_size, 1, self.vocab_size])
+    #         inp = tf.reshape(inp, [-1, self.vocab_size])
+    #         encoding = tf.layers.dense(inp, self.units, activation=tf.nn.tanh)
+    #         for i in range(self.num_layers - 1):
+    #             encoding = tf.layers.dense(encoding, self.units, activation=tf.nn.tanh)
+    #         w = tf.get_variable('w', [self.units, config.latent_size])
+    #         b = tf.get_variable('b', [config.latent_size])
+    #         latent_encoding += tf.nn.xw_plus_b(encoding, w, b)
+    #         return latent_encoding
+
+    def encode(self, inputs, config):
+        with tf.variable_scope('keywords_embed'):
+            if hasattr(self, 'vocab_embeddings'):
+                embeddings_initializer = tf.constant_initializer(self.vocab_embeddings)
+                embedding_var = tf.get_variable(
+                    name='embeddings',
+                    shape=(self.vocab_size, self.embed_dim),
+                    initializer=embeddings_initializer,
+                    trainable=False)
+            else:
+                embedding_var = tf.get_variable(name='embeddings', shape=(self.vocab_size, self.embed_dim))
+            # batch_size * embed_dim, batch_size * 1
+            keywords, lengths = tf.split(inputs, [self.words_max, 1], 1)
+            # len(list) == batch_size, element type (1, words_max) && (1, 1)
+            keywords_list = tf.split(keywords, config.batch_size, 0)
+            lengths_list = tf.split(lengths, config.batch_size, 0)
+            pure_embed_list = []
+            for i in range(config.batch_size):
+                k0 = tf.reshape(keywords_list[i], (self.words_max,))
+                l1 = tf.reshape(lengths_list[i], (1,))
+                l2 = self.words_max - l1
+                ll = tf.concat((l1, l2), 0)
+                # k: (?,)
+                k1, k2 = tf.split(k0, ll, 0)
+                # embeds: (?, embed_dim)
+                embeds = tf.nn.embedding_lookup(embedding_var, k1)
+                pure_embed_list.append(embeds)
+
+            latent_encoding = tf.zeros([config.batch_size, config.latent_size])
+            # inp = tf.slice(inputs, [0, 0, 0], [config.batch_size, 1, self.vocab_size])
+            # inp = tf.reshape(inp, [-1, self.vocab_size])
+
+            # shared variables acrossed different instances
+            # encoding = tf.layers.dense(inp, self.units, activation=tf.nn.tanh)
+            # for i in range(self.num_layers - 1):
+            #     encoding = tf.layers.dense(encoding, self.units, activation=tf.nn.tanh)
+            dense_list = []
+            for i in range(self.num_layers):
+                dense_list.append(tf.layers.Dense(self.units, activation=tf.nn.tanh))
+            w = tf.get_variable('w', [self.units, config.latent_size])
+            b = tf.get_variable('b', [config.latent_size])
+
+            instance_encodings = []
+            for i in range(config.batch_size):
+                data = pure_embed_list[i]
+                for j in range(self.num_layers):
+                    data = dense_list[j](data)
+                word_encodings = tf.nn.xw_plus_b(data, w, b)
+                instance_encoding = tf.reduce_sum(word_encodings, 0)
+                # : (#words, latent_size) -> (latent_size,)
+                instance_encodings.append(instance_encoding)
+
+            # concat instance_encodings
+            instance_encodings = [tf.expand_dims(enc, 0) for enc in instance_encodings]
+
+            # : (batch_size, latent_size)
+            latent_encoding += tf.concat(instance_encodings, 0)
+            return latent_encoding
+
+    def evidence_loss(self, psi, encoding, config):
+        sigma_sq = tf.square(self.sigma)
+        loss = 0.5 * (config.latent_size * tf.log(2 * np.pi * sigma_sq + 1e-10)
+                      + tf.square(encoding - psi) / sigma_sq)
+        return loss
+
+    @staticmethod
+    def split_camel(s):
+        s = re.sub('(.)([A-Z][a-z]+)', r'\1#\2', s)  # UC followed by LC
+        s = re.sub('([a-z0-9])([A-Z])', r'\1#\2', s)  # LC followed by UC
+        return s.split('#')
+
+    @staticmethod
+    def from_call(callnode):
+        call = callnode['_call']
+        call = re.sub('^\$.*\$', '', call)  # get rid of predicates
+        qualified = call.split('(')[0]
+        qualified = re.sub('<.*>', '', qualified).split('.')  # remove generics for keywords
+
+        # add qualified names (java, util, xml, etc.), API calls and types
+        keywords = list(chain.from_iterable([Keywords.split_camel(s) for s in qualified])) + \
+            list(chain.from_iterable([Keywords.split_camel(c) for c in APICalls.from_call(callnode)])) + \
+            list(chain.from_iterable([Keywords.split_camel(t) for t in Types.from_call(callnode)]))
+
+        # convert to lower case, omit stop words and take the set
+        return list(set([k.lower() for k in keywords if k.lower() not in Keywords.STOP_WORDS]))
 
 
 class Keywords(Evidence):

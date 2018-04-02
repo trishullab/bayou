@@ -72,6 +72,8 @@ def train(clargs):
                                 else os.path.join(clargs.continue_from, 'config.json')
     with open(config_file) as f:
         config = read_config(json.load(f), chars_vocab=clargs.continue_from)
+    # for keywords-embed branch
+    config['embedding_file'] = clargs.embedding_file
     reader = Reader(clargs, config)
     
     jsconfig = dump_config(config)
@@ -159,6 +161,9 @@ if __name__ == '__main__':
                         help='config file (see description above for help)')
     parser.add_argument('--continue_from', type=str, default=None,
                         help='ignore config options and continue training model checkpointed here')
+    # for keywords-embed branch
+    parser.add_argument('--embedding_file', type=str, default=None,
+                        help='word embedding file for keywords')
     clargs = parser.parse_args()
     sys.setrecursionlimit(clargs.python_recursion_limit)
     if clargs.config and clargs.continue_from:
