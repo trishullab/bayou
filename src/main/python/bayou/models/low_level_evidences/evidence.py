@@ -319,7 +319,7 @@ class Keywords_Embed(Evidence):
     #         return latent_encoding
 
     def encode(self, inputs, config):
-        import pdb; pdb.set_trace()
+        # import pdb; pdb.set_trace()
         inputs = tf.cast(inputs, tf.int32)
         with tf.variable_scope('keywords_embed'):
             if hasattr(self, 'vocab_embeddings'):
@@ -330,7 +330,7 @@ class Keywords_Embed(Evidence):
                     initializer=embeddings_initializer,
                     trainable=False)
             else:
-                embedding_var = tf.get_variable(name='embeddings', shape=(self.vocab_size, self.embed_dim))
+                embedding_var = tf.get_variable(name='embeddings', shape=(self.vocab_size, self.embed_dim), trainable=False)
             # batch_size * embed_dim, batch_size * 1
             keywords, lengths = tf.split(inputs, [self.words_max, 1], 1)
             # len(list) == batch_size, element type (1, words_max) && (1, 1)
