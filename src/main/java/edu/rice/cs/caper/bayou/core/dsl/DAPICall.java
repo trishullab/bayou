@@ -398,7 +398,7 @@ public class DAPICall extends DASTNode
             return true;
 
         // commonly used type variable names in Java API
-        Matcher typeVars = Pattern.compile("\\b[EKNTVSU]\\b").matcher(className);
+        Matcher typeVars = Pattern.compile("\\b[EKNTVSU][0-9]?\\b").matcher(className);
         return typeVars.find();
     }
 }
