@@ -94,8 +94,7 @@ public class Synthesizer {
                     continue;
                 String program = visitor.synthesizedProgram.replaceAll("\\s", "");
                 if (! programs.contains(program)) {
-                    String formattedProgram = "// Bayou confidence score: " + ast.probability + "\n"
-                                                + new Formatter().formatSource(visitor.synthesizedProgram);
+                    String formattedProgram = new Formatter().formatSource(visitor.synthesizedProgram);
                     programs.add(program);
                     synthesizedPrograms.add(formattedProgram);
                 }
