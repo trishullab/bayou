@@ -77,9 +77,10 @@ public class Parser {
         cu = (CompilationUnit) parser.createAST(null);
 
         List<IProblem> problems = Arrays.stream(cu.getProblems()).filter(p ->
-                                            p.isError() &&
-                                            p.getID() != IProblem.PublicClassMustMatchFileName && // we use "Program.java"
-                                            p.getID() != IProblem.ParameterMismatch // Evidence varargs
+                (p.isError() &&
+                        p.getID() != IProblem.PublicClassMustMatchFileName && // we use "Program.java"
+                        p.getID() != IProblem.ParameterMismatch // Evidence varargs
+                ) || (p.getID() == IProblem.RawTypeReference)
                                         ).collect(Collectors.toList());
         if (problems.size() > 0)
             throw new ParseException(problems);
