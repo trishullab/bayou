@@ -1,0 +1,37 @@
+{
+  "model": "lle",
+  "beta": 0,
+  "batch_size": 50,
+  "decoder": {
+    "num_layers": 1,
+    "max_ast_depth": 32,
+    "units": 128
+  },
+  "alpha": 0,
+  "num_epochs": 50,
+  "evidence": [
+    {
+      "name": "apicalls",
+      "num_layers": 1,
+      "tile": 1,
+      "units": 64
+    },
+    {
+      "name": "types",
+      "num_layers": 1,
+      "tile": 1,
+      "units": 64
+    },
+    {
+      "name": "keywords_embed",
+      "num_layers": 1,
+      "tile": 1,
+      "units": 64,
+      "words_max": 20,
+      "embed_dim": 200
+    }
+  ],
+  "print_step": 1,
+  "latent_size": 32,
+  "learning_rate": 0.0006
+}
