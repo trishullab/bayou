@@ -28,6 +28,7 @@ public class Environment {
     final AST ast;
     final Synthesizer.Mode mode;
     final Reflections reflections;
+    final PredefinedConstants predefinedConstants;
 
     public AST ast() {
         return ast;
@@ -39,6 +40,7 @@ public class Environment {
         this.scopes.push(new Scope(variables));
         this.mode = mode;
         this.reflections = new Reflections("java.io", "java.util");
+        this.predefinedConstants = new PredefinedConstants();
         imports = new HashSet<>();
     }
 

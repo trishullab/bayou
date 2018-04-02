@@ -108,6 +108,10 @@ public class Enumerator {
         Enumerator enumerator = new Enumerator(ast, env, mode);
         Type targetType = target.getType();
 
+        // if a predefined constant exists for this type, just use it
+        if (env.predefinedConstants.hasPredefinedConstant(targetType.C()))
+            return env.predefinedConstants.getTypedExpression(targetType.C(), ast);
+
         /* first, see if we can create a new object of target type directly */
         List<Executable> constructors = new ArrayList<>(Arrays.asList(targetType.C().getConstructors()));
         /* static methods that return the target type are considered "constructors" here */
