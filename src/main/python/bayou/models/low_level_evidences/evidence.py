@@ -248,7 +248,7 @@ class Keywords_Embed(Evidence):
         return js
 
     def read_data_point(self, program):
-        keywords = program['keywords_embed'] if 'keywords_embed' in program else []
+        keywords = program['keywords'] if 'keywords' in program else []
         return list(set(keywords))
 
     def set_chars_vocab(self, embedding_file):
@@ -319,6 +319,8 @@ class Keywords_Embed(Evidence):
     #         return latent_encoding
 
     def encode(self, inputs, config):
+        import pdb; pdb.set_trace()
+        inputs = tf.cast(inputs, tf.int32)
         with tf.variable_scope('keywords_embed'):
             if hasattr(self, 'vocab_embeddings'):
                 embeddings_initializer = tf.constant_initializer(self.vocab_embeddings)
@@ -356,7 +358,7 @@ class Keywords_Embed(Evidence):
             #     encoding = tf.layers.dense(encoding, self.units, activation=tf.nn.tanh)
             dense_list = []
             for i in range(self.num_layers):
-                dense_list.append(tf.layers.Dense(self.units, activation=tf.nn.tanh))
+                dense_list.append(tf.layers.Dense(self.units, activation=tf.nn.tanh, name='dense'+str(i)))
             w = tf.get_variable('w', [self.units, config.latent_size])
             b = tf.get_variable('b', [config.latent_size])
 

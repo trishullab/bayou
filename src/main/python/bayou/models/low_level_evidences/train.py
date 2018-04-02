@@ -73,7 +73,8 @@ def train(clargs):
     with open(config_file) as f:
         config = read_config(json.load(f), chars_vocab=clargs.continue_from)
     # for keywords-embed branch
-    config['embedding_file'] = clargs.embedding_file
+#    import pdb; pdb.set_trace()
+    config.embedding_file = clargs.embedding_file
     reader = Reader(clargs, config)
     
     jsconfig = dump_config(config)
@@ -86,7 +87,7 @@ def train(clargs):
 
     with tf.Session() as sess:
         tf.global_variables_initializer().run()
-        saver = tf.train.Saver(tf.global_variables(), max_to_keep=None)
+        saver = tf.train.Saver(tf.global_variables())
         tf.train.write_graph(sess.graph_def, clargs.save, 'model.pbtxt')
         tf.train.write_graph(sess.graph_def, clargs.save, 'model.pb', as_text=False)
 
