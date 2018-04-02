@@ -262,7 +262,7 @@ public class Visitor extends ASTVisitor {
                 SingleVariableDeclaration varDecl = ast.newSingleVariableDeclaration();
                 varDecl.setType(varDeclType);
                 varDecl.setName(var.createASTNode(ast));
-                var.refactor("$" + var.getName());
+                var.refactor("_" + var.getName());
                 paramsRewriter.insertLast(varDecl, null);
             } else {
                 VariableDeclarationFragment varDeclFrag = ast.newVariableDeclarationFragment();
