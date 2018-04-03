@@ -23,6 +23,7 @@ import java.lang.reflect.Executable;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.*;
+import java.util.function.ToIntFunction;
 import java.util.stream.Collectors;
 
 public class Enumerator {
@@ -30,24 +31,17 @@ public class Enumerator {
     final AST ast;
     final Environment env;
     Synthesizer.Mode mode;
-    private final Set<Class> importsDuringSearch;
 
     public Enumerator(AST ast, Environment env, Synthesizer.Mode mode) {
         this.ast = ast;
         this.env = env;
-        this.importsDuringSearch = new HashSet<>();
         this.mode = mode;
     }
 
     public TypedExpression search(SearchTarget target) {
         TypedExpression tExpr = search(target, 0);
-        if (tExpr == null) {
-            importsDuringSearch.clear();
+        if (tExpr == null)
             return null;
-        }
-
-        env.imports.addAll(importsDuringSearch);
-        importsDuringSearch.clear();
 
         if (tExpr.getExpression() instanceof SimpleName)
             return tExpr; /* found a variable in scope, just return it */
@@ -67,7 +61,11 @@ public class Enumerator {
 
         ParenthesizedExpression parenExpr = ast.newParenthesizedExpression();
         parenExpr.setExpression(assignment);
-        return new TypedExpression(parenExpr, tExpr.getType());
+        return new TypedExpression(parenExpr, tExpr.getType())
+                .addReferencedVariables(tExpr.getReferencedVariables())
+                .addReferencedVariables(expr.getReferencedVariables())
+                .addAssociatedImports(tExpr.getAssociatedImports())
+                .addAssociatedImports(expr.getAssociatedImports());
     }
 
     private TypedExpression search(SearchTarget target, int argDepth) {
@@ -80,7 +78,8 @@ public class Enumerator {
         for (Variable v : toSearch)
             if (!v.isSingleUseVar() && target.getType().isAssignableFrom(v.getType())) {
                 v.addRefCount();
-                return new TypedExpression(v.createASTNode(ast), v.getType());
+                return new TypedExpression(v.createASTNode(ast), v.getType())
+                        .addReferencedVariable(v).addAssociatedImport(v.getType().C());
             }
 
         /* could not pick variable, so concretize target type */
@@ -109,6 +108,10 @@ public class Enumerator {
         Enumerator enumerator = new Enumerator(ast, env, mode);
         Type targetType = target.getType();
 
+        // if a predefined constant exists for this type, just use it
+        if (env.predefinedConstants.hasPredefinedConstant(targetType.C()))
+            return env.predefinedConstants.getTypedExpression(targetType.C(), ast);
+
         /* first, see if we can create a new object of target type directly */
         List<Executable> constructors = new ArrayList<>(Arrays.asList(targetType.C().getConstructors()));
         /* static methods that return the target type are considered "constructors" here */
@@ -116,18 +119,31 @@ public class Enumerator {
             if (Modifier.isStatic(m.getModifiers()) && targetType.isAssignableFrom(m.getReturnType()))
                 constructors.add(m);
         sortExecutablesByCost(constructors);
+
+        List<TypedExpression> candidates = new ArrayList<>();
         for (Executable constructor : constructors) {
-            if (Modifier.isAbstract(targetType.C().getModifiers()))
+            if (Modifier.isAbstract(targetType.C().getModifiers())
+                    || Modifier.isInterface(targetType.C().getModifiers())) {
+                for (Object o : env.reflections.getSubTypesOf(targetType.C())) {
+                    TypedExpression tExpr = enumerator.enumerate(
+                            new SearchTarget(new Type((Class) o)), argDepth, toSearch);
+                    if (tExpr != null) {
+                        // concretize the type before finalizing candidate
+                        tExpr.getType().concretizeType(env);
+                        candidates.add(tExpr);
+                    }
+                }
                 break;
+            }
             if (! Modifier.isPublic(constructor.getModifiers()))
                 continue;
 
             if (constructor instanceof Constructor) { /* an actual constructor */
                 ClassInstanceCreation creation = ast.newClassInstanceCreation();
+                TypedExpression tExpr = new TypedExpression(creation, targetType);
                 creation.setType(ast.newSimpleType(ast.newSimpleName(targetType.C().getSimpleName())));
 
                 int i;
-                enumerator.importsDuringSearch.clear();
                 for (i = 0; i < constructor.getParameterCount(); i++) {
                     Class argType = constructor.getParameterTypes()[i];
                     String name = constructor.getParameters()[i].getName();
@@ -138,19 +154,19 @@ public class Enumerator {
                     TypedExpression tArg = enumerator.search(newTarget, argDepth + 1);
                     if (tArg == null)
                         break;
+                    tExpr.addReferencedVariables(tArg.getReferencedVariables());
+                    tExpr.addAssociatedImports(tArg.getAssociatedImports());
                     creation.arguments().add(tArg.getExpression());
                 }
                 if (i == constructor.getParameterCount()) {
-                    importsDuringSearch.addAll(enumerator.importsDuringSearch);
-                    importsDuringSearch.add(targetType.C());
-                    return new TypedExpression(creation, targetType);
+                    tExpr.addAssociatedImport(targetType.C());
+                    candidates.add(tExpr);
                 }
             }
             else { /* a static method that returns the object type */
                 MethodInvocation invocation = ast.newMethodInvocation();
-
+                TypedExpression tExpr = new TypedExpression(invocation, targetType);
                 int i;
-                enumerator.importsDuringSearch.clear();
                 invocation.setExpression(ast.newSimpleName(targetType.C().getSimpleName()));
                 invocation.setName(ast.newSimpleName(constructor.getName()));
                 for (i = 0; i < constructor.getParameterCount(); i++) {
@@ -163,18 +179,34 @@ public class Enumerator {
                     TypedExpression tArg = enumerator.search(newTarget, argDepth + 1);
                     if (tArg == null)
                         break;
+                    tExpr.addReferencedVariables(tArg.getReferencedVariables());
+                    tExpr.addAssociatedImports(tArg.getAssociatedImports());
                     invocation.arguments().add(tArg.getExpression());
                 }
                 if (i == constructor.getParameterCount()) {
-                    importsDuringSearch.addAll(enumerator.importsDuringSearch);
-                    importsDuringSearch.add(targetType.C());
-                    return new TypedExpression(invocation, targetType);
+                    tExpr.addAssociatedImport(targetType.C());
+                    candidates.add(tExpr);
                 }
             }
         }
 
-        if (mode == Synthesizer.Mode.CONDITIONAL_PROGRAM_GENERATOR)
+        if (! candidates.isEmpty()) {
+            // sort according to cost heuristic and get the top-most one
+            sortTypedExpressionsByCost(candidates);
+            TypedExpression retExpr = candidates.get(0);
+
+            // remove all $ variables added by OTHER candidates
+            for (int i = 1; i < candidates.size(); i++)
+                for (Variable var : candidates.get(i).getReferencedVariables())
+                    if (var.isDefaultInit())
+                        env.removeVariable(var);
+
+            return retExpr;
+        }
+
+        if (mode == Synthesizer.Mode.CONDITIONAL_PROGRAM_GENERATOR) {
             return null;
+        }
 
         /* otherwise, start recursive search for expression of target type */
         List<ExpressionChain> chains = new ArrayList<>();
@@ -187,7 +219,8 @@ public class Enumerator {
             /* for each chain, see if we can synthesize all arguments in all methods in the chain */
             MethodInvocation invocation = ast.newMethodInvocation();
             Expression expr = chain.var.createASTNode(ast);
-            enumerator.importsDuringSearch.clear();
+            Set<Variable> referencedVariables = new HashSet<>();
+            Set<Class> associatedImports = new HashSet<>();
             for (i = 0; i < chain.methods.size(); i++) {
                 Method m = chain.methods.get(i);
                 invocation.setExpression(expr);
@@ -208,6 +241,8 @@ public class Enumerator {
                     }
                     if (tArg == null)
                         break;
+                    referencedVariables.addAll(tArg.getReferencedVariables());
+                    associatedImports.addAll(tArg.getAssociatedImports());
                     invocation.arguments().add(tArg.getExpression());
                 }
                 if (j != m.getParameterCount())
@@ -216,8 +251,9 @@ public class Enumerator {
                 invocation = ast.newMethodInvocation();
             }
             if (i == chain.methods.size()) {
-                importsDuringSearch.addAll(enumerator.importsDuringSearch);
-                return new TypedExpression(expr, targetType);
+                return new TypedExpression(expr, targetType)
+                        .addReferencedVariables(referencedVariables)
+                        .addAssociatedImports(associatedImports);
             }
         }
 
@@ -317,5 +353,20 @@ public class Enumerator {
 
     private void sortChainsByCost(List<ExpressionChain> chains) {
         chains.sort(Comparator.comparingInt(chain -> chain.structCost()));
+    }
+
+    private void sortTypedExpressionsByCost(List<TypedExpression> exprs) {
+        ToIntFunction<TypedExpression> key = new ToIntFunction<TypedExpression>() {
+            @Override
+            public int applyAsInt(TypedExpression expr) {
+                Set<Variable> referencedVariables = expr.getReferencedVariables();
+                int c = 0;
+                for (Variable var : referencedVariables)
+                    if (var.isUserVar())
+                        c++;
+                return c;
+            }
+        };
+        exprs.sort(Comparator.comparingInt(key).reversed());
     }
 }

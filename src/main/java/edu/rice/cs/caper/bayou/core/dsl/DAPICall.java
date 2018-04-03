@@ -22,6 +22,8 @@ import org.eclipse.jdt.core.dom.*;
 
 import java.lang.reflect.*;
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -194,7 +196,7 @@ public class DAPICall extends DASTNode
         String className = qualifiedName.substring(0, qualifiedName.lastIndexOf("."));
         Type type;
         try {
-            type = className.contains("Tau_")? new Type(constructor.getDeclaringClass())
+            type = hasTypeVariable(className)? new Type(constructor.getDeclaringClass())
                     : Type.fromString(className, env.ast());
         } catch (Type.TypeParseException e) {
             System.out.println(className);
@@ -217,6 +219,7 @@ public class DAPICall extends DASTNode
 
         /* constructor return object */
         TypedExpression ret = env.addVariable(type);
+        env.addImport(type.C());
 
         /* the assignment */
         Assignment assignment = ast.newAssignment();
@@ -251,7 +254,7 @@ public class DAPICall extends DASTNode
             String className = qualifiedName.substring(0, qualifiedName.lastIndexOf("."));
             Type type;
             try {
-                type = className.contains("Tau_")? new Type(method.getDeclaringClass())
+                type = hasTypeVariable(className)? new Type(method.getDeclaringClass())
                         : Type.fromString(className, env.ast());
             } catch (Type.TypeParseException e) {
                 System.out.println(className);
@@ -279,6 +282,7 @@ public class DAPICall extends DASTNode
         /* method return value */
         Type retType = object.getType().getConcretization(method.getGenericReturnType());
         TypedExpression ret = env.addVariable(retType);
+        env.addImport(retType.C());
 
         /* the assignment */
         Expression lhs = ret.getExpression();
@@ -387,5 +391,14 @@ public class DAPICall extends DASTNode
             if (s.contains("("))
                 return s.replaceAll("\\$", ".");
         return null;
+    }
+
+    private boolean hasTypeVariable(String className) {
+        if (className.contains("Tau_"))
+            return true;
+
+        // commonly used type variable names in Java API
+        Matcher typeVars = Pattern.compile("\\b[EKNTVSU][0-9]?\\b").matcher(className);
+        return typeVars.find();
     }
 }

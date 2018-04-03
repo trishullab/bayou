@@ -94,11 +94,12 @@ public class Synthesizer {
                     continue;
                 String program = visitor.synthesizedProgram.replaceAll("\\s", "");
                 if (! programs.contains(program)) {
-                    String formattedProgram = "// Bayou confidence score: " + ast.probability + "\n"
-                                                + new Formatter().formatSource(visitor.synthesizedProgram);
+                    String formattedProgram = new Formatter().formatSource(visitor.synthesizedProgram);
                     programs.add(program);
                     synthesizedPrograms.add(formattedProgram);
                 }
+                if (synthesizedPrograms.size() >= 10) // hard coded: synthesize a maximum of 10 programs
+                    break;
             } catch (SynthesisException|FormatterException e) {
                 // do nothing and try next ast
             }

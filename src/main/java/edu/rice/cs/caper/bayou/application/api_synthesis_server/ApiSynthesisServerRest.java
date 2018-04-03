@@ -19,6 +19,7 @@ import edu.rice.cs.caper.bayou.application.api_synthesis_server.servlet.ApiSynth
 import edu.rice.cs.caper.bayou.application.api_synthesis_server.servlet.ApiSynthesisResultQualityFeedbackServlet;
 import edu.rice.cs.caper.bayou.application.api_synthesis_server.servlet.ApiSynthesisServlet;
 import edu.rice.cs.caper.programming.numbers.NatNum32;
+import edu.rice.cs.caper.servlet.ServerIdHttpServlet;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.eclipse.jetty.server.*;
@@ -28,6 +29,7 @@ import org.eclipse.jetty.servlet.ServletHandler;
 import org.eclipse.jetty.util.thread.ExecutorThreadPool;
 
 import java.util.Arrays;
+import java.util.UUID;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 
@@ -110,7 +112,7 @@ class ApiSynthesisServerRest
              * against an attack that makes a large volume of requests and exhausts the process' memory.
              */
             LinkedBlockingQueue<Runnable> queue = new LinkedBlockingQueue<>(_jettyTaskQueueSize.AsInt);
-            ExecutorThreadPool pool = new ExecutorThreadPool(10, 20, 60, TimeUnit.SECONDS, queue);
+            ExecutorThreadPool pool = new ExecutorThreadPool(100, 100, 60, TimeUnit.SECONDS, queue);
             apiSynthServer = new Server(pool);
 
             /*
@@ -171,6 +173,13 @@ class ApiSynthesisServerRest
             // only allow requests on port _httpHeartbeatListenPort
             handler.addServletWithMapping(ApiSynthesisHealthCheckServlet.class, "/apisynthesishealth");
         }
+
+        /*
+         * Set the server id for response headers.
+         */
+        String serverId = UUID.randomUUID().toString();
+        ServerIdHttpServlet.setServerId(serverId);
+        _logger.info("Server id is: " + serverId);
 
         /*
          * Start the HTTP servers.

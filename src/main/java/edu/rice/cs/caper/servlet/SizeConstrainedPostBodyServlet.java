@@ -32,7 +32,7 @@ import java.nio.charset.Charset;
  * request body. If larger requests are sent to the servlet, the servlet will respond with a JSON error message
  * as the body of the response.
  */
-public abstract class SizeConstrainedPostBodyServlet extends HttpServlet
+public abstract class SizeConstrainedPostBodyServlet extends ServerIdHttpServlet
 {
     /**
      * Place to send logging information.
