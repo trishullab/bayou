@@ -98,6 +98,8 @@ public class Synthesizer {
                     programs.add(program);
                     synthesizedPrograms.add(formattedProgram);
                 }
+                if (synthesizedPrograms.size() >= 10) // hard coded: synthesize a maximum of 10 programs
+                    break;
             } catch (SynthesisException|FormatterException e) {
                 // do nothing and try next ast
             }
