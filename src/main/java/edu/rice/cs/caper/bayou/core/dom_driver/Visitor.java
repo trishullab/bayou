@@ -51,6 +51,7 @@ public class Visitor extends ASTVisitor {
     }
 
     class JSONOutputWrapper {
+        String file;
         DSubTree ast;
         List<Sequence> sequences;
         String javadoc;
@@ -66,6 +67,7 @@ public class Visitor extends ASTVisitor {
                                  List<Multiset<Integer>> cfgs4_bfs,
                                  List<Multiset<Integer>> cfgs3_dfs,
                                  List<Multiset<Integer>> cfgs4_dfs) {
+            this.file = options.file;
             this.ast = ast;
             this.sequences = sequences;
             this.javadoc = javadoc;

@@ -76,6 +76,7 @@ public class Options {
     public CommandLine cmdLine;
     JsonObject config;
 
+    public final String file;
     public final List<String> API_CLASSES;
     public final List<String> API_PACKAGES;
     public final List<String> API_MODULES;
@@ -88,6 +89,7 @@ public class Options {
 
     public Options()
     {
+        file = "Not supplied";
         API_CLASSES = Arrays.asList(
                 "java.io.BufferedReader",
                 "java.io.InputStreamReader",
@@ -111,6 +113,7 @@ public class Options {
 
     public Options(String[] args) throws ParseException, IOException {
         this.cmdLine = readCommandLine(args);
+        this.file = cmdLine.getOptionValue("f");
         this.config = readConfigFile(cmdLine.getOptionValue("config-file"));
 
         // API_CLASSES
