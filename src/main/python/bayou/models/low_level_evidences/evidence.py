@@ -189,10 +189,20 @@ class Types(Evidence):
         patt = re.compile('java[x]?\.(\w*)\.(\w*)(\.([A-Z]\w*))*')
         types = [match.group(4) if match.group(4) is not None else match.group(2)
                  for match in re.finditer(patt, s)]
-        primitives = ['byte', 'short', 'int', 'long', 'float', 'double', 'boolean', 'char']
+        primitives = {
+            'byte': 'Byte',
+            'short': 'Short',
+            'int': 'Integer',
+            'long': 'Long',
+            'float': 'Float',
+            'double': 'Double',
+            'boolean': 'Boolean',
+            'char': 'Character'
+        }
+
         for p in primitives:
-            if re.search('\W{}'.format(p), s):
-                types.append(p)
+            if s == p or re.search('\W{}'.format(p), s):
+                types.append(primitives[p])
         return list(set(types))
 
     @staticmethod
