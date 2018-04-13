@@ -137,8 +137,12 @@ public class Visitor extends ASTVisitor {
         Block body = method.getBody();
         for (Object o : body.statements()) {
             Statement stmt = (Statement) o;
-            if (!(stmt instanceof VariableDeclarationStatement))
-                break; // stop at the first non-variable declaration
+            if (!(stmt instanceof VariableDeclarationStatement)) {
+                if (stmt instanceof Block)
+                    break; // stop at the first non-variable declaration
+                else
+                    throw new SynthesisException(SynthesisException.IrrelevantCodeInBody);
+            }
             VariableDeclarationStatement varDecl = (VariableDeclarationStatement) stmt;
             for (Object f : varDecl.fragments()) {
                 VariableDeclarationFragment frag = (VariableDeclarationFragment) f;

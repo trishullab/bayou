@@ -78,13 +78,6 @@ public class EvidenceExtractor extends ASTVisitor {
                 output.types.add(checkPrimitive(matcher.group()));
         }
 
-        // check if body contains any other statement than variable declarations
-        for (Object o : declaration.getBody().statements()) {
-            Statement statement = (Statement) o;
-            if (!(statement instanceof VariableDeclarationStatement) && !(statement instanceof Block))
-                throw new SynthesisException(SynthesisException.IrrelevantCodeInBody);
-        }
-
         return true;
     }
 

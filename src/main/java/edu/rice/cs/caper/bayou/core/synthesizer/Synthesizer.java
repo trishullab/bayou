@@ -23,10 +23,7 @@ import edu.rice.cs.caper.bayou.core.dsl.*;
 import org.eclipse.jdt.core.dom.CompilationUnit;
 import org.eclipse.jface.text.Document;
 import java.net.URLClassLoader;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
 
 public class Synthesizer {
 
@@ -87,7 +84,7 @@ public class Synthesizer {
 
         CompilationUnit cu = parser.cu;
         List<String> programs = new ArrayList<>();
-        List<String> errors = new ArrayList<>();
+        Set<String> errors = new HashSet<>();
         for (JSONInput ast : asts) {
             Visitor visitor = new Visitor(ast.ast, new Document(parser.source), cu, mode);
             try {
