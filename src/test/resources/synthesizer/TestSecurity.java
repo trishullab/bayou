@@ -19,7 +19,9 @@ import edu.rice.cs.caper.bayou.annotations.Evidence;
 public class TestSecurity {
 
     void read(String alg) {
-        Evidence.keywords("generate secure key pair");
+        {
+            Evidence.keywords("generate secure key pair");
+        }
     }
 
 }

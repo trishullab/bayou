@@ -35,6 +35,7 @@ public class SynthesisException extends RuntimeException {
     public static final int InvalidKindOfType = 1010;
     public static final int MalformedASTFromNN = 1011;
     public static final int TypeParseException = 1012;
+    public static final int IrrelevantCodeInBody = 1013;
 
     private static final Map<Integer,String> toMessage;
     static {
@@ -65,6 +66,8 @@ public class SynthesisException extends RuntimeException {
                 "Malformed AST predicted by neural network.");
         _toMessage.put(TypeParseException,
                 "Malformed type from AST.");
+        _toMessage.put(IrrelevantCodeInBody,
+                "Method body should only contain variable declarations and evidences.");
         toMessage = Collections.unmodifiableMap(_toMessage);
     }
 
