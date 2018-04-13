@@ -104,7 +104,7 @@ public class Environment {
         Enumerator enumerator = new Enumerator(ast, this, mode);
         TypedExpression tExpr = enumerator.search(target);
         if (tExpr == null)
-            throw new SynthesisException(SynthesisException.TypeNotFoundDuringSearch);
+            throw new SynthesisException(SynthesisException.TypeNotFoundDuringSearch, target.getType().C().getName());
         imports.addAll(tExpr.getAssociatedImports());
         return tExpr;
     }
@@ -126,7 +126,7 @@ public class Environment {
         try {
             return ClassUtils.getClass(Synthesizer.classLoader, name);
         } catch (ClassNotFoundException e) {
-            throw new SynthesisException(SynthesisException.ClassNotFoundInLoader);
+            throw new SynthesisException(SynthesisException.ClassNotFoundInLoader, name);
         }
     }
 

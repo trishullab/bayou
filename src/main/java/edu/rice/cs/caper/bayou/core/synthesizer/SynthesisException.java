@@ -41,37 +41,43 @@ public class SynthesisException extends RuntimeException {
     static {
         Map<Integer,String> _toMessage = new HashMap<>();
         _toMessage.put(CouldNotResolveBinding,
-            "Could not resolve binding. Ensure CLASSPATH is set correctly.");
+                "Bayou could not resolve the reference of the method %s");
         _toMessage.put(EvidenceNotInBlock,
-            "Evidence should be given in a block.");
+                "Please provide evidence in a block.");
         _toMessage.put(EvidenceMixedWithCode,
-            "Evidence calls should appear in a separate empty block.");
+                "Please provide evidence in a separate empty block.");
         _toMessage.put(MoreThanOneHole,
-            "More than one hole for synthesis not currently supported.");
+                "More than one hole for synthesis not currently supported.");
         _toMessage.put(InvalidEvidenceType,
-            "Invalid evidence type given.");
+                "%s is an invalid kind of evidence. Only API calls, types and keywords are supported.");
         _toMessage.put(CouldNotEditDocument,
-            "Could not edit document for some reason.");
+                "Bayou internal error: could not edit document for some reason.");
         _toMessage.put(ClassNotFoundInLoader,
-            "Class could not be found in class loader.");
+                "Some programs required the use of the class %s which could not be found in the class loader.");
         _toMessage.put(TypeNotFoundDuringSearch,
-            "Type could not be found during combinatorial search.");
+                "Some programs required the use of the type %s which could not be found during search. " +
+                "Please ensure that you provide at least one variable in your program.");
         _toMessage.put(MethodOrConstructorNotFound,
-            "Method or constructor not found in class.");
+                "Some programs required the use of the method or constructor %s which could not be found.");
         _toMessage.put(GenericTypeVariableMismatch,
-            "Generic type variable name mismatched.");
+                "Some programs required the use of the type %s, which involves advanced generics such as wildcards.");
         _toMessage.put(InvalidKindOfType,
-            "Invalid kind of type.");
+                "Some programs required the use of the type %s, which involves advanced generics such as wildcards.");
         _toMessage.put(MalformedASTFromNN,
-                "Malformed AST predicted by neural network.");
+                "Bayou internal error: Malformed AST predicted by neural network.");
         _toMessage.put(TypeParseException,
-                "Malformed type from AST.");
+                "Bayou internal error: Malformed type from AST.");
         _toMessage.put(IrrelevantCodeInBody,
-                "Method body should only contain variable declarations and evidences.");
+                "Please ensure that your method body only contains variable declarations and evidences.");
         toMessage = Collections.unmodifiableMap(_toMessage);
     }
 
     private final int id;
+
+    public SynthesisException(int id, String arg) {
+        super(String.format(toMessage.get(id), arg));
+        this.id = id;
+    }
 
     public SynthesisException(int id) {
         super(toMessage.get(id));

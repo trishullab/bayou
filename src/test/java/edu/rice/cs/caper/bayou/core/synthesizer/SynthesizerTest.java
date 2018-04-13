@@ -67,6 +67,7 @@ public class SynthesizerTest {
         Assert.assertTrue(results.size() > 0);
 
         for(String resultProgram : results) {
+            Assert.assertFalse(resultProgram.contains("Your intended program could not be synthesized"));
             Parser p = new Parser(resultProgram, classpath);
             p.parse(); // parse synthesized code and ensure no ParseException is thrown
         }
@@ -77,6 +78,7 @@ public class SynthesizerTest {
         Assert.assertTrue(results.size() > 0);
 
         for(String resultProgram : results) {
+            Assert.assertFalse(resultProgram.contains("Your intended program could not be synthesized"));
             Parser p = new Parser(resultProgram, classpath);
             p.parse(); // parse synthesized code and ensure no ParseException is thrown
         }

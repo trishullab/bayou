@@ -199,8 +199,7 @@ public class DAPICall extends DASTNode
             type = hasTypeVariable(className)? new Type(constructor.getDeclaringClass())
                     : Type.fromString(className, env.ast());
         } catch (Type.TypeParseException e) {
-            System.out.println(className);
-            throw new SynthesisException(SynthesisException.TypeParseException);
+            throw new SynthesisException(SynthesisException.TypeParseException, className);
         }
         type.concretizeType(env);
         creation.setType(type.simpleT(ast, null));
@@ -257,8 +256,7 @@ public class DAPICall extends DASTNode
                 type = hasTypeVariable(className)? new Type(method.getDeclaringClass())
                         : Type.fromString(className, env.ast());
             } catch (Type.TypeParseException e) {
-                System.out.println(className);
-                throw new SynthesisException(SynthesisException.TypeParseException);
+                throw new SynthesisException(SynthesisException.TypeParseException, className);
             }
             object = primitiveWrapper(env.search(new SearchTarget(type)), env);
         }
@@ -356,7 +354,7 @@ public class DAPICall extends DASTNode
                 return e;
         }
 
-        throw new SynthesisException(SynthesisException.MethodOrConstructorNotFound);
+        throw new SynthesisException(SynthesisException.MethodOrConstructorNotFound, _call);
     }
 
     /**
@@ -375,7 +373,7 @@ public class DAPICall extends DASTNode
                 break;
             }
         if (typeVar == null)
-            throw new SynthesisException(SynthesisException.GenericTypeVariableMismatch);
+            throw new SynthesisException(SynthesisException.GenericTypeVariableMismatch, cls.getName());
         java.lang.reflect.Type bound = typeVar.getBounds()[0]; // first bound is the class
         return (Class) bound;
     }

@@ -66,7 +66,7 @@ public class EvidenceExtractor extends ASTVisitor {
 
         IMethodBinding binding = declaration.resolveBinding();
         if (binding == null)
-            throw new SynthesisException(SynthesisException.CouldNotResolveBinding);
+            throw new SynthesisException(SynthesisException.CouldNotResolveBinding, declaration.getName().getIdentifier());
 
         // add formal parameters to types evidence
         output.types.clear();
@@ -92,7 +92,7 @@ public class EvidenceExtractor extends ASTVisitor {
     public boolean visit(MethodInvocation invocation) throws SynthesisException {
         IMethodBinding binding = invocation.resolveMethodBinding();
         if (binding == null)
-            throw new SynthesisException(SynthesisException.CouldNotResolveBinding);
+            throw new SynthesisException(SynthesisException.CouldNotResolveBinding, invocation.getName().getIdentifier());
 
         ITypeBinding cls = binding.getDeclaringClass();
         if (cls == null || !cls.getQualifiedName().equals("edu.rice.cs.caper.bayou.annotations.Evidence"))
@@ -125,7 +125,7 @@ public class EvidenceExtractor extends ASTVisitor {
                 StringLiteral a = (StringLiteral) arg;
                 output.keywords.add(a.getLiteralValue().toLowerCase());
             }
-        } else throw new SynthesisException(SynthesisException.InvalidEvidenceType);
+        } else throw new SynthesisException(SynthesisException.InvalidEvidenceType, binding.getName());
 
         return false;
     }
@@ -140,7 +140,7 @@ public class EvidenceExtractor extends ASTVisitor {
 
                 IMethodBinding binding = invocation.resolveMethodBinding();
                 if (binding == null)
-                    throw new SynthesisException(SynthesisException.CouldNotResolveBinding);
+                    throw new SynthesisException(SynthesisException.CouldNotResolveBinding, invocation.getName().getIdentifier());
 
                 ITypeBinding cls = binding.getDeclaringClass();
                 if (cls == null || !cls.getQualifiedName().equals("edu.rice.cs.caper.bayou.annotations.Evidence"))

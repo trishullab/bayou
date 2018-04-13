@@ -123,7 +123,7 @@ public class Type {
 
     public org.eclipse.jdt.core.dom.Type T() {
         if (t == null)
-            throw new SynthesisException(SynthesisException.InvalidKindOfType);
+            throw new SynthesisException(SynthesisException.InvalidKindOfType, C().getName());
         return t;
     }
 
@@ -144,7 +144,7 @@ public class Type {
      */
     public static Type fromString(String typeStr, AST ast) throws TypeParseException {
         if (typeStr.contains("\\$") || typeStr.contains("Tau_") || typeStr.contains("?"))
-            throw new SynthesisException(SynthesisException.InvalidKindOfType);
+            throw new SynthesisException(SynthesisException.TypeParseException);
 
         Matcher sTypePattern = Pattern.compile("\\w+(\\.\\w+)+").matcher(typeStr);
         Matcher aTypePattern = Pattern.compile("([^\\[]*)([\\[\\]]+)").matcher(typeStr);
@@ -261,10 +261,10 @@ public class Type {
 
             // FIXME: Add support for wildcard types and concretizing without a base parameterized type (e.g., Collections)
             if (concretization == null)
-                throw new SynthesisException(SynthesisException.InvalidKindOfType);
+                throw new SynthesisException(SynthesisException.InvalidKindOfType, C().getName());
 
             if (! concretization.containsKey(name))
-                throw new SynthesisException(SynthesisException.GenericTypeVariableMismatch);
+                throw new SynthesisException(SynthesisException.GenericTypeVariableMismatch, C().getName());
             return concretization.get(name);
         }
         else if (type instanceof Class) {
@@ -272,7 +272,7 @@ public class Type {
 
             if (cls.isArray()) {
                 if (cls.getComponentType().isArray()) // no support for multidim arrays
-                    throw new SynthesisException(SynthesisException.InvalidKindOfType);
+                    throw new SynthesisException(SynthesisException.InvalidKindOfType, C().getName());
                 Type componentType = getConcretization(cls.getComponentType());
                 return new Type(ast.newArrayType(componentType.T(), 1), cls);
             } else if (cls.isPrimitive()) {
@@ -283,7 +283,7 @@ public class Type {
                 return new Type(retType, cls);
             }
         }
-        else throw new SynthesisException(SynthesisException.InvalidKindOfType);
+        else throw new SynthesisException(SynthesisException.InvalidKindOfType, C().getName());
     }
 
     // same semantics as Class.isAssignableFrom for our type system but with generics
@@ -302,7 +302,7 @@ public class Type {
         int n1 = pt1.typeArguments().size();
         int n2 = pt2.typeArguments().size();
         if (n1 != n2)
-            throw new SynthesisException(SynthesisException.GenericTypeVariableMismatch);
+            throw new SynthesisException(SynthesisException.GenericTypeVariableMismatch, C().getName());
 
         for (int i = 0; i < n1; i++) {
             Type t1 = new Type((org.eclipse.jdt.core.dom.Type) pt1.typeArguments().get(i));
@@ -367,14 +367,14 @@ public class Type {
                 // throw new SynthesisException(SynthesisException.GenericTypeVariableMismatch);
             }
             if (t.isArrayType() && !c.isArray())
-                throw new SynthesisException(SynthesisException.InvalidKindOfType);
+                throw new SynthesisException(SynthesisException.InvalidKindOfType, C().getName());
             return;
         }
         ParameterizedType pType = (ParameterizedType) t;
         int n1 = pType.typeArguments().size();
         int n2 = c.getTypeParameters().length;
         if (n1 != n2)
-            throw new SynthesisException(SynthesisException.GenericTypeVariableMismatch);
+            throw new SynthesisException(SynthesisException.GenericTypeVariableMismatch, C().getName());
 
         // unify generic names with their actual types
         for (int i = 0; i < n1; i++) {
@@ -420,14 +420,14 @@ public class Type {
                 } else if (elementType.isParameterizedType()) {
                     name.append(((SimpleType) ((ParameterizedType) elementType).getType()).getName().getFullyQualifiedName());
                 } else
-                    throw new SynthesisException(SynthesisException.InvalidKindOfType);
+                    throw new SynthesisException(SynthesisException.InvalidKindOfType, type.toString());
                 for (int i = ((ArrayType) type).getDimensions(); i > 0; i--)
                     name.append("[]"); // add "[]" to denote array type dimension
                 return Environment.getClass(name.toString());
             }
         }
         else
-            throw new SynthesisException(SynthesisException.InvalidKindOfType);
+            throw new SynthesisException(SynthesisException.InvalidKindOfType, type.toString());
     }
 
     // make a DOM type independent of its bindings, because when copying subtrees bindings don't copy over
@@ -457,7 +457,7 @@ public class Type {
             return ast.newArrayType(elementType, dimensions);
         }
         else {
-            throw new SynthesisException(SynthesisException.InvalidKindOfType);
+            throw new SynthesisException(SynthesisException.InvalidKindOfType, C().getName());
         }
     }
 
@@ -503,7 +503,7 @@ public class Type {
             return ast.newArrayType((org.eclipse.jdt.core.dom.Type) ASTNode.copySubtree(ast, simpleElementType),
                     ((ArrayType) t).getDimensions());
         }
-        throw new SynthesisException(SynthesisException.InvalidKindOfType);
+        throw new SynthesisException(SynthesisException.InvalidKindOfType, C().getName());
     }
 
     public boolean isConcretized() {
