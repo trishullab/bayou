@@ -53,6 +53,12 @@ public class Visitor extends ASTVisitor {
     String synthesizedProgram;
 
     /**
+     * Temporary store for the number of $ variables (variables needed from environment).
+     * Gets updated with every invocation of visitor.
+     */
+    int num$Variables;
+
+    /**
      * The rewriter for the document
      */
     private ASTRewrite rewriter;
@@ -197,6 +203,7 @@ public class Visitor extends ASTVisitor {
             return false;
 
         /* make rewrites to the local method body */
+        num$Variables = 0;
         body = postprocessLocal(method.getAST(), env, body, dce.getEliminatedVars());
         rewriter.replace(evidenceBlock, body, null);
 
@@ -281,6 +288,7 @@ public class Visitor extends ASTVisitor {
                     } while (exists);
 
                     paramsRewriter.insertLast(varDecl, null);
+                    num$Variables++;
                 }
             } else {
                 VariableDeclarationFragment varDeclFrag = ast.newVariableDeclarationFragment();
