@@ -79,6 +79,21 @@ public class Type {
         stringToPrimitive = Collections.unmodifiableMap(map);
     }
 
+    public static final Map<Class,Class> primitiveToWrapperClass;
+    static {
+        Map<Class,Class> map = new HashMap<>();
+        map.put(int.class, Integer.class);
+        map.put(long.class, Long.class);
+        map.put(double.class, Double.class);
+        map.put(float.class, Float.class);
+        map.put(boolean.class, Boolean.class);
+        map.put(char.class, Character.class);
+        map.put(byte.class, Byte.class);
+        map.put(void.class, Void.class);
+        map.put(short.class, Short.class);
+        primitiveToWrapperClass = Collections.unmodifiableMap(map);
+    }
+
     public Type(org.eclipse.jdt.core.dom.Type t) {
         this.t = t;
         this.c = getClass(t);

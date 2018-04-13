@@ -260,7 +260,7 @@ public class DAPICall extends DASTNode
                 System.out.println(className);
                 throw new SynthesisException(SynthesisException.TypeParseException);
             }
-            object = env.search(new SearchTarget(type));
+            object = primitiveWrapper(env.search(new SearchTarget(type)), env);
         }
         invocation.setExpression(object.getExpression());
 
@@ -391,6 +391,33 @@ public class DAPICall extends DASTNode
             if (s.contains("("))
                 return s.replaceAll("\\$", ".");
         return null;
+    }
+
+    /**
+     * Creates and returns a primitive wrapper expression (e.g., Integer.valueOf(i), Boolean.valueOf(b))
+     *
+     * @param object the TypedExpression for the variable name that goes in the valueOf method call
+     * @param env the current environment
+     * @return a TypedExpression that wraps the primitive
+     */
+    private TypedExpression primitiveWrapper(TypedExpression object, Environment env) {
+        Class cls = object.getType().C();
+        if (! cls.isPrimitive())
+            return object;
+
+        AST ast = env.ast();
+        Class wrapperClass = Type.primitiveToWrapperClass.get(cls);
+        MethodInvocation invocation = ast.newMethodInvocation();
+        invocation.setExpression(ast.newSimpleName(wrapperClass.getSimpleName()));
+        invocation.setName(ast.newSimpleName("valueOf"));
+        invocation.arguments().add(object.getExpression());
+
+        Type wrapperType = new Type(wrapperClass);
+        wrapperType.concretizeType(env);
+
+        return new TypedExpression(invocation, wrapperType)
+                .addReferencedVariables(object.getReferencedVariables())
+                .addAssociatedImports(object.getAssociatedImports());
     }
 
     private boolean hasTypeVariable(String className) {
