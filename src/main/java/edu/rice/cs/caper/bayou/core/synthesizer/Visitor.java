@@ -24,6 +24,8 @@ import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.Document;
 
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Main class that implements the visitor pattern on the draft program's AST
@@ -259,11 +261,27 @@ public class Visitor extends ASTVisitor {
             // add the variable declaration to either the method's formal params or the body
             org.eclipse.jdt.core.dom.Type varDeclType = var.getType().simpleT(ast, env);
             if (var.isDefaultInit()) {
-                SingleVariableDeclaration varDecl = ast.newSingleVariableDeclaration();
-                varDecl.setType(varDeclType);
-                varDecl.setName(var.createASTNode(ast));
-                var.refactor("_" + var.getName());
-                paramsRewriter.insertLast(varDecl, null);
+                /* Dirty hack: need to check if body references the variable, because DCE might have removed
+                 * statements that use the variable. The right way would be to keep track of such variables,
+                 * but the hack is to simply check if the variable name appears in body's toString().
+                 */
+                Matcher m = Pattern.compile("\\b" + var.getName() + "\\b").matcher(body.toString());
+                if (m.find()) {
+                    SingleVariableDeclaration varDecl = ast.newSingleVariableDeclaration();
+                    varDecl.setType(varDeclType);
+                    varDecl.setName(var.createASTNode(ast));
+
+                    // refactor by prefixing with _ (until there is no name clash)
+                    boolean exists;
+                    do {
+                        exists = false;
+                        var.refactor("_" + var.getName());
+                        for (Variable v : toDeclare)
+                            exists |= !v.equals(var) && v.getName().equals(var.getName());
+                    } while (exists);
+
+                    paramsRewriter.insertLast(varDecl, null);
+                }
             } else {
                 VariableDeclarationFragment varDeclFrag = ast.newVariableDeclarationFragment();
                 varDeclFrag.setName(var.createASTNode(ast));
