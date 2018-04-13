@@ -78,6 +78,20 @@ public class EvidenceExtractor extends ASTVisitor {
                 output.types.add(checkPrimitive(matcher.group()));
         }
 
+        // add local variable declarations to types evidence
+        Block body = declaration.getBody();
+        for (Object o : body.statements()) {
+            Statement stmt = (Statement) o;
+            if (! (stmt instanceof VariableDeclarationStatement))
+                break;
+            VariableDeclarationStatement varDecl = (VariableDeclarationStatement) stmt;
+            ITypeBinding type = varDecl.getType().resolveBinding();
+            String t = type.getName();
+            Matcher matcher = pattern.matcher(t);
+            while (matcher.find())
+                output.types.add(checkPrimitive(matcher.group()));
+        }
+
         return true;
     }
 
