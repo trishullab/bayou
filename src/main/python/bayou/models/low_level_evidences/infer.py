@@ -60,7 +60,7 @@ class BayesianPredictor(object):
         ckpt = tf.train.get_checkpoint_state(save)
         saver.restore(self.sess, ckpt.model_checkpoint_path)
 
-    def infer(self, evidences, num_psi_samples=100, beam_width=25):
+    def infer(self, evidences, num_psi_samples=100, beam_width=50):
         """
         Returns an ordered (by probability) list of ASTs from the model, given evidences, using beam search
 
