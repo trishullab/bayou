@@ -198,7 +198,7 @@ public class Enumerator {
             // remove all $ variables added by OTHER candidates
             for (int i = 1; i < candidates.size(); i++)
                 for (Variable var : candidates.get(i).getReferencedVariables())
-                    if (var.isDefaultInit())
+                    if (var.isDefaultInit() && var.getRefCount() == 0)
                         env.removeVariable(var);
 
             return retExpr;
