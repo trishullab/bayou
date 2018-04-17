@@ -1,7 +1,7 @@
 # Bayou
-Bayou is a data-driven program synthesis system for Java that uses learned Bayesian specifications for efficient synthesis.
+Bayou is a data-driven program synthesis system for Java API idioms that uses the novel technique of Neural Sketch Learning.
 
-Click [here](https://arxiv.org/abs/1703.05698) for the arXiv paper on Bayou.
+To learn more, click [here](https://arxiv.org/abs/1703.05698) for the ICLR 2018 paper on Bayou.
 
 Try Bayou on your browser! Visit www.askbayou.com.
 
