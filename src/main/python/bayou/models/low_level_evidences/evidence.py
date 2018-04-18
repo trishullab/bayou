@@ -17,8 +17,10 @@ import numpy as np
 import os
 import re
 import json
+import nltk
 from itertools import chain
 from collections import Counter
+from nltk.stem.wordnet import WordNetLemmatizer
 
 from bayou.models.low_level_evidences.utils import CONFIG_ENCODER, CONFIG_INFER, C0, UNK
 
@@ -222,6 +224,10 @@ class Types(Evidence):
 
 class Keywords(Evidence):
 
+    def __init__(self):
+        nltk.download('wordnet')
+        self.lemmatizer = WordNetLemmatizer()
+
     STOP_WORDS = {  # CoreNLP English stop words
         "'ll", "'s", "'m", "a", "about", "above", "after", "again", "against", "all", "am", "an", "and",
         "any", "are", "aren't", "as", "at", "be", "because", "been", "before", "being", "below", "between",
@@ -245,8 +251,12 @@ class Keywords(Evidence):
         "youve"
     }
 
+    def lemmatize(self, word):
+        w = self.lemmatizer.lemmatize(word, 'v')
+        return self.lemmatizer.lemmatize(w, 'n')
+
     def read_data_point(self, program):
-        keywords = program['keywords'] if 'keywords' in program else []
+        keywords = [self.lemmatize(k) for k in program['keywords']] if 'keywords' in program else []
         return list(set(keywords))
 
     def set_chars_vocab(self, data):
