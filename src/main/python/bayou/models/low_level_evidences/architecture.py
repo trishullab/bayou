@@ -44,6 +44,7 @@ class BayesianEncoder(object):
             # 3. tile the encodings according to each evidence type
             encodings = [[enc] * ev.tile for ev, enc in zip(config.evidence, encodings)]
             encodings = tf.stack(list(chain.from_iterable(encodings)))
+            # resulting tensor =
 
             # 4. compute the mean of non-zero encodings
             self.psi_mean = tf.reduce_sum(encodings, axis=0) / denom
