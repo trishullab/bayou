@@ -224,7 +224,6 @@ class Types(Evidence):
 
 
 class Keywords(Evidence):
-
     STOP_WORDS = {  # CoreNLP English stop words
         "'ll", "'s", "'m", "a", "about", "above", "after", "again", "against", "all", "am", "an", "and",
         "any", "are", "aren't", "as", "at", "be", "because", "been", "before", "being", "below", "between",
@@ -311,41 +310,14 @@ class Keywords(Evidence):
 
         # add qualified names (java, util, xml, etc.), API calls and types
         keywords = list(chain.from_iterable([Keywords.split_camel(s) for s in qualified])) + \
-            list(chain.from_iterable([Keywords.split_camel(c) for c in APICalls.from_call(callnode)])) + \
-            list(chain.from_iterable([Keywords.split_camel(t) for t in Types.from_call(callnode)]))
+                   list(chain.from_iterable([Keywords.split_camel(c) for c in APICalls.from_call(callnode)])) + \
+                   list(chain.from_iterable([Keywords.split_camel(t) for t in Types.from_call(callnode)]))
 
         # convert to lower case, omit stop words and take the set
         return list(set([k.lower() for k in keywords if k.lower() not in Keywords.STOP_WORDS]))
 
 
-# # TODO: handle Javadoc with word2vec
-# class Javadoc(Evidence):
-#
-#     def read_data_point(self, program, infer=False):
-#         javadoc = program['javadoc'] if 'javadoc' in program else None
-#         if not javadoc:
-#             javadoc = UNK
-#         try:  # do not consider non-ASCII javadoc
-#             javadoc.encode('ascii')
-#         except UnicodeEncodeError:
-#             javadoc = UNK
-#         javadoc = javadoc.split()
-#         return javadoc
-#
-#     def set_dicts(self, data):
-#         if self.pretrained_embed:
-#             save_dir = os.path.join(self.save_dir, 'embed_' + self.name)
-#             with open(os.path.join(save_dir, 'config.json')) as f:
-#                 js = json.load(f)
-#             self.chars = js['chars']
-#         else:
-#             self.chars = [C0] + list(set([w for point in data for w in point]))
-#         self.vocab = dict(zip(self.chars, range(len(self.chars))))
-#         self.vocab_size = len(self.vocab)
-
-
 class Javadoc(Evidence):
-
     STOP_WORDS = {  # CoreNLP English stop words
         "'ll", "'s", "'m", "a", "about", "above", "after", "again", "against", "all", "am", "an", "and",
         "any", "are", "aren't", "as", "at", "be", "because", "been", "before", "being", "below", "between",
@@ -369,7 +341,7 @@ class Javadoc(Evidence):
         "youve"
     }
 
-    CONFIG_ADD = ['max_words', 'embed_dim', 'attention_layer_size', 'attention_num_units']
+    CONFIG_ADD = ['max_words', 'embed_dim', 'rnn_units']
 
     def init_config(self, evidence, chars_vocab):
         for attr in CONFIG_ENCODER + Javadoc.CONFIG_ADD + (CONFIG_INFER if chars_vocab else []):
@@ -414,7 +386,7 @@ class Javadoc(Evidence):
             cursor = 0
             for w in words:
                 if w in self.vocab and w not in Javadoc.STOP_WORDS and cursor < self.max_words:
-                    wrangled[i, cursor]= self.vocab[w]
+                    wrangled[i, cursor] = self.vocab[w]
                 cursor += 1
             wrangled[i, self.max_words] = cursor
         return wrangled
@@ -432,6 +404,7 @@ class Javadoc(Evidence):
 
     # check instances in the batch being zero
     def exists(self, inputs):
+        # corner very unlikely case, all latent-size non-zero numbers sum to one
         i = tf.reduce_sum(inputs, axis=1)
         return tf.not_equal(i, 0)
 
@@ -439,22 +412,8 @@ class Javadoc(Evidence):
         with tf.variable_scope('javadoc'):
             self.sigma = tf.get_variable('sigma', [])
 
-    # def encode(self, inputs, config):
-    #     with tf.variable_scope('keywords'):
-    #         latent_encoding = tf.zeros([config.batch_size, config.latent_size])
-    #         inp = tf.slice(inputs, [0, 0, 0], [config.batch_size, 1, self.vocab_size])
-    #         inp = tf.reshape(inp, [-1, self.vocab_size])
-    #         encoding = tf.layers.dense(inp, self.units, activation=tf.nn.tanh)
-    #         for i in range(self.num_layers - 1):
-    #             encoding = tf.layers.dense(encoding, self.units, activation=tf.nn.tanh)
-    #         w = tf.get_variable('w', [self.units, config.latent_size])
-    #         b = tf.get_variable('b', [config.latent_size])
-    #         latent_encoding += tf.nn.xw_plus_b(encoding, w, b)
-    #         return latent_encoding
-
     def encode(self, inputs, config):
-        # new rnn encoder with attention
-        # import pdb; pdb.set_trace()
+        # inputs.shape=(batch_size, max_words+1)
         inputs = tf.cast(inputs, tf.int32)
         with tf.variable_scope('javadoc'):
             if hasattr(self, 'vocab_embeddings'):
@@ -465,89 +424,55 @@ class Javadoc(Evidence):
                     initializer=embeddings_initializer,
                     trainable=False)
             else:
-                embedding_var = tf.get_variable(name='embeddings', shape=(self.vocab_size, self.embed_dim), trainable=False)
-            # batch_size * embed_dim, batch_size * 1
+                embedding_var = tf.get_variable(name='embeddings', shape=(self.vocab_size, self.embed_dim),
+                                                trainable=False)
             # (batch_size, max_words), (batch_size, 1)
             words, lengths = tf.split(inputs, [self.max_words, 1], 1)
-            # (batch_size, max_words, embed_dim)
+            # shape=(batch_size, max_words, embed_dim)
             encoder_emb_inp = embedding_ops.embedding_lookup(embedding_var, words)
-            # rnn part, multi-layer issue, defaultly we use GRUCell, we use the default initial_state
-            multi_cell = \
-                tf.nn.rnn_cell.MultiRNNCell([tf.nn.rnn_cell.GRUCell(self.units) for i in range(self.num_layers)])
-            encoder_outputs, encoder_state = \
-                tf.nn.dynamic_rnn(multi_cell, inputs=encoder_emb_inp, sequence_length=lengths, dtype=tf.float32)
-            # attention, self.units here can be any number, just has to match the query
-            attention_mechanism = tf.contrib.seq2seq.LuongAttention(
-                self.attention_num_units, encoder_outputs, memory_sequence_length=lengths)
-            # 1: each position in latent vector is a scalar, attention_layer_size can be adjusted to other values as well
-            # the basic grucell has to have a num_units matching the attention mechanism keys
-            decoder_cell = tf.contrib.seq2seq.AttentionWrapper(
-                tf.nn.rnn_cell.MultiRNNCell([tf.nn.rnn_cell.GRUCell(self.attention_num_units) for i in range(self.num_layers)]),
-                attention_mechanism, attention_layer_size=self.attention_layer_size)
-            # decoding, add output layer outside the attention layer + fixed timestep counts == self.latent_size
+            cell_fw = tf.nn.rnn_cell.GRUCell(self.rnn_units)
+            cell_bw = tf.nn.rnn_cell.GRUCell(self.rnn_units)
+            # outputs=(output_fw, output_bw), shape=[batch_size, max_time, cell_{f/b}w.output_size]
+            outputs, _ = tf.nn.bidirectional_dynamic_rnn(cell_fw, cell_bw, inputs=encoder_emb_inp,
+                                                                     sequence_length=tf.reshape(lengths, shape=[
+                                                                         self.batch_size]))
+            # shape=(batch_size, max_time, cell_fw.output_size+cell_bw.output_size)
+            brnn_outputs = tf.concat(outputs, axis=2)
 
+            # weights
+            # shape=(batch_size, max_time, latent_size)
+            # use_bias=False for making the weights of timesteps beyond finished zero
+            weights = tf.layers.dense(brnn_outputs, self.latent_size, use_bias=False, activation=tf.nn.tanh)
 
+            # softmax
+            # shape=(batch_size, max_time, latent_size)
+            softmax_raw = tf.layers.dense(brnn_outputs, self.latent_size, activation=None)
+            softmax = tf.nn.softmax(softmax_raw)
 
-    def encode(self, inputs, config):
-        # import pdb; pdb.set_trace()
-        inputs = tf.cast(inputs, tf.int32)
-        with tf.variable_scope('keywords_embed'):
-            if hasattr(self, 'vocab_embeddings'):
-                embeddings_initializer = tf.constant_initializer(self.vocab_embeddings)
-                embedding_var = tf.get_variable(
-                    name='embeddings',
-                    shape=(self.vocab_size, self.embed_dim),
-                    initializer=embeddings_initializer,
-                    trainable=False)
-            else:
-                embedding_var = tf.get_variable(name='embeddings', shape=(self.vocab_size, self.embed_dim), trainable=False)
-            # batch_size * embed_dim, batch_size * 1
-            keywords, lengths = tf.split(inputs, [self.max_words, 1], 1)
-            # len(list) == batch_size, element type (1, max_words) && (1, 1)
-            keywords_list = tf.split(keywords, config.batch_size, 0)
-            lengths_list = tf.split(lengths, config.batch_size, 0)
-            pure_embed_list = []
-            for i in range(config.batch_size):
-                k0 = tf.reshape(keywords_list[i], (self.max_words,))
-                l1 = tf.reshape(lengths_list[i], (1,))
-                l2 = self.max_words - l1
-                ll = tf.concat((l1, l2), 0)
-                # k: (?,)
-                k1, k2 = tf.split(k0, ll, 0)
-                # embeds: (?, embed_dim)
-                embeds = tf.nn.embedding_lookup(embedding_var, k1)
-                pure_embed_list.append(embeds)
+            # elementwise multiplication
+            # shape=(batch_size, max_time, latent_size)
+            multi = softmax * weights
 
-            latent_encoding = tf.zeros([config.batch_size, config.latent_size])
-            # inp = tf.slice(inputs, [0, 0, 0], [config.batch_size, 1, self.vocab_size])
-            # inp = tf.reshape(inp, [-1, self.vocab_size])
+            # use lengths vector to do summation
+            # sum reduction, shape=(batch_size, latent_size)
+            reduced = tf.reduce_sum(multi, axis=1)
+            # get rid of dividing zero
+            # encodings = [tf.where(exist, enc, zeros) for exist, enc in zip(exists, encodings)]
+            nonzero_lengths = tf.where(lengths > 0, lengths, tf.ones([self.batch_size, 1]))
+            # lengths.shape=(batch_size, 1), divisible
+            res = reduced / lengths
 
-            # shared variables acrossed different instances
-            # encoding = tf.layers.dense(inp, self.units, activation=tf.nn.tanh)
-            # for i in range(self.num_layers - 1):
-            #     encoding = tf.layers.dense(encoding, self.units, activation=tf.nn.tanh)
-            dense_list = []
-            for i in range(self.num_layers):
-                dense_list.append(tf.layers.Dense(self.units, activation=tf.nn.tanh, name='dense'+str(i)))
-            w = tf.get_variable('w', [self.units, config.latent_size])
-            b = tf.get_variable('b', [config.latent_size])
+            return res
+            # # attention, self.units here can be any number, just has to match the query
+            # attention_mechanism = tf.contrib.seq2seq.LuongAttention(
+            #     self.attention_num_units, encoder_outputs, memory_sequence_length=lengths)
+            # # 1: each position in latent vector is a scalar, attention_layer_size can be adjusted to other values as well
+            # # the basic grucell has to have a num_units matching the attention mechanism keys
+            # decoder_cell = tf.contrib.seq2seq.AttentionWrapper(
+            #     tf.nn.rnn_cell.MultiRNNCell([tf.nn.rnn_cell.GRUCell(self.attention_num_units) for i in range(self.num_layers)]),
+            #     attention_mechanism, attention_layer_size=self.attention_layer_size)
+            # # decoding, add output layer outside the attention layer + fixed timestep counts == self.latent_size
 
-            instance_encodings = []
-            for i in range(config.batch_size):
-                data = pure_embed_list[i]
-                for j in range(self.num_layers):
-                    data = dense_list[j](data)
-                word_encodings = tf.nn.xw_plus_b(data, w, b)
-                instance_encoding = tf.reduce_sum(word_encodings, 0)
-                # : (#words, latent_size) -> (latent_size,)
-                instance_encodings.append(instance_encoding)
-
-            # concat instance_encodings
-            instance_encodings = [tf.expand_dims(enc, 0) for enc in instance_encodings]
-
-            # : (batch_size, latent_size)
-            latent_encoding += tf.concat(instance_encodings, 0)
-            return latent_encoding
 
     def evidence_loss(self, psi, encoding, config):
         sigma_sq = tf.square(self.sigma)
@@ -570,8 +495,8 @@ class Javadoc(Evidence):
 
         # add qualified names (java, util, xml, etc.), API calls and types
         keywords = list(chain.from_iterable([Keywords.split_camel(s) for s in qualified])) + \
-            list(chain.from_iterable([Keywords.split_camel(c) for c in APICalls.from_call(callnode)])) + \
-            list(chain.from_iterable([Keywords.split_camel(t) for t in Types.from_call(callnode)]))
+                   list(chain.from_iterable([Keywords.split_camel(c) for c in APICalls.from_call(callnode)])) + \
+                   list(chain.from_iterable([Keywords.split_camel(t) for t in Types.from_call(callnode)]))
 
         # convert to lower case, omit stop words and take the set
         return list(set([k.lower() for k in keywords if k.lower() not in Keywords.STOP_WORDS]))
