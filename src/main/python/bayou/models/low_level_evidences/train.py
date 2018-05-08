@@ -73,7 +73,7 @@ def train(clargs):
     with open(config_file) as f:
         config = read_config(json.load(f), chars_vocab=clargs.continue_from)
     # for attention branch
-    config['embedding_file'] = clargs.embedding_file
+    config.embedding_file = clargs.embedding_file
     reader = Reader(clargs, config)
     
     jsconfig = dump_config(config)

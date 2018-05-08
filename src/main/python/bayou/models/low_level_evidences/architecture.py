@@ -65,13 +65,20 @@ class BayesianDecoder(object):
         self.cell1 = tf.nn.rnn_cell.MultiRNNCell(cells1)
         self.cell2 = tf.nn.rnn_cell.MultiRNNCell(cells2)
 
-        # psi.shape=(batch_size, latent_size) ==> (batch_size, latent_size, 1)
-        attention_memory = tf.reshape(psi, [config.batch_size, config.latent_size, 1])
-        attention_mechanism = tf.contrib.seq2seq.LuongAttention(1, attention_memory)
-        self.cell1 = tf.contrib.seq2seq.AttentionWrapper(self.cell1, attention_mechanism, 1)
-        self.cell2 = tf.contrib.seq2seq.AttentionWrapper(self.cell2, attention_mechanism, 1)
+        # # psi.shape=(batch_size, latent_size) ==> (batch_size, latent_size, 1)
+        # attention_memory = tf.reshape(psi, [config.batch_size, config.latent_size, 1])
+        # attention_mechanism = tf.contrib.seq2seq.LuongAttention(1, attention_memory)
+        # self.cell1 = tf.contrib.seq2seq.AttentionWrapper(self.cell1, attention_mechanism, 1)
+        # self.cell2 = tf.contrib.seq2seq.AttentionWrapper(self.cell2, attention_mechanism, 1)
+        #
+        # # attention stuff above
 
-        # attention stuff above
+        # luong attention, location-based alignment function
+        # psi.shape = (batch_size, latent_size)
+        align_w = tf.get_variable('align_w', shape=(config.decoder.units, config.latent_size))
+        # TODO: to minimize the current modification, use cell size as attention output vector size
+        att_out_w = tf.get_variable(
+            'att_out_w', shape=(config.latent_size + self.cell1.output_size, self.cell1.output_size))
 
         # placeholders
         self.initial_state = [initial_state] * config.decoder.num_layers
@@ -116,6 +123,14 @@ class BayesianDecoder(object):
                     output = tf.where(self.edges[i], output1, output2)
                     self.state = [tf.where(self.edges[i], state1[j], state2[j])
                                   for j in range(config.decoder.num_layers)]
+
+                    # combine attention and output to produce new_output
+                    # output.shape = [batch_size, self.output_size]
+                    align = tf.matmul(output, align_w)
+                    context = align * psi
+                    concat = tf.concat([context, output], axis=1)
+                    output = tf.tanh(tf.matmul(concat, att_out_w))
+
                     self.outputs.append(output)
                     if loop_function is not None:
                         prev = output

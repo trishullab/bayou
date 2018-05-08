@@ -387,7 +387,7 @@ class Javadoc(Evidence):
             for w in words:
                 if w in self.vocab and w not in Javadoc.STOP_WORDS and cursor < self.max_words:
                     wrangled[i, cursor] = self.vocab[w]
-                cursor += 1
+                    cursor += 1
             wrangled[i, self.max_words] = cursor
         return wrangled
 
@@ -433,20 +433,19 @@ class Javadoc(Evidence):
             cell_fw = tf.nn.rnn_cell.GRUCell(self.rnn_units)
             cell_bw = tf.nn.rnn_cell.GRUCell(self.rnn_units)
             # outputs=(output_fw, output_bw), shape=[batch_size, max_time, cell_{f/b}w.output_size]
-            outputs, _ = tf.nn.bidirectional_dynamic_rnn(cell_fw, cell_bw, inputs=encoder_emb_inp,
-                                                                     sequence_length=tf.reshape(lengths, shape=[
-                                                                         self.batch_size]))
+            outputs, _ = tf.nn.bidirectional_dynamic_rnn(cell_fw, cell_bw, inputs=encoder_emb_inp, dtype=tf.float32,
+                sequence_length=tf.reshape(lengths, shape=[config.batch_size]))
             # shape=(batch_size, max_time, cell_fw.output_size+cell_bw.output_size)
             brnn_outputs = tf.concat(outputs, axis=2)
 
             # weights
             # shape=(batch_size, max_time, latent_size)
             # use_bias=False for making the weights of timesteps beyond finished zero
-            weights = tf.layers.dense(brnn_outputs, self.latent_size, use_bias=False, activation=tf.nn.tanh)
+            weights = tf.layers.dense(brnn_outputs, config.latent_size, use_bias=False, activation=tf.nn.tanh)
 
             # softmax
             # shape=(batch_size, max_time, latent_size)
-            softmax_raw = tf.layers.dense(brnn_outputs, self.latent_size, activation=None)
+            softmax_raw = tf.layers.dense(brnn_outputs, config.latent_size, activation=None)
             softmax = tf.nn.softmax(softmax_raw)
 
             # elementwise multiplication
@@ -458,9 +457,9 @@ class Javadoc(Evidence):
             reduced = tf.reduce_sum(multi, axis=1)
             # get rid of dividing zero
             # encodings = [tf.where(exist, enc, zeros) for exist, enc in zip(exists, encodings)]
-            nonzero_lengths = tf.where(lengths > 0, lengths, tf.ones([self.batch_size, 1]))
+            nonzero_lengths = tf.where(lengths > 0, lengths, tf.ones([config.batch_size, 1], dtype=tf.int32))
             # lengths.shape=(batch_size, 1), divisible
-            res = reduced / lengths
+            res = reduced / tf.cast(nonzero_lengths, dtype=tf.float32)
 
             return res
             # # attention, self.units here can be any number, just has to match the query
