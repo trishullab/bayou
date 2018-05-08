@@ -38,7 +38,8 @@ class Model():
         lift_w = tf.get_variable('lift_w', [config.latent_size, config.decoder.units])
         lift_b = tf.get_variable('lift_b', [config.decoder.units])
         self.initial_state = tf.nn.xw_plus_b(self.psi, lift_w, lift_b)
-        self.decoder = BayesianDecoder(config, initial_state=self.initial_state, infer=infer)
+        # add also psi into decoder function
+        self.decoder = BayesianDecoder(config, initial_state=self.initial_state, psi=self.psi, infer=infer)
 
         # get the decoder outputs
         output = tf.reshape(tf.concat(self.decoder.outputs, 1),

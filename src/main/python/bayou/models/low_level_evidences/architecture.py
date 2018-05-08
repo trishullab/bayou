@@ -56,7 +56,7 @@ class BayesianEncoder(object):
 
 
 class BayesianDecoder(object):
-    def __init__(self, config, initial_state, infer=False):
+    def __init__(self, config, initial_state, psi, infer=False):
 
         cells1, cells2 = [], []
         for _ in range(config.decoder.num_layers):
@@ -64,6 +64,14 @@ class BayesianDecoder(object):
             cells2.append(tf.nn.rnn_cell.GRUCell(config.decoder.units))
         self.cell1 = tf.nn.rnn_cell.MultiRNNCell(cells1)
         self.cell2 = tf.nn.rnn_cell.MultiRNNCell(cells2)
+
+        # psi.shape=(batch_size, latent_size) ==> (batch_size, latent_size, 1)
+        attention_memory = tf.reshape(psi, [config.batch_size, config.latent_size, 1])
+        attention_mechanism = tf.contrib.seq2seq.LuongAttention(1, attention_memory)
+        self.cell1 = tf.contrib.seq2seq.AttentionWrapper(self.cell1, attention_mechanism, 1)
+        self.cell2 = tf.contrib.seq2seq.AttentionWrapper(self.cell2, attention_mechanism, 1)
+
+        # attention stuff above
 
         # placeholders
         self.initial_state = [initial_state] * config.decoder.num_layers
