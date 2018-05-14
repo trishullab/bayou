@@ -16,7 +16,7 @@
       "tile": 1,
       "units": 64,
       "max_words": 20,
-      "embed_dim": 100,
+      "embed_dim": 200,
       "rnn_units": 50
     }
   ],
