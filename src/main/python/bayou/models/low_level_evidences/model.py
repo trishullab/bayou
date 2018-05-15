@@ -105,6 +105,7 @@ class Model():
                     self.decoder.edges[0].name: e}
             for i in range(self.config.decoder.num_layers):
                 feed[self.decoder.initial_state[i].name] = state[i]
+            feed[self.psi.name] = psi
             [probs, state] = sess.run([self.probs, self.decoder.state], feed)
 
         dist = probs[0]
