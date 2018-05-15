@@ -24,11 +24,11 @@ then
           then
             add-apt-repository ppa:webupd8team/java
             apt-get update
-            apt-get install oracle-java8-installer
+            apt-get install -y oracle-java8-installer
           else
-            apt-get install openjdk-8-jdk
+            apt-get install -y openjdk-8-jdk
         fi
-	apt-get install python3-pip
+	apt-get install -y python3-pip
 
 elif [ $OS == "Darwin" ] # Darwin for Mac OS X
 then
