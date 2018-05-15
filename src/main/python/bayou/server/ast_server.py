@@ -65,11 +65,11 @@ def _generate_asts(evidence_json: str, predictor, okay_check=True):
 
     js = json.loads(evidence_json)  # parse evidence as a JSON string
 
-    # enhance keywords evidence from others
-    keywords = list(chain.from_iterable([Keywords.split_camel(c) for c in js['apicalls']])) + \
-        list(chain.from_iterable([Keywords.split_camel(t) for t in js['types']])) + \
-        js['keywords']
-    js['keywords'] = list(set([k.lower() for k in keywords if k.lower() not in Keywords.STOP_WORDS]))
+    # # enhance keywords evidence from others
+    # keywords = list(chain.from_iterable([Keywords.split_camel(c) for c in js['apicalls']])) + \
+    #     list(chain.from_iterable([Keywords.split_camel(t) for t in js['types']])) + \
+    #     js['keywords']
+    # js['keywords'] = list(set([k.lower() for k in keywords if k.lower() not in Keywords.STOP_WORDS]))
 
     #
     # Generate ASTs from evidence.

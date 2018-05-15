@@ -42,7 +42,7 @@ def ast_quality_perf_test(clargs):
 
     with tf.Session() as sess:
         print('Loading model...')
-        predictor = model(clargs.save, sess)  # create a predictor that can generates ASTs from evidence
+        predictor = model(clargs.save, sess, embed_file=clargs.embedding_file)  # create a predictor that can generates ASTs from evidence
 
         n = len(programs)
         for i, program in enumerate(programs):
@@ -88,6 +88,7 @@ if __name__ == '__main__':
                         help='use only this evidence for inference queries')
     parser.add_argument('--output_file', type=str, default=None,
                         help='output file to print predicted ASTs')
+    parser.add_argument('--embedding_file', type=str, default=None, help='word embedding file for keywords')
     clargs = parser.parse_args()
     sys.setrecursionlimit(clargs.python_recursion_limit)
     print(clargs)

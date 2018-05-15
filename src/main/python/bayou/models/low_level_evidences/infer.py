@@ -27,6 +27,7 @@ from bayou.models.low_level_evidences.utils import read_config
 MAX_GEN_UNTIL_STOP = 20
 MAX_AST_DEPTH = 5
 
+from bayou.models.low_level_evidences.evidence import Javadoc
 
 class TooLongPathError(Exception):
     pass
@@ -42,13 +43,17 @@ class InvalidSketchError(Exception):
 
 class BayesianPredictor(object):
 
-    def __init__(self, save, sess):
+    def __init__(self, save, sess, embed_file=None):
         self.sess = sess
 
         # load the saved config
         with open(os.path.join(save, 'config.json')) as f:
             config = read_config(json.load(f), chars_vocab=True)
         self.model = Model(config, True)
+
+        for ev in config.evidence:
+            if isinstance(ev, Javadoc):
+                ev.set_chars_vocab(embed_file)
 
         # load the callmap
         with open(os.path.join(save, 'callmap.pkl'), 'rb') as f:
