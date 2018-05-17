@@ -39,7 +39,7 @@ class Model():
         lift_b = tf.get_variable('lift_b', [config.decoder.units])
         self.initial_state = tf.nn.xw_plus_b(self.psi, lift_w, lift_b)
         # add also psi into decoder function
-        self.decoder = BayesianDecoder(config, initial_state=self.initial_state, psi=self.psi, infer=infer)
+        self.decoder = BayesianDecoder(config, initial_state=self.initial_state, infer=infer)
 
         # get the decoder outputs
         output = tf.reshape(tf.concat(self.decoder.outputs, 1),
@@ -105,7 +105,6 @@ class Model():
                     self.decoder.edges[0].name: e}
             for i in range(self.config.decoder.num_layers):
                 feed[self.decoder.initial_state[i].name] = state[i]
-            feed[self.psi.name] = psi
             [probs, state] = sess.run([self.probs, self.decoder.state], feed)
 
         dist = probs[0]
