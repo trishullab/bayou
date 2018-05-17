@@ -85,14 +85,6 @@ def train(clargs):
     model = Model(config)
 
     with tf.Session() as sess:
-        # tensorboard code
-        tf.summary.tensor_summary('model_probs', model.probs)
-        merged = tf.summary.merge_all()
-        log_dir = 'bayou_tb_log'
-        if tf.gfile.Exists(log_dir):
-            tf.gfile.DeleteRecursively(log_dir)
-        writer = tf.summary.FileWriter(log_dir, sess.graph)
-
         tf.global_variables_initializer().run()
         saver = tf.train.Saver(tf.global_variables())
         tf.train.write_graph(sess.graph_def, clargs.save, 'model.pbtxt')
@@ -120,9 +112,8 @@ def train(clargs):
                     feed[model.decoder.edges[j].name] = e[j]
 
                 # run the optimizer
-                summary, loss, evidence, latent, generation, mean, covariance, _ \
-                    = sess.run([merged,
-                                model.loss,
+                loss, evidence, latent, generation, mean, covariance, _ \
+                    = sess.run([model.loss,
                                 model.evidence_loss,
                                 model.latent_loss,
                                 model.gen_loss,
@@ -130,7 +121,6 @@ def train(clargs):
                                 model.encoder.psi_covariance,
                                 model.train_op], feed)
                 end = time.time()
-                writer.add_summary(summary, i)
                 avg_loss += np.mean(loss)
                 avg_evidence += np.mean(evidence)
                 avg_latent += np.mean(latent)
