@@ -25,22 +25,22 @@ print('make count table')
 latent_size = len(outputs[0]['multi'][0])
 print('latent size is {}'.format(latent_size))
 table = np.zeros([vocab_size, latent_size])
-occurs = np.zeros([vocab_size])
+# occurs = np.zeros([vocab_size])
 
 print('fill count table')
 for opt in outputs:
     words_list = opt['words'].split()
     for i, w in enumerate(words_list):
         table[vocab[w]] = table[vocab[w]] + np.asarray(opt['multi'][i])
-        occurs[vocab[w]] = occurs[vocab[w]] + 1
+        # occurs[vocab[w]] = occurs[vocab[w]] + 1
 
-print('normalize count table')
-for i in range(vocab_size):
-    if occurs[i] != 0:
-        table[i] = table[i] / occurs[i]
-        # only how frequent words
-        if occurs[i] < low_frequency:
-            table[i].fill(0)
+# print('normalize count table')
+# for i in range(vocab_size):
+#     if occurs[i] != 0:
+#         table[i] = table[i] / occurs[i]
+#         # only how frequent words
+#         if occurs[i] < low_frequency:
+#             table[i].fill(0)
 
 print('transpose the table')
 table = np.transpose(table)
@@ -55,3 +55,10 @@ for i in range(latent_size):
     print('for dimension{}, top {} words are:'.format(i, threshold))
     print(top_members)
     print(top_members_scores)
+    # picked up negative numbers
+    bottom_members = [chars[idx] for idx in sorted_indices[:threshold].tolist()]
+    bottom_members_scores = [table[i][vocab[w]] for w in bottom_members]
+    print('for dimension{}, bottom {} words are:'.format(i, threshold))
+    print(bottom_members)
+    print(bottom_members_scores)
+
