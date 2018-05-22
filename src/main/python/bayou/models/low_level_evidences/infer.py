@@ -49,7 +49,7 @@ class BayesianPredictor(object):
         # load the saved config
         with open(os.path.join(save, 'config.json')) as f:
             config = read_config(json.load(f), chars_vocab=True)
-        self.model = Model(config, True)
+        self.model = Model(config, False)
 
         for ev in config.evidence:
             if isinstance(ev, Javadoc):

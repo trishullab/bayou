@@ -60,7 +60,7 @@ def psi_viz(clargs):
         latent_size = config_file['latent_size']
         print('latent size is {}'.format(latent_size))
         chars = config_file['evidence'][0]['chars']
-        vocab = dict(zip(chars, range(len(chars))))
+        vocab = dict(zip(range(len(chars)), chars))
 
         # format per-program: {'words': '...', 'multi or weights or softmax': list of list, 'res': list}
         outputs = []
