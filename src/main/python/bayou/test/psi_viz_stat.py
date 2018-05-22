@@ -23,12 +23,19 @@ print('make count table')
 latent_size = len(outputs[0]['multi'][0])
 print('latent size is {}'.format(latent_size))
 table = np.zeros([vocab_size, latent_size])
+occurs = np.zeros([vocab_size])
 
 print('fill count table')
 for opt in outputs:
     words_list = opt['words'].split()
     for i, w in enumerate(words_list):
         table[vocab[w]] = table[vocab[w]] + np.asarray(opt['multi'][i])
+        occurs[vocab[w]] = occurs[vocab[w]] + 1
+
+print('normalize count table')
+for i in range(vocab_size):
+    if occurs[i] != 0:
+        table[i] = table[i] / occurs[i]
 
 print('transpose the table')
 table = np.transpose(table)
