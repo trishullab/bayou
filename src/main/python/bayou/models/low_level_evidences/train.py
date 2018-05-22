@@ -112,7 +112,7 @@ def train(clargs):
                     feed[model.decoder.edges[j].name] = e[j]
 
                 # run the optimizer
-                summary, loss, evidence, latent, generation, mean, covariance, _ \
+                loss, evidence, latent, generation, mean, covariance, _ \
                     = sess.run([model.loss,
                                 model.evidence_loss,
                                 model.latent_loss,
