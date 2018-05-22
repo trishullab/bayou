@@ -461,6 +461,11 @@ class Javadoc(Evidence):
             # lengths.shape=(batch_size, 1), divisible
             res = reduced / tf.cast(nonzero_lengths, dtype=tf.float32)
 
+            # for reference usage
+            self.res = res
+            self.multi = multi
+            self.weights = weights
+            self.softmax = softmax
             return res
             # # attention, self.units here can be any number, just has to match the query
             # attention_mechanism = tf.contrib.seq2seq.LuongAttention(
