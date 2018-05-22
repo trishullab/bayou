@@ -6,6 +6,8 @@ input_file = sys.argv[1]
 #output_file = sys.argv[2]
 # preferred to set 20
 threshold = int(sys.argv[2])
+# preferred 10
+low_frequency = int(sys.argv[3])
 
 print('read file')
 with open(input_file) as f:
@@ -36,6 +38,9 @@ print('normalize count table')
 for i in range(vocab_size):
     if occurs[i] != 0:
         table[i] = table[i] / occurs[i]
+        # only how frequent words
+        if occurs[i] < low_frequency:
+            table[i].fill(0)
 
 print('transpose the table')
 table = np.transpose(table)
