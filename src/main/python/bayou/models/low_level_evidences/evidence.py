@@ -317,7 +317,7 @@ class Keywords(Evidence):
         qualified = re.sub('<.*>', '', qualified).split('.')  # remove generics for keywords
 
         # add qualified names (java, util, xml, etc.), API calls and types
-        keywords = list(chain.from_iterable([Keywords.split_camel(s) for s in qualified])) + \
+        keywords = list(chain.from_iterable([Keywords.split_camel(s) for s in qualified if s not in ['java', 'javax']])) + \
             list(chain.from_iterable([Keywords.split_camel(c) for c in APICalls.from_call(callnode)])) + \
             list(chain.from_iterable([Keywords.split_camel(t) for t in Types.from_call(callnode)]))
 
