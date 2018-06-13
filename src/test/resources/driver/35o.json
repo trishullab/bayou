@@ -1,0 +1,67 @@
+{
+  "programs": [
+    {
+      "ast": {
+        "node": "DSubTree",
+        "_nodes": [
+          {
+            "node": "DAPICall",
+            "_call": "java.util.Stack\u003cjava.lang.Integer\u003e.push(java.lang.Integer)",
+            "_throws": [],
+            "_returns": "java.lang.Integer"
+          }
+        ]
+      },
+      "sequences": [
+        {
+          "calls": [
+            "java.util.Stack\u003cjava.lang.Integer\u003e.push(java.lang.Integer)"
+          ]
+        }
+      ],
+      "javadoc": null,
+      "method": "test@20"
+    },
+    {
+      "ast": {
+        "node": "DSubTree",
+        "_nodes": [
+          {
+            "node": "DBranch",
+            "_cond": [],
+            "_then": [
+              {
+                "node": "DAPICall",
+                "_call": "java.util.Stack\u003cjava.lang.Boolean\u003e.push(java.lang.Boolean)",
+                "_throws": [],
+                "_returns": "java.lang.Boolean"
+              }
+            ],
+            "_else": [
+              {
+                "node": "DAPICall",
+                "_call": "java.util.Stack\u003cjava.lang.Boolean\u003e.pop()",
+                "_throws": [],
+                "_returns": "java.lang.Boolean"
+              }
+            ]
+          }
+        ]
+      },
+      "sequences": [
+        {
+          "calls": [
+            "java.util.Stack\u003cjava.lang.Boolean\u003e.pop()"
+          ]
+        },
+        {
+          "calls": [
+            "java.util.Stack\u003cjava.lang.Boolean\u003e.push(java.lang.Boolean)"
+          ]
+        }
+      ],
+      "javadoc": null,
+      "method": "test@24"
+    }
+  ]
+}

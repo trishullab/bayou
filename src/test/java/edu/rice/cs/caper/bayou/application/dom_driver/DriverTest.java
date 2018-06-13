@@ -285,4 +285,9 @@ public class DriverTest {
     public void test34() throws ParseException, IOException {
         testExecute("34f", "34o");
     }
+
+    @Test
+    public void test35() throws ParseException, IOException {
+        testExecute("35f", "35o");
+    }
 }
