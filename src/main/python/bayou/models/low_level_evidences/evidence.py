@@ -119,7 +119,11 @@ class APICalls(Evidence):
             w = tf.get_variable('w', [self.units, config.latent_size])
             b = tf.get_variable('b', [config.latent_size])
             latent_encoding = tf.nn.xw_plus_b(encoding, w, b)
-            latent_encoding = tf.reduce_sum(tf.reshape(latent_encoding, [config.batch_size, self.max_nums, config.latent_size]), axis=1)
+            latent_encoding = tf.reshape(latent_encoding, [config.batch_size, self.max_nums, config.latent_size])
+            zeros = tf.zeros([config.batch_size, self.max_nums, config.latent_size])
+            condition = tf.tile(tf.expand_dims(tf.not_equal(tf.count_nonzero(inputs, axis=2), 0) ,axis=2),[1,1,config.latent_size])
+            latent_encoding = tf.where(condition, latent_encoding, zeros)
+            latent_encoding = tf.reduce_sum(latent_encoding, axis=1)
             return latent_encoding
 
     def evidence_loss(self, psi, encoding, config):
@@ -179,7 +183,11 @@ class Types(Evidence):
             w = tf.get_variable('w', [self.units, config.latent_size])
             b = tf.get_variable('b', [config.latent_size])
             latent_encoding = tf.nn.xw_plus_b(encoding, w, b)
-            latent_encoding = tf.reduce_sum(tf.reshape(latent_encoding, [config.batch_size, self.max_nums, config.latent_size]), axis=1)
+            latent_encoding = tf.reshape(latent_encoding, [config.batch_size, self.max_nums, config.latent_size])
+            zeros = tf.zeros([config.batch_size, self.max_nums, config.latent_size])
+            condition = tf.tile(tf.expand_dims(tf.not_equal(tf.count_nonzero(inputs, axis=2), 0) ,axis=2),[1,1,config.latent_size])
+            latent_encoding = tf.where(condition, latent_encoding, zeros)
+            latent_encoding = tf.reduce_sum(latent_encoding, axis=1)
             return latent_encoding
 
     def evidence_loss(self, psi, encoding, config):
@@ -298,7 +306,11 @@ class Keywords(Evidence):
             w = tf.get_variable('w', [self.units, config.latent_size])
             b = tf.get_variable('b', [config.latent_size])
             latent_encoding = tf.nn.xw_plus_b(encoding, w, b)
-            latent_encoding = tf.reduce_sum(tf.reshape(latent_encoding, [config.batch_size, self.max_nums, config.latent_size]), axis=1)
+            latent_encoding = tf.reshape(latent_encoding, [config.batch_size, self.max_nums, config.latent_size])
+            zeros = tf.zeros([config.batch_size, self.max_nums, config.latent_size])
+            condition = tf.tile(tf.expand_dims(tf.not_equal(tf.count_nonzero(inputs, axis=2), 0) ,axis=2),[1,1,config.latent_size])
+            latent_encoding = tf.where(condition, latent_encoding, zeros)
+            latent_encoding = tf.reduce_sum(latent_encoding, axis=1)
             return latent_encoding
 
     def evidence_loss(self, psi, encoding, config):

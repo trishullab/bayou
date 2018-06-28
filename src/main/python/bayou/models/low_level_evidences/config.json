@@ -3,34 +3,35 @@
     "latent_size": 32,
     "batch_size": 50,
     "num_epochs": 100,
-    "learning_rate": 0.0002,
-    "print_step": 1,
+    "learning_rate": 0.001,
+    "print_step": 100,
+    "checkpoint_step": 1,
     "evidence": [
         {
             "name": "apicalls",
             "units": 128,
-            "num_layers": 3,
+            "num_layers": 1,
             "tile": 1,
             "max_nums": 10
         },
         {
             "name": "types",
             "units": 64,
-            "num_layers": 3,
+            "num_layers": 1,
             "tile": 1,
             "max_nums": 10
         },
         {
             "name": "keywords",
             "units": 64,
-            "num_layers": 3,
+            "num_layers": 1,
             "tile": 1,
             "max_nums": 10
         }
     ],
     "decoder": {
-        "units": 256,
-        "num_layers": 3,
+        "units": 128,
+        "num_layers": 1,
         "max_ast_depth": 32
     }
 }

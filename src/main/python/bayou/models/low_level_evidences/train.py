@@ -36,8 +36,6 @@ Config options should be given as a JSON file (see config.json for example):
     "num_epochs": 100,                    | Number of training epochs
     "learning_rate": 0.02,                | Learning rate
     "print_step": 1,                      | Print training output every given steps
-    "alpha": 1e-05,                       | Hyper-param associated with KL-divergence loss
-    "beta": 1e-05,                        | Hyper-param associated with evidence loss
     "evidence": [                         | Provide each evidence type in this list
         {                                 |
             "name": "apicalls",           | Name of evidence ("apicalls")
@@ -75,8 +73,8 @@ def train(clargs):
     reader = Reader(clargs, config)
 
     jsconfig = dump_config(config)
-    print(clargs)
-    print(json.dumps(jsconfig, indent=2))
+    # print(clargs)
+    # print(json.dumps(jsconfig, indent=2))
     with open(os.path.join(clargs.save, 'config.json'), 'w') as f:
         json.dump(jsconfig, fp=f, indent=2)
 
@@ -84,7 +82,7 @@ def train(clargs):
 
     with tf.Session() as sess:
         tf.global_variables_initializer().run()
-        saver = tf.train.Saver(tf.global_variables(), max_to_keep=None)
+        saver = tf.train.Saver(tf.global_variables(), max_to_keep=3)
         tf.train.write_graph(sess.graph_def, clargs.save, 'model.pbtxt')
         tf.train.write_graph(sess.graph_def, clargs.save, 'model.pb', as_text=False)
 
