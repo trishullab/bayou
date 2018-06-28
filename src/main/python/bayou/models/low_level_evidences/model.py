@@ -48,23 +48,10 @@ class Model():
 
         # 1. generation loss: log P(X | \Psi)
         self.targets = tf.placeholder(tf.int32, [config.batch_size, config.decoder.max_ast_depth])
-        self.gen_loss = seq2seq.sequence_loss([logits], [tf.reshape(self.targets, [-1])],
+        self.loss = seq2seq.sequence_loss([logits], [tf.reshape(self.targets, [-1])],
                                               [tf.ones([config.batch_size * config.decoder.max_ast_depth])])
 
-        # 2. latent loss: KL-divergence between P(\Psi | f(\Theta)) and P(\Psi)
-        latent_loss = 0.5 * tf.reduce_sum(- tf.log(self.encoder.psi_covariance)
-                                          - 1 + self.encoder.psi_covariance
-                                          + tf.square(self.encoder.psi_mean), axis=1)
-        self.latent_loss = config.alpha * latent_loss
-
-        # 3. evidence loss: log P(f(\theta) | \Psi; \sigma)
-        evidence_loss = [ev.evidence_loss(self.psi, encoding, config) for ev, encoding
-                         in zip(config.evidence, self.encoder.encodings)]
-        evidence_loss = [tf.reduce_sum(loss, axis=1) for loss in evidence_loss]
-        self.evidence_loss = config.beta * tf.reduce_sum(tf.stack(evidence_loss), axis=0)
-
         # The optimizer
-        self.loss = self.gen_loss + self.latent_loss + self.evidence_loss
         self.train_op = tf.train.AdamOptimizer(config.learning_rate).minimize(self.loss)
 
         var_params = [np.prod([dim.value for dim in var.get_shape()])

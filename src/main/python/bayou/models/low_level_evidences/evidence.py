@@ -90,15 +90,15 @@ class APICalls(Evidence):
         self.vocab_size = len(self.vocab)
 
     def wrangle(self, data):
-        wrangled = np.zeros((len(data), 1, self.vocab_size), dtype=np.int32)
+        wrangled = np.zeros((len(data), self.max_nums, self.vocab_size), dtype=np.int32)
         for i, apicalls in enumerate(data):
-            for c in apicalls:
-                if c in self.vocab:
-                    wrangled[i, 0, self.vocab[c]] = 1
+            for j, c in enumerate(apicalls):
+                if c in self.vocab and j < self.max_nums:
+                    wrangled[i, j, self.vocab[c]] = 1
         return wrangled
 
     def placeholder(self, config):
-        return tf.placeholder(tf.float32, [config.batch_size, 1, self.vocab_size])
+        return tf.placeholder(tf.float32, [config.batch_size, self.max_nums, self.vocab_size])
 
     def exists(self, inputs):
         i = tf.reduce_sum(inputs, axis=2)
@@ -110,15 +110,16 @@ class APICalls(Evidence):
 
     def encode(self, inputs, config):
         with tf.variable_scope('apicalls'):
-            latent_encoding = tf.zeros([config.batch_size, config.latent_size])
-            inp = tf.slice(inputs, [0, 0, 0], [config.batch_size, 1, self.vocab_size])
-            inp = tf.reshape(inp, [-1, self.vocab_size])
+            #latent_encoding = tf.zeros([config.batch_size, config.latent_size])
+            #inp = tf.slice(inputs, [0, 0, 0], [config.batch_size, 1, self.vocab_size])
+            inp = tf.reshape(inputs, [-1, self.vocab_size])
             encoding = tf.layers.dense(inp, self.units, activation=tf.nn.tanh)
             for i in range(self.num_layers - 1):
                 encoding = tf.layers.dense(encoding, self.units, activation=tf.nn.tanh)
             w = tf.get_variable('w', [self.units, config.latent_size])
             b = tf.get_variable('b', [config.latent_size])
-            latent_encoding += tf.nn.xw_plus_b(encoding, w, b)
+            latent_encoding = tf.nn.xw_plus_b(encoding, w, b)
+            latent_encoding = tf.reduce_sum(tf.reshape(latent_encoding, [config.batch_size, self.max_nums, config.latent_size]), axis=1)
             return latent_encoding
 
     def evidence_loss(self, psi, encoding, config):
@@ -149,15 +150,15 @@ class Types(Evidence):
         self.vocab_size = len(self.vocab)
 
     def wrangle(self, data):
-        wrangled = np.zeros((len(data), 1, self.vocab_size), dtype=np.int32)
+        wrangled = np.zeros((len(data), self.max_nums, self.vocab_size), dtype=np.int32)
         for i, types in enumerate(data):
-            for t in types:
-                if t in self.vocab:
-                    wrangled[i, 0, self.vocab[t]] = 1
+            for j, t in enumerate(types):
+                if t in self.vocab and j < self.max_nums:
+                    wrangled[i, j, self.vocab[t]] = 1
         return wrangled
 
     def placeholder(self, config):
-        return tf.placeholder(tf.float32, [config.batch_size, 1, self.vocab_size])
+        return tf.placeholder(tf.float32, [config.batch_size, self.max_nums, self.vocab_size])
 
     def exists(self, inputs):
         i = tf.reduce_sum(inputs, axis=2)
@@ -169,15 +170,16 @@ class Types(Evidence):
 
     def encode(self, inputs, config):
         with tf.variable_scope('types'):
-            latent_encoding = tf.zeros([config.batch_size, config.latent_size])
-            inp = tf.slice(inputs, [0, 0, 0], [config.batch_size, 1, self.vocab_size])
-            inp = tf.reshape(inp, [-1, self.vocab_size])
+            #latent_encoding = tf.zeros([config.batch_size, config.latent_size])
+            #inp = tf.slice(inputs, [0, 0, 0], [config.batch_size, 1, self.vocab_size])
+            inp = tf.reshape(inputs, [-1, self.vocab_size])
             encoding = tf.layers.dense(inp, self.units, activation=tf.nn.tanh)
             for i in range(self.num_layers - 1):
                 encoding = tf.layers.dense(encoding, self.units, activation=tf.nn.tanh)
             w = tf.get_variable('w', [self.units, config.latent_size])
             b = tf.get_variable('b', [config.latent_size])
-            latent_encoding += tf.nn.xw_plus_b(encoding, w, b)
+            latent_encoding = tf.nn.xw_plus_b(encoding, w, b)
+            latent_encoding = tf.reduce_sum(tf.reshape(latent_encoding, [config.batch_size, self.max_nums, config.latent_size]), axis=1)
             return latent_encoding
 
     def evidence_loss(self, psi, encoding, config):
@@ -266,15 +268,16 @@ class Keywords(Evidence):
         self.vocab_size = len(self.vocab)
 
     def wrangle(self, data):
-        wrangled = np.zeros((len(data), 1, self.vocab_size), dtype=np.int32)
+        wrangled = np.zeros((len(data), self.max_nums, self.vocab_size), dtype=np.int32)
         for i, keywords in enumerate(data):
-            for k in keywords:
-                if k in self.vocab and k not in Keywords.STOP_WORDS:
-                    wrangled[i, 0, self.vocab[k]] = 1
+            for j, k in enumerate(keywords):
+                if k in self.vocab and k not in Keywords.STOP_WORDS and j < self.max_nums:
+                    wrangled[i, j, self.vocab[k]] = 1
         return wrangled
 
+
     def placeholder(self, config):
-        return tf.placeholder(tf.float32, [config.batch_size, 1, self.vocab_size])
+        return tf.placeholder(tf.float32, [config.batch_size, self.max_nums, self.vocab_size])
 
     def exists(self, inputs):
         i = tf.reduce_sum(inputs, axis=2)
@@ -286,15 +289,16 @@ class Keywords(Evidence):
 
     def encode(self, inputs, config):
         with tf.variable_scope('keywords'):
-            latent_encoding = tf.zeros([config.batch_size, config.latent_size])
-            inp = tf.slice(inputs, [0, 0, 0], [config.batch_size, 1, self.vocab_size])
-            inp = tf.reshape(inp, [-1, self.vocab_size])
+            #latent_encoding = tf.zeros([config.batch_size, config.latent_size])
+            #inp = tf.slice(inputs, [0, 0, 0], [config.batch_size, 1, self.vocab_size])
+            inp = tf.reshape(inputs, [-1, self.vocab_size])
             encoding = tf.layers.dense(inp, self.units, activation=tf.nn.tanh)
             for i in range(self.num_layers - 1):
                 encoding = tf.layers.dense(encoding, self.units, activation=tf.nn.tanh)
             w = tf.get_variable('w', [self.units, config.latent_size])
             b = tf.get_variable('b', [config.latent_size])
-            latent_encoding += tf.nn.xw_plus_b(encoding, w, b)
+            latent_encoding = tf.nn.xw_plus_b(encoding, w, b)
+            latent_encoding = tf.reduce_sum(tf.reshape(latent_encoding, [config.batch_size, self.max_nums, config.latent_size]), axis=1)
             return latent_encoding
 
     def evidence_loss(self, psi, encoding, config):
@@ -349,5 +353,3 @@ class Javadoc(Evidence):
             self.chars = [C0] + list(set([w for point in data for w in point]))
         self.vocab = dict(zip(self.chars, range(len(self.chars))))
         self.vocab_size = len(self.vocab)
-
-

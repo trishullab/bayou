@@ -73,7 +73,7 @@ def train(clargs):
     with open(config_file) as f:
         config = read_config(json.load(f), chars_vocab=clargs.continue_from)
     reader = Reader(clargs, config)
-    
+
     jsconfig = dump_config(config)
     print(clargs)
     print(json.dumps(jsconfig, indent=2))
@@ -110,39 +110,25 @@ def train(clargs):
                     feed[model.decoder.edges[j].name] = e[j]
 
                 # run the optimizer
-                loss, evidence, latent, generation, mean, covariance, _ \
+                loss, mean, covariance, _ \
                     = sess.run([model.loss,
-                                model.evidence_loss,
-                                model.latent_loss,
-                                model.gen_loss,
                                 model.encoder.psi_mean,
                                 model.encoder.psi_covariance,
                                 model.train_op], feed)
                 end = time.time()
                 avg_loss += np.mean(loss)
-                avg_evidence += np.mean(evidence)
-                avg_latent += np.mean(latent)
-                avg_generation += generation
                 step = i * config.num_batches + b
                 if step % config.print_step == 0:
-                    print('{}/{} (epoch {}), evidence: {:.3f}, latent: {:.3f}, generation: {:.3f}, '
-                          'loss: {:.3f}, mean: {:.3f}, covariance: {:.3f}, time: {:.3f}'.format
+                    print('{}/{} (epoch {}), loss: {:.3f}, mean: {:.3f}, covariance: {:.3f}, time: {:.3f}'.format
                           (step, config.num_epochs * config.num_batches, i,
-                           np.mean(evidence),
-                           np.mean(latent),
-                           generation,
                            np.mean(loss),
                            np.mean(mean),
                            np.mean(covariance),
                            end - start))
             checkpoint_dir = os.path.join(clargs.save, 'model{}.ckpt'.format(i))
             saver.save(sess, checkpoint_dir)
-            print('Model checkpointed: {}. Average for epoch evidence: {:.3f}, latent: {:.3f}, '
-                  'generation: {:.3f}, loss: {:.3f}'.format
+            print('Model checkpointed: {}. Average for epoch loss: {:.3f}'.format
                   (checkpoint_dir,
-                   avg_evidence / config.num_batches,
-                   avg_latent / config.num_batches,
-                   avg_generation / config.num_batches,
                    avg_loss / config.num_batches))
 
 

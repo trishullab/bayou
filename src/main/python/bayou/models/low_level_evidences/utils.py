@@ -19,8 +19,8 @@ import tensorflow as tf
 from itertools import chain
 
 CONFIG_GENERAL = ['model', 'latent_size', 'batch_size', 'num_epochs',
-                  'learning_rate', 'print_step', 'alpha', 'beta']
-CONFIG_ENCODER = ['name', 'units', 'num_layers', 'tile']
+                  'learning_rate', 'print_step']
+CONFIG_ENCODER = ['name', 'units', 'num_layers', 'tile', 'max_nums']
 CONFIG_DECODER = ['units', 'num_layers', 'max_ast_depth']
 CONFIG_INFER = ['chars', 'vocab', 'vocab_size']
 
@@ -53,7 +53,7 @@ def read_config(js, chars_vocab=False):
 
     for attr in CONFIG_GENERAL:
         config.__setattr__(attr, js[attr])
-    
+
     config.evidence = bayou.models.low_level_evidences.evidence.Evidence.read_config(js['evidence'], chars_vocab)
     config.decoder = argparse.Namespace()
     for attr in CONFIG_DECODER:

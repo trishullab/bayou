@@ -5,26 +5,27 @@
     "num_epochs": 100,
     "learning_rate": 0.0002,
     "print_step": 1,
-    "alpha": 0.001,
-    "beta": 1e-05,
     "evidence": [
         {
             "name": "apicalls",
             "units": 128,
             "num_layers": 3,
-            "tile": 1
+            "tile": 1,
+            "max_nums": 10
         },
         {
             "name": "types",
             "units": 64,
             "num_layers": 3,
-            "tile": 1
+            "tile": 1,
+            "max_nums": 10
         },
         {
             "name": "keywords",
             "units": 64,
             "num_layers": 3,
-            "tile": 1
+            "tile": 1,
+            "max_nums": 10
         }
     ],
     "decoder": {
