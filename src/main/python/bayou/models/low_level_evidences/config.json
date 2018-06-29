@@ -4,7 +4,7 @@
     "batch_size": 50,
     "num_epochs": 100,
     "learning_rate": 0.001,
-    "print_step": 100,
+    "print_step": 500,
     "checkpoint_step": 1,
     "evidence": [
         {

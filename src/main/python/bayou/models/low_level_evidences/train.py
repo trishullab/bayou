@@ -119,7 +119,7 @@ def train(clargs):
                 if step % config.print_step == 0:
                     print('{}/{} (epoch {}), loss: {:.3f}, mean: {:.3f}, covariance: {:.3f}, time: {:.3f}'.format
                           (step, config.num_epochs * config.num_batches, i,
-                           np.mean(loss),
+                           avg_loss/(b+1),
                            np.mean(mean),
                            np.mean(covariance),
                            end - start))
