@@ -1,7 +1,7 @@
 # Bayou
 Bayou is a data-driven program synthesis system for Java API idioms that uses the novel technique of Neural Sketch Learning.
 
-To learn more, click [here](https://arxiv.org/abs/1703.05698) for the ICLR 2018 paper on Bayou.
+To learn more, click [here](https://arxiv.org/abs/1703.05698) for the ICLR 2018 paper on Bayou. Click [here](https://github.com/capergroup/bayou/tree/master/doc/external) for the PLDI 2018 tutorial slides on Bayou.
 
 Try Bayou on your browser! Visit www.askbayou.com.
 
