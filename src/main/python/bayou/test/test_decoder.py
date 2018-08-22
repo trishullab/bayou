@@ -1,0 +1,162 @@
+# Copyright 2017 Rice University
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+import tensorflow as tf
+import argparse
+import json
+import os
+import sys
+import numpy as np
+import time
+
+import bayou.models.low_level_evidences.infer
+
+
+def psi_viz(clargs):
+    with open(clargs.input_file[0]) as f:
+        js = json.load(f)
+    model = bayou.models.low_level_evidences.infer.BayesianPredictor
+    programs = js['programs']
+
+    with tf.Session() as sess:
+        print('Loading model...')
+        predictor = model(clargs.save, sess, embed_file=clargs.embedding_file)
+
+        with open(os.path.join(clargs.save, 'config.json')) as f:
+            config_file = json.load(f)
+
+        # process data into batches
+        batch_size = config_file['batch_size']
+        print('batch size is {}'.format(batch_size))
+        num_batches = int(len(programs) / batch_size)
+        print('number of batches is {}'.format(num_batches))
+        programs_size = batch_size * num_batches
+        print('the number of programs after processing is {}'.format(programs_size))
+        programs = programs[:programs_size]
+        # only one type of evidence 'Javadoc'
+        ev = predictor.model.config.evidence[0]
+        data_points = []
+        for prog in programs:
+            data_points.append(ev.read_data_point(prog))
+        # numpy array [sz, max_words+1]
+        raw_inputs = ev.wrangle(data_points)
+        input_batches = np.split(raw_inputs, num_batches, axis=0)
+
+        # retrieve useful parameters
+        rnn_units = config_file['evidence'][0]['rnn_units']
+        max_words = config_file['evidence'][0]['max_words']
+        print('rnn_units and max_words of "Javadoc" is {} and {}'.format(rnn_units, max_words))
+        latent_size = config_file['latent_size']
+        print('latent size is {}'.format(latent_size))
+        chars = config_file['evidence'][0]['chars']
+        vocab = dict(zip(range(len(chars)), chars))
+
+        # format per-program: {'words': '...', 'multi or weights or softmax': list of list, 'res': list}
+        outputs = []
+
+        for batch in input_batches:
+            batch_start = time.time()
+            feed = {}
+            feed[predictor.model.encoder.inputs[0].name] = batch
+            # multi.shape=[batch_size, max_time, latent_size], res.shape=[batch_size, latent_size]
+            multi, res, weights, softmax = sess.run(fetches=[ev.multi, ev.res, ev.weights, ev.softmax], feed_dict=feed)
+            for i in range(batch_size):
+                output = {}
+                words_length = batch[i][max_words]
+                words_indices = batch[i][:words_length]
+                words = [vocab[idx] for idx in words_indices]
+                output['words'] = ' '.join(words)
+                output['multi'] = multi[i][:words_length].tolist()
+                output['weights'] = weights[i][:words_length].tolist()
+                output['softmax'] = softmax[i][:words_length].tolist()
+                output['res'] = res[i].tolist()
+                outputs.append(output)
+            batch_end = time.time()
+            latency = float('{:.2f}'.format(batch_end - batch_start))
+            print('this batch takes {}s'.format(latency))
+
+        print('writing out...')
+        with open(clargs.output_file, 'w') as f:
+            json.dump({'outputs': outputs}, f, indent=2)
+        print('writing done')
+
+
+def test_decoder(clargs):
+    model = bayou.models.low_level_evidences.infer.BayesianPredictor
+    with tf.Session() as sess:
+        print('Loading model...')
+        predictor = model(clargs.save, sess, embed_file=clargs.embedding_file)
+
+        with open(os.path.join(clargs.save, 'config.json')) as f:
+            config_file = json.load(f)
+        latent_size = config_file['latent_size']
+        print('latent size is {}'.format(latent_size))
+
+        # later
+        # dim_info_file = clargs.input_file[0]
+        outputs = []
+        for i in range(latent_size):
+            print('working on dimension {}'.format(i))
+            print('positive')
+            # for positive entry
+            output = {}
+            output['dimension'] = 'dim' + str(i) + '_pos'
+            # batch_size is 1
+            psi = np.zeros((1, latent_size))
+            psi[0][i] = 1
+            out_asts = predictor.infer_from_psi(psi)
+            output['asts'] = out_asts
+            outputs.append(output)
+            # for negative entry
+            print('negative')
+            output = {}
+            output['dimension'] = 'dim' + str(i) + '_neg'
+            psi[0][i] = -1
+            out_asts = predictor.infer_from_psi(psi)
+            output['asts'] = out_asts
+            outputs.append(output)
+
+        print('writing out...')
+        with open(clargs.output_file, 'w') as f:
+            json.dump({'outputs': outputs}, f, indent=2)
+        print('writing done')
+
+
+def infer_psi(self, sess, evidences):
+    # read and wrangle (with batch_size 1) the data
+    inputs = [ev.wrangle([ev.read_data_point(evidences)]) for ev in self.config.evidence]
+
+    # setup initial states and feed
+    feed = {}
+    for j, ev in enumerate(self.config.evidence):
+        feed[self.encoder.inputs[j].name] = inputs[j]
+    psi = sess.run(self.psi, feed)
+    return psi
+
+
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+    # parser.add_argument('input_file', type=str, nargs=1,
+    #                     help='info file for each dimension (pos/neg)')
+    parser.add_argument('--python_recursion_limit', type=int, default=10000,
+                        help='set recursion limit for the Python interpreter')
+    parser.add_argument('--save', type=str, required=True,
+                        help='directory to load model from')
+    parser.add_argument('--output_file', type=str, required=True,
+                        help='output file to save psi-related information')
+    parser.add_argument('--embedding_file', type=str, default=None, help='word embedding file for keywords')
+    clargs = parser.parse_args()
+    sys.setrecursionlimit(clargs.python_recursion_limit)
+    print(clargs)
+    test_decoder(clargs)

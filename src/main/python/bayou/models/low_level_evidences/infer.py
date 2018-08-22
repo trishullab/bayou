@@ -51,9 +51,9 @@ class BayesianPredictor(object):
             config = read_config(json.load(f), chars_vocab=True)
         self.model = Model(config, True)
 
-        for ev in config.evidence:
-            if isinstance(ev, Javadoc):
-                ev.set_chars_vocab(embed_file)
+        # for ev in config.evidence:
+        #     if isinstance(ev, Javadoc):
+        #         ev.set_chars_vocab(embed_file)
 
         # load the callmap
         with open(os.path.join(save, 'callmap.pkl'), 'rb') as f:
@@ -78,6 +78,9 @@ class BayesianPredictor(object):
         for i in range(num_psi_samples):
             psis.append(self.psi_from_evidence(evidences))
         psi = np.mean(psis, axis=0)
+        return self.generate_asts_beam_search(psi, beam_width)
+
+    def infer_from_psi(self, psi, beam_width=50):
         return self.generate_asts_beam_search(psi, beam_width)
 
     def psi_random(self):
