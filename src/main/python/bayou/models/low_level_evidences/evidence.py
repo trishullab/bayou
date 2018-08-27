@@ -445,6 +445,7 @@ class Javadoc(Evidence):
 
             # softmax
             # shape=(batch_size, max_time, latent_size)
+            # making activation none, not limited the values within boundaries
             softmax_raw = tf.layers.dense(brnn_outputs, config.latent_size, activation=None)
             softmax = tf.nn.softmax(softmax_raw)
 
