@@ -17,8 +17,10 @@ import numpy as np
 import os
 import re
 import json
+import nltk
 from itertools import chain
 from collections import Counter
+from nltk.stem.wordnet import WordNetLemmatizer
 
 from bayou.models.low_level_evidences.utils import CONFIG_ENCODER, CONFIG_INFER, C0, UNK
 from tensorflow.python.ops import embedding_ops
@@ -224,6 +226,10 @@ class Types(Evidence):
 
 
 class Keywords(Evidence):
+    def __init__(self):
+        nltk.download('wordnet')
+        self.lemmatizer = WordNetLemmatizer()
+
     STOP_WORDS = {  # CoreNLP English stop words
         "'ll", "'s", "'m", "a", "about", "above", "after", "again", "against", "all", "am", "an", "and",
         "any", "are", "aren't", "as", "at", "be", "because", "been", "before", "being", "below", "between",
@@ -247,8 +253,12 @@ class Keywords(Evidence):
         "youve"
     }
 
+    def lemmatize(self, word):
+        w = self.lemmatizer.lemmatize(word, 'v')
+        return self.lemmatizer.lemmatize(w, 'n')
+
     def read_data_point(self, program):
-        keywords = program['keywords'] if 'keywords' in program else []
+        keywords = [self.lemmatize(k) for k in program['keywords']] if 'keywords' in program else []
         return list(set(keywords))
 
     def set_chars_vocab(self, data):
@@ -309,9 +319,9 @@ class Keywords(Evidence):
         qualified = re.sub('<.*>', '', qualified).split('.')  # remove generics for keywords
 
         # add qualified names (java, util, xml, etc.), API calls and types
-        keywords = list(chain.from_iterable([Keywords.split_camel(s) for s in qualified])) + \
-                   list(chain.from_iterable([Keywords.split_camel(c) for c in APICalls.from_call(callnode)])) + \
-                   list(chain.from_iterable([Keywords.split_camel(t) for t in Types.from_call(callnode)]))
+        keywords = list(chain.from_iterable([Keywords.split_camel(s) for s in qualified if s not in ['java', 'javax']])) + \
+            list(chain.from_iterable([Keywords.split_camel(c) for c in APICalls.from_call(callnode)])) + \
+            list(chain.from_iterable([Keywords.split_camel(t) for t in Types.from_call(callnode)]))
 
         # convert to lower case, omit stop words and take the set
         return list(set([k.lower() for k in keywords if k.lower() not in Keywords.STOP_WORDS]))

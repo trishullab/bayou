@@ -171,6 +171,10 @@ class Reader():
             nodes = [node for (node, edge) in path]
             if nodes.count('DBranch') > 1 or nodes.count('DLoop') > 1 or nodes.count('DExcept') > 1:
                 raise TooLongPathError
+            calls = [call for (call, edge) in path if call not in ['DSubTree', 'DBranch', 'DLoop', 'DExcept', 'STOP']]
+            for call in calls:
+                if nodes.count(call) > 1:
+                    raise TooLongPathError
 
     def read_data(self, filename, save=None):
         with open(filename) as f:

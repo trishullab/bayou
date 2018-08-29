@@ -60,7 +60,7 @@ def _handle_generate_asts_request(request_dict, predictor):
     return asts
 
 
-def _generate_asts(evidence_json: str, predictor, okay_check=True):
+def _generate_asts(evidence_json: str, predictor, okay_check=False):
     logging.debug("entering")
 
     js = json.loads(evidence_json)  # parse evidence as a JSON string

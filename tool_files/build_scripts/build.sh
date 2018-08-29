@@ -21,7 +21,7 @@ BUILD_DIR="${SCRIPT_DIR}/out"
 # download model if needed
 MODEL_DIR=$SCRIPT_DIR/../../src/main/resources/model/
 mkdir -p $MODEL_DIR
-python3 $SCRIPT_DIR/fetch_model.py --name model-52-49 --model_dir $MODEL_DIR --url http://release.askbayou.com/
+python3 $SCRIPT_DIR/fetch_model.py --name model-60-49 --model_dir $MODEL_DIR --url http://release.askbayou.com/
 
 # ensure ouput dir is empty
 rm -rf $BUILD_DIR

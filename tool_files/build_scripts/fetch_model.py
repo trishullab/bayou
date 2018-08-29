@@ -43,10 +43,6 @@ if __name__ == '__main__':
         exit(0)
 
     # We don't have the model. Delete any existing files (probably old model files).
-    print("Delete existing model? (if any) [y/n]")
-    confirm = input()
-    if confirm != "y" and confirm != "Y":
-        exit(0)
     shutil.rmtree(model_dir)
     os.makedirs(model_dir)
 

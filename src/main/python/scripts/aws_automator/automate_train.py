@@ -31,7 +31,7 @@ Config options should be given as a JSON file:
   "training_id": "some-model-ID",
   "ssh_private_key_file": "/location/of/file/to/login/with/ssh/.pem",
   "ec2_launch_config": {
-    "ImageId": "ami-00000000",
+    "ImageId": "ami-00000000 (use Amazon Deep Learning AMI here)",
     "InstanceType": "p2.xlarge",
     "KeyName": "keyname",
     "SubnetId": "subnet-00000000"
@@ -173,9 +173,8 @@ def start_training(ssh, config):
     else:
         raise ValueError('Invalid model type in config: ' + model_type)
     exec_command_blocking(ssh, """
-            (export LD_LIBRARY_PATH=/usr/local/cuda-8.0/lib64:$LD_LIBRARY_PATH; \
-            export LD_LIBRARY_PATH=~/cuda/lib64:$LD_LIBRARY_PATH; \
-            export PYTHONPATH=~/bayou/src/main/python; \
+            (export PYTHONPATH=~/bayou/src/main/python; \
+            source anaconda3/bin/activate tensorflow_p36; \
             python3 -u {}/train.py DATA.json --config config.json --save save > save/train.out 2>&1) &"""
                           .format(model_dir))
 
@@ -184,7 +183,7 @@ def automate_train(config):
     # 1. Do AWS stuff
     with message('Checking AWS config'):
         client = boto3.client('ec2')
-        check_aws_config()
+        creds, aws_config = check_aws_config()
 
     with message('Requesting spot instance'):
         spot_request_id = request_spot_instance(client, config.ec2_launch_config, config.ec2_spot_price)
@@ -214,14 +213,23 @@ def automate_train(config):
     with message('Connecting to public IP {}'.format(public_ip)):
         ssh = connect_to_ip(config.ssh_private_key_file, public_ip)
 
+    sftp = ssh.open_sftp()
+    with message('Storing AWS creds in machine'):
+        sftp.mkdir('.aws')
+        sftp.put(aws_config, '.aws/config')
+        sftp.put(creds, '.aws/credentials')
+
+    with message('Setting up training environment'):
+        exec_command_blocking(ssh, 'source anaconda3/bin/activate tensorflow_p36')
+        exec_command_blocking(ssh, 'anaconda3/envs/tensorflow_p36/bin/pip install nltk')
+
     with message('Copying DATA file {} to instance'.format(config.s3_data_file)):
         exec_command_blocking(ssh, 'aws s3 cp {} DATA.json'.format(config.s3_data_file))
 
     with message('Checking out Bayou at {}'.format(config.bayou_git_hash)):
-        exec_command_blocking(ssh, '(cd bayou; git pull)'.format(config.bayou_git_hash))
+        exec_command_blocking(ssh, 'git clone https://github.com/capergroup/bayou.git'.format(config.bayou_git_hash))
         exec_command_blocking(ssh, '(cd bayou; git checkout {})'.format(config.bayou_git_hash))
 
-    sftp = ssh.open_sftp()
     if config.bayou_patch_file is not None:
         with message('Applying patch file {}'.format(config.bayou_patch_file)):
             sftp.put(config.bayou_patch_file, 'bayou/patch')

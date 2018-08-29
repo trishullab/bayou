@@ -65,7 +65,7 @@ class BayesianPredictor(object):
         ckpt = tf.train.get_checkpoint_state(save)
         saver.restore(self.sess, ckpt.model_checkpoint_path)
 
-    def infer(self, evidences, num_psi_samples=100, beam_width=50):
+    def infer(self, evidences, num_psi_samples=100, beam_width=25):
         """
         Returns an ordered (by probability) list of ASTs from the model, given evidences, using beam search
 
@@ -109,12 +109,18 @@ class BayesianPredictor(object):
         # each candidate is (list of production paths in the AST, likelihood of AST so far)
         candidates = [([[('DSubTree', CHILD_EDGE)]], 1.)]
         complete_candidates = []
+        complete_pr_keys = []
         cache = dict()
+
+        # hack: use 16-digit probability as candidate ID to check for duplicates that might block out the beam
+        def get_key(prob):
+            return float('{:16f}'.format(prob))
 
         partial_candidate = True
         while partial_candidate:
             partial_candidate = False
             new_candidates = []
+            pr_keys = []
             for (candidate, pr) in candidates:
 
                 # gather candidate's complete and incomplete paths
@@ -130,8 +136,13 @@ class BayesianPredictor(object):
 
                 # if candidate is a fully formed AST, add it to new candidates and continue
                 if len(incomplete_paths) == 0:
-                    complete_candidates.append((candidate, pr))
-                    new_candidates.append((candidate, pr))
+                    pr_key = get_key(pr)
+                    if pr_key not in complete_pr_keys:
+                        complete_pr_keys.append(pr_key)
+                        complete_candidates.append((candidate, pr))
+                    if pr_key not in pr_keys:
+                        pr_keys.append(pr_key)
+                        new_candidates.append((candidate, pr))
                     continue
                 partial_candidate = True
 
@@ -150,10 +161,18 @@ class BayesianPredictor(object):
                         inc_path_step_SIBLING = inc_path + [(prediction, SIBLING_EDGE)]
                         if prediction in ['DBranch', 'DExcept', 'DLoop']:
                             inc_path_step_CHILD = inc_path + [(prediction, CHILD_EDGE)]
-                            new_candidates.append((new_candidate + [inc_path_step_CHILD, inc_path_step_SIBLING],
-                                                   pr * p * p))
+                            new_pr = pr * p * p
+                            pr_key = get_key(new_pr)
+                            if pr_key not in pr_keys:
+                                pr_keys.append(pr_key)
+                                new_candidates.append((new_candidate + [inc_path_step_CHILD, inc_path_step_SIBLING],
+                                                       new_pr))
                         else:
-                            new_candidates.append((new_candidate + [inc_path_step_SIBLING], pr * p))
+                            new_pr = pr * p
+                            pr_key = get_key(new_pr)
+                            if pr_key not in pr_keys:
+                                pr_keys.append(pr_key)
+                                new_candidates.append((new_candidate + [inc_path_step_SIBLING], new_pr))
 
             # bound candidates with the beam width
             new_candidates += [c for c in complete_candidates if c not in new_candidates]
@@ -164,7 +183,7 @@ class BayesianPredictor(object):
         asts = []
         for (candidate, pr) in candidates:
             ast = {'ast': self.paths_to_ast(candidate),
-                   'probability': float(str(pr)[:7])}  # "0." + four digits of precision
+                   'probability': '{:e}'.format(pr)}
             if ast not in asts:
                 asts.append(ast)
         return asts
@@ -183,6 +202,10 @@ class BayesianPredictor(object):
             nodes = [node for (node, edge) in path]
             if nodes.count('DBranch') > 2 or nodes.count('DLoop') > 2 or nodes.count('DExcept') > 2:
                 raise TooLongPathError
+            calls = [call for (call, edge) in path if call not in ['DSubTree', 'DBranch', 'DLoop', 'DExcept', 'STOP']]
+            for call in calls:
+                if nodes.count(call) > 1:
+                    raise TooLongPathError
             self.consume_until_STOP(path, 1)
             return True
         except IncompletePathError:
@@ -351,7 +374,7 @@ class BayesianPredictor(object):
         """
         pathidx = self.update_until_STOP(astnode['_cond'], path, pathidx+1)
         if pathidx > 0:
-            self.update_until_STOP(astnode['_then'], path, pathidx+1)
+            pathidx = self.update_until_STOP(astnode['_then'], path, pathidx+1)
             if pathidx > 0:
                 self.update_until_STOP(astnode['_else'], path, pathidx+1)
 

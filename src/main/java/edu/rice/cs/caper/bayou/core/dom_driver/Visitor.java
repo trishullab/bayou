@@ -55,27 +55,14 @@ public class Visitor extends ASTVisitor {
         DSubTree ast;
         List<Sequence> sequences;
         String javadoc;
-        List<String> skeletons;
-        List<Multiset<Integer>> cfg3_bfs;
-        List<Multiset<Integer>> cfg4_bfs;
-        List<Multiset<Integer>> cfg3_dfs;
-        List<Multiset<Integer>> cfg4_dfs;
+        String method;
 
-        public JSONOutputWrapper(DSubTree ast, List<Sequence> sequences, String javadoc,
-                                 List<String> skeletons,
-                                 List<Multiset<Integer>> cfgs3_bfs,
-                                 List<Multiset<Integer>> cfgs4_bfs,
-                                 List<Multiset<Integer>> cfgs3_dfs,
-                                 List<Multiset<Integer>> cfgs4_dfs) {
+        public JSONOutputWrapper(DSubTree ast, List<Sequence> sequences, String javadoc, String methodName) {
             this.file = options.file;
+            this.method = methodName;
             this.ast = ast;
             this.sequences = sequences;
             this.javadoc = javadoc;
-            this.skeletons = skeletons;
-            this.cfg3_bfs = cfgs3_bfs;
-            this.cfg4_bfs = cfgs4_bfs;
-            this.cfg3_dfs = cfgs3_dfs;
-            this.cfg4_dfs = cfgs4_dfs;
         }
     }
 
@@ -100,24 +87,11 @@ public class Visitor extends ASTVisitor {
         List<MethodDeclaration> constructors = allMethods.stream().filter(m -> m.isConstructor()).collect(Collectors.toList());
         List<MethodDeclaration> publicMethods = allMethods.stream().filter(m -> !m.isConstructor() && Modifier.isPublic(m.getModifiers())).collect(Collectors.toList());
 
-        List<String> skeletons = new ArrayList<>();
-        List<Multiset<Integer>> cfg3_bfs = new ArrayList<>();
-        List<Multiset<Integer>> cfg4_bfs = new ArrayList<>();
-        List<Multiset<Integer>> cfg3_dfs = new ArrayList<>();
-        List<Multiset<Integer>> cfg4_dfs = new ArrayList<>();
-        for(MethodDeclaration m : allMethods) {
-            DecoratedSkeletonFeature skeleton = new DecoratedSkeletonFeature(m);
-            skeletons.add(skeleton.toString());
+        // synchronized lists
+        List<DSubTree> asts = new ArrayList<>();
+        List<String> javaDocs = new ArrayList<>();
+        List<String> methodNames = new ArrayList<>();
 
-            CFGFeature cfg = new CFGFeature(m);
-            cfg3_bfs.add(cfg.gen_subgraph(3, true));
-            cfg4_bfs.add(cfg.gen_subgraph(4, true));
-            cfg3_dfs.add(cfg.gen_subgraph(3, false));
-            cfg4_dfs.add(cfg.gen_subgraph(4, false));
-        }
-
-
-        Set<Pair<DSubTree, String>> astsWithJavadoc = new HashSet<>();
         if (!constructors.isEmpty() && !publicMethods.isEmpty()) {
             for (MethodDeclaration c : constructors)
                 for (MethodDeclaration m : publicMethods) {
@@ -128,8 +102,11 @@ public class Visitor extends ASTVisitor {
                     ast.addNodes(new DOMMethodDeclaration(m, this).handle().getNodes());
                     callStack.pop();
                     callStack.pop();
-                    if (ast.isValid())
-                        astsWithJavadoc.add(new ImmutablePair<>(ast, javadoc));
+                    if (ast.isValid()) {
+                        asts.add(ast);
+                        javaDocs.add(javadoc);
+                        methodNames.add(m.getName().getIdentifier() + "@" + getLineNumber(m));
+                    }
                 }
         } else if (!constructors.isEmpty()) { // no public methods, only constructor
             for (MethodDeclaration c : constructors) {
@@ -137,8 +114,11 @@ public class Visitor extends ASTVisitor {
                 callStack.push(c);
                 DSubTree ast = new DOMMethodDeclaration(c, this).handle();
                 callStack.pop();
-                if (ast.isValid())
-                    astsWithJavadoc.add(new ImmutablePair<>(ast, javadoc));
+                if (ast.isValid()) {
+                    asts.add(ast);
+                    javaDocs.add(javadoc);
+                    methodNames.add(c.getName().getIdentifier() + "@" + getLineNumber(c));
+                }
             }
         } else if (!publicMethods.isEmpty()) { // no constructors, methods executed typically through Android callbacks
             for (MethodDeclaration m : publicMethods) {
@@ -146,20 +126,26 @@ public class Visitor extends ASTVisitor {
                 callStack.push(m);
                 DSubTree ast = new DOMMethodDeclaration(m, this).handle();
                 callStack.pop();
-                if (ast.isValid())
-                    astsWithJavadoc.add(new ImmutablePair<>(ast, javadoc));
+                if (ast.isValid()) {
+                    asts.add(ast);
+                    javaDocs.add(javadoc);
+                    methodNames.add(m.getName().getIdentifier() + "@" + getLineNumber(m));
+                }
             }
         }
 
-        for (Pair<DSubTree,String> astDoc : astsWithJavadoc) {
+        for (int i = 0; i < asts.size(); i++) {
+            DSubTree ast = asts.get(i);
+            String javaDoc = javaDocs.get(i);
+            String methodName = methodNames.get(i);
+
             List<Sequence> sequences = new ArrayList<>();
             sequences.add(new Sequence());
             try {
-                astDoc.getLeft().updateSequences(sequences, options.MAX_SEQS, options.MAX_SEQ_LENGTH);
+                ast.updateSequences(sequences, options.MAX_SEQS, options.MAX_SEQ_LENGTH);
                 List<Sequence> uniqSequences = new ArrayList<>(new HashSet<>(sequences));
-                if (okToPrintAST(uniqSequences))
-                    addToJson(astDoc.getLeft(), uniqSequences, astDoc.getRight(),
-                        skeletons, cfg3_bfs, cfg4_bfs, cfg3_dfs, cfg4_dfs);
+                if (uniqSequences.size() > 0)
+                    addToJson(ast, uniqSequences, javaDoc, methodName);
             } catch (DASTNode.TooManySequencesException e) {
                 System.err.println("Too many sequences from AST");
             } catch (DASTNode.TooLongSequenceException e) {
@@ -169,14 +155,8 @@ public class Visitor extends ASTVisitor {
         return false;
     }
 
-    private void addToJson(DSubTree ast, List<Sequence> sequences, String javadoc,
-                           List<String> skeletons,
-                           List<Multiset<Integer>> cfg3_bfs,
-                           List<Multiset<Integer>> cfg4_bfs,
-                           List<Multiset<Integer>> cfg3_dfs,
-                           List<Multiset<Integer>> cfg4_dfs) {
-        JSONOutputWrapper out = new JSONOutputWrapper(ast, sequences, javadoc,
-            skeletons, cfg3_bfs, cfg4_bfs, cfg3_dfs, cfg4_dfs);
+    private void addToJson(DSubTree ast, List<Sequence> sequences, String javadoc, String methodName) {
+        JSONOutputWrapper out = new JSONOutputWrapper(ast, sequences, javadoc, methodName);
         _js.programs.add(out);
     }
 
@@ -188,13 +168,6 @@ public class Visitor extends ASTVisitor {
 
         return gson.toJson(_js);
 
-    }
-
-    private boolean okToPrintAST(List<Sequence> sequences) {
-        int n = sequences.size();
-        if (n == 0 || (n == 1 && sequences.get(0).getCalls().size() <= 1))
-            return false;
-        return true;
     }
 
     public int getLineNumber(ASTNode node) {

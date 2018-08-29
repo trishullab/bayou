@@ -1,0 +1,9 @@
+version: '3'
+services:
+  bayou:
+    image: "bayou"
+    ports:
+     - "127.0.0.1:8080:8080"
+     - "127.0.0.1:8081:8081"
+     - "127.0.0.1:8084:8084"
+    command: tail -f /dev/null
