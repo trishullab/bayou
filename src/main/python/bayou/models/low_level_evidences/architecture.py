@@ -75,8 +75,10 @@ class BayesianDecoder(object):
 
         # luong attention, location-based alignment function
         # psi.shape = (batch_size, latent_size)
+        # to transfer to the location-based attention mechanism alignment scores
         align_w = tf.get_variable('align_w', shape=(config.decoder.units, config.latent_size))
         # TODO: to minimize the current modification, use cell size as attention output vector size
+        # self.cell1.output_size == config.decoder.units
         att_out_w = tf.get_variable(
             'att_out_w', shape=(config.latent_size + self.cell1.output_size, self.cell1.output_size))
 
