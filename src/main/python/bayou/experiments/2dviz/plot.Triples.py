@@ -52,7 +52,7 @@ def plot(clargs):
 
 
         psis = np.array(psis)
-        model = TSNE(n_components=2, init='pca')
+        model = TSNE(n_components=2, init='random')
         psis_2d = model.fit_transform(psis)
         assert len(psis_2d) == len(labels)
 
@@ -64,55 +64,64 @@ def plot(clargs):
 
 def get_api(calls):
     calls = [call.replace('$NOT$', '') for call in calls]
-    apis = [[re.findall(r"[\w']+", call)[:3]] for call in calls]
-    apis = [call for _list in apis for calls in _list for call in calls]
-    # print(apis)
-    # apis = [api if 'NOT' not in api else api[5:] for api in apis]
-    # counts = Counter(apis)
-    # counts['STOP'] = 0
-    # counts['DBranch'] = 0
-    # counts['DLoop'] = 0
-    # counts['DExcept'] = 0
-    # for key in counts.keys():
-    #     if 'java.util' in key or 'java.lang' in key or 'java.io' in key:
-    #         counts[key] = 0
-    # apis = sorted(counts.keys(), key=lambda a: counts[a], reverse=True)
+    apis = ['.'.join(re.findall(r"[\w']+", call)[:3]) for call in calls]
+
+
+    apis = [call for call in apis]
+    apis = [api if 'NOT' not in api else api[5:] for api in apis]
+    counts = Counter(apis)
+    counts['STOP'] = 0
+    counts['DBranch'] = 0
+    counts['DLoop'] = 0
+    counts['DExcept'] = 0
+
+    apis = sorted(counts.keys(), key=lambda a: counts[a], reverse=True)
 
     label = "N/A"
+    retLabel = "N/A"
     guard = []
     for api in apis:
         # if 'io' == api:
         #     label = 'io'
         #     guard.append(label)
-        if 'xml' == api:
+        if 'xml' in api:
             label = 'xml'
             guard.append(label)
-        if 'sql' == api:
+            retLabel = api
+        if 'sql' in api:
             label = 'sql'
             guard.append(label)
-        if 'crypto' == api:
+            retLabel = api
+        if 'crypto' in api:
             label = 'crypto'
             guard.append(label)
-        if 'awt' == api:
+            retLabel = api
+        if 'awt' in api:
             label = 'awt'
             guard.append(label)
-        if 'swing' == api:
+            retLabel = api
+        if 'swing' in api:
             label = 'swing'
             guard.append(label)
-        if 'security' == api:
+            retLabel = api
+        if 'security' in api:
             label = 'security'
             guard.append(label)
-        if 'net' == api:
+            retLabel = api
+        if 'net' in api:
             label = 'net'
             guard.append(label)
-        if 'math' == api:
+            retLabel = api
+        if 'math' in api:
             label = 'math'
             guard.append(label)
+            retLabel = api
+
 
     if len(set(guard)) != 1:
         return 'N/A'
     else:
-        return guard[0]
+        return retLabel
 
 
 
