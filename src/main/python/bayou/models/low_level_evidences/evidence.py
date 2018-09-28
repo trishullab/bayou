@@ -468,7 +468,7 @@ class Javadoc(Evidence):
                     softmax_input_scalar_squeeze = tf.squeeze(softmax_input_scalar)
                     # mask for inputs beyond actual timesteps, (batch_size, max_time)
                     mask_flag = tf.sequence_mask(lengths_1d, tf.shape(softmax_input_scalar_squeeze)[1])
-                    inf_mask = tf.tile(tf.Variable([[-np.inf]]), tf.Variable([config.batch_size, self.max_words]))
+                    inf_mask = tf.tile(tf.Variable([[-1000000.0]]), tf.Variable([config.batch_size, self.max_words]))
                     softmax_input_scalar_mask = tf.where(mask_flag, softmax_input_scalar_squeeze, inf_mask)
                     # (batch_size, max_time)
                     softmax_output = tf.nn.softmax(softmax_input_scalar_mask)
@@ -480,6 +480,8 @@ class Javadoc(Evidence):
                     non_softmax_input_scalar = tf.layers.dense(non_softmax_input, 1, tf.nn.tanh)
                     # (batch_size, max_time)
                     non_softmax_input_scalar_squeeze = tf.squeeze(non_softmax_input_scalar)
+                    non_softmax_input_scalar_squeeze = tf.where(mask_flag, non_softmax_input_scalar_squeeze,
+                                                                tf.zeros_like(non_softmax_input_scalar_squeeze))
 
                     # multiplication (batch_size, max_time)
                     multi_output = softmax_output * non_softmax_input_scalar_squeeze
