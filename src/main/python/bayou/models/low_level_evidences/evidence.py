@@ -437,51 +437,60 @@ class Javadoc(Evidence):
                 embedding_var = tf.get_variable(name='embeddings', shape=(self.vocab_size, self.embed_dim),
                                                 trainable=False)
             # (batch_size, max_words), (batch_size, 1)
-            words, lengths = tf.split(inputs, [self.max_words, 1], 1)
-            # shape=(batch_size, max_words, embed_dim)
-            encoder_emb_inp = embedding_ops.embedding_lookup(embedding_var, words)
+            words, lengths_2d = tf.split(inputs, [self.max_words, 1], 1)
+            # (batch_size, max_words, embed_dim)
+            encoder_emb_input = embedding_ops.embedding_lookup(embedding_var, words)
+
             cell_fw = tf.nn.rnn_cell.GRUCell(self.rnn_units)
             cell_bw = tf.nn.rnn_cell.GRUCell(self.rnn_units)
-            # outputs=(output_fw, output_bw), shape=[batch_size, max_time, cell_{f/b}w.output_size]
-            outputs, _ = tf.nn.bidirectional_dynamic_rnn(cell_fw, cell_bw, inputs=encoder_emb_inp, dtype=tf.float32,
-                sequence_length=tf.reshape(lengths, shape=[config.batch_size]))
-            # shape=(batch_size, max_time, cell_fw.output_size+cell_bw.output_size)
+            lengths_1d = tf.reshape(lengths_2d, shape=[config.batch_size])
+            # outputs=(output_fw, output_bw), [batch_size, max_time, cell_{f/b}w.output_size]
+            outputs, _ = tf.nn.bidirectional_dynamic_rnn(cell_fw, cell_bw, inputs=encoder_emb_input, dtype=tf.float32,
+                                                         sequence_length=lengths_1d)
+            # (batch_size, max_time, cell_fw.output_size+cell_bw.output_size)
             brnn_outputs = tf.concat(outputs, axis=2)
 
-            # weights
-            # shape=(batch_size, max_time, latent_size)
-            # use_bias=False for making the weights of timesteps beyond finished zero
-            weights = tf.layers.dense(brnn_outputs, config.latent_size, use_bias=False, activation=tf.nn.tanh)
+            # zero out the regions beyond sequences lengths using sequence masking
+            # zero out is not necessary due to the properties of bidirectional_dynamic_rnn
 
-            # softmax
-            # shape=(batch_size, max_time, latent_size)
-            # making activation none, not limited the values within boundaries
-            softmax_raw = tf.layers.dense(brnn_outputs, config.latent_size, activation=None)
-            softmax = tf.nn.softmax(softmax_raw)
+            latent_dims = []
+            softmax_input_layers = 3
+            non_softmax_input_layers = 3
+            for i in range(config.latent_size):
+                with tf.variable_scope('encoder_attention_' + str(i)):
+                    # prepare softmax input
+                    softmax_input = brnn_outputs
+                    for j in range(softmax_input_layers - 1):
+                        softmax_input = tf.layers.dense(softmax_input, self.rnn_units * 2, tf.nn.tanh)
+                    # (batch_size, max_time, 1)
+                    softmax_input_scalar = tf.layers.dense(softmax_input, 1)
+                    # reshape, (batch_size, max_time)
+                    softmax_input_scalar_squeeze = tf.squeeze(softmax_input_scalar)
+                    # mask for inputs beyond actual timesteps, (batch_size, max_time)
+                    mask_flag = tf.sequence_mask(lengths_1d, tf.shape(softmax_input_scalar_squeeze)[1])
+                    inf_mask = tf.tile(tf.Variable([[-np.inf]]), tf.Variable([config.batch_size, self.max_words]))
+                    softmax_input_scalar_mask = tf.where(mask_flag, softmax_input_scalar_squeeze, inf_mask)
+                    # (batch_size, max_time)
+                    softmax_output = tf.nn.softmax(softmax_input_scalar_mask)
 
-            # elementwise multiplication
-            # shape=(batch_size, max_time, latent_size)
-            multi = softmax * weights
+                    # prepare another non-softmax input to the multiplication operation
+                    non_softmax_input = brnn_outputs
+                    for j in range(non_softmax_input_layers - 1):
+                        non_softmax_input = tf.layers.dense(non_softmax_input, self.rnn_units * 2, tf.nn.tanh)
+                    non_softmax_input_scalar = tf.layers.dense(non_softmax_input, 1, tf.nn.tanh)
+                    # (batch_size, max_time)
+                    non_softmax_input_scalar_squeeze = tf.squeeze(non_softmax_input_scalar)
 
-            # use lengths vector to do summation
-            # sum reduction, shape=(batch_size, latent_size)
-            reduced = tf.reduce_sum(multi, axis=1)
-            # get rid of dividing zero
-            # encodings = [tf.where(exist, enc, zeros) for exist, enc in zip(exists, encodings)]
-            nonzero_lengths = tf.where(lengths > 0, lengths, tf.ones([config.batch_size, 1], dtype=tf.int32))
-            # lengths.shape=(batch_size, 1), divisible
-            res = reduced / tf.cast(nonzero_lengths, dtype=tf.float32)
+                    # multiplication (batch_size, max_time)
+                    multi_output = softmax_output * non_softmax_input_scalar_squeeze
 
-            return res
-            # # attention, self.units here can be any number, just has to match the query
-            # attention_mechanism = tf.contrib.seq2seq.LuongAttention(
-            #     self.attention_num_units, encoder_outputs, memory_sequence_length=lengths)
-            # # 1: each position in latent vector is a scalar, attention_layer_size can be adjusted to other values as well
-            # # the basic grucell has to have a num_units matching the attention mechanism keys
-            # decoder_cell = tf.contrib.seq2seq.AttentionWrapper(
-            #     tf.nn.rnn_cell.MultiRNNCell([tf.nn.rnn_cell.GRUCell(self.attention_num_units) for i in range(self.num_layers)]),
-            #     attention_mechanism, attention_layer_size=self.attention_layer_size)
-            # # decoding, add output layer outside the attention layer + fixed timestep counts == self.latent_size
+                    # reduce_sum, last dimension, (batch_size)
+                    latent_dim = tf.reduce_sum(multi_output, -1)
+                    latent_dims.append(latent_dim)
+
+            # concatenate latent_dims, (batch_size, latent_size)
+            latent_vector = tf.squeeze(tf.stack(latent_dims, axis=1))
+            return latent_vector
 
 
     def evidence_loss(self, psi, encoding, config):
