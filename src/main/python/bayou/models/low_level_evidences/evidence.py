@@ -492,7 +492,7 @@ class Javadoc(Evidence):
                     latent_dims.append(latent_dim)
 
             # concatenate latent_dims, (batch_size, latent_size)
-            latent_vector = tf.squeeze(tf.stack(latent_dims, axis=1))
+            latent_vector = tf.stack(latent_dims, axis=0)
             return latent_vector
 
 
