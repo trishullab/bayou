@@ -91,12 +91,8 @@ def get(clargs):
 
                 for j in range(latent_size):
                     out_multi_outputs.append(local_multi_outputs[j][i][:words_length].tolist())
-                    out_latent_dims.append(local_latent_dims[j][i])
+                    out_latent_dims.append(local_latent_dims[j][i].item())
 
-                # output['multi'] = multi[i][:words_length].tolist()
-                # output['weights'] = weights[i][:words_length].tolist()
-                # output['softmax'] = softmax[i][:words_length].tolist()
-                # output['res'] = res[i].tolist()
                 outputs.append(output)
             batch_end = time.time()
             latency = float('{:.2f}'.format(batch_end - batch_start))
