@@ -456,6 +456,10 @@ class Javadoc(Evidence):
             latent_dims = []
             softmax_input_layers = 3
             non_softmax_input_layers = 3
+
+            # for getting local tensor values while predicting and checking
+            self.multi_outputs = []
+
             for i in range(config.latent_size):
                 with tf.variable_scope('encoder_attention_' + str(i)):
                     # prepare softmax input
@@ -486,10 +490,14 @@ class Javadoc(Evidence):
 
                     # multiplication (batch_size, max_time)
                     multi_output = softmax_output * non_softmax_input_scalar_squeeze
+                    self.multi_outputs.append(multi_output)
 
                     # reduce_sum, last dimension, (batch_size)
                     latent_dim = tf.reduce_sum(multi_output, -1)
                     latent_dims.append(latent_dim)
+
+            # for getting local tensor values while predicting and checking
+            self.latent_dims = latent_dims
 
             # concatenate latent_dims, (batch_size, latent_size)
             latent_vector = tf.stack(latent_dims, axis=1)
