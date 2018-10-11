@@ -65,7 +65,12 @@ def get(clargs):
         # format per-program: {'words': '...', 'multi or weights or softmax': list of list, 'res': list}
         outputs = []
 
+        print('total number of batches is %i' % len(input_batches))
+        batch_counter = 0
+
         for batch in input_batches:
+            batch_counter += 1
+            print("it's the %ith batch now" % batch_counter)
             batch_start = time.time()
             feed = {}
             feed[predictor.model.encoder.inputs[0].name] = batch
