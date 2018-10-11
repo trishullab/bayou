@@ -42,7 +42,7 @@ for opt in outputs:
     # fills value table
     for i in range(latent_size):
         for j, w in enumerate(words_list):
-            table[vocab[w]][j] += out_multi_outputs[i][j]
+            table[vocab[w]][i] += out_multi_outputs[i][j]
 
 
 print('normalize count table')
