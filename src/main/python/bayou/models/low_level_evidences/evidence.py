@@ -459,6 +459,7 @@ class Javadoc(Evidence):
 
             # for getting local tensor values while predicting and checking
             self.multi_outputs = []
+            self.softmax_outputs = []
 
             for i in range(config.latent_size):
                 with tf.variable_scope('encoder_attention_' + str(i)):
@@ -491,6 +492,7 @@ class Javadoc(Evidence):
                     # multiplication (batch_size, max_time)
                     multi_output = softmax_output * non_softmax_input_scalar_squeeze
                     self.multi_outputs.append(multi_output)
+                    self.softmax_outputs.append(softmax_output)
 
                     # reduce_sum, last dimension, (batch_size)
                     latent_dim = tf.reduce_sum(multi_output, -1)
