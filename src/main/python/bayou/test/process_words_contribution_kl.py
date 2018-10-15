@@ -48,10 +48,11 @@ for opt in outputs:
         for j, w in enumerate(words_list):
             # table[vocab[w]][i] += out_multi_outputs[i][j]
             # -p * log(1 / (np)) - (1 - p) * log((1 - 1 / n) / (1 - p))
-            if out_multi_outputs[i][j] == 0:
-                import pdb; pdb.set_trace()
             if words_length != 0:
-                table[vocab[w]][i] += kl(words_length, out_multi_outputs[i][j])
+                try:
+                    table[vocab[w]][i] += kl(words_length, out_multi_outputs[i][j])
+                except:
+                    import pdb; pdb.set_trace()
 
 print('normalize count table')
 for i in range(vocab_size):
