@@ -31,6 +31,10 @@ occurs = np.zeros([vocab_size])
 
 import math
 def kl(n, p):
+    if p == 1:
+        return - math.log(1 / n)
+    elif p == 0:
+        return - math.log(1 - 1 / n)
     return -p * math.log(1 / (n*p)) - (1 - p) * math.log((1 - 1 / n) / (1 - p))
 
 print('filling count table')
