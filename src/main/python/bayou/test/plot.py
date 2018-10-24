@@ -26,9 +26,12 @@ from bayou.models.low_level_evidences.infer import BayesianPredictor
 
 def plot(clargs):
     with tf.Session() as sess:
+        print('reading model')
         predictor = BayesianPredictor(clargs.save, sess, clargs.embedding_file)
+        print('reading data')
         with open(clargs.input_file[0]) as f:
             js = json.load(f)
+        print('generating psis')
         psis = np.array([predictor.psi_from_evidence(program) for program in js['programs']])
         ast_calls = []
         for i, psi in enumerate(psis):
@@ -42,6 +45,7 @@ def plot(clargs):
             except AssertionError:
                 ast_calls.append([])
         psis = np.array([psi[0] for psi in psis])  # drop batch
+        print('making graphs')
         model = TSNE(n_components=2, init='pca')
         psis_2d = model.fit_transform(psis)
         labels = [get_api(calls) for calls in ast_calls]
