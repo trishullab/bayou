@@ -72,6 +72,8 @@ def get_calls_from_ast(ast):
 
 
 def scatter(clargs, data):
+    import matplotlib as mpl
+    mpl.use('TKAgg')
     import matplotlib.pyplot as plt
     import matplotlib.cm as cm
     dic = {}
