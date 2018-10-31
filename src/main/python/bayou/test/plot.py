@@ -15,40 +15,44 @@
 import argparse
 import json
 from collections import Counter
+import ijson.backends.yajl2_cffi as ijson
 
+import re
 import numpy as np
 import tensorflow as tf
 from sklearn.manifold import TSNE
+
+import matplotlib
+matplotlib.use('TKAgg')
+import matplotlib.pyplot as plt
+import matplotlib.cm as cm
 
 from scripts.ast_extractor import get_ast_paths
 from bayou.models.low_level_evidences.infer import BayesianPredictor
 
 
-def plot(clargs):
+def plot(clargs, max_nums=1000):
     with tf.Session() as sess:
+        psis = []
+        labels = []
+        item_num = 0
+
         print('reading model')
         predictor = BayesianPredictor(clargs.save, sess, clargs.embedding_file)
         print('reading data')
-        with open(clargs.input_file[0]) as f:
-            js = json.load(f)
-        print('generating psis')
-        psis = np.array([predictor.psi_from_evidence(program) for program in js['programs']])
-        ast_calls = []
-        for i, psi in enumerate(psis):
-            print('Generate AST {}'.format(i))
-            predictor.calls_in_last_ast = []
-            try:
-                asts = predictor.generate_asts_beam_search(psi, beam_width=10)
-                # most likely ast resulted from beam search
-                the_ast = asts[0]
-                ast_calls.append(get_calls_from_ast(the_ast['ast']['_nodes']))
-            except AssertionError:
-                ast_calls.append([])
-        psis = np.array([psi[0] for psi in psis])  # drop batch
+        with open(clargs.input_file[0], 'rb') as f:
+            for program in ijson.items(f, 'programs.item'):
+                api_call = get_api(get_calls_from_ast(program['ast']['_nodes']))
+                if api_call != 'N/A':
+                    labels.append(api_call)
+                    psis.append(predictor.psi_from_evidence(program)[0])
+                    item_num += 1
+                if item_num > max_nums:
+                    break
+        psis = np.array(psis)
         print('making graphs')
         model = TSNE(n_components=2, init='pca')
         psis_2d = model.fit_transform(psis)
-        labels = [get_api(calls) for calls in ast_calls]
         assert len(psis_2d) == len(labels)
 
         for psi_2d, label in zip(psis_2d, labels):
@@ -56,11 +60,28 @@ def plot(clargs):
         scatter(clargs, zip(psis_2d, labels))
 
 
+# def get_api(calls):
+#     apis = ['.'.join(call.split('.')[:2]) for call in calls]
+#     counts = Counter(apis)
+#     apis = sorted(counts.keys(), key=lambda a: counts[a], reverse=True)
+#     return apis[0] if apis != [] else 'N/A'
+
+
 def get_api(calls):
-    apis = ['.'.join(call.split('.')[:2]) for call in calls]
-    counts = Counter(apis)
-    apis = sorted(counts.keys(), key=lambda a: counts[a], reverse=True)
-    return apis[0] if apis != [] else 'N/A'
+    calls = [call.replace('$NOT$', '') for call in calls]
+    apis = [[re.findall(r"[\w']+", call)[:3]] for call in calls]
+    apis = [call for _list in apis for calls in _list for call in calls]
+    label = "N/A"
+    guard = []
+    for api in apis:
+        if api in ['xml', 'sql', 'crypto', 'awt', 'swing', 'security', 'net', 'math']:
+            label = api
+            guard.append(label)
+
+    if len(set(guard)) != 1:
+        return 'N/A'
+    else:
+        return guard[0]
 
 
 def get_calls_from_ast(ast):
@@ -72,10 +93,6 @@ def get_calls_from_ast(ast):
 
 
 def scatter(clargs, data):
-    import matplotlib as mpl
-    mpl.use('TKAgg')
-    import matplotlib.pyplot as plt
-    import matplotlib.cm as cm
     dic = {}
     for psi_2d, label in data:
         if label == 'N/A':
@@ -97,7 +114,7 @@ def scatter(clargs, data):
         y = list(map(lambda s: s[1], dic[label]))
         plotpoints.append(plt.scatter(x, y, color=color))
 
-    plt.legend(plotpoints, labels, scatterpoints=1, loc='lower left', ncol=3, fontsize=12)
+    plt.legend(plotpoints, labels, scatterpoints=1, loc='lower left', ncol=3, fontsize=8)
     plt.axhline(0, color='black')
     plt.axvline(0, color='black')
     plt.show()
