@@ -31,7 +31,8 @@ from scripts.ast_extractor import get_ast_paths
 from bayou.models.low_level_evidences.infer import BayesianPredictor
 
 
-def plot(clargs, max_nums=1000):
+# flag == 1 means using get_api to filter psis and use psis to do beam search and generate label api
+def plot(clargs, max_nums=1000, flag=1):
     with tf.Session() as sess:
         psis = []
         labels = []
@@ -40,14 +41,25 @@ def plot(clargs, max_nums=1000):
         print('reading model')
         predictor = BayesianPredictor(clargs.save, sess, clargs.embedding_file)
         print('reading data')
+        overall_count = 0
         with open(clargs.input_file[0], 'rb') as f:
             for program in ijson.items(f, 'programs.item'):
+                overall_count += 1
                 api_call = get_api(get_calls_from_ast(program['ast']['_nodes']))
                 if api_call != 'N/A':
+                    psi_batch = predictor.psi_from_evidence(program)
+                    psi = psi_batch[0]
+                    psis.append(psi)
+                    if flag == 1:
+                        print('Generate AST {}'.format(item_num))
+                        asts = predictor.generate_asts_beam_search(psi_batch, beam_width=30)
+                        the_ast = asts[0]
+                        # import pdb; pdb.set_trace()
+                        api_call = get_api_prev(get_calls_from_ast(the_ast['ast']['_nodes']))
                     labels.append(api_call)
-                    psis.append(predictor.psi_from_evidence(program)[0])
                     item_num += 1
                 if item_num > max_nums:
+                    print('overall count is %i' % overall_count)
                     break
         psis = np.array(psis)
         print('making graphs')
@@ -60,11 +72,11 @@ def plot(clargs, max_nums=1000):
         scatter(clargs, zip(psis_2d, labels))
 
 
-# def get_api(calls):
-#     apis = ['.'.join(call.split('.')[:2]) for call in calls]
-#     counts = Counter(apis)
-#     apis = sorted(counts.keys(), key=lambda a: counts[a], reverse=True)
-#     return apis[0] if apis != [] else 'N/A'
+def get_api_prev(calls):
+    apis = ['.'.join(call.split('.')[:2]) for call in calls]
+    counts = Counter(apis)
+    apis = sorted(counts.keys(), key=lambda a: counts[a], reverse=True)
+    return apis[0] if apis != [] else 'N/A'
 
 
 def get_api(calls):
