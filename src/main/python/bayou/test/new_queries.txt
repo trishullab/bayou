@@ -1,0 +1,26 @@
+check if a file exists
+write text to file
+read text from file
+create a thread
+create a file
+save an image to a file
+serialize an object
+search data from database
+parse an xml document
+verify if a folder exists
+generate random number
+open a url
+rename a file
+drops tables in database
+format a date with a formatter
+connect to database
+open file dialog
+match regular expressions
+round a decimal value
+execute sql statement
+delete files and folders in a directory
+reverse a string
+download file from url
+read binary file
+convert string to int
+search an element with binary search
