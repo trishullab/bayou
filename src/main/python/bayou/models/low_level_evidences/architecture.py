@@ -65,13 +65,6 @@ class BayesianDecoder(object):
         self.cell1 = tf.nn.rnn_cell.MultiRNNCell(cells1)
         self.cell2 = tf.nn.rnn_cell.MultiRNNCell(cells2)
 
-        # # psi.shape=(batch_size, latent_size) ==> (batch_size, latent_size, 1)
-        # attention_memory = tf.reshape(psi, [config.batch_size, config.latent_size, 1])
-        # attention_mechanism = tf.contrib.seq2seq.LuongAttention(1, attention_memory)
-        # self.cell1 = tf.contrib.seq2seq.AttentionWrapper(self.cell1, attention_mechanism, 1)
-        # self.cell2 = tf.contrib.seq2seq.AttentionWrapper(self.cell2, attention_mechanism, 1)
-        #
-        # # attention stuff above
 
         # luong attention, location-based alignment function
         # psi.shape = (batch_size, latent_size)
