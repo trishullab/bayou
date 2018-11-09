@@ -42,8 +42,8 @@ class Model():
         self.decoder = BayesianDecoder(config, initial_state=self.initial_state, psi=self.psi, infer=infer)
 
         # get the decoder outputs
-        self.probs = tf.reshape(tf.concat(self.decoder.outputs, 1), [-1, self.decoder.cell1.output_size])
-        logits = tf.reshape(tf.concat(self.decoder.logits, 1), [-1, self.decoder.cell1.output_size])
+        self.probs = tf.reshape(tf.concat(self.decoder.outputs, 1), [-1, config.decoder.vocab_size])
+        logits = tf.reshape(tf.concat(self.decoder.logits, 1), [-1, config.decoder.vocab_size])
 
         # 1. generation loss: log P(X | \Psi)
         self.targets = tf.placeholder(tf.int32, [config.batch_size, config.decoder.max_ast_depth])
