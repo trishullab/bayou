@@ -65,16 +65,6 @@ class BayesianDecoder(object):
         self.cell1 = tf.nn.rnn_cell.MultiRNNCell(cells1)
         self.cell2 = tf.nn.rnn_cell.MultiRNNCell(cells2)
 
-
-        # luong attention, location-based alignment function
-        # psi.shape = (batch_size, latent_size)
-        # to transfer to the location-based attention mechanism alignment scores
-        align_w = tf.get_variable('align_w', shape=(config.decoder.units, config.latent_size))
-        # TODO: to minimize the current modification, use cell size as attention output vector size
-        # self.cell1.output_size == config.decoder.units
-        att_out_w = tf.get_variable(
-            'att_out_w', shape=(config.latent_size + self.cell1.output_size, self.cell1.output_size))
-
         # placeholders
         self.initial_state = [initial_state] * config.decoder.num_layers
         self.nodes = [tf.placeholder(tf.int32, [config.batch_size], name='node{0}'.format(i))
@@ -82,17 +72,16 @@ class BayesianDecoder(object):
         self.edges = [tf.placeholder(tf.bool, [config.batch_size], name='edge{0}'.format(i))
                       for i in range(config.decoder.max_ast_depth)]
 
-        # projection matrices for output
-        self.projection_w = tf.get_variable('projection_w', [self.cell1.output_size,
-                                                             config.decoder.vocab_size])
-        self.projection_b = tf.get_variable('projection_b', [config.decoder.vocab_size])
-
         # setup embedding
         with tf.variable_scope('decoder'):
+            # output_size == state_size of topmost cell
+            location_w = tf.get_variable('location_w', shape=(self.cell1.output_size, config.latent_size))
+            output_w = tf.get_variable(
+                'output_w', shape=(self.cell1.output_size + config.latent_size, config.decoder.vocab_size))
+
             emb = tf.get_variable('emb', [config.decoder.vocab_size, config.decoder.units])
 
             def loop_fn(prev, _):
-                prev = tf.nn.xw_plus_b(prev, self.projection_w, self.projection_b)
                 prev_symbol = tf.argmax(prev, 1)
                 return tf.nn.embedding_lookup(emb, prev_symbol)
 
@@ -103,29 +92,31 @@ class BayesianDecoder(object):
             # TODO: update with dynamic decoder (being implemented in tf) once it is released
             with tf.variable_scope('rnn'):
                 self.state = self.initial_state
+                self.logits = []
                 self.outputs = []
                 prev = None
                 for i, inp in enumerate(emb_inp):
                     if loop_function is not None and prev is not None:
-                        with tf.variable_scope('loop_function', reuse=True):
-                            inp = loop_function(prev, i)
-                    if i > 0:
-                        tf.get_variable_scope().reuse_variables()
+                        inp = loop_function(prev, i)
+                    # until here, self.state contains prev_state
+                    top_state = self.state[-1]
+                    align = tf.matmul(top_state, location_w)
+                    context = align * psi
+                    rnn_inp = tf.concat([inp, context], axis=1)
+
                     with tf.variable_scope('cell1'):  # handles CHILD_EDGE
-                        output1, state1 = self.cell1(inp, self.state)
+                        output1, state1 = self.cell1(rnn_inp, self.state)
                     with tf.variable_scope('cell2'):  # handles SIBLING_EDGE
-                        output2, state2 = self.cell2(inp, self.state)
+                        output2, state2 = self.cell2(rnn_inp, self.state)
                     output = tf.where(self.edges[i], output1, output2)
                     self.state = [tf.where(self.edges[i], state1[j], state2[j])
                                   for j in range(config.decoder.num_layers)]
 
-                    # combine attention and output to produce new_output
-                    # output.shape = [batch_size, self.output_size]
-                    align = tf.matmul(output, align_w)
-                    context = align * psi
-                    concat = tf.concat([context, output], axis=1)
-                    output = tf.tanh(tf.matmul(concat, att_out_w))
-
-                    self.outputs.append(output)
+                    # making outputs
+                    output_concat = tf.concat([output, context], axis=1)
+                    logits = tf.matmul(output_concat, output_w)
+                    new_output = tf.nn.softmax(logits)
+                    self.logits.append(logits)
+                    self.outputs.append(new_output)
                     if loop_function is not None:
-                        prev = output
+                        prev = new_output
