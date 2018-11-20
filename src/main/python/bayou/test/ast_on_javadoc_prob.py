@@ -83,11 +83,15 @@ def ast_javadoc_cond_prob(predictor, program, sess):
     cache = dict()
     probability = 1.
     for path in ast_paths:
-        for i in range(len(path)):
+        # probability for ('DSubTree', 'V') is 1
+        path = [('DSubTree', 'V')] + path
+        path_nodes, path_edges = zip(*path)
+        for i in range(len(path) - 1):
             nodes, edges = zip(*path[:i+1])
             dist = predictor.model.infer_ast(sess, psi_batch, nodes, edges, cache=cache)
-            curr_node = nodes[-1]
+            curr_node = path_nodes[i+1]
             curr_node_prob = dist[predictor.model.config.decoder.vocab[curr_node]]
+            # import pdb; pdb.set_trace()
             probability *= curr_node_prob
     return probability
 
