@@ -63,8 +63,8 @@ def compute_probs(clargs):
                 count += 1
                 if count % 1 == 0:
                     print('current program 1-based index: %i' % count)
-                prob = ast_javadoc_cond_prob(predictor, program, sess)
-                program['ast']['cond_prob'] = prob
+                ast_javadoc_cond_prob(predictor, program, sess)
+                # program['ast']['cond_prob'] = prob
                 out_programs.append(program)
         with open(clargs.out, 'w') as f:
             json.dump({'programs': out_programs}, f, indent=2)
@@ -82,9 +82,11 @@ def ast_javadoc_cond_prob(predictor, program, sess):
     # the_psi = psi_batch[0]
     cache = dict()
     probability = 1.
+    path_lengths = []
     for path in ast_paths:
         # probability for ('DSubTree', 'V') is 1
         path = [('DSubTree', 'V')] + path
+        path_lengths.append(len(path))
         path_nodes, path_edges = zip(*path)
         for i in range(len(path) - 1):
             nodes, edges = zip(*path[:i+1])
@@ -93,7 +95,9 @@ def ast_javadoc_cond_prob(predictor, program, sess):
             curr_node_prob = dist[predictor.model.config.decoder.vocab[curr_node]]
             # import pdb; pdb.set_trace()
             probability *= curr_node_prob
-    return probability
+    ast['cond_prob'] = probability
+    ast['num_path'] = len(ast_paths)
+    ast['path_lengths'] = path_lengths
 
 
 def get_ast_paths(js, idx=0):
