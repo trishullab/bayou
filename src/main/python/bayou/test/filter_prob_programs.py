@@ -21,13 +21,13 @@ def filter_progs(clargs, reserve_num=400000):
     with open(input_file) as f:
         progs = json.load(f)['programs']
     progs_probs = {}
-    for prog in progs:
+    for i, prog in enumerate(progs):
         ast = prog['ast']
         if 'cond_prob' in ast:
-            progs_probs[prog] = ast['cond_prob']
+            progs_probs[i] = ast['cond_prob']
     print('total number of useful programs is %i' % len(progs_probs))
     progs_probs_items = sorted(progs_probs, key=lambda kv: kv[1], reverse=True)
-    reserved_progs = [prog for (prog, prob) in progs_probs_items[:reserve_num]]
+    reserved_progs = [progs[prog_index] for (prog_index, prob) in progs_probs_items[:reserve_num]]
     print('number of reserved programs is %i' % len(reserved_progs))
     import pdb; pdb.set_trace()
     with open(clargs.out, 'w') as f:
