@@ -17,6 +17,7 @@ import argparse
 import re
 import tensorflow as tf
 from itertools import chain
+from tensorflow.python.client import device_lib
 
 CONFIG_GENERAL = ['model', 'latent_size', 'batch_size', 'num_epochs',
                   'learning_rate', 'print_step', 'alpha', 'beta']
@@ -100,3 +101,9 @@ def gather_calls(node):
         return gather_calls(node['_cond']) + gather_calls(node['_body'])
     else:  # this node itself is a call
         return [node]
+
+
+def get_available_gpus():
+    local_device_protos = device_lib.list_local_devices()
+    return [x.name for x in local_device_protos if x.device_type == 'GPU']
+

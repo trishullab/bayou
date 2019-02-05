@@ -21,15 +21,22 @@ from bayou.models.low_level_evidences.data_reader import CHILD_EDGE, SIBLING_EDG
 
 
 class Model():
-    def __init__(self, config, infer=False):
+    def __init__(self, config, iterator, infer=False):
         assert config.model == 'lle', 'Trying to load different model implementation: ' + config.model
         self.config = config
         if infer:
             config.batch_size = 1
             config.decoder.max_ast_depth = 1
 
+        # use the data fetched from the tensorflow dataset instead of placeholders
+        newBatch = iterator.get_next()
+        nodes, edges, targets = newBatch[:3]
+        nodes = tf.transpose(nodes)
+        edges = tf.transpose(edges)
+        ev_data = newBatch[3:]
+
         # setup the encoder
-        self.encoder = BayesianEncoder(config)
+        self.encoder = BayesianEncoder(config, ev_data)
         samples = tf.random_normal([config.batch_size, config.latent_size],
                                    mean=0., stddev=1., dtype=tf.float32)
         self.psi = self.encoder.psi_mean + tf.sqrt(self.encoder.psi_covariance) * samples
@@ -39,14 +46,15 @@ class Model():
         lift_b = tf.get_variable('lift_b', [config.decoder.units])
         self.initial_state = tf.nn.xw_plus_b(self.psi, lift_w, lift_b)
         # add also psi into decoder function
-        self.decoder = BayesianDecoder(config, initial_state=self.initial_state, psi=self.psi, infer=infer)
+        self.decoder = BayesianDecoder(config, self.initial_state, self.psi, nodes, edges, infer=infer)
 
         # get the decoder outputs
         self.probs = tf.reshape(tf.concat(self.decoder.outputs, 1), [-1, config.decoder.vocab_size])
         logits = tf.reshape(tf.concat(self.decoder.logits, 1), [-1, config.decoder.vocab_size])
 
         # 1. generation loss: log P(X | \Psi)
-        self.targets = tf.placeholder(tf.int32, [config.batch_size, config.decoder.max_ast_depth])
+        # self.targets = tf.placeholder(tf.int32, [config.batch_size, config.decoder.max_ast_depth])
+        self.targets = targets
         self.gen_loss = seq2seq.sequence_loss([logits], [tf.reshape(self.targets, [-1])],
                                               [tf.ones([config.batch_size * config.decoder.max_ast_depth])])
 
@@ -64,12 +72,13 @@ class Model():
 
         # The optimizer
         self.loss = self.gen_loss + self.latent_loss + self.evidence_loss
-        self.train_op = tf.train.AdamOptimizer(config.learning_rate).minimize(self.loss)
+        # self.train_op = tf.train.AdamOptimizer(config.learning_rate).minimize(self.loss)
 
-        var_params = [np.prod([dim.value for dim in var.get_shape()])
-                      for var in tf.trainable_variables()]
-        if not infer:
-            print('Model parameters: {}'.format(np.sum(var_params)))
+        # compute number of all trainable variables
+        # var_params = [np.prod([dim.value for dim in var.get_shape()])
+        #               for var in tf.trainable_variables()]
+        # if not infer:
+        #     print('Model parameters: {}'.format(np.sum(var_params)))
 
     def infer_psi(self, sess, evidences):
         # read and wrangle (with batch_size 1) the data

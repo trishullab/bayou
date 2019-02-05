@@ -74,13 +74,13 @@ class Reader():
             self.targets[i, :len(path)-1] = self.nodes[i, 1:len(path)]  # shifted left by one
 
         # split into batches
-        self.inputs = [np.split(ev_data, config.num_batches, axis=0) for ev_data in self.inputs]
-        self.nodes = np.split(self.nodes, config.num_batches, axis=0)
-        self.edges = np.split(self.edges, config.num_batches, axis=0)
-        self.targets = np.split(self.targets, config.num_batches, axis=0)
+        # self.inputs = [np.split(ev_data, config.num_batches, axis=0) for ev_data in self.inputs]
+        # self.nodes = np.split(self.nodes, config.num_batches, axis=0)
+        # self.edges = np.split(self.edges, config.num_batches, axis=0)
+        # self.targets = np.split(self.targets, config.num_batches, axis=0)
 
         # reset batches
-        self.reset_batches()
+        # self.reset_batches()
 
     def get_ast_paths(self, js, idx=0):
         cons_calls = []
@@ -215,16 +215,16 @@ class Reader():
 
         return evidences, targets
 
-    def next_batch(self):
-        batch = next(self.batches)
-        n, e, y = batch[:3]
-        ev_data = batch[3:]
-
-        # reshape the batch into required format
-        rn = np.transpose(n)
-        re = np.transpose(e)
-
-        return ev_data, rn, re, y
-
-    def reset_batches(self):
-        self.batches = iter(zip(self.nodes, self.edges, self.targets, *self.inputs))
+    # def next_batch(self):
+    #     batch = next(self.batches)
+    #     n, e, y = batch[:3]
+    #     ev_data = batch[3:]
+    #
+    #     # reshape the batch into required format
+    #     rn = np.transpose(n)
+    #     re = np.transpose(e)
+    #
+    #     return ev_data, rn, re, y
+    #
+    # def reset_batches(self):
+    #     self.batches = iter(zip(self.nodes, self.edges, self.targets, *self.inputs))

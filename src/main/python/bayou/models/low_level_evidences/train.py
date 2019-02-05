@@ -24,8 +24,9 @@ import json
 import textwrap
 
 from bayou.models.low_level_evidences.data_reader import Reader
-from bayou.models.low_level_evidences.model import Model
-from bayou.models.low_level_evidences.utils import read_config, dump_config
+# from bayou.models.low_level_evidences.model import Model
+from bayou.models.low_level_evidences.MultiGPUModel import MultiGPUModel
+from bayou.models.low_level_evidences.utils import read_config, dump_config, get_available_gpus
 
 HELP = """\
 Config options should be given as a JSON file (see config.json for example):
@@ -77,10 +78,85 @@ def train(clargs):
     reader = Reader(clargs, config)
     
     jsconfig = dump_config(config)
-    print(clargs)
-    print(json.dumps(jsconfig, indent=2))
+    # print(clargs)
+    # print(json.dumps(jsconfig, indent=2))
     with open(os.path.join(clargs.save, 'config.json'), 'w') as f:
         json.dump(jsconfig, fp=f, indent=2)
+
+    # read data through Dataset API
+    # https://zhuanlan.zhihu.com/p/30751039
+
+    # Placeholders for tf data
+    nodes_placeholder = tf.placeholder(reader.nodes.dtype, reader.nodes.shape)
+    edges_placeholder = tf.placeholder(reader.edges.dtype, reader.edges.shape)
+    targets_placeholder = tf.placeholder(reader.targets.dtype, reader.targets.shape)
+    evidence_placeholder = [tf.placeholder(input.dtype, input.shape) for input in reader.inputs]
+    # reset batches
+
+    feed_dict={fp: f for fp, f in zip(evidence_placeholder, reader.inputs)}
+    feed_dict.update({nodes_placeholder: reader.nodes})
+    feed_dict.update({edges_placeholder: reader.edges})
+    feed_dict.update({targets_placeholder: reader.targets})
+
+    dataset = tf.data.Dataset.from_tensor_slices((nodes_placeholder, edges_placeholder, targets_placeholder, *evidence_placeholder))
+    batched_dataset = dataset.batch(config.batch_size)
+    iterator = batched_dataset.make_initializable_iterator()
+
+    # test code for tf.data.Dataset
+    # with tf.Session() as sess:
+    #     sess.run(iterator.initializer, feed_dict=feed_dict)
+    #     for i in range(10):
+    #         test_value = sess.run(iterator.get_next())
+    #         print('placeholder')
+
+    model = MultiGPUModel(config, iterator)
+
+    with tf.Session(config=tf.ConfigProto(log_device_placement=False, allow_soft_placement=True)) as sess:
+        tf.global_variables_initializer().run()
+        saver = tf.train.Saver(tf.global_variables())
+
+        if clargs.continue_from is not None:
+            ckpt = tf.train.get_checkpoint_state(clargs.continue_from)
+            saver.restore(sess, ckpt.model_checkpoint_path)
+
+        devices = get_available_gpus()
+
+        epocLoss, epocGenLoss, epocLatentLoss, epocEvLoss = [], [], [], []
+        for i in range(config.num_epochs):
+            sess.run(iterator.initializer, feed_dict=feed_dict)
+            start = time.time()
+            avg_loss, avg_gen_loss, avg_latent_loss, avg_ev_loss = 0.,0.,0.,0.
+            for b in range(config.num_batches // len(devices)): # divide the data evenly
+                # run the optimizer
+                loss, gen_loss, latent_loss, ev_loss, _ = sess.run([model.avg_loss, model.avg_gen_loss, model.avg_latent_loss, model.avg_evidence_loss, model.apply_gradient_op])
+
+                # s = sess.run(merged_summary, feed)
+                # writer.add_summary(s,i)
+
+                end = time.time()
+                avg_loss += np.mean(loss)
+                avg_gen_loss += np.mean(gen_loss)
+                avg_latent_loss += np.mean(latent_loss)
+                avg_ev_loss += np.mean(ev_loss)
+
+                step = (i+1) * config.num_batches + b
+                if step % config.print_step == 0:
+                    print('{}/{} (epoch {}) '
+                          'loss: {:.3f}, gen_loss: {:.3f}, latent_loss: {:.3f}, ev_loss: {:.3f},\n\t'.format
+                          (step, config.num_epochs * config.num_batches, i + 1 ,
+                           (avg_loss)/(b+1), (avg_gen_loss)/(b+1), (avg_latent_loss)/(b+1), (avg_ev_loss)/(b+1)
+                           ))
+
+            epocLoss.append(avg_loss / config.num_batches), epocGenLoss.append(avg_gen_loss / config.num_batches), epocLatentLoss.append(avg_latent_loss / config.num_batches), epocEvLoss.append(avg_ev_loss / config.num_batches)
+            if (i+1) % config.checkpoint_step == 0:
+                checkpoint_dir = os.path.join(clargs.save, 'model{}.ckpt'.format(i+1))
+                saver.save(sess, checkpoint_dir)
+                print('Model checkpointed: {}. Average for epoch , '
+                      'loss: {:.3f}'.format
+                      (checkpoint_dir, avg_loss / config.num_batches))
+    sys.exit()
+
+    # ==================================================
 
     model = Model(config)
 

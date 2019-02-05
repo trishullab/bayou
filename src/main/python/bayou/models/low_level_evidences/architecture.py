@@ -17,9 +17,10 @@ from itertools import chain
 
 
 class BayesianEncoder(object):
-    def __init__(self, config):
+    def __init__(self, config, ev_data):
 
-        self.inputs = [ev.placeholder(config) for ev in config.evidence]
+        # self.inputs = [ev.placeholder(config) for ev in config.evidence]
+        self.inputs = ev_data
         exists = [ev.exists(i) for ev, i in zip(config.evidence, self.inputs)]
         zeros = tf.zeros([config.batch_size, config.latent_size], dtype=tf.float32)
 
@@ -56,7 +57,7 @@ class BayesianEncoder(object):
 
 
 class BayesianDecoder(object):
-    def __init__(self, config, initial_state, psi, infer=False):
+    def __init__(self, config, initial_state, psi, nodes, edges, infer=False):
 
         cells1, cells2 = [], []
         for _ in range(config.decoder.num_layers):
@@ -67,10 +68,13 @@ class BayesianDecoder(object):
 
         # placeholders
         self.initial_state = [initial_state] * config.decoder.num_layers
-        self.nodes = [tf.placeholder(tf.int32, [config.batch_size], name='node{0}'.format(i))
-                      for i in range(config.decoder.max_ast_depth)]
-        self.edges = [tf.placeholder(tf.bool, [config.batch_size], name='edge{0}'.format(i))
-                      for i in range(config.decoder.max_ast_depth)]
+        # self.nodes = [tf.placeholder(tf.int32, [config.batch_size], name='node{0}'.format(i))
+        #               for i in range(config.decoder.max_ast_depth)]
+        # self.edges = [tf.placeholder(tf.bool, [config.batch_size], name='edge{0}'.format(i))
+        #               for i in range(config.decoder.max_ast_depth)]
+        self.nodes = [nodes[i] for i in range(config.decoder.max_ast_depth)]
+        self.edges = [edges[i] for i in range(config.decoder.max_ast_depth)]
+
 
         # setup embedding
         with tf.variable_scope('decoder'):
