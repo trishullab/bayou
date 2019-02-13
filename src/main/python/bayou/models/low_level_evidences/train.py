@@ -139,7 +139,7 @@ def train(clargs):
                 avg_latent_loss += np.mean(latent_loss)
                 avg_ev_loss += np.mean(ev_loss)
 
-                step = (i+1) * config.num_batches + b * len(devices)
+                step = i * config.num_batches + b * len(devices)
                 if step % config.print_step == 0:
                     print('{}/{} (epoch {}) '
                           'loss: {:.3f}, gen_loss: {:.3f}, latent_loss: {:.3f}, ev_loss: {:.3f},\n\t'.format
