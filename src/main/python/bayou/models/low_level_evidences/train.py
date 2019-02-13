@@ -126,7 +126,7 @@ def train(clargs):
             sess.run(iterator.initializer, feed_dict=feed_dict)
             start = time.time()
             avg_loss, avg_gen_loss, avg_latent_loss, avg_ev_loss = 0.,0.,0.,0.
-            for b in range(config.num_batches // len(devices)): # divide the data evenly
+            for b in range(config.num_batches // len(devices)): # number of rounds per epoch
                 # run the optimizer
                 loss, gen_loss, latent_loss, ev_loss, _ = sess.run([model.avg_loss, model.avg_gen_loss, model.avg_latent_loss, model.avg_evidence_loss, model.apply_gradient_op])
 
@@ -139,7 +139,7 @@ def train(clargs):
                 avg_latent_loss += np.mean(latent_loss)
                 avg_ev_loss += np.mean(ev_loss)
 
-                step = (i+1) * config.num_batches + b
+                step = (i+1) * config.num_batches + b * len(devices)
                 if step % config.print_step == 0:
                     print('{}/{} (epoch {}) '
                           'loss: {:.3f}, gen_loss: {:.3f}, latent_loss: {:.3f}, ev_loss: {:.3f},\n\t'.format
@@ -153,7 +153,7 @@ def train(clargs):
                 saver.save(sess, checkpoint_dir)
                 print('Model checkpointed: {}. Average for epoch , '
                       'loss: {:.3f}'.format
-                      (checkpoint_dir, avg_loss / config.num_batches))
+                      (checkpoint_dir, avg_loss / (config.num_batches // len(devices))))
     sys.exit()
 
     # ==================================================
@@ -255,3 +255,4 @@ if __name__ == '__main__':
     if not clargs.config and not clargs.continue_from:
         parser.error('Provide at least one option: --config or --continue_from')
     train(clargs)
+
