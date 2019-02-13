@@ -20,7 +20,7 @@ from itertools import chain
 from tensorflow.python.client import device_lib
 
 CONFIG_GENERAL = ['model', 'latent_size', 'batch_size', 'num_epochs',
-                  'learning_rate', 'print_step', 'alpha', 'beta']
+                  'learning_rate', 'print_step', 'alpha', 'beta', 'checkpoint_step']
 CONFIG_ENCODER = ['name', 'units', 'num_layers', 'tile']
 CONFIG_DECODER = ['units', 'num_layers', 'max_ast_depth']
 CONFIG_INFER = ['chars', 'vocab', 'vocab_size']
