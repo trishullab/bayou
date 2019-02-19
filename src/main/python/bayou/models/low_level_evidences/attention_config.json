@@ -23,5 +23,5 @@
   "print_step": 1,
   "latent_size": 40,
   "learning_rate": 0.0006,
-  "checkpoint_step": 5
+  "checkpoint_step": 1
 }
