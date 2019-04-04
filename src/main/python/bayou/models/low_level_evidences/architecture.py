@@ -93,11 +93,11 @@ class BayesianDecoder(object):
                 if i > 0:
                     tf.get_variable_scope().reuse_variables()
                 parent = self.parents[i]
-                old_state = self.states[parent]
+                # old_state = self.states[parent]
                 with tf.variable_scope('cell1'):  # handles CHILD_EDGE
-                    output1, state1 = self.cell1(inp, old_state)
+                    output1, state1 = self.cell1(inp, self.state)
                 with tf.variable_scope('cell2'):  # handles SIBLING_EDGE
-                    output2, state2 = self.cell2(inp, old_state)
+                    output2, state2 = self.cell2(inp, self.state)
 
                 output = tf.where(self.edges[i], output1, output2)
                 state = [tf.where(self.edges[i], state1[j], state2[j])

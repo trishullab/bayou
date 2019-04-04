@@ -20,20 +20,11 @@ import random
 import os
 import pickle
 from collections import Counter
-import gc
+from copy import deepcopy
 
-from bayou.models.low_level_evidences.utils import C0, gather_calls, chunks, get_available_gpus, dump_config
-from bayou.models.low_level_evidences.node import Node
-CHILD_EDGE = True
-SIBLING_EDGE = False
+from bayou.models.low_level_evidences.utils import gather_calls, dump_config
+from bayou.models.low_level_evidences.node import Node, CHILD_EDGE, SIBLING_EDGE
 
-
-class TooLongPathError(Exception):
-    pass
-
-
-class InvalidSketchError(Exception):
-    pass
 
 
 class Reader():
@@ -123,154 +114,91 @@ class Reader():
                 json.dump(jsconfig, fp=f, indent=2)
 
 
-    def get_ast_paths(self, js, idx=0):
-        #print (idx)
-        cons_calls = []
-        i = idx
-        curr_Node = None
-        head = None
-        while i < len(js):
-            if js[i]['node'] == 'DAPICall':
-                cons_calls.append((js[i]['_call'], SIBLING_EDGE))
-                if curr_Node == None:
-                    curr_Node = Node(js[i]['_call'])
-                    head = curr_Node
-                else:
-                    curr_Node.sibling = Node(js[i]['_call'])
-                    curr_Node = curr_Node.sibling
-            else:
-                break
-            i += 1
-        if i == len(js):
-            cons_calls.append(('STOP', SIBLING_EDGE))
-            if curr_Node == None:
-                curr_Node = Node('STOP')
-                head = curr_Node
-            else:
-                curr_Node.sibling = Node('STOP')
-                curr_Node = curr_Node.sibling
-            return head, [cons_calls]
 
-        node_type = js[i]['node']
+    def get_ast(self, js, idx=0):
+         #print (idx)
+         cons_calls = []
+         i = idx
+         curr_Node = Node("DSubTree")
+         head = curr_Node
+         while i < len(js):
+             if js[i]['node'] == 'DAPICall':
+                 curr_Node.child = Node(js[i]['_call'])
+                 curr_Node = curr_Node.child
+             else:
+                 break
+             i += 1
+         if i == len(js):
+             curr_Node.child = Node('STOP')
+             curr_Node = curr_Node.child
+             return head
 
-        if node_type == 'DBranch':
+         node_type = js[i]['node']
 
-            if curr_Node == None:
-                curr_Node = Node('DBranch')
-                head = curr_Node
-            else:
-                curr_Node.sibling = Node('DBranch')
-                curr_Node = curr_Node.sibling
+         if node_type == 'DBranch':
 
-            nodeC, pC = self.get_ast_paths( js[i]['_cond'])  # will have at most 1 "path"
-            assert len(pC) <= 1
-            nodeC_last = nodeC.iterateHTillEnd(nodeC)
-            nodeC_last.sibling, p1 = self.get_ast_paths( js[i]['_then'])
-            nodeE, p2 = self.get_ast_paths( js[i]['_else'])
-            curr_Node.child = Node(nodeC.val, child=nodeE, sibling=nodeC.sibling)
+             nodeC = self.get_ast(js[i]['_cond'])  # will have at most 1 "path"
+             nodeC = nodeC.child
+             # assert len(pC) <= 1
+             curr_Node.child = nodeC
+             # curr_Node = nodeC.iterateHTillEnd(nodeC)
+             nodeT = self.get_ast(js[i]['_then'])
+             nodeT = nodeT.child
+             curr_Node.child.sibling = nodeT
 
-            p = [p1[0] + path for path in p2] + p1[1:]
-            pv = [cons_calls + [('DBranch', CHILD_EDGE)] + pC[0] + path for path in p]
+             nodeE = self.get_ast(js[i]['_else'])
+             nodeE = nodeE.child
+             curr_Node.child.sibling.sibling = nodeE
 
+             future = self.get_ast(js, i+1)
+             future = future.child
+             curr_Node.child.child = future
 
-            nodeS, p = self.get_ast_paths( js, i+1)
-            ph = [cons_calls + [('DBranch', SIBLING_EDGE)] + path for path in p]
-            curr_Node.sibling = nodeS
+             return head
 
-            return head, ph + pv
+         if node_type == 'DExcept':
+             # curr_Node.child = Node('DExcept')
+             # curr_Node = curr_Node.child
 
-        if node_type == 'DExcept':
-            if curr_Node == None:
-                curr_Node = Node('DExcept')
-                head = curr_Node
-            else:
-                curr_Node.sibling = Node('DExcept')
-                curr_Node = curr_Node.sibling
+             nodeT = self.get_ast(js[i]['_try'])
+             nodeT = nodeT.child
+             nodeC = self.get_ast(js[i]['_catch'])
+             nodeC = nodeC.child
 
-            nodeT , p1 = self.get_ast_paths( js[i]['_try'])
-            nodeC , p2 =  self.get_ast_paths( js[i]['_catch'] )
-            p = [p1[0] + path for path in p2] + p1[1:]
+             curr_Node.child = nodeT #Node(nodeT.val, sibling=nodeT.sibling, child=nodeC)
+             curr_Node.child.sibling = nodeC #curr_Node.iterateHTillEnd()
 
-            curr_Node.child = Node(nodeT.val, child=nodeC, sibling=nodeT.sibling)
-            pv = [cons_calls + [('DExcept', CHILD_EDGE)] + path for path in p]
-
-            nodeS, p = self.get_ast_paths( js, i+1)
-            ph = [cons_calls + [('DExcept', SIBLING_EDGE)] + path for path in p]
-            curr_Node.sibling = nodeS
-            return head, ph + pv
-
-        if node_type == 'DLoop':
-            if curr_Node == None:
-                curr_Node = Node('DLoop')
-                head = curr_Node
-            else:
-                curr_Node.sibling = Node('DLoop')
-                curr_Node = curr_Node.sibling
-            nodeC, pC = self.get_ast_paths( js[i]['_cond'])  # will have at most 1 "path"
-            assert len(pC) <= 1
-            nodeC_last = nodeC.iterateHTillEnd(nodeC)
-            nodeC_last.sibling, p = self.get_ast_paths( js[i]['_body'])
-
-            pv = [cons_calls + [('DLoop', CHILD_EDGE)] + pC[0] + path for path in p]
-            nodeS, p = self.get_ast_paths( js, i+1)
-            ph = [cons_calls + [('DLoop', SIBLING_EDGE)] + path for path in p]
-
-            curr_Node.child = nodeC
-            curr_Node.sibling = nodeS
-
-            return head, ph + pv
+             future = self.get_ast(js, i+1)
+             future = future.child
+             curr_Node.child.child = future
+             return head
 
 
-    def _check_DAPICall_repeats(self, nodelist):
-        """
-        Checks if an API call node repeats in succession twice in a list of nodes
+         if node_type == 'DLoop':
 
-        :param nodelist: list of nodes to check
-        :return: None
-        :raise: InvalidSketchError if some API call node repeats, ValueError if a node is of invalid type
-        """
-        for i in range(1, len(nodelist)):
-            node = nodelist[i]
-            node_type = node['node']
-            if node_type == 'DAPICall':
-                if nodelist[i] == nodelist[i-1]:
-                    raise InvalidSketchError
-            elif node_type == 'DBranch':
-                self._check_DAPICall_repeats(node['_cond'])
-                self._check_DAPICall_repeats(node['_then'])
-                self._check_DAPICall_repeats(node['_else'])
-            elif node_type == 'DExcept':
-                self._check_DAPICall_repeats(node['_try'])
-                self._check_DAPICall_repeats(node['_catch'])
-            elif node_type == 'DLoop':
-                self._check_DAPICall_repeats(node['_cond'])
-                self._check_DAPICall_repeats(node['_body'])
-            else:
-                raise ValueError('Invalid node type: ' + node)
+             nodeC = self.get_ast(js[i]['_cond'])  # will have at most 1 "path"
+             nodeC = nodeC.child
+             # assert len(pC) <= 1
 
-    def validate_sketch_paths(self, program, ast_paths):
-        """
-        Checks if a sketch along with its paths is good training data:
-        1. No API call should be repeated successively
-        2. No path in the sketch should be of length more than max_ast_depth hyper-parameter
-        3. No branch, loop or except should occur more than once along a single path
+             nodeB  = self.get_ast(js[i]['_body'])
+             nodeB = nodeB.child
 
-        :param program: the sketch
-        :param ast_paths: paths in the sketch
-        :return: None
-        :raise: TooLongPathError or InvalidSketchError if sketch or its paths is invalid
-        """
-        #self._check_DAPICall_repeats(program['ast']['_nodes'])
-        for path in ast_paths:
-            if len(path) >= self.config.decoder.max_ast_depth:
-                raise TooLongPathError
-            nodes = [node for (node, edge) in path]
-            if nodes.count('DBranch') > 1 or nodes.count('DLoop') > 1 or nodes.count('DExcept') > 1:
-                raise TooLongPathError
+             curr_Node.child = nodeC
+             curr_Node.child.sibling = nodeB
+             curr_Node.child.sibling.sibling = deepcopy(nodeB)
+             curr_Node.child.sibling.sibling.sibling = deepcopy(nodeB)
+
+             future = self.get_ast(js, i+1)
+             future = future.child
+             curr_Node.child.child = future
+
+             return head
+
+
 
     def read_data(self, filename, infer, save=None):
-        # with open(filename) as f:
-        #     js = json.load(f)
+
+
         f = open(filename , 'rb')
 
         data_points = []
@@ -285,45 +213,39 @@ class Reader():
             self.CallMapDict = self.config.decoder.vocab
             count = self.config.decoder.vocab_size
         for program in ijson.items(f, 'programs.item'):
-            if 'ast' not in program:
-                continue
-            try:
-                evidences = [ev.read_data_point(program, infer) for ev in self.config.evidence]
-                ast_node_graph, ast_paths = self.get_ast_paths(program['ast']['_nodes'])
 
-                self.validate_sketch_paths(program, ast_paths)
+            evidences = [ev.read_data_point(program, infer) for ev in self.config.evidence]
+            ast_node_graph = self.get_ast(program['ast']['_nodes'])
 
-                path = ast_node_graph.bfs()
-                temp_arr = []
-                for val in path:
-                    nodeVal = val[0]
-                    idVal   = val[1]
-                    edgeVal = val[2]
-                    if nodeVal not in self.CallMapDict:
-                        if not infer:
-                            self.CallMapDict[nodeVal] = count
-                            temp_arr.append((count, idVal , edgeVal))
-                            count += 1
-                    else:
-                        temp_arr.append((self.CallMapDict[nodeVal] , idVal, edgeVal))
+            path = ast_node_graph.bfs()[1:]
+            temp_arr = []
+            for val in path:
+                nodeVal = val[0]
+                idVal   = val[1]
+                edgeVal = val[2]
+                if nodeVal not in self.CallMapDict:
+                    if not infer:
+                        self.CallMapDict[nodeVal] = count
+                        temp_arr.append((count, idVal , edgeVal))
+                        count += 1
+                else:
+                    temp_arr.append((self.CallMapDict[nodeVal] , idVal, edgeVal))
 
-                sample = dict()
-                sample['file'] = program['file']
-                sample['method'] = program['method']
-                sample['body'] = program['body']
-                data_points.append((evidences, temp_arr, sample))
+            sample = dict()
+            sample['file'] = program['file']
+            sample['method'] = program['method']
+            sample['body'] = program['body']
+            data_points.append((evidences, temp_arr, sample))
 
 
-                    #data_points.append((done - ignored, evidences, temp_arr, {}))
-                calls = gather_calls(program['ast'])
-                for call in calls:
-                    if call['_call'] not in callmap:
-                        callmap[call['_call']] = call
-                #
-                file_name = program['file']
-                file_ptr[done - ignored] = file_name
-            except (TooLongPathError, InvalidSketchError) as e:
-                ignored += 1
+            calls = gather_calls(program['ast'])
+            for call in calls:
+                if call['_call'] not in callmap:
+                    callmap[call['_call']] = call
+            #
+            file_name = program['file']
+            file_ptr[done - ignored] = file_name
+
             done += 1
             if done % 100000 == 0:
                 print('Extracted data for {} programs'.format(done), end='\n')

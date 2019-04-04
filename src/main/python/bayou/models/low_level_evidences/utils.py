@@ -30,8 +30,8 @@ CONFIG_INFER = ['vocab', 'vocab_size']
 
 C0 = 'CLASS0'
 UNK = '_UNK_'
-CHILD_EDGE = 'V'
-SIBLING_EDGE = 'H'
+
+
 
 def get_available_gpus():
     local_device_protos = device_lib.list_local_devices()

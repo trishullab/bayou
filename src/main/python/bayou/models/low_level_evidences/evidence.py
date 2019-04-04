@@ -20,10 +20,9 @@ import json
 import nltk
 from itertools import chain
 from collections import Counter
-import gensim
 
-from bayou.models.low_level_evidences.utils import CONFIG_ENCODER, CONFIG_INFER, C0, UNK, CHILD_EDGE, SIBLING_EDGE
-from bayou.models.low_level_evidences.seqEncoder import seqEncoder
+
+from bayou.models.low_level_evidences.utils import CONFIG_ENCODER, CONFIG_INFER
 from nltk.stem.wordnet import WordNetLemmatizer
 
 
@@ -48,22 +47,6 @@ class Evidence(object):
                 e = Types()
             elif name == 'keywords':
                 e = Keywords()
-            elif name == 'callsequences':
-                e = CallSequences()
-            elif name == 'returntype':
-                e = ReturnType()
-            elif name == 'classtype':
-                e = ClassTypes()
-            elif name == 'formalparam':
-                e = FormalParam()
-            elif name == 'javadoc':
-                e = JavaDoc()
-            elif name == 'sorrreturntype':
-                e = sorrReturnType()
-            elif name == 'sorrformalparam':
-                e = sorrFormalParam()
-            elif name == 'sorrcallsequences':
-                e = sorrCallSequences()
             else:
                 raise TypeError('Invalid evidence name: {}'.format(name))
             e.name = name
@@ -108,10 +91,6 @@ class Evidence(object):
     def encode(self, inputs, config):
         raise NotImplementedError('encode() has not been implemented')
 
-    def count_occurence(self, data, f):
-        inv_map = {v: k for k, v in self.vocab.items()}
-        count = sum([1 if inv_map[val].lower() in f else 0 for arr in arrs for val in arr])
-        return count
 
 class Sets(Evidence):
 
@@ -173,60 +152,6 @@ class Sets(Evidence):
             latent_encoding = tf.reduce_sum(tf.reshape(latent_encoding , [config.batch_size, self.max_nums, config.latent_size]), axis=1)
             return latent_encoding
 
-# handle sequences as i/p
-class Sequences(Evidence):
-
-
-    def placeholder(self, config):
-        # type: (object) -> object
-        return tf.placeholder(tf.int32, [config.batch_size, self.max_depth])
-
-    def wrangle(self, data):
-        wrangled = np.zeros((len(data), self.max_depth), dtype=np.int32)
-        for i, seqs in enumerate(data):
-            seq = seqs[0]# NOT A BUG every sequence is read as List of List
-            for pos,c in enumerate(seq):
-                if pos < self.max_depth and c != 0:
-                    wrangled[i, self.max_depth - 1 - pos] = c
-        return wrangled
-
-    def exists(self, inputs, config, infer):
-        i = tf.expand_dims(tf.reduce_sum(inputs, axis=1),axis=1)
-        # Drop a few types of evidences during training
-        if not infer:
-            i_shaped_zeros = tf.zeros_like(i)
-            rand = tf.random_uniform( (config.batch_size,1) )
-            i = tf.where(tf.less(rand, self.ev_drop_prob) , i, i_shaped_zeros)
-        i = tf.reduce_sum(i, axis=1)
-
-        return tf.not_equal(i, 0)
-
-
-    def init_sigma(self, config):
-        with tf.variable_scope(self.name):
-            self.emb = tf.get_variable('emb', [self.vocab_size, self.units])
-        # with tf.variable_scope('global_sigma', reuse=tf.AUTO_REUSE):
-            self.sigma = tf.get_variable('sigma', [])
-
-    def encode(self, inputs, config, infer):
-        with tf.variable_scope(self.name):
-            # Drop some inputs
-            if not infer:
-                inp_shaped_zeros = tf.zeros_like(inputs)
-                rand = tf.random_uniform( (config.batch_size, self.max_depth) )
-                inputs = tf.where(tf.less(rand, self.ev_call_drop_prob) , inputs, inp_shaped_zeros)
-
-            LSTM_Encoder = seqEncoder(self.num_layers, self.units, inputs, config.batch_size, self.emb, config.latent_size)
-            encoding = LSTM_Encoder.output
-
-            w = tf.get_variable('w', [self.units, config.latent_size ])
-            b = tf.get_variable('b', [config.latent_size])
-            latent_encoding = tf.nn.xw_plus_b(encoding, w, b)
-
-            zeros = tf.zeros([config.batch_size , config.latent_size])
-            latent_encoding = tf.where( tf.not_equal(tf.reduce_sum(inputs, axis=1),0),latent_encoding, zeros)
-
-            return latent_encoding
 
 
 
@@ -360,222 +285,3 @@ class Keywords(Sets):
 
         # convert to lower case, omit stop words and take the set
         return list(set([k.lower() for k in keywords if k.lower() not in Keywords.STOP_WORDS]))
-
-
-class ReturnType(Sets):
-
-    def __init__(self):
-        self.vocab = dict()
-        self.vocab['None'] = 0
-        self.vocab_size = 1
-
-
-    def read_data_point(self, program, infer):
-        returnType = [program['returnType'] if 'returnType' in program else '__Constructor__']
-
-        return self.word2num(returnType , infer)
-
-class ClassTypes(Sets):
-
-    def __init__(self):
-        self.vocab = dict()
-        self.vocab['None'] = 0
-        self.vocab_size = 1
-
-    def read_data_point(self, program, infer):
-        classType = program['classTypes'] if 'classTypes' in program else []
-        return self.word2num(list(set(classType)), infer)
-
-
-# handle sequences as i/p
-class CallSequences(Sequences):
-    def __init__(self):
-        self.vocab = dict()
-        self.vocab['None'] = 0
-        self.vocab_size = 1
-
-    def read_data_point(self, program, infer):
-        json_seq = program['sequences'] if 'sequences' in program else []
-        return [self.word2num(json_seq, infer)]
-
-
-    @staticmethod
-    def from_call(callnode):
-        call = callnode['calls']
-        call = re.sub('^\$.*\$', '', call)  # get rid of predicates
-        name = call.split('(')[0].split('.')[-1]
-        name = name.split('<')[0]  # remove generics from call name
-        return [name] if name[0].islower() else []  # Java convention
-
-
-
-# handle sequences as i/p
-class FormalParam(Sequences):
-
-    def __init__(self):
-        self.vocab = dict()
-        self.vocab['None'] = 0
-        self.vocab_size = 1
-
-    def read_data_point(self, program, infer):
-        json_sequence = program['formalParam'] if 'formalParam' in program else []
-        if 'None' not in json_sequence:
-            json_sequence.insert(0, 'Start')
-            json_sequence.insert(0, 'None')
-        return [self.word2num(json_sequence, infer)]
-
-
-# handle sequences as i/p
-class JavaDoc(Sequences):
-
-    def __init__(self):
-        self.vocab = dict()
-        self.vocab['None'] = 0
-        self.vocab_size = 1
-        self.word2vecModel = gensim.models.KeyedVectors.load_word2vec_format('/home/ubuntu/GoogleNews-vectors-negative300.bin', binary=True)
-        self.n_Dims=300
-
-
-    def read_data_point(self, program, infer):
-        string_sequence = program['javaDoc'] if ('javaDoc' in program and program['javaDoc'] is not None) else []
-        if len(string_sequence) == 0:
-             return [[]]
-        string_sequence = re.sub('[^A-Za-z0-9]+', ' ', string_sequence)
-        new_string_seq = []
-        for word in string_sequence.split(" "):
-              if word in self.word2vecModel:
-                  new_string_seq.append(word.lower())
-
-        #string_sequence = [word.lower() if word in model for word in string_sequence.split(" ")]
-
-        return [self.word2num(new_string_seq , infer)]
-
-    def init_sigma(self, config):
-        with tf.variable_scope(self.name):
-            #REPLACE BY WORD2VEC
-            # self.emb = tf.get_variable('emb', [self.vocab_size, self.units])
-
-            vecrep_words = np.zeros((self.vocab_size,self.n_Dims), dtype=np.float32)
-            for key in self.vocab:
-            	vocab_ind = self.vocab[key]
-            	if key in self.word2vecModel:
-            		vecrep_words[vocab_ind] = self.word2vecModel[key]
-
-            self.emb = tf.Variable(vecrep_words, name='emb',trainable=False)
-        # with tf.variable_scope('global_sigma', reuse=tf.AUTO_REUSE):
-            self.sigma = tf.get_variable('sigma', [])
-
-
-class sorrReturnType(Sets):
-
-    def __init__(self):
-        self.vocab = dict()
-        self.vocab['None'] = 0
-        self.vocab_size = 1
-
-    def read_data_point(self, program, infer):
-        sorrreturnType = program['sorrreturntype'] if 'sorrreturntype' in program else []
-        return self.word2num(sorrreturnType, infer)
-
-
-
-
-# handle sequences as i/p
-class SetsOfSequences(Evidence):
-
-
-    def placeholder(self, config):
-        # type: (object) -> object
-        return tf.placeholder(tf.int32, [config.batch_size, self.max_nums, self.max_depth])
-
-    def wrangle(self, data):
-        wrangled = np.zeros((len(data), self.max_nums, self.max_depth), dtype=np.int32)
-        for i, seqs in enumerate(data):
-            for j, seq in enumerate(seqs):
-                if j < self.max_nums:
-                    for pos,c in enumerate(seq):
-                        if pos < self.max_depth and c != 0:
-                            wrangled[i, j, self.max_depth - 1 - pos] = c
-        return wrangled
-
-    def exists(self, inputs, config, infer):
-        i = tf.expand_dims(tf.reduce_sum(inputs, axis=[1,2]),axis=1)
-        # Drop a few types of evidences during training
-        if not infer:
-            i_shaped_zeros = tf.zeros_like(i)
-            rand = tf.random_uniform( (config.batch_size,1) )
-            i = tf.where(tf.less(rand, self.ev_drop_prob) , i, i_shaped_zeros)
-        i = tf.reduce_sum(i, axis=1)
-
-        return tf.not_equal(i, 0)
-
-
-    def init_sigma(self, config):
-        with tf.variable_scope(self.name):
-            self.emb = tf.get_variable('emb', [self.vocab_size, self.units])
-        # with tf.variable_scope('global_sigma', reuse=tf.AUTO_REUSE):
-            self.sigma = tf.get_variable('sigma', [])
-
-
-    def encode(self, inputs, config, infer):
-        with tf.variable_scope(self.name):
-            # Drop some inputs
-            inputs = tf.reshape(inputs, [config.batch_size * self.max_nums, self.max_depth])
-
-            if not infer:
-                inp_shaped_zeros = tf.zeros_like(inputs)
-                rand = tf.random_uniform( (config.batch_size * self.max_nums, self.max_depth  ) )
-                inputs = tf.where(tf.less(rand, self.ev_call_drop_prob) , inputs, inp_shaped_zeros)
-
-
-            LSTM_Encoder = seqEncoder(self.num_layers, self.units, inputs, config.batch_size * self.max_nums, self.emb, config.latent_size)
-            encoding = LSTM_Encoder.output
-
-            w = tf.get_variable('w', [self.units, config.latent_size ])
-            b = tf.get_variable('b', [config.latent_size])
-            latent_encoding = tf.nn.xw_plus_b(encoding, w, b)
-
-            zeros = tf.zeros_like(latent_encoding)
-            latent_encoding = tf.where( tf.not_equal(tf.reduce_sum(inputs, axis=1),0),latent_encoding, zeros)
-
-            latent_encoding = tf.reduce_sum( tf.reshape(latent_encoding, [config.batch_size ,self.max_nums, config.latent_size]) , axis=1)
-
-            return latent_encoding
-
-
-class sorrCallSequences(SetsOfSequences):
-
-    def __init__(self):
-        self.vocab = dict()
-        self.vocab['None'] = 0
-        self.vocab_size = 1
-
-    def read_data_point(self, program, infer):
-        json_sequences = program['sorrsequences'] if 'sorrsequences' in program else [[]]
-        list_seqs = [[]]
-        for json_seq in json_sequences:
-            list_seqs.append(self.word2num(json_seq, infer))
-        if len(list_seqs) > 1:
-            list_seqs.remove([])
-
-        return list_seqs
-
-
-# handle sequences as i/p
-class sorrFormalParam(SetsOfSequences):
-
-    def __init__(self):
-        self.vocab = dict()
-        self.vocab['None'] = 0
-        self.vocab_size = 1
-
-    def read_data_point(self, program, infer):
-        json_sequence = program['sorrformalparam'] if 'sorrformalparam' in program else [[]]
-        list_seqs = [[]]
-        for i, seqs in enumerate(json_sequence):
-            if i > self.max_nums or len(seqs) == 0 :
-                continue
-            list_seqs.append(self.word2num(seqs, infer))
-        if len(list_seqs) > 1:
-            list_seqs.remove([])
-        return list_seqs

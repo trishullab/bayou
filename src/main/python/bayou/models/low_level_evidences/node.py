@@ -18,7 +18,7 @@
 CHILD_EDGE = True
 SIBLING_EDGE = False
 
-
+from copy import deepcopy
 
 class Node():
     def __init__(self, call, child=None, sibling=None):
@@ -149,8 +149,8 @@ def get_ast(js, idx=0):
 
          curr_Node.child = nodeC
          curr_Node.child.sibling = nodeB
-         curr_Node.child.sibling.sibling = nodeB
-         curr_Node.child.sibling.sibling.sibling = nodeB
+         curr_Node.child.sibling.sibling = deepcopy(nodeB)
+         curr_Node.child.sibling.sibling.sibling = deepcopy(nodeB)
 
          future = get_ast(js, i+1)
          future = future.child
@@ -396,7 +396,6 @@ js4 =  {"ast": {
 
 
 ast = get_ast(js1['ast']['_nodes'])
-print(ast.bfs())
 
 
 
