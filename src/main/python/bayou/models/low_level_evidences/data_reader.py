@@ -217,7 +217,7 @@ class Reader():
             evidences = [ev.read_data_point(program, infer) for ev in self.config.evidence]
             ast_node_graph = self.get_ast(program['ast']['_nodes'])
 
-            path = ast_node_graph.bfs()[1:]
+            path = ast_node_graph.dfs()[1:]
             temp_arr = []
             for val in path:
                 nodeVal = val[0]

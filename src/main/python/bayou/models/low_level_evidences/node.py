@@ -71,6 +71,37 @@ class Node():
 
         return buffer
 
+
+
+    def dfs(self):
+
+        buffer = [('DSubTree', None, CHILD_EDGE)]
+        queue = []
+        bfs_id = 1
+        parent_id = 0
+        if self is not None:
+            queue.append((self, parent_id, CHILD_EDGE))
+
+        while( len(queue) > 0 ):
+
+            item_triple = queue.pop()
+            item  = item_triple[0]
+            parent_id = item_triple[1]
+            edge_type = item_triple[2]
+
+            buffer.append((item.val, parent_id, edge_type))
+
+            if item.sibling is not None:
+                queue.append((item.sibling, bfs_id , SIBLING_EDGE))
+
+            if item.child is not None:
+                queue.append((item.child, bfs_id, CHILD_EDGE))
+
+
+            bfs_id += 1
+
+        return buffer
+
     def iterateHTillEnd(self):
         head = self
         while(head.child != None):
@@ -395,8 +426,8 @@ js4 =  {"ast": {
 }
 
 
-ast = get_ast(js1['ast']['_nodes'])
+ast = get_ast(js['ast']['_nodes'])
 
 
 
-# print(ast.bfs())
+# print(ast.dfs())
