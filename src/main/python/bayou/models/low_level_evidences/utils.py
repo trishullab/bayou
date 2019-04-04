@@ -16,19 +16,100 @@ from __future__ import print_function
 import argparse
 import re
 import tensorflow as tf
+from tensorflow.python.client import device_lib
 from itertools import chain
+import numpy as np
+import os
+import matplotlib.pyplot as plt
 
 CONFIG_GENERAL = ['model', 'latent_size', 'batch_size', 'num_epochs',
-                  'learning_rate', 'print_step', 'alpha', 'beta']
-CONFIG_ENCODER = ['name', 'units', 'num_layers', 'tile']
+                  'learning_rate', 'print_step', 'checkpoint_step']
+CONFIG_ENCODER = ['name', 'units', 'num_layers', 'tile', 'max_depth', 'max_nums', 'ev_drop_prob', 'ev_call_drop_prob']
 CONFIG_DECODER = ['units', 'num_layers', 'max_ast_depth']
-CONFIG_INFER = ['chars', 'vocab', 'vocab_size']
+CONFIG_INFER = ['vocab', 'vocab_size']
 
 C0 = 'CLASS0'
 UNK = '_UNK_'
 CHILD_EDGE = 'V'
 SIBLING_EDGE = 'H'
 
+def get_available_gpus():
+    local_device_protos = device_lib.list_local_devices()
+    return [x.name for x in local_device_protos if x.device_type == 'GPU']
+
+
+def get_var_list():
+    all_vars = tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES)
+
+    decoder_vars = tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES,scope='Decoder')
+    decoder_vars += tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES,scope='RE_Decoder')
+    decoder_vars += tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES,scope='FS_Decoder')
+
+    encoder_vars = tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES,scope='Encoder')
+    emb_vars = tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES,scope='Embedding')
+
+    bayou_vars = decoder_vars + encoder_vars + emb_vars
+    fix_encoder_vars = decoder_vars + emb_vars
+
+    var_dict = {'all_vars':all_vars, 'decoder_vars':decoder_vars,
+                'encoder_vars':encoder_vars, 'emb_vars':emb_vars,
+                'bayou_vars':bayou_vars,
+                'fix_encoder_vars':fix_encoder_vars
+                }
+    return var_dict
+
+
+def chunks(l, n):
+    """Yield successive n-sized chunks from l."""
+    lol = []
+    for i in range(0, len(l), n):
+        lol.append(l[i:i + n])
+    return lol
+
+def find_top_rank_ids(arrin, cutoff = 10):
+    rank_ids =  (-np.array(arrin)).argsort()
+    vals = []
+    for rank in rank_ids:
+        vals.append(arrin[rank])
+    return rank_ids[:cutoff], vals
+
+def find_my_rank(arr, i):
+    pivot = arr[i]
+    rank = 0
+    for val in arr:
+        if val > pivot:
+            rank += 1
+    return rank
+
+
+def plot_probs(prob_vals, fig_name ="rankedProb.pdf", logx = False):
+    plt.figure()
+    plot_path = os.path.join(os.getcwd(),'generation')
+    if not os.path.exists(plot_path):
+        os.makedirs(plot_path)
+    plt.grid()
+    plt.title("Probability With Ranks")
+    if logx:
+        plt.semilogx(prob_vals)
+    else:
+        plt.plot(prob_vals)
+    plt.xlabel("Ranks->")
+    plt.ylabel("Log Probabilities")
+    plt.savefig(os.path.join(plot_path, fig_name), bbox_inches='tight')
+    return
+
+def static_plot(totL, genL, KlLoss):
+    plot_path = os.path.join(os.getcwd(),'plots')
+    if not os.path.exists(plot_path):
+        os.makedirs(plot_path)
+    plt.grid()
+    plt.title("Losses")
+    plt.plot(totL),plt.plot(genL),plt.plot(KlLoss)
+    plt.xlabel("Epochs")
+    plt.ylabel("Loss Value")
+    fig_name ="Loss_w_Epochs.pdf"
+    plt.savefig(os.path.join(plot_path, fig_name), bbox_inches='tight')
+    return
 
 def length(tensor):
     elems = tf.sign(tf.reduce_max(tensor, axis=2))
@@ -42,6 +123,34 @@ def split_camel(s):
     split = s1.split('#')
     return [s.lower() for s in split]
 
+# Create a function to easily repeat on many lists:
+def ListToFormattedString(alist, Type):
+    # Each item is right-adjusted, width=3
+    if Type == 'float':
+        formatted_list = ['{:.2f}' for item in alist]
+        s = ','.join(formatted_list)
+    elif Type == 'int':
+        formatted_list = ['{:>3}' for item in alist]
+        s = ','.join(formatted_list)
+    return s.format(*alist)
+
+
+def normalize_log_probs(probs):
+    sum = -1*np.inf
+    for prob in probs:
+        sum = np.logaddexp(sum, prob)
+
+    for i in range(len(probs)):
+        probs[i] -= sum
+    return probs
+
+def rank_statistic(_rank, total, prev_hits, cutoff):
+    cutoff = np.array(cutoff)
+    hits = prev_hits + (_rank < cutoff)
+    prctg = hits / total
+    return hits, prctg
+
+
 
 # Do not move these imports to the top, it will introduce a cyclic dependency
 import bayou.models.low_level_evidences.evidence
@@ -53,7 +162,7 @@ def read_config(js, chars_vocab=False):
 
     for attr in CONFIG_GENERAL:
         config.__setattr__(attr, js[attr])
-    
+
     config.evidence = bayou.models.low_level_evidences.evidence.Evidence.read_config(js['evidence'], chars_vocab)
     config.decoder = argparse.Namespace()
     for attr in CONFIG_DECODER:
@@ -61,7 +170,6 @@ def read_config(js, chars_vocab=False):
     if chars_vocab:
         for attr in CONFIG_INFER:
             config.decoder.__setattr__(attr, js['decoder'][attr])
-
     return config
 
 
@@ -75,7 +183,6 @@ def dump_config(config):
     js['evidence'] = [ev.dump_config() for ev in config.evidence]
     js['decoder'] = {attr: config.decoder.__getattribute__(attr) for attr in
                      CONFIG_DECODER + CONFIG_INFER}
-
     return js
 
 
