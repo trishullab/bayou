@@ -96,8 +96,16 @@ class BayesianPredictor(object):
 
 
 
+
     def sample_tree_from_ev(self, psi):
-        
+
+        # This is the number of programs I will synthesize
+        topK = 10
+        candidates = [Node('DSubTree') for k in range(topK)]
+
+
+
+
 
 
 

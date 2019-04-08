@@ -120,11 +120,11 @@ def get_ast(js, idx=0):
 
      if node_type == 'DBranch':
 
- 
+
          nodeC = get_ast(js[i]['_cond'])  # will have at most 1 "path"
          nodeC = nodeC.sibling
          # assert len(pC) <= 1
-         
+
          nodeT = get_ast(js[i]['_then'])
          nodeT = nodeT.sibling
          #nodeC.child = nodeT
@@ -137,7 +137,7 @@ def get_ast(js, idx=0):
          future = get_ast(js, i+1)
          future = future.sibling
 
-         
+
          branching = Node('DBranch', child=nodeC, sibling=future)
          curr_Node.sibling = branching
          curr_Node = curr_Node.sibling
@@ -364,7 +364,7 @@ js4 =  {"ast": {
 
 
 
-for _js in [js, js1, js2, js3, js4]:
-     ast = get_ast(_js['ast']['_nodes'])
-     print(ast.dfs())
-     print()
+# for _js in [js, js1, js2, js3, js4]:
+#      ast = get_ast(_js['ast']['_nodes'])
+#      print(ast.dfs())
+#      print()

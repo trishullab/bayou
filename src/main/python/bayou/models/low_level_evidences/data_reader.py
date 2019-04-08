@@ -23,7 +23,7 @@ from collections import Counter
 from copy import deepcopy
 
 from bayou.models.low_level_evidences.utils import gather_calls, dump_config
-from bayou.models.low_level_evidences.node import Node, CHILD_EDGE, SIBLING_EDGE
+from bayou.models.low_level_evidences.node import Node, get_ast, CHILD_EDGE, SIBLING_EDGE
 
 
 
@@ -89,7 +89,7 @@ class Reader():
             for i, path in enumerate(raw_targets):
                 len_path = min(len(path) , config.decoder.max_ast_depth)
                 mod_path = path[:len_path]
-                
+
                 self.nodes[i, :len_path] = [p[0] for p in mod_path]
                 self.parents[i, :len_path] = [p[1] for p in mod_path]
                 self.edges[i, :len_path] = [p[2] for p in mod_path]
@@ -118,89 +118,7 @@ class Reader():
 
 
 
-    def get_ast(self, js, idx=0):
-         #print (idx)
-         cons_calls = []
-         i = idx
-         curr_Node = Node("DSubTree")
-         head = curr_Node
-         while i < len(js):
-             if js[i]['node'] == 'DAPICall':
-                 curr_Node.child = Node(js[i]['_call'])
-                 curr_Node = curr_Node.child
-             else:
-                 break
-             i += 1
-         if i == len(js):
-             curr_Node.child = Node('STOP')
-             curr_Node = curr_Node.child
-             return head
-
-         node_type = js[i]['node']
-
-         if node_type == 'DBranch':
-
-             nodeC = self.get_ast(js[i]['_cond'])  # will have at most 1 "path"
-             nodeC = nodeC.child
-             # assert len(pC) <= 1
-             curr_Node.child = nodeC
-             # curr_Node = nodeC.iterateHTillEnd(nodeC)
-             nodeT = self.get_ast(js[i]['_then'])
-             nodeT = nodeT.child
-             curr_Node.child.sibling = nodeT
-
-             nodeE = self.get_ast(js[i]['_else'])
-             nodeE = nodeE.child
-             curr_Node.child.sibling.sibling = nodeE
-
-             future = self.get_ast(js, i+1)
-             future = future.child
-             curr_Node.child.child = future
-
-             return head
-
-         if node_type == 'DExcept':
-             # curr_Node.child = Node('DExcept')
-             # curr_Node = curr_Node.child
-
-             nodeT = self.get_ast(js[i]['_try'])
-             nodeT = nodeT.child
-             nodeC = self.get_ast(js[i]['_catch'])
-             nodeC = nodeC.child
-
-             curr_Node.child = nodeT #Node(nodeT.val, sibling=nodeT.sibling, child=nodeC)
-             curr_Node.child.sibling = nodeC #curr_Node.iterateHTillEnd()
-
-             future = self.get_ast(js, i+1)
-             future = future.child
-             curr_Node.child.child = future
-             return head
-
-
-         if node_type == 'DLoop':
-
-             nodeC = self.get_ast(js[i]['_cond'])  # will have at most 1 "path"
-             nodeC = nodeC.child
-             # assert len(pC) <= 1
-
-             nodeB  = self.get_ast(js[i]['_body'])
-             nodeB = nodeB.child
-
-             curr_Node.child = nodeC
-             curr_Node.child.sibling = nodeB
-             curr_Node.child.sibling.sibling = deepcopy(nodeB)
-             curr_Node.child.sibling.sibling.sibling = deepcopy(nodeB)
-
-             future = self.get_ast(js, i+1)
-             future = future.child
-             curr_Node.child.child = future
-
-             return head
-
-
-
     def read_data(self, filename, infer, save=None):
-
 
         f = open(filename , 'rb')
 
@@ -218,7 +136,7 @@ class Reader():
         for program in ijson.items(f, 'programs.item'):
 
             evidences = [ev.read_data_point(program, infer) for ev in self.config.evidence]
-            ast_node_graph = self.get_ast(program['ast']['_nodes'])
+            ast_node_graph = get_ast(program['ast']['_nodes'])
 
             path = ast_node_graph.dfs()[1:]
             temp_arr = []

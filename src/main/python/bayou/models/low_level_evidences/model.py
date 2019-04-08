@@ -59,7 +59,7 @@ class Model():
             output = tf.reshape(tf.concat(self.decoder.outputs, 1),
                                 [-1, self.decoder.cell1.output_size])
             logits = tf.matmul(output, self.decoder.projection_w) + self.decoder.projection_b
-            ln_probs = tf.nn.log_softmax(logits)
+            self.ln_probs = tf.nn.log_softmax(logits)
 
 
             # 1. generation loss: log P(Y | Z)
@@ -82,3 +82,48 @@ class Model():
             var_params = [np.prod([dim.value for dim in var.get_shape()])
                           for var in tf.trainable_variables()]
             print('Model parameters: {}'.format(np.sum(var_params)))
+
+
+
+
+    def infer_psi(self, sess, evidences):
+        # read and wrangle (with batch_size 1) the data
+        inputs = [ev.wrangle([ev.read_data_point(evidences)]) for ev in self.config.evidence]
+
+        # setup initial states and feed
+        feed = {}
+        for j, ev in enumerate(self.config.evidence):
+            feed[self.encoder.inputs[j].name] = inputs[j]
+        psi = sess.run(self.psi, feed)
+        return psi
+
+    def infer_ast(self, sess, psi, nodes, edges, cache=None):
+        # check cache if provided
+        # if cache is not None:
+        #     serialized = ','.join(['(' + node + ',' + edge + ')' for node, edge in zip(nodes, edges)])
+        #     if serialized in cache:
+        #         return cache[serialized]
+
+        # use the given psi and get decoder's start state
+        state = sess.run(self.initial_state, {self.psi: psi})
+        state = [state] * self.config.decoder.num_layers
+
+        # run the decoder for every time step
+        for node, edge in zip(nodes, edges):
+            assert edge == CHILD_EDGE or edge == SIBLING_EDGE, 'invalid edge: {}'.format(edge)
+            n = np.array([self.config.decoder.vocab[node]], dtype=np.int32)
+            e = np.array([edge == CHILD_EDGE], dtype=np.bool)
+
+            feed = {self.decoder.nodes[0].name: n,
+                    self.decoder.edges[0].name: e}
+            for i in range(self.config.decoder.num_layers):
+                feed[self.decoder.initial_state[i].name] = state[i]
+            [probs, state] = sess.run([self.ln_probs, self.decoder.state], feed)
+
+        dist = probs[0]
+
+        # # save in cache if provided
+        # if cache is not None:
+        #     cache[serialized] = dist
+
+        return dist

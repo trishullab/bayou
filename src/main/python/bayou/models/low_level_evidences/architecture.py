@@ -100,7 +100,7 @@ class BayesianDecoder(object):
                     output2, state2 = self.cell2(inp, self.state)
 
                 output = tf.where(self.edges[i], output1, output2)
-                state = [tf.where(self.edges[i], state1[j], state2[j])
+                self.state = [tf.where(self.edges[i], state1[j], state2[j])
                               for j in range(config.decoder.num_layers)]
-                self.states.append(state)
+                self.states.append(self.state)
                 self.outputs.append(output)

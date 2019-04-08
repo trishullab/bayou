@@ -112,7 +112,6 @@ def train(clargs):
                     print('{}/{} (epoch {}) '
                           'loss: {:.3f}, \n\t'.format
                           (step, config.num_epochs * config.num_batches, i + 1 ,avg_loss/(b+1)))
-                    print (allEvSigmas)
 
             #epocLoss.append(avg_loss / config.num_batches), epocGenL.append(avg_gen_loss / config.num_batches), epocKlLoss.append(avg_KL_loss / config.num_batches)
             if (i+1) % config.checkpoint_step == 0:
@@ -143,10 +142,7 @@ if __name__ == '__main__':
     clargs = parser.parse_args(
      # ['--continue_from', 'save',
      ['--config','config.json',
-     # '/home/rm38/Research/Bayou_Code_Search/Corpus/OldDataWFilePtr/DATA-training-expanded-biased.json'])
-     # '/home/rm38/Research/Bayou_Code_Search/Corpus/SuttonCorpus/NewerData/DATA-Sigmod-TOP.json'])
-      # '/home/rm38/Research/Bayou_Code_Search/Corpus/SuttonCorpus/FinalExtracted/DATA-top.json'])
-    '/home/rm38/Research/Bayou_Code_Search/Corpus/LicensedData/DATA-Licensed_test-TOP.json'])
+     '/home/ubuntu/CACM_data/DATA-extr-fr-CACM-wEvidence.json'])
     sys.setrecursionlimit(clargs.python_recursion_limit)
     if clargs.config and clargs.continue_from:
         parser.error('Do not provide --config if you are continuing from checkpointed model')
