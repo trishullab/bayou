@@ -98,7 +98,7 @@ def train(clargs):
             for b in range(config.num_batches):
                 # run the optimizer
                 loss, _ = sess.run([model.loss, model.train_op])
-                allEvSigmas = sess.run(model.allEvSigmas)
+                # allEvSigmas = sess.run(model.allEvSigmas)
                 # s = sess.run(merged_summary, feed)
                 # writer.add_summary(s,i)
 
@@ -107,7 +107,7 @@ def train(clargs):
 
 
 
-                step = (i+1) * config.num_batches + b
+                step = i * config.num_batches + b + 1
                 if step % config.print_step == 0:
                     print('{}/{} (epoch {}) '
                           'loss: {:.3f}, \n\t'.format

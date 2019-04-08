@@ -50,6 +50,8 @@ def extract_evidence(clargs):
 
         sample = dict(program)
         del sample['sequences']
+        if 'javadoc' in sample:
+            del sample['javadoc']
         calls = gather_calls(program['ast'])
         apicalls = list(set(chain.from_iterable([bayou.models.low_level_evidences.evidence.APICalls.from_call(call)
                                                  for call in calls])))

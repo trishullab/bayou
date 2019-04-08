@@ -87,10 +87,13 @@ class Reader():
             self.targets = np.zeros((sz, config.decoder.max_ast_depth), dtype=np.int32)
 
             for i, path in enumerate(raw_targets):
-                self.nodes[i, :len(path)] = [p[0] for p in path]
-                self.parents[i, :len(path)] = [p[1] for p in path]
-                self.edges[i, :len(path)] = [p[2] for p in path]
-                self.targets[i, :len(path)-1] = self.nodes[i, 1:len(path)]  # shifted left by one
+                len_path = min(len(path) , config.decoder.max_ast_depth)
+                mod_path = path[:len_path]
+                
+                self.nodes[i, :len_path] = [p[0] for p in mod_path]
+                self.parents[i, :len_path] = [p[1] for p in mod_path]
+                self.edges[i, :len_path] = [p[2] for p in mod_path]
+                self.targets[i, :len_path-1] = self.nodes[i, 1:len(mod_path)]  # shifted left by one
 
             self.js_programs = js_programs
 
@@ -233,8 +236,8 @@ class Reader():
 
             sample = dict()
             sample['file'] = program['file']
-            sample['method'] = program['method']
-            sample['body'] = program['body']
+            # sample['method'] = program['method']
+            # sample['body'] = program['body']
             data_points.append((evidences, temp_arr, sample))
 
 

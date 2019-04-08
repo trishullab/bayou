@@ -18,7 +18,6 @@
 CHILD_EDGE = True
 SIBLING_EDGE = False
 
-from copy import deepcopy
 
 class Node():
     def __init__(self, call, child=None, sibling=None):
@@ -28,26 +27,16 @@ class Node():
 
 
 
-    def dfs(self, inp=False, buffer=[]):
-        buffer.append((self.val, inp))
-
-        if self.child is not None:
-            self.child.dfs(inp=True, buffer=buffer)
-
-        if self.sibling is not None:
-            self.sibling.dfs(inp=False, buffer=buffer)
-
-        return buffer
 
     def bfs(self):
 
 
-        buffer = [('DSubTree', None, CHILD_EDGE)]
+        buffer = [('DSubTree', None, SIBLING_EDGE)]
         queue = []
         bfs_id = 1
         parent_id = 0
         if self is not None:
-            queue.insert(0, (self, parent_id, CHILD_EDGE))
+            queue.insert(0, (self, parent_id, SIBLING_EDGE))
 
 
         while( len(queue) > 0 ):
@@ -75,12 +64,12 @@ class Node():
 
     def dfs(self):
 
-        buffer = [('DSubTree', None, CHILD_EDGE)]
+        buffer = [('DSubTree', None, SIBLING_EDGE)]
         queue = []
         bfs_id = 1
         parent_id = 0
         if self is not None:
-            queue.append((self, parent_id, CHILD_EDGE))
+            queue.append((self, parent_id, SIBLING_EDGE))
 
         while( len(queue) > 0 ):
 
@@ -91,12 +80,11 @@ class Node():
 
             buffer.append((item.val, parent_id, edge_type))
 
-            if item.sibling is not None:
-                queue.append((item.sibling, bfs_id , SIBLING_EDGE))
-
             if item.child is not None:
                 queue.append((item.child, bfs_id, CHILD_EDGE))
 
+            if item.sibling is not None:
+                queue.append((item.sibling, bfs_id , SIBLING_EDGE))
 
             bfs_id += 1
 
@@ -118,37 +106,41 @@ def get_ast(js, idx=0):
      head = curr_Node
      while i < len(js):
          if js[i]['node'] == 'DAPICall':
-             curr_Node.child = Node(js[i]['_call'])
-             curr_Node = curr_Node.child
+             curr_Node.sibling = Node(js[i]['_call'])
+             curr_Node = curr_Node.sibling
          else:
              break
          i += 1
      if i == len(js):
-         curr_Node.child = Node('STOP')
-         curr_Node = curr_Node.child
+         curr_Node.sibling = Node('STOP')
+         curr_Node = curr_Node.sibling
          return head
 
      node_type = js[i]['node']
 
      if node_type == 'DBranch':
 
+ 
          nodeC = get_ast(js[i]['_cond'])  # will have at most 1 "path"
-         nodeC = nodeC.child
+         nodeC = nodeC.sibling
          # assert len(pC) <= 1
-         curr_Node.child = nodeC
-         # curr_Node = nodeC.iterateHTillEnd(nodeC)
+         
          nodeT = get_ast(js[i]['_then'])
-         nodeT = nodeT.child
-         curr_Node.child.sibling = nodeT
+         nodeT = nodeT.sibling
+         #nodeC.child = nodeT
+         nodeC.sibling = nodeT
 
          nodeE = get_ast(js[i]['_else'])
-         nodeE = nodeE.child
-         curr_Node.child.sibling.sibling = nodeE
+         nodeE = nodeE.sibling
+         nodeC.child = nodeE
 
          future = get_ast(js, i+1)
-         future = future.child
-         curr_Node.child.child = future
+         future = future.sibling
 
+         
+         branching = Node('DBranch', child=nodeC, sibling=future)
+         curr_Node.sibling = branching
+         curr_Node = curr_Node.sibling
          return head
 
      if node_type == 'DExcept':
@@ -156,36 +148,36 @@ def get_ast(js, idx=0):
          # curr_Node = curr_Node.child
 
          nodeT = get_ast(js[i]['_try'])
-         nodeT = nodeT.child
+         nodeT = nodeT.sibling
          nodeC = get_ast(js[i]['_catch'])
-         nodeC = nodeC.child
+         nodeC = nodeC.sibling
 
-         curr_Node.child = nodeT #Node(nodeT.val, sibling=nodeT.sibling, child=nodeC)
-         curr_Node.child.sibling = nodeC #curr_Node.iterateHTillEnd()
+         nodeT.child = nodeC
 
          future = get_ast(js, i+1)
-         future = future.child
-         curr_Node.child.child = future
+         future = future.sibling
+         exception = Node('DExcept' , child=nodeT, sibling=future)
+         curr_Node.sibling = exception
+         curr_Node = curr_Node.sibling
          return head
 
 
      if node_type == 'DLoop':
 
          nodeC = get_ast(js[i]['_cond'])  # will have at most 1 "path"
-         nodeC = nodeC.child
+         nodeC = nodeC.sibling
          # assert len(pC) <= 1
 
          nodeB  = get_ast(js[i]['_body'])
-         nodeB = nodeB.child
+         nodeB = nodeB.sibling
 
-         curr_Node.child = nodeC
-         curr_Node.child.sibling = nodeB
-         curr_Node.child.sibling.sibling = deepcopy(nodeB)
-         curr_Node.child.sibling.sibling.sibling = deepcopy(nodeB)
+         nodeC.child = nodeB
 
          future = get_ast(js, i+1)
-         future = future.child
-         curr_Node.child.child = future
+         future = future.sibling
+         loop = Node('DLoop', child=nodeC, sibling=future)
+         curr_Node.sibling = loop
+         curr_Node = curr_Node.sibling
 
          return head
 
@@ -196,61 +188,6 @@ def get_ast(js, idx=0):
 
 
 
-
-def _check_DAPICall_repeats(nodelist):
- """
- Checks if an API call node repeats in succession twice in a list of nodes
-
- :param nodelist: list of nodes to check
- :return: None
- :raise: InvalidSketchError if some API call node repeats, ValueError if a node is of invalid type
- """
- for i in range(1, len(nodelist)):
-     node = nodelist[i]
-     node_type = node['node']
-     if node_type == 'DAPICall':
-         if nodelist[i] == nodelist[i-1]:
-             raise InvalidSketchError
-     elif node_type == 'DBranch':
-         _check_DAPICall_repeats(node['_cond'])
-         _check_DAPICall_repeats(node['_then'])
-         _check_DAPICall_repeats(node['_else'])
-     elif node_type == 'DExcept':
-         _check_DAPICall_repeats(node['_try'])
-         _check_DAPICall_repeats(node['_catch'])
-     elif node_type == 'DLoop':
-         _check_DAPICall_repeats(node['_cond'])
-         _check_DAPICall_repeats(node['_body'])
-     else:
-         raise ValueError('Invalid node type: ' + node)
-
-
-def validate_sketch_paths( program, ast_paths):
- """
- Checks if a sketch along with its paths is good training data:
- 1. No API call should be repeated successively
- 2. No path in the sketch should be of length more than max_ast_depth hyper-parameter
- 3. No branch, loop or except should occur more than once along a single path
-
- :param program: the sketch
- :param ast_paths: paths in the sketch
- :return: None
- :raise: TooLongPathError or InvalidSketchError if sketch or its paths is invalid
- """
- _check_DAPICall_repeats(program['ast']['_nodes'])
- for path in ast_paths:
-     if len(path) >= 32:
-         raise TooLongPathError
-     nodes = [node for (node, edge) in path]
-     if nodes.count('DBranch') > 1 or nodes.count('DLoop') > 1 or nodes.count('DExcept') > 1:
-         raise TooLongPathError
-
-class TooLongPathError(Exception):
-     pass
-
-
-class InvalidSketchError(Exception):
-     pass
 
 
 
@@ -426,8 +363,8 @@ js4 =  {"ast": {
 }
 
 
-ast = get_ast(js['ast']['_nodes'])
 
-
-
-# print(ast.dfs())
+for _js in [js, js1, js2, js3, js4]:
+     ast = get_ast(_js['ast']['_nodes'])
+     print(ast.dfs())
+     print()
