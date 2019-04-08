@@ -1,11 +1,11 @@
 {
     "model": "lle",
-    "latent_size": 32,
+    "latent_size": 256,
     "batch_size": 50,
     "num_epochs": 100,
     "learning_rate": 0.0006,
-    "print_step": 1,
-    "checkpoint_step":50,
+    "print_step": 50,
+    "checkpoint_step":1,
     "evidence": [
       {
           "name": "apicalls",
@@ -15,7 +15,7 @@
           "max_depth": -1,
           "max_nums": 8,
           "ev_drop_prob":0.8,
-          "ev_call_drop_prob":0.7
+          "ev_call_drop_prob":0.9
       },
       {
           "name": "types",
@@ -25,7 +25,7 @@
           "max_depth": -1,
           "max_nums": 8,
           "ev_drop_prob":0.8,
-          "ev_call_drop_prob":0.7
+          "ev_call_drop_prob":0.9
       },
       {
           "name": "keywords",
@@ -34,13 +34,13 @@
           "tile": 1,
           "max_depth": -1,
           "max_nums": 8,
-          "ev_drop_prob":0.7,
-          "ev_call_drop_prob":0.6
+          "ev_drop_prob":0.8,
+          "ev_call_drop_prob":0.7
       }
     ],
     "decoder": {
         "units": 256,
         "num_layers": 1,
-        "max_ast_depth": 64
+        "max_ast_depth": 256
     }
 }
