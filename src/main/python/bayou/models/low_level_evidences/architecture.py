@@ -70,7 +70,7 @@ class BayesianDecoder(object):
         # placeholders
         self.initial_state = [initial_state] * config.decoder.num_layers
         self.nodes = [nodes[i] for i in range(config.decoder.max_ast_depth)]
-        self.parents = [parents[i] for i in range(config.decoder.max_ast_depth)]
+        # self.parents = [parents[i] for i in range(config.decoder.max_ast_depth)]
         self.edges = [edges[i] for i in range(config.decoder.max_ast_depth)]
 
         # projection matrices for output
@@ -88,11 +88,11 @@ class BayesianDecoder(object):
             # the decoder (modified from tensorflow's seq2seq library to fit tree RNNs)
             self.state = self.initial_state
             self.outputs = []
-            self.states = []
+            # self.states = []
             for i, inp in enumerate(emb_inp):
                 if i > 0:
                     tf.get_variable_scope().reuse_variables()
-                parent = self.parents[i]
+                # parent = self.parents[i]
                 # old_state = self.states[parent]
                 with tf.variable_scope('cell1'):  # handles CHILD_EDGE
                     output1, state1 = self.cell1(inp, self.state)
@@ -102,5 +102,5 @@ class BayesianDecoder(object):
                 output = tf.where(self.edges[i], output1, output2)
                 self.state = [tf.where(self.edges[i], state1[j], state2[j])
                               for j in range(config.decoder.num_layers)]
-                self.states.append(self.state)
+                # self.states.append(self.state)
                 self.outputs.append(output)

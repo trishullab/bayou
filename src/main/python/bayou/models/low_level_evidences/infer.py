@@ -21,7 +21,8 @@ import pickle
 import json
 
 from bayou.models.low_level_evidences.model import Model
-from bayou.models.low_level_evidences.utils import CHILD_EDGE, SIBLING_EDGE
+from bayou.models.low_level_evidences.architecture import BayesianEncoder
+from bayou.models.low_level_evidences.node import CHILD_EDGE, SIBLING_EDGE
 from bayou.models.low_level_evidences.utils import read_config
 
 MAX_GEN_UNTIL_STOP = 20
@@ -42,14 +43,23 @@ class InvalidSketchError(Exception):
 
 class BayesianPredictor(object):
 
-    def __init__(self, save, sess):
+    def __init__(self, save, sess, config, iterator):
         self.sess = sess
 
+        config.batch_size = 1
         # load the saved config
-        with open(os.path.join(save, 'config.json')) as f:
-            config = read_config(json.load(f), chars_vocab=True)
-        self.model = Model(config, True)
+        self.inputs = [ev.placeholder(config) for ev in config.evidence]
 
+        
+        
+        ev_data = self.inputs
+
+
+        with tf.variable_scope("Encoder"):
+            self.encoder = BayesianEncoder(config, ev_data, infer=True)
+
+        self.config = config
+        
         # load the callmap
         with open(os.path.join(save, 'callmap.pkl'), 'rb') as f:
             self.callmap = pickle.load(f)
@@ -59,6 +69,29 @@ class BayesianPredictor(object):
         saver = tf.train.Saver(tf.global_variables())
         ckpt = tf.train.get_checkpoint_state(save)
         saver.restore(self.sess, ckpt.model_checkpoint_path)
+
+
+
+
+
+    def get_a1b1(self, evidences):
+        # setup initial states and feed
+
+        rdp = [ev.read_data_point(evidences, infer=True) for ev in self.config.evidence]
+        inputs = [ev.wrangle([ev_rdp]) for ev, ev_rdp in zip(self.config.evidence, rdp)]
+
+        feed = {}
+        for j, ev in enumerate(self.config.evidence):
+            feed[self.inputs[j].name] = inputs[j]
+
+
+        [  encMean ] = self.sess.run([ self.encoder.psi_mean ], feed)
+
+        return encMean[0]
+
+
+
+
 
     def infer(self, evidences, num_psi_samples=100, beam_width=25):
         """
@@ -96,16 +129,9 @@ class BayesianPredictor(object):
 
 
 
-
     def sample_tree_from_ev(self, psi):
 
-        # This is the number of programs I will synthesize
-        topK = 10
-        candidates = [Node('DSubTree') for k in range(topK)]
-
-
-
-
+        return
 
 
 
