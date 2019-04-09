@@ -92,8 +92,8 @@ class Node():
 
     def iterateHTillEnd(self):
         head = self
-        while(head.child != None):
-            head = head.child
+        while(head.sibling != None):
+            head = head.sibling
         return head
 
 

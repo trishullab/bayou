@@ -38,7 +38,7 @@ def plot(clargs):
         config = read_config(json.load(f), chars_vocab=True)
 
 
-    clargs.continue_from = True
+    clargs.continue_from = None
     reader = Reader(clargs, config, infer=True)
 
 	# Placeholders for tf data
@@ -74,9 +74,9 @@ def plot(clargs):
     # Plot with all Evidences
     with open(clargs.input_file[0], 'rb') as f:
         deriveAndScatter(f, predictor, [ev for ev in config.evidence])
-
-    with open(clargs.input_file[0], 'rb') as f:
-        useAttributeAndScatter(f, 'b2')
+    #
+    # with open(clargs.input_file[0], 'rb') as f:
+    #     useAttributeAndScatter(f, 'b2')
 
 
 def useAttributeAndScatter(f, att, max_nums=10000):
@@ -121,7 +121,7 @@ def deriveAndScatter(f, predictor, evList, max_nums=10000):
         api_call = get_api(get_calls_from_ast(shortProgram['ast']['_nodes']))
         if api_call != 'N/A':
             labels.append(api_call)
-            psis.append(predictor.get_a1b1(shortProgram))
+            psis.append(predictor.get_a1b1(shortProgram)[0])
             item_num += 1
 
         if item_num > max_nums:
@@ -195,6 +195,8 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument('input_file', type=str, nargs=1,
                         help='input data file')
+    parser.add_argument('--python_recursion_limit', type=int, default=10000,
+                    help='set recursion limit for the Python interpreter')
     parser.add_argument('--save', type=str, default='save',
                         help='directory to load model from')
     parser.add_argument('--top', type=int, default=10,

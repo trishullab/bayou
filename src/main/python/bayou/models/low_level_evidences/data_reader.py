@@ -159,10 +159,10 @@ class Reader():
             data_points.append((evidences, temp_arr, sample))
 
 
-            calls = gather_calls(program['ast'])
-            for call in calls:
-                if call['_call'] not in callmap:
-                    callmap[call['_call']] = call
+            # calls = gather_calls(program['ast'])
+            # for call in calls:
+            #     if call['_call'] not in callmap:
+            #         callmap[call['_call']] = call
             #
             file_name = program['file']
             file_ptr[done - ignored] = file_name
@@ -170,7 +170,7 @@ class Reader():
             done += 1
             if done % 100000 == 0:
                 print('Extracted data for {} programs'.format(done), end='\n')
-
+                # break
 
         print('{:8d} programs/asts in training data'.format(done))
         print('{:8d} programs/asts ignored by given config'.format(ignored))
@@ -182,12 +182,12 @@ class Reader():
         evidences, targets, js_programs = zip(*data_points) #unzip
 
         # save callmap if save location is given
-        if not infer:
-            if save is not None:
-                with open(os.path.join(save, 'callmap.pkl'), 'wb') as f:
-                    pickle.dump(callmap, f)
-
-            with open(os.path.join(save, 'file_ptr.pkl'), 'wb') as f:
-                pickle.dump(file_ptr, f)
+        # if not infer:
+        #     if save is not None:
+        #         with open(os.path.join(save, 'callmap.pkl'), 'wb') as f:
+        #             pickle.dump(callmap, f)
+        #
+        #     with open(os.path.join(save, 'file_ptr.pkl'), 'wb') as f:
+        #         pickle.dump(file_ptr, f)
 
         return evidences, targets, js_programs

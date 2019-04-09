@@ -21,8 +21,8 @@ import pickle
 import json
 
 from bayou.models.low_level_evidences.model import Model
-from bayou.models.low_level_evidences.architecture import BayesianEncoder
-from bayou.models.low_level_evidences.node import CHILD_EDGE, SIBLING_EDGE
+from bayou.models.low_level_evidences.architecture import BayesianEncoder, BayesianDecoder
+from bayou.models.low_level_evidences.node import CHILD_EDGE, SIBLING_EDGE, Node, get_ast
 from bayou.models.low_level_evidences.utils import read_config
 
 MAX_GEN_UNTIL_STOP = 20
@@ -47,28 +47,106 @@ class BayesianPredictor(object):
         self.sess = sess
 
         config.batch_size = 1
+        config.decoder.max_ast_depth = 1
+        self.config = config
         # load the saved config
         self.inputs = [ev.placeholder(config) for ev in config.evidence]
-
-        
-        
         ev_data = self.inputs
+
+        self.nodes = tf.placeholder(tf.int32, shape=(config.batch_size,config.decoder.max_ast_depth))
+        self.parents = tf.placeholder(tf.int32, shape=(config.batch_size, config.decoder.max_ast_depth))
+        self.edges = tf.placeholder(tf.bool, shape=(config.batch_size, config.decoder.max_ast_depth))
+        self.targets = tf.placeholder(tf.int32, shape=(config.batch_size, config.decoder.max_ast_depth))
 
 
         with tf.variable_scope("Encoder"):
             self.encoder = BayesianEncoder(config, ev_data, infer=True)
+            samples_1 = tf.random_normal([config.batch_size, config.latent_size], mean=0., stddev=1., dtype=tf.float32)
+            self.psi_encoder = self.encoder.psi_mean + tf.sqrt(self.encoder.psi_covariance) * samples_1
 
-        self.config = config
-        
-        # load the callmap
-        with open(os.path.join(save, 'callmap.pkl'), 'rb') as f:
-            self.callmap = pickle.load(f)
+        # setup the decoder with psi as the initial state
+        with tf.variable_scope("Decoder"):
+
+            emb = tf.get_variable('emb', [config.decoder.vocab_size, config.decoder.units])
+            lift_w = tf.get_variable('lift_w', [config.latent_size, config.decoder.units])
+            lift_b = tf.get_variable('lift_b', [config.decoder.units])
+
+
+            self.initial_state = tf.nn.xw_plus_b(self.psi_encoder, lift_w, lift_b, name="Initial_State")
+            self.decoder = BayesianDecoder(config, emb, self.initial_state, self.nodes, self.parents, self.edges)
+
+        with tf.name_scope("Loss"):
+            output = tf.reshape(tf.concat(self.decoder.outputs, 1),
+                                [-1, self.decoder.cell1.output_size])
+            logits = tf.matmul(output, self.decoder.projection_w) + self.decoder.projection_b
+            self.ln_probs = tf.nn.log_softmax(logits)
+
+
+        # # load the callmap
+        # with open(os.path.join(save, 'callmap.pkl'), 'rb') as f:
+        #     self.callmap = pickle.load(f)
 
         # restore the saved model
         tf.global_variables_initializer().run()
         saver = tf.train.Saver(tf.global_variables())
         ckpt = tf.train.get_checkpoint_state(save)
         saver.restore(self.sess, ckpt.model_checkpoint_path)
+
+
+
+
+
+
+    def beam_search(self, evidence, topK=10):
+
+        # get the contrib from evidence to the initial state
+        rdp = [ev.read_data_point(evidences, infer=True) for ev in self.config.evidence]
+        inputs = [ev.wrangle([ev_rdp]) for ev, ev_rdp in zip(self.config.evidence, rdp)]
+
+        feed = {}
+        for j, ev in enumerate(self.config.evidence):
+            feed[self.inputs[j].name] = inputs[j]
+
+        state = sess.run(self.initial_state, feed)
+        # got the state, to be used subsequently
+
+        # all the candidate solutions starting with a DSubTree node
+        head = Node("DSubTree")
+        candidate = head
+        stack_CHILD = []
+
+        partial_candidate = True # indiacates if even one in topK is partial
+        while partial_candidate:
+
+            node = candidate.val
+            edge = SIBLING_EDGE
+
+            feed = {}
+            feed[self.nodes.name] = np.array([self.config.decoder.vocab[node]], dtype=np.int32)
+            feed[self.edges.name] = np.array([edge], dtype=np.bool)
+            feed[self.initial_state.name] = state
+
+            state,ln_probs = sess.run([self.state, self.ln_probs] , feed)
+
+            idx = tf.distributions.Categorical(logits=ln_probs)
+            prediction = self.model.config.decoder.chars[idx]
+
+            if prediction == 'STOP':
+                candidate.sibling = Node(prediction)
+                partial_candidate = False
+            elif prediction not in ['DBranch', 'DExcept', 'DLoop']:
+                candidate.sibling = Node(prediction)
+                candidate = candidate.sibling
+            elif prediction in ['DBranch', 'DExcept', 'DLoop']:
+                candidate.sibling = Node(prediction)
+                candidate = candidate.sibling
+                stack_CHILD.append(candidate)
+
+        return head.dfs()[1:]
+
+
+
+
 
 
 
@@ -85,9 +163,9 @@ class BayesianPredictor(object):
             feed[self.inputs[j].name] = inputs[j]
 
 
-        [  encMean ] = self.sess.run([ self.encoder.psi_mean ], feed)
+        [  encMean, encCovar ] = self.sess.run([ self.encoder.psi_mean , self.encoder.psi_covariance], feed)
 
-        return encMean[0]
+        return encMean[0], encCovar[0]
 
 
 
