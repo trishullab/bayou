@@ -80,8 +80,8 @@ class BayesianPredictor(object):
                                 [-1, self.decoder.cell1.output_size])
             logits = tf.matmul(output, self.decoder.projection_w) + self.decoder.projection_b
             self.ln_probs = tf.nn.log_softmax(logits)
-
-
+            self.idx = tf.multinomial(logits, 1)
+            
         # # load the callmap
         # with open(os.path.join(save, 'callmap.pkl'), 'rb') as f:
         #     self.callmap = pickle.load(f)
@@ -97,7 +97,7 @@ class BayesianPredictor(object):
 
 
 
-    def beam_search(self, evidence, topK=10):
+    def beam_search(self, evidences, topK=10):
 
         # get the contrib from evidence to the initial state
         rdp = [ev.read_data_point(evidences, infer=True) for ev in self.config.evidence]
@@ -107,7 +107,7 @@ class BayesianPredictor(object):
         for j, ev in enumerate(self.config.evidence):
             feed[self.inputs[j].name] = inputs[j]
 
-        state = sess.run(self.initial_state, feed)
+        state = self.sess.run(self.initial_state, feed)
         # got the state, to be used subsequently
 
         # all the candidate solutions starting with a DSubTree node
@@ -122,14 +122,16 @@ class BayesianPredictor(object):
             edge = SIBLING_EDGE
 
             feed = {}
-            feed[self.nodes.name] = np.array([self.config.decoder.vocab[node]], dtype=np.int32)
-            feed[self.edges.name] = np.array([edge], dtype=np.bool)
+            feed[self.nodes.name] = np.array([[self.config.decoder.vocab[node]]], dtype=np.int32)
+            feed[self.edges.name] = np.array([[edge]], dtype=np.bool)
             feed[self.initial_state.name] = state
 
-            state,ln_probs = sess.run([self.state, self.ln_probs] , feed)
+            [state,idx] = self.sess.run([self.decoder.state, self.idx] , feed)
+            idx = idx[0][0]
+            state = state[0]
+            prediction = self.config.decoder.chars[idx]
 
-            idx = tf.distributions.Categorical(logits=ln_probs)
-            prediction = self.model.config.decoder.chars[idx]
+            # print(prediction)
 
             if prediction == 'STOP':
                 candidate.sibling = Node(prediction)

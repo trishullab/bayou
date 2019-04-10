@@ -20,6 +20,8 @@ from tensorflow.python.client import device_lib
 from itertools import chain
 import numpy as np
 import os
+import matplotlib
+matplotlib.use('agg')
 import matplotlib.pyplot as plt
 
 CONFIG_GENERAL = ['model', 'latent_size', 'batch_size', 'num_epochs',
@@ -32,10 +34,6 @@ C0 = 'CLASS0'
 UNK = '_UNK_'
 
 
-
-def get_available_gpus():
-    local_device_protos = device_lib.list_local_devices()
-    return [x.name for x in local_device_protos if x.device_type == 'GPU']
 
 
 def get_var_list():
@@ -58,28 +56,6 @@ def get_var_list():
                 }
     return var_dict
 
-
-def chunks(l, n):
-    """Yield successive n-sized chunks from l."""
-    lol = []
-    for i in range(0, len(l), n):
-        lol.append(l[i:i + n])
-    return lol
-
-def find_top_rank_ids(arrin, cutoff = 10):
-    rank_ids =  (-np.array(arrin)).argsort()
-    vals = []
-    for rank in rank_ids:
-        vals.append(arrin[rank])
-    return rank_ids[:cutoff], vals
-
-def find_my_rank(arr, i):
-    pivot = arr[i]
-    rank = 0
-    for val in arr:
-        if val > pivot:
-            rank += 1
-    return rank
 
 
 def plot_probs(prob_vals, fig_name ="rankedProb.pdf", logx = False):
@@ -123,16 +99,6 @@ def split_camel(s):
     split = s1.split('#')
     return [s.lower() for s in split]
 
-# Create a function to easily repeat on many lists:
-def ListToFormattedString(alist, Type):
-    # Each item is right-adjusted, width=3
-    if Type == 'float':
-        formatted_list = ['{:.2f}' for item in alist]
-        s = ','.join(formatted_list)
-    elif Type == 'int':
-        formatted_list = ['{:>3}' for item in alist]
-        s = ','.join(formatted_list)
-    return s.format(*alist)
 
 
 def normalize_log_probs(probs):
@@ -170,6 +136,10 @@ def read_config(js, chars_vocab=False):
     if chars_vocab:
         for attr in CONFIG_INFER:
             config.decoder.__setattr__(attr, js['decoder'][attr])
+        chars_dict = dict()
+        for item,value in config.decoder.vocab.items():
+            chars_dict[value] = item
+        config.decoder.__setattr__('chars', chars_dict)
     return config
 
 
