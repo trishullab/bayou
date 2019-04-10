@@ -24,12 +24,12 @@ class Node():
         self.child = child
         self.sibling = sibling
 
-    def addAndProgressSiblingNode(self, prediction):
-        self.sibling = Node(prediction)
+    def addAndProgressSiblingNode(self, predictionNode):
+        self.sibling = predictionNode
         return self.sibling
 
-    def addAndProgressChildNode(self, prediction):
-        self.child = Node(prediction)
+    def addAndProgressChildNode(self, predictionNode):
+        self.child = predictionNode
         return self.child
 
 
