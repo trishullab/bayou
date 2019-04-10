@@ -81,7 +81,7 @@ class BayesianPredictor(object):
             logits = tf.matmul(output, self.decoder.projection_w) + self.decoder.projection_b
             self.ln_probs = tf.nn.log_softmax(logits)
             self.idx = tf.multinomial(logits, 1)
-            
+
         # # load the callmap
         # with open(os.path.join(save, 'callmap.pkl'), 'rb') as f:
         #     self.callmap = pickle.load(f)
@@ -96,9 +96,7 @@ class BayesianPredictor(object):
 
 
 
-
-    def beam_search(self, evidences, topK=10):
-
+    def get_state(self, evidences):
         # get the contrib from evidence to the initial state
         rdp = [ev.read_data_point(evidences, infer=True) for ev in self.config.evidence]
         inputs = [ev.wrangle([ev_rdp]) for ev, ev_rdp in zip(self.config.evidence, rdp)]
@@ -108,49 +106,120 @@ class BayesianPredictor(object):
             feed[self.inputs[j].name] = inputs[j]
 
         state = self.sess.run(self.initial_state, feed)
+        return state
+
+
+
+    def beam_search(self, evidences, topK=10):
+
+
         # got the state, to be used subsequently
+        state = self.get_state(evidences)
+        start_node = Node("DSubTree")
+        head, final_state = self.consume_until_STOP(state, start_node)
 
+        return head
+
+
+    def get_prediction(self, node, edge, state):
+        feed = {}
+        feed[self.nodes.name] = np.array([[self.config.decoder.vocab[node]]], dtype=np.int32)
+        feed[self.edges.name] = np.array([[edge]], dtype=np.bool)
+        feed[self.initial_state.name] = state
+
+        [state,idx] = self.sess.run([self.decoder.state, self.idx] , feed)
+        idx = idx[0][0]
+        state = state[0]
+        prediction = self.config.decoder.chars[idx]
+
+        return prediction, state
+
+
+    def consume_until_STOP(self, state, init_node):
         # all the candidate solutions starting with a DSubTree node
-        head = Node("DSubTree")
-        candidate = head
-        stack_CHILD = []
+        head = candidate = init_node
+        stack_QUEUE = []
 
-        partial_candidate = True # indiacates if even one in topK is partial
-        while partial_candidate:
+        while True:
 
-            node = candidate.val
-            edge = SIBLING_EDGE
-
-            feed = {}
-            feed[self.nodes.name] = np.array([[self.config.decoder.vocab[node]]], dtype=np.int32)
-            feed[self.edges.name] = np.array([[edge]], dtype=np.bool)
-            feed[self.initial_state.name] = state
-
-            [state,idx] = self.sess.run([self.decoder.state, self.idx] , feed)
-            idx = idx[0][0]
-            state = state[0]
-            prediction = self.config.decoder.chars[idx]
-
-            # print(prediction)
-
-            if prediction == 'STOP':
-                candidate.sibling = Node(prediction)
-                partial_candidate = False
-            elif prediction not in ['DBranch', 'DExcept', 'DLoop']:
-                candidate.sibling = Node(prediction)
-                candidate = candidate.sibling
-            elif prediction in ['DBranch', 'DExcept', 'DLoop']:
-                candidate.sibling = Node(prediction)
-                candidate = candidate.sibling
-                stack_CHILD.append(candidate)
-
-        return head.dfs()[1:]
+            prediction, state = self.get_prediction(candidate.val, SIBLING_EDGE, state)
+            candidate = candidate.addAndProgressSiblingNode(prediction)
 
 
+            if prediction in ['DBranch', 'DExcept', 'DLoop']:
+                stack_QUEUE.insert(0, (candidate, prediction))
+
+            elif prediction == 'STOP':
+
+                if len(stack_QUEUE) != 0:
+                    q_candidate, branching_type = stack_QUEUE.pop()
+                    print(branching_type)
+                    if branching_type == 'DBranch':
+                        q_candidate.child, state = self.consume_DBranch(state)
+                    elif branching_type == 'DExcept':
+                        q_candidate.child, state = self.consume_DExcept(state)
+                    elif branching_type == 'DLoop':
+                        q_candidate.child, state = self.consume_DLoop(state)
+
+                break
+
+        #END OF WHILE
+
+        return head, state
+
+
+    def consume_DExcept(self, state):
+        tryStatement, state = self.get_prediction('STOP', CHILD_EDGE, state)
+        tryStatementNode = Node(tryStatement)
+
+        tryBranch , state = self.consume_until_STOP(state, tryStatementNode)
+
+        catchStart, state = self.get_prediction(tryStatementNode.val, CHILD_EDGE, state)
+        catchStartNode = Node(catchStart)
+
+        catchBranchRemains = self.consume_until_STOP(state, catchStartNode)
+
+        tryStatementNode.sibling = tryBranch
+        tryStatementNode.child = catchStartNode
+        catchStartNode.sibling = catchBranchRemains
+
+        return tryStatementNode, state
 
 
 
+    def consume_DLoop(self, state):
+        loopCondition, state = self.get_prediction('STOP', CHILD_EDGE, state)
+        loopConditionNode = Node(loopCondition)
+        loopConditionNode.sibling = Node('STOP')
 
+        loopStart, state = self.get_prediction(loopConditionNode.val, CHILD_EDGE, state)
+        loopStartNode = Node(loopStart)
+
+        loopBranchRemains = self.consume_until_STOP(state, loopStartNode)
+
+        loopConditionNode.child = loopStartNode
+        loopStartNode.sibling = loopBranchRemains
+
+        return loopConditionNode, state
+
+
+
+    def consume_DBranch(self, state):
+        ifStatement, state = self.get_prediction('STOP', CHILD_EDGE, state)
+        ifStatementNode = Node(ifStatement)
+
+        thenBranch , state = self.consume_until_STOP(state, ifStatementNode)
+
+        elseBranchStart, state = self.get_prediction(ifStatementNode.val, CHILD_EDGE, state)
+        elseBranchStartNode = Node(elseBranchStart)
+
+        elseBranchRemains = self.consume_until_STOP(state, elseBranchStartNode)
+
+        ifStatementNode.sibling = thenBranch
+        ifStatementNode.child = elseBranchStartNode
+        elseBranchStartNode.sibling = elseBranchRemains
+
+        return ifStatementNode, state
 
 
 
@@ -208,10 +277,6 @@ class BayesianPredictor(object):
 
 
 
-
-    def sample_tree_from_ev(self, psi):
-
-        return
 
 
 
@@ -329,194 +394,194 @@ class BayesianPredictor(object):
             return True
         except IncompletePathError:
             return False
-
-    def consume_until_STOP(self, path, idx, check_call=False):
-        """
-        Consumes a path until STOP is encountered, or throw an IncompletePathError. If a DBranch, DExcept or DLoop
-        is seen midway when going through the path, recursively attempts to consume the respective node type.
-
-        :param path: the path to consume
-        :param idx: current index to start consumption
-        :param check_call: if True, check and validate if the nodes in path are call nodes
-        :return: the index at which STOP was encountered if there were no recursive consumptions, otherwise -1
-        :raise: InvalidSketchError if check_call was True and failed, IncompletePathError if path is not complete
-        """
-
-        if idx >= len(path):
-            raise IncompletePathError
-        while path[idx][0] != 'STOP':
-            node, edge = path[idx]
-            if check_call:
-                if node in ['DBranch', 'DExcept', 'DLoop', 'DSubTree']:
-                    raise InvalidSketchError
-                idx += 1
-                if idx >= len(path):
-                    raise IncompletePathError
-                continue
-            if edge == SIBLING_EDGE:
-                idx += 1
-                if idx >= len(path):
-                    raise IncompletePathError
-                continue
-            if node == 'DBranch':
-                self.consume_DBranch(path, idx)
-                return -1
-            elif node == 'DExcept':
-                self.consume_DExcept(path, idx)
-                return -1
-            elif node == 'DLoop':
-                self.consume_DLoop(path, idx)
-                return -1
-            else:
-                raise ValueError('Invalid node/edge: ' + str((node, edge)))
-        return idx
-
-    def consume_DBranch(self, path, idx):
-        """
-        Consumes a branch node at the given index in the path
-
-        :param path: the path to consume
-        :param idx: index of the branch node
-        :raise: InvalidSketchError if there is a parse error in the path, IncompletePathError if path is not complete
-        """
-        idx = self.consume_until_STOP(path, idx+1, check_call=True)
-        if idx > 0:
-            idx = self.consume_until_STOP(path, idx+1)
-            if idx > 0:
-                self.consume_until_STOP(path, idx+1)
-
-    def consume_DExcept(self, path, idx):
-        """
-        Consumes an except node at the given index in the path
-
-        :param path: the path to consume
-        :param idx: index of the except node
-        :raise: InvalidSketchError if there is a parse error in the path, IncompletePathError if path is not complete
-        """
-        idx = self.consume_until_STOP(path, idx+1)
-        if idx > 0:
-            self.consume_until_STOP(path, idx+1)
-
-    def consume_DLoop(self, path, idx):
-        """
-        Consumes a loop node at the given index in the path
-
-        :param path: the path to consume
-        :param idx: index of the loop node
-        :raise: InvalidSketchError if there is a parse error in the path, IncompletePathError if path is not complete
-        """
-        idx = self.consume_until_STOP(path, idx+1, check_call=True)
-        if idx > 0:
-            self.consume_until_STOP(path, idx+1)
-
-    def paths_to_ast(self, paths):
-        """
-        Converts a given set of paths into an AST
-
-        :param paths: the set of paths
-        :return: the AST
-        """
-        nodes = []
-        ast = {'node': 'DSubTree', '_nodes': nodes}
-        for path in paths:
-            self.update_until_STOP(nodes, path, 1)
-        return ast
-
-    def update_until_STOP(self, nodes, path, pathidx):
-        """
-        Updates the given list of AST nodes with those along the path starting from pathidx until STOP is reached.
-        If a DBranch, DExcept or DLoop is seen midway when going through the path, recursively updates the respective
-        node type.
-
-        :param nodes: the list of AST nodes to update
-        :param path: the path
-        :param pathidx: index of path at which update should start
-        :return: the index at which STOP was encountered if there were no recursive updates, otherwise -1
-        """
-        nodeidx = 0
-
-        while path[pathidx][0] != 'STOP':
-            node, edge = path[pathidx]
-
-            if nodeidx >= len(nodes):
-                astnode = {}
-                if node == 'DBranch':
-                    astnode['node'] = node
-                    astnode['_cond'] = []
-                    astnode['_then'] = []
-                    astnode['_else'] = []
-                    nodes.append(astnode)
-                elif node == 'DExcept':
-                    astnode['node'] = node
-                    astnode['_try'] = []
-                    astnode['_catch'] = []
-                    nodes.append(astnode)
-                elif node == 'DLoop':
-                    astnode['node'] = node
-                    astnode['_cond'] = []
-                    astnode['_body'] = []
-                    nodes.append(astnode)
-                else:
-                    nodes.append({'node': 'DAPICall', '_call': node})
-                    nodeidx += 1
-                    pathidx += 1
-                    continue
-            else:
-                astnode = nodes[nodeidx]
-
-            if edge == SIBLING_EDGE:
-                nodeidx += 1
-                pathidx += 1
-                continue
-
-            if node == 'DBranch':
-                self.update_DBranch(astnode, path, pathidx)
-                return -1
-            elif node == 'DExcept':
-                self.update_DExcept(astnode, path, pathidx)
-                return -1
-            elif node == 'DLoop':
-                self.update_DLoop(astnode, path, pathidx)
-                return -1
-            else:
-                raise ValueError('Invalid node/edge: ' + str((node, edge)))
-
-        return pathidx
-
-    def update_DBranch(self, astnode, path, pathidx):
-        """
-        Updates a DBranch AST node with nodes from the path starting at pathidx
-
-        :param astnode: the AST node to update
-        :param path: the path
-        :param pathidx: index of path at which update should start
-        """
-        pathidx = self.update_until_STOP(astnode['_cond'], path, pathidx+1)
-        if pathidx > 0:
-            pathidx = self.update_until_STOP(astnode['_then'], path, pathidx+1)
-            if pathidx > 0:
-                self.update_until_STOP(astnode['_else'], path, pathidx+1)
-
-    def update_DExcept(self, astnode, path, pathidx):
-        """
-        Updates a DExcept AST node with nodes from the path starting at pathidx
-
-        :param astnode: the AST node to update
-        :param path: the path
-        :param pathidx: index of path at which update should start
-        """
-        pathidx = self.update_until_STOP(astnode['_try'], path, pathidx+1)
-        if pathidx > 0:
-            self.update_until_STOP(astnode['_catch'], path, pathidx+1)
-
-    def update_DLoop(self, astnode, path, pathidx):
-        """
-        Updates a DLoop AST node with nodes from the path starting at pathidx
-
-        :param astnode: the AST node to update
-        :param path: the path
-        :param pathidx: index of path at which update should start
-        """
-        pathidx = self.update_until_STOP(astnode['_cond'], path, pathidx+1)
-        if pathidx > 0:
-            self.update_until_STOP(astnode['_body'], path, pathidx+1)
+    #
+    # def consume_until_STOP(self, path, idx, check_call=False):
+    #     """
+    #     Consumes a path until STOP is encountered, or throw an IncompletePathError. If a DBranch, DExcept or DLoop
+    #     is seen midway when going through the path, recursively attempts to consume the respective node type.
+    #
+    #     :param path: the path to consume
+    #     :param idx: current index to start consumption
+    #     :param check_call: if True, check and validate if the nodes in path are call nodes
+    #     :return: the index at which STOP was encountered if there were no recursive consumptions, otherwise -1
+    #     :raise: InvalidSketchError if check_call was True and failed, IncompletePathError if path is not complete
+    #     """
+    #
+    #     if idx >= len(path):
+    #         raise IncompletePathError
+    #     while path[idx][0] != 'STOP':
+    #         node, edge = path[idx]
+    #         if check_call:
+    #             if node in ['DBranch', 'DExcept', 'DLoop', 'DSubTree']:
+    #                 raise InvalidSketchError
+    #             idx += 1
+    #             if idx >= len(path):
+    #                 raise IncompletePathError
+    #             continue
+    #         if edge == SIBLING_EDGE:
+    #             idx += 1
+    #             if idx >= len(path):
+    #                 raise IncompletePathError
+    #             continue
+    #         if node == 'DBranch':
+    #             self.consume_DBranch(path, idx)
+    #             return -1
+    #         elif node == 'DExcept':
+    #             self.consume_DExcept(path, idx)
+    #             return -1
+    #         elif node == 'DLoop':
+    #             self.consume_DLoop(path, idx)
+    #             return -1
+    #         else:
+    #             raise ValueError('Invalid node/edge: ' + str((node, edge)))
+    #     return idx
+    #
+    # def consume_DBranch(self, path, idx):
+    #     """
+    #     Consumes a branch node at the given index in the path
+    #
+    #     :param path: the path to consume
+    #     :param idx: index of the branch node
+    #     :raise: InvalidSketchError if there is a parse error in the path, IncompletePathError if path is not complete
+    #     """
+    #     idx = self.consume_until_STOP(path, idx+1, check_call=True)
+    #     if idx > 0:
+    #         idx = self.consume_until_STOP(path, idx+1)
+    #         if idx > 0:
+    #             self.consume_until_STOP(path, idx+1)
+    #
+    # def consume_DExcept(self, path, idx):
+    #     """
+    #     Consumes an except node at the given index in the path
+    #
+    #     :param path: the path to consume
+    #     :param idx: index of the except node
+    #     :raise: InvalidSketchError if there is a parse error in the path, IncompletePathError if path is not complete
+    #     """
+    #     idx = self.consume_until_STOP(path, idx+1)
+    #     if idx > 0:
+    #         self.consume_until_STOP(path, idx+1)
+    #
+    # def consume_DLoop(self, path, idx):
+    #     """
+    #     Consumes a loop node at the given index in the path
+    #
+    #     :param path: the path to consume
+    #     :param idx: index of the loop node
+    #     :raise: InvalidSketchError if there is a parse error in the path, IncompletePathError if path is not complete
+    #     """
+    #     idx = self.consume_until_STOP(path, idx+1, check_call=True)
+    #     if idx > 0:
+    #         self.consume_until_STOP(path, idx+1)
+    #
+    # def paths_to_ast(self, paths):
+    #     """
+    #     Converts a given set of paths into an AST
+    #
+    #     :param paths: the set of paths
+    #     :return: the AST
+    #     """
+    #     nodes = []
+    #     ast = {'node': 'DSubTree', '_nodes': nodes}
+    #     for path in paths:
+    #         self.update_until_STOP(nodes, path, 1)
+    #     return ast
+    #
+    # def update_until_STOP(self, nodes, path, pathidx):
+    #     """
+    #     Updates the given list of AST nodes with those along the path starting from pathidx until STOP is reached.
+    #     If a DBranch, DExcept or DLoop is seen midway when going through the path, recursively updates the respective
+    #     node type.
+    #
+    #     :param nodes: the list of AST nodes to update
+    #     :param path: the path
+    #     :param pathidx: index of path at which update should start
+    #     :return: the index at which STOP was encountered if there were no recursive updates, otherwise -1
+    #     """
+    #     nodeidx = 0
+    #
+    #     while path[pathidx][0] != 'STOP':
+    #         node, edge = path[pathidx]
+    #
+    #         if nodeidx >= len(nodes):
+    #             astnode = {}
+    #             if node == 'DBranch':
+    #                 astnode['node'] = node
+    #                 astnode['_cond'] = []
+    #                 astnode['_then'] = []
+    #                 astnode['_else'] = []
+    #                 nodes.append(astnode)
+    #             elif node == 'DExcept':
+    #                 astnode['node'] = node
+    #                 astnode['_try'] = []
+    #                 astnode['_catch'] = []
+    #                 nodes.append(astnode)
+    #             elif node == 'DLoop':
+    #                 astnode['node'] = node
+    #                 astnode['_cond'] = []
+    #                 astnode['_body'] = []
+    #                 nodes.append(astnode)
+    #             else:
+    #                 nodes.append({'node': 'DAPICall', '_call': node})
+    #                 nodeidx += 1
+    #                 pathidx += 1
+    #                 continue
+    #         else:
+    #             astnode = nodes[nodeidx]
+    #
+    #         if edge == SIBLING_EDGE:
+    #             nodeidx += 1
+    #             pathidx += 1
+    #             continue
+    #
+    #         if node == 'DBranch':
+    #             self.update_DBranch(astnode, path, pathidx)
+    #             return -1
+    #         elif node == 'DExcept':
+    #             self.update_DExcept(astnode, path, pathidx)
+    #             return -1
+    #         elif node == 'DLoop':
+    #             self.update_DLoop(astnode, path, pathidx)
+    #             return -1
+    #         else:
+    #             raise ValueError('Invalid node/edge: ' + str((node, edge)))
+    #
+    #     return pathidx
+    #
+    # def update_DBranch(self, astnode, path, pathidx):
+    #     """
+    #     Updates a DBranch AST node with nodes from the path starting at pathidx
+    #
+    #     :param astnode: the AST node to update
+    #     :param path: the path
+    #     :param pathidx: index of path at which update should start
+    #     """
+    #     pathidx = self.update_until_STOP(astnode['_cond'], path, pathidx+1)
+    #     if pathidx > 0:
+    #         pathidx = self.update_until_STOP(astnode['_then'], path, pathidx+1)
+    #         if pathidx > 0:
+    #             self.update_until_STOP(astnode['_else'], path, pathidx+1)
+    #
+    # def update_DExcept(self, astnode, path, pathidx):
+    #     """
+    #     Updates a DExcept AST node with nodes from the path starting at pathidx
+    #
+    #     :param astnode: the AST node to update
+    #     :param path: the path
+    #     :param pathidx: index of path at which update should start
+    #     """
+    #     pathidx = self.update_until_STOP(astnode['_try'], path, pathidx+1)
+    #     if pathidx > 0:
+    #         self.update_until_STOP(astnode['_catch'], path, pathidx+1)
+    #
+    # def update_DLoop(self, astnode, path, pathidx):
+    #     """
+    #     Updates a DLoop AST node with nodes from the path starting at pathidx
+    #
+    #     :param astnode: the AST node to update
+    #     :param path: the path
+    #     :param pathidx: index of path at which update should start
+    #     """
+    #     pathidx = self.update_until_STOP(astnode['_cond'], path, pathidx+1)
+    #     if pathidx > 0:
+    #         self.update_until_STOP(astnode['_body'], path, pathidx+1)

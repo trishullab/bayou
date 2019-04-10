@@ -27,16 +27,24 @@ class Node():
 
 
 
+    def addAndProgressSiblingNode(self, prediction):
+        self.sibling = Node(prediction)
+        return self.sibling
+
+    def addAndProgressChildNode(self, prediction):
+        self.child = Node(prediction)
+        return self.child
 
     def bfs(self):
 
 
-        buffer = [('DSubTree', None, SIBLING_EDGE)]
+        buffer = []
         queue = []
-        bfs_id = 1
+        bfs_id = None
         parent_id = 0
         if self is not None:
             queue.insert(0, (self, parent_id, SIBLING_EDGE))
+            bfs_id = 0
 
 
         while( len(queue) > 0 ):
@@ -64,12 +72,13 @@ class Node():
 
     def dfs(self):
 
-        buffer = [('DSubTree', None, SIBLING_EDGE)]
+        buffer = []
         queue = []
-        bfs_id = 1
+        dfs_id = None
         parent_id = 0
         if self is not None:
             queue.append((self, parent_id, SIBLING_EDGE))
+            dfs_id = 0
 
         while( len(queue) > 0 ):
 
@@ -81,12 +90,12 @@ class Node():
             buffer.append((item.val, parent_id, edge_type))
 
             if item.child is not None:
-                queue.append((item.child, bfs_id, CHILD_EDGE))
+                queue.append((item.child, dfs_id, CHILD_EDGE))
 
             if item.sibling is not None:
-                queue.append((item.sibling, bfs_id , SIBLING_EDGE))
+                queue.append((item.sibling, dfs_id , SIBLING_EDGE))
 
-            bfs_id += 1
+            dfs_id += 1
 
         return buffer
 
@@ -364,7 +373,7 @@ js4 =  {"ast": {
 
 
 
-# for _js in [js, js1, js2, js3, js4]:
-#      ast = get_ast(_js['ast']['_nodes'])
-#      print(ast.dfs())
-#      print()
+for _js in [js, js1, js2, js3, js4]:
+     ast = get_ast(_js['ast']['_nodes'])
+     print(ast.dfs())
+     print()

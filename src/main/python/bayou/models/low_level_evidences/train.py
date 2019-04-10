@@ -25,7 +25,7 @@ import textwrap
 
 from bayou.models.low_level_evidences.data_reader import Reader
 from bayou.models.low_level_evidences.model import Model
-from bayou.models.low_level_evidences.utils import read_config, dump_config, get_var_list, static_plot, get_available_gpus
+from bayou.models.low_level_evidences.utils import read_config, dump_config, get_var_list
 
 
 HELP = """\
@@ -54,20 +54,17 @@ def train(clargs):
     # Placeholders for tf data
 
     nodes_placeholder = tf.placeholder(reader.nodes.dtype, reader.nodes.shape)
-    parents_placeholder = tf.placeholder(reader.parents.dtype, reader.nodes.shape)
     edges_placeholder = tf.placeholder(reader.edges.dtype, reader.edges.shape)
     targets_placeholder = tf.placeholder(reader.targets.dtype, reader.targets.shape)
     evidence_placeholder = [tf.placeholder(input.dtype, input.shape) for input in reader.inputs]
     # reset batches
 
     feed_dict={fp: f for fp, f in zip(evidence_placeholder, reader.inputs)}
-
     feed_dict.update({nodes_placeholder: reader.nodes})
-    feed_dict.update({parents_placeholder: reader.nodes})
     feed_dict.update({edges_placeholder: reader.edges})
     feed_dict.update({targets_placeholder: reader.targets})
 
-    dataset = tf.data.Dataset.from_tensor_slices((nodes_placeholder, parents_placeholder, edges_placeholder, targets_placeholder, *evidence_placeholder))
+    dataset = tf.data.Dataset.from_tensor_slices((nodes_placeholder, edges_placeholder, targets_placeholder, *evidence_placeholder))
     batched_dataset = dataset.batch(config.batch_size)
     iterator = batched_dataset.make_initializable_iterator()
 
@@ -113,7 +110,6 @@ def train(clargs):
                           'loss: {:.3f}, \n\t'.format
                           (step, config.num_epochs * config.num_batches, i + 1 ,avg_loss/(b+1)))
 
-            #epocLoss.append(avg_loss / config.num_batches), epocGenL.append(avg_gen_loss / config.num_batches), epocKlLoss.append(avg_KL_loss / config.num_batches)
             if (i+1) % config.checkpoint_step == 0:
                 checkpoint_dir = os.path.join(clargs.save, 'model{}.ckpt'.format(i+1))
                 saver.save(sess, checkpoint_dir)
@@ -121,7 +117,6 @@ def train(clargs):
                 print('Model checkpointed: {}. Average for epoch , '
                       'loss: {:.3f}'.format
                       (checkpoint_dir, avg_loss / config.num_batches))
-        #static_plot(epocLoss , epocGenL , epocKlLoss)
 
 
 #%%

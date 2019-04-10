@@ -41,6 +41,6 @@
     "decoder": {
         "units": 256,
         "num_layers": 1,
-        "max_ast_depth": 256
+        "max_ast_depth": 64
     }
 }

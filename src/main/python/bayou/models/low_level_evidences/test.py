@@ -31,23 +31,11 @@ from bayou.models.low_level_evidences.data_reader import Reader
 
 evidence = {
     "apicalls": [
-        "put"
+        "add",
+        "exists"
       ],
       "types": [
-        "HashMap",
-        "String",
-        "Map",
-        "LinkedList"
-      ],
-      "keywords": [
-        "put",
-        "map",
-        "linked",
-        "java",
-        "list",
-        "util",
-        "hash",
-        "string"
+        "ArrayList",
       ]
     }
 
@@ -89,7 +77,8 @@ def test(clargs):
     # allEvSigmas = predictor.get_ev_sigma()
     # print(allEvSigmas)
 
-    path = predictor.beam_search(evidence)
+    path_head = predictor.beam_search(evidence)
+    path = path_head.dfs()
     print(path)
 
 

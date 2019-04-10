@@ -27,11 +27,10 @@ class Model():
 
 
         newBatch = iterator.get_next()
-        nodes, parents, edges, targets = newBatch[:4]
-        ev_data = newBatch[4:]
+        nodes, edges, targets = newBatch[:3]
+        ev_data = newBatch[3:]
 
         nodes = tf.transpose(nodes)
-        parents = tf.transpose(parents)
         edges = tf.transpose(edges)
 
 
@@ -51,7 +50,7 @@ class Model():
 
 
             initial_state = tf.nn.xw_plus_b(self.psi_encoder, lift_w, lift_b, name="Initial_State")
-            self.decoder = BayesianDecoder(config, emb, initial_state, nodes, parents, edges)
+            self.decoder = BayesianDecoder(config, emb, initial_state, nodes, edges)
 
 
         # get the decoder outputs
