@@ -30,11 +30,6 @@ CONFIG_ENCODER = ['name', 'units', 'num_layers', 'tile', 'max_depth', 'max_nums'
 CONFIG_DECODER = ['units', 'num_layers', 'max_ast_depth']
 CONFIG_INFER = ['vocab', 'vocab_size']
 
-C0 = 'CLASS0'
-UNK = '_UNK_'
-
-
-
 
 def get_var_list():
     all_vars = tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES)
@@ -74,18 +69,6 @@ def plot_probs(prob_vals, fig_name ="rankedProb.pdf", logx = False):
     plt.savefig(os.path.join(plot_path, fig_name), bbox_inches='tight')
     return
 
-def static_plot(totL, genL, KlLoss):
-    plot_path = os.path.join(os.getcwd(),'plots')
-    if not os.path.exists(plot_path):
-        os.makedirs(plot_path)
-    plt.grid()
-    plt.title("Losses")
-    plt.plot(totL),plt.plot(genL),plt.plot(KlLoss)
-    plt.xlabel("Epochs")
-    plt.ylabel("Loss Value")
-    fig_name ="Loss_w_Epochs.pdf"
-    plt.savefig(os.path.join(plot_path, fig_name), bbox_inches='tight')
-    return
 
 def length(tensor):
     elems = tf.sign(tf.reduce_max(tensor, axis=2))

@@ -12,8 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
-# from bayou.models.low_level_evidences.utils import CHILD_EDGE, SIBLING_EDGE
+from graphviz import Digraph
 
 CHILD_EDGE = True
 SIBLING_EDGE = False
@@ -25,8 +24,6 @@ class Node():
         self.child = child
         self.sibling = sibling
 
-
-
     def addAndProgressSiblingNode(self, prediction):
         self.sibling = Node(prediction)
         return self.sibling
@@ -35,8 +32,8 @@ class Node():
         self.child = Node(prediction)
         return self.child
 
-    def bfs(self):
 
+    def bfs(self):
 
         buffer = []
         queue = []
@@ -129,19 +126,7 @@ def get_ast(js, idx=0):
 
      if node_type == 'DBranch':
 
-
-         nodeC = get_ast(js[i]['_cond'])  # will have at most 1 "path"
-         nodeC = nodeC.sibling
-         # assert len(pC) <= 1
-
-         nodeT = get_ast(js[i]['_then'])
-         nodeT = nodeT.sibling
-         #nodeC.child = nodeT
-         nodeC.sibling = nodeT
-
-         nodeE = get_ast(js[i]['_else'])
-         nodeE = nodeE.sibling
-         nodeC.child = nodeE
+         nodeC = read_DBranch(js[i])
 
          future = get_ast(js, i+1)
          future = future.sibling
@@ -153,18 +138,12 @@ def get_ast(js, idx=0):
          return head
 
      if node_type == 'DExcept':
-         # curr_Node.child = Node('DExcept')
-         # curr_Node = curr_Node.child
 
-         nodeT = get_ast(js[i]['_try'])
-         nodeT = nodeT.sibling
-         nodeC = get_ast(js[i]['_catch'])
-         nodeC = nodeC.sibling
-
-         nodeT.child = nodeC
+         nodeT = read_DExcept(js[i])
 
          future = get_ast(js, i+1)
          future = future.sibling
+
          exception = Node('DExcept' , child=nodeT, sibling=future)
          curr_Node.sibling = exception
          curr_Node = curr_Node.sibling
@@ -173,17 +152,11 @@ def get_ast(js, idx=0):
 
      if node_type == 'DLoop':
 
-         nodeC = get_ast(js[i]['_cond'])  # will have at most 1 "path"
-         nodeC = nodeC.sibling
-         # assert len(pC) <= 1
-
-         nodeB  = get_ast(js[i]['_body'])
-         nodeB = nodeB.sibling
-
-         nodeC.child = nodeB
+         nodeC = read_DLoop(js[i])
 
          future = get_ast(js, i+1)
          future = future.sibling
+
          loop = Node('DLoop', child=nodeC, sibling=future)
          curr_Node.sibling = loop
          curr_Node = curr_Node.sibling
@@ -191,7 +164,59 @@ def get_ast(js, idx=0):
          return head
 
 
+def read_DLoop(js_branch):
+     nodeC = get_ast(js_branch['_cond'])  # will have at most 1 "path"
+     nodeC = nodeC.sibling
+     # assert len(pC) <= 1
 
+     nodeB  = get_ast(js_branch['_body'])
+     nodeB = nodeB.sibling
+
+     nodeC.child = nodeB
+     return nodeC
+
+
+def read_DExcept(js_branch):
+
+     nodeT = get_ast(js_branch['_try'])
+     nodeT = nodeT.sibling
+     nodeC = get_ast(js_branch['_catch'])
+     nodeC = nodeC.sibling
+
+     nodeT.child = nodeC
+
+     return nodeT
+
+
+def read_DBranch(js_branch):
+
+     nodeC = get_ast(js_branch['_cond'])  # will have at most 1 "path"
+     nodeC = nodeC.sibling
+     # assert len(pC) <= 1
+
+     nodeT = get_ast(js_branch['_then'])
+     nodeT = nodeT.sibling
+     #nodeC.child = nodeT
+     nodeC.sibling = nodeT
+
+     nodeE = get_ast(js_branch['_else'])
+     nodeE = nodeE.sibling
+     nodeC.child = nodeE
+
+     return nodeC
+
+
+
+def plot_path(i, path):
+    dot = Digraph(comment='Program AST', format='eps')
+    for dfs_id, item in enumerate(path):
+        node_value , parent_id , edge_type = item
+        dot.node( str(dfs_id) , node_value )
+        label = 'child' if edge_type else 'sibling'
+        if dfs_id > 0:
+            dot.edge( str(parent_id) , str(dfs_id), label=label, constraint='true', direction='LR')
+    dot.render('plots/' + 'program-ast-' + str(i) + '.gv')
+    return dot
 
 
 
@@ -308,9 +333,6 @@ js2 = {
  }
 
 
-
-
-
 js3 = {
     "ast": {
         "_nodes": [
@@ -340,7 +362,8 @@ js3 = {
       }
 }
 
-js4 =  {"ast": {
+js4 =  {
+    "ast": {
         "_nodes": [
           {
             "_cond": [],
@@ -373,7 +396,7 @@ js4 =  {"ast": {
 
 
 
-for _js in [js, js1, js2, js3, js4]:
+for i, _js in enumerate([js, js1, js2, js3, js4]):
      ast = get_ast(_js['ast']['_nodes'])
-     print(ast.dfs())
-     print()
+     path = ast.dfs()
+     dot = plot_path(i, path)
