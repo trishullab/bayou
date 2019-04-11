@@ -36,17 +36,17 @@ class Node():
     def bfs(self):
 
         buffer = []
-        queue = []
+        stack = []
         bfs_id = None
         parent_id = 0
         if self is not None:
-            queue.insert(0, (self, parent_id, SIBLING_EDGE))
+            stack.append((self, parent_id, SIBLING_EDGE))
             bfs_id = 0
 
 
-        while( len(queue) > 0 ):
+        while( len(stack) > 0 ):
 
-            item_triple = queue.pop()
+            item_triple = stack.pop()
             item  = item_triple[0]
             parent_id = item_triple[1]
             edge_type = item_triple[2]
@@ -55,10 +55,10 @@ class Node():
 
 
             if item.sibling is not None:
-                queue.insert(0, (item.sibling, bfs_id , SIBLING_EDGE))
+                stack.append((item.sibling, bfs_id , SIBLING_EDGE))
 
             if item.child is not None:
-                queue.insert(0, (item.child, bfs_id, CHILD_EDGE))
+                stack.append((item.child, bfs_id, CHILD_EDGE))
 
 
             bfs_id += 1
@@ -70,16 +70,16 @@ class Node():
     def dfs(self):
 
         buffer = []
-        queue = []
+        stack = []
         dfs_id = None
         parent_id = 0
         if self is not None:
-            queue.append((self, parent_id, SIBLING_EDGE))
+            stack.append((self, parent_id, SIBLING_EDGE))
             dfs_id = 0
 
-        while( len(queue) > 0 ):
+        while( len(stack) > 0 ):
 
-            item_triple = queue.pop()
+            item_triple = stack.pop()
             item  = item_triple[0]
             parent_id = item_triple[1]
             edge_type = item_triple[2]
@@ -87,10 +87,10 @@ class Node():
             buffer.append((item.val, parent_id, edge_type))
 
             if item.child is not None:
-                queue.append((item.child, dfs_id, CHILD_EDGE))
+                stack.append((item.child, dfs_id, CHILD_EDGE))
 
             if item.sibling is not None:
-                queue.append((item.sibling, dfs_id , SIBLING_EDGE))
+                stack.append((item.sibling, dfs_id , SIBLING_EDGE))
 
             dfs_id += 1
 
@@ -213,6 +213,7 @@ def plot_path(i, path):
         node_value , parent_id , edge_type = item
         dot.node( str(dfs_id) , node_value )
         label = 'child' if edge_type else 'sibling'
+        label += " / " + str(dfs_id)
         if dfs_id > 0:
             dot.edge( str(parent_id) , str(dfs_id), label=label, constraint='true', direction='LR')
     dot.render('plots/' + 'program-ast-' + str(i) + '.gv')
@@ -396,7 +397,8 @@ js4 =  {
 
 
 
-# for i, _js in enumerate([js, js1, js2, js3, js4]):
-#      ast = get_ast(_js['ast']['_nodes'])
-#      path = ast.dfs()
-#      dot = plot_path(i, path)
+for i, _js in enumerate([js, js1, js2, js3, js4]):
+     ast = get_ast(_js['ast']['_nodes'])
+     path = ast.bfs()
+     dot = plot_path(i, path)
+     print(path)
