@@ -92,7 +92,7 @@ class BayesianPredictor(object):
 
 
 
-    def get_state(self, evidences):
+    def get_state(self, evidences, num_psi_samples=100):
         # get the contrib from evidence to the initial state
         rdp = [ev.read_data_point(evidences, infer=True) for ev in self.config.evidence]
         inputs = [ev.wrangle([ev_rdp]) for ev, ev_rdp in zip(self.config.evidence, rdp)]
@@ -101,13 +101,19 @@ class BayesianPredictor(object):
         for j, ev in enumerate(self.config.evidence):
             feed[self.inputs[j].name] = inputs[j]
 
+        psis = []
+        for i in range(num_psi_samples):
+            psi = self.sess.run(self.psi_encoder, feed)
+            psis.append(psi)
+        psi = np.mean(psis, axis=0)
+
+        feed = {self.psi_encoder:psi}
         state = self.sess.run(self.initial_state, feed)
         return state
 
 
 
     def beam_search(self, evidences, topK=10):
-
 
         # got the state, to be used subsequently
         state = self.get_state(evidences)
@@ -220,39 +226,3 @@ class BayesianPredictor(object):
         [  encMean, encCovar ] = self.sess.run([ self.encoder.psi_mean , self.encoder.psi_covariance], feed)
 
         return encMean[0], encCovar[0]
-
-
-
-
-
-    def infer(self, evidences, num_psi_samples=100, beam_width=25):
-        """
-        Returns an ordered (by probability) list of ASTs from the model, given evidences, using beam search
-
-        :param evidences: the input evidences
-        :param num_psi_samples: number of samples of the intent, averaged before AST construction
-        :param beam_width: width of the beam search
-        :return: list of ASTs ordered by their probabilities
-        """
-        psis = []
-        for i in range(num_psi_samples):
-            psis.append(self.psi_from_evidence(evidences))
-        psi = np.mean(psis, axis=0)
-        return self.generate_asts_beam_search(psi, beam_width)
-
-    def psi_random(self):
-        """
-        Gets a random intent by sampling from a normal
-
-        :return: random intent
-        """
-        return np.random.normal(size=[1, self.model.config.latent_size])
-
-    def psi_from_evidence(self, js_evidences):
-        """
-        Gets a latent intent from the model, given some evidences
-
-        :param js_evidences: the evidences
-        :return: the latent intent
-        """
-        return self.model.infer_psi(self.sess, js_evidences)

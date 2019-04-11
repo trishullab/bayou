@@ -43,7 +43,8 @@ from bayou.models.low_level_evidences.node import plot_path
 
 evidence = {
     "apicalls": [
-        "readLine"
+        "readLine",
+        "split"
       ],
       "types": [
         "BufferedReader",
@@ -89,7 +90,9 @@ def test(clargs):
     path_head = predictor.beam_search(evidence)
     path = path_head.dfs()
 
-    dot = plot_path(random.randint(0,100),path)
+    randI = random.randint(0,100)
+    dot = plot_path(randI,path)
+    print(randI)
     print(path)
 
 
