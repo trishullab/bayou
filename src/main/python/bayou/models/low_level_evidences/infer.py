@@ -54,7 +54,6 @@ class BayesianPredictor(object):
         ev_data = self.inputs
 
         self.nodes = tf.placeholder(tf.int32, shape=(config.batch_size,config.decoder.max_ast_depth))
-        self.parents = tf.placeholder(tf.int32, shape=(config.batch_size, config.decoder.max_ast_depth))
         self.edges = tf.placeholder(tf.bool, shape=(config.batch_size, config.decoder.max_ast_depth))
         self.targets = tf.placeholder(tf.int32, shape=(config.batch_size, config.decoder.max_ast_depth))
 
@@ -73,7 +72,7 @@ class BayesianPredictor(object):
 
 
             self.initial_state = tf.nn.xw_plus_b(self.psi_encoder, lift_w, lift_b, name="Initial_State")
-            self.decoder = BayesianDecoder(config, emb, self.initial_state, self.nodes, self.parents, self.edges)
+            self.decoder = BayesianDecoder(config, emb, self.initial_state, self.nodes, self.edges)
 
         with tf.name_scope("Loss"):
             output = tf.reshape(tf.concat(self.decoder.outputs, 1),
@@ -115,7 +114,7 @@ class BayesianPredictor(object):
         start_node = Node("DSubTree")
         head, final_state = self.consume_siblings_until_STOP(state, start_node)
 
-        return head
+        return head.sibling
 
 
     def get_prediction(self, node, edge, state):
@@ -136,6 +135,9 @@ class BayesianPredictor(object):
     def consume_siblings_until_STOP(self, state, init_node):
         # all the candidate solutions starting with a DSubTree node
         head = candidate = init_node
+        if init_node.val == 'STOP':
+            return head
+
         stack_QUEUE = []
 
         while True:
@@ -143,6 +145,8 @@ class BayesianPredictor(object):
             predictionNode, state = self.get_prediction(candidate.val, SIBLING_EDGE, state)
             candidate = candidate.addAndProgressSiblingNode(predictionNode)
 
+
+            prediction = predictionNode.val
             if prediction in ['DBranch', 'DExcept', 'DLoop']:
                 stack_QUEUE.append((candidate, prediction))
 

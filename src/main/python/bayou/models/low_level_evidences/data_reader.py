@@ -110,7 +110,8 @@ class Reader():
                 parent_call = path[parent_node_id][0]
                 parent_call_id = self.decoder_api_dict.get_node_val_from_callMap(parent_call)
 
-                parsed_data_array.append((parent_call_id, edge_type, curr_node_id))
+                if not (curr_node_id is None or parent_call_id is None):
+                    parsed_data_array.append((parent_call_id, edge_type, curr_node_id))
 
             data_points.append((evidences, parsed_data_array))
 
@@ -119,7 +120,7 @@ class Reader():
             done += 1
             if done % 100000 == 0:
                 print('Extracted data for {} programs'.format(done), end='\n')
-                # break
+                break
 
         print('{:8d} programs/asts in training data'.format(done))
 
@@ -150,7 +151,9 @@ class decoderDict():
 
 
         def get_or_add_node_val_from_callMap(self, nodeVal):
-            if (self.infer) or (nodeVal in self.call_dict):
+            if (self.infer) and (nodeVal not in self.call_dict):
+                return None
+            elif (self.infer) or (nodeVal in self.call_dict):
                 return self.call_dict[nodeVal]
             else:
                 nextOpenPos = self.call_count
@@ -159,7 +162,10 @@ class decoderDict():
                 return nextOpenPos
 
         def get_node_val_from_callMap(self, nodeVal):
-            return self.call_dict[nodeVal]
+            if (self.infer) and (nodeVal not in self.call_dict):
+                return None
+            else:
+                return self.call_dict[nodeVal]
 
         def get_call_dict(self):
             return self.call_dict, self.call_count

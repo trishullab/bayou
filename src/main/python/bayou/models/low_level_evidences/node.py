@@ -396,7 +396,7 @@ js4 =  {
 
 
 
-for i, _js in enumerate([js, js1, js2, js3, js4]):
-     ast = get_ast(_js['ast']['_nodes'])
-     path = ast.dfs()
-     dot = plot_path(i, path)
+# for i, _js in enumerate([js, js1, js2, js3, js4]):
+#      ast = get_ast(_js['ast']['_nodes'])
+#      path = ast.dfs()
+#      dot = plot_path(i, path)
