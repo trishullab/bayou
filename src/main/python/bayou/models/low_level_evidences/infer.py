@@ -272,19 +272,19 @@ class BayesianPredictor(object):
                     new_candy.tree_currNode = new_candy.tree_currNode.addAndProgressChildNode(Node(value2add))
 
 
-            # before updating the last item lets check for penultimate value
-            # if new_candy.last_item in ['DBranch', 'DExcept', 'DLoop']:
-            #     new_candy.branch_stack.append(new_candy.tree_currNode)
+                # before updating the last item lets check for penultimate value
+                if new_candy.last_edge == CHILD_EDGE and new_candy.last_item in ['DBranch', 'DExcept', 'DLoop']:
+                     new_candy.branch_stack.append(new_candy.tree_currNode)
 
-            #now uodate the last item
+                #now uodate the last item
                 new_candy.last_item = value2add
 
 
-            # if value2add in ['DBranch', 'DExcept', 'DLoop']:
-            #     new_candy.branch_stack.append(new_candy.tree_currNode)
+                if value2add in ['DBranch', 'DExcept', 'DLoop']:
+                     new_candy.branch_stack.append(new_candy.tree_currNode)
+                     new_candy.last_edge = SIBLING_EDGE
 
-            #el
-                if value2add == 'STOP':
+                elif value2add == 'STOP':
                      if len(new_candy.branch_stack) == 0:
                           new_candy.rolling = False
                      else:
