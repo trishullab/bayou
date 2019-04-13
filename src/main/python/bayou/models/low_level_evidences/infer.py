@@ -231,7 +231,7 @@ class BayesianPredictor(object):
         log_probabilty = np.array([candy.log_probabilty for candy in candies])
         length = np.array([candy.length for candy in candies])
 
-        #beam_ln_probs = beam_ln_probs * np.array([candy.rolling == True for candy in candies])[:,None]
+        beam_ln_probs = beam_ln_probs * np.array([candy.rolling == True for candy in candies])[:,None]
         new_probs = log_probabilty[:,None]  + beam_ln_probs
 
 
@@ -244,19 +244,19 @@ class BayesianPredictor(object):
         new_candies = []
         for row, col in zip(rows, cols):
             new_candy = candies[row].copy()
+            if new_candy.rolling:
+                new_candy.state = states[row]
+                new_candy.log_probabilty = new_probs[row][col]
+                new_candy.length += 1
+             
+                value2add = next_nodes[row][col]
+                # print(value2add)
 
-            new_candy.state = states[row]
-            new_candy.log_probabilty += new_probs[row][col]
-            new_candy.length += 1
 
-            value2add = next_nodes[row][col]
-            # print(value2add)
-
-
-            if new_candy.last_edge == SIBLING_EDGE:
-                new_candy.tree_currNode = new_candy.tree_currNode.addAndProgressSiblingNode(Node(value2add))
-            else:
-                new_candy.tree_currNode = new_candy.tree_currNode.addAndProgressChildNode(Node(value2add))
+                if new_candy.last_edge == SIBLING_EDGE:
+                    new_candy.tree_currNode = new_candy.tree_currNode.addAndProgressSiblingNode(Node(value2add))
+                else:
+                    new_candy.tree_currNode = new_candy.tree_currNode.addAndProgressChildNode(Node(value2add))
 
 
             # before updating the last item lets check for penultimate value
@@ -264,23 +264,23 @@ class BayesianPredictor(object):
             #     new_candy.branch_stack.append(new_candy.tree_currNode)
 
             #now uodate the last item
-            new_candy.last_item = value2add
+                new_candy.last_item = value2add
 
 
             # if value2add in ['DBranch', 'DExcept', 'DLoop']:
             #     new_candy.branch_stack.append(new_candy.tree_currNode)
 
             #el
-            if value2add == 'STOP':
-                new_candy.rolling = False
-                if len(new_candy.branch_stack) == 0:
-                    new_candy.rolling = False
+                if value2add == 'STOP':
+                     new_candy.rolling = False
+                     if len(new_candy.branch_stack) == 0:
+                          new_candy.rolling = False
+                     else:
+                          new_candy.tree_currNode = new_candy.branch_stack.pop()
+                          new_candy.last_item = new_candy.tree_currNode.val
+                          new_candy.last_edge = CHILD_EDGE
                 else:
-                    new_candy.tree_currNode = new_candy.branch_stack.pop()
-                    new_candy.last_item = new_candy.tree_currNode.val
-                    new_candy.last_edge = CHILD_EDGE
-            else:
-                new_candy.last_edge = SIBLING_EDGE
+                     new_candy.last_edge = SIBLING_EDGE
 
             new_candies.append(new_candy)
 
