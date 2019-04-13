@@ -231,7 +231,13 @@ class BayesianPredictor(object):
         log_probabilty = np.array([candy.log_probabilty for candy in candies])
         length = np.array([candy.length for candy in candies])
 
-        beam_ln_probs = beam_ln_probs * np.array([candy.rolling == True for candy in candies])[:,None]
+       
+        for i in range(topK): # denotes the candidate
+            for j in range(topK): # denotes the items
+                if candies[i].rolling == False and j > 0:
+                   beam_ln_probs[i][j] = -np.inf 
+       
+ 
         new_probs = log_probabilty[:,None]  + beam_ln_probs
 
 

@@ -63,7 +63,7 @@ def test(clargs):
     if (iWantRandom):
         config.batch_size = 1
     else:
-        config.batch_size = 5
+        config.batch_size = 10
 
     reader = Reader(clargs, config, infer=True)
 
