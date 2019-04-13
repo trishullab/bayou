@@ -158,16 +158,7 @@ class BayesianPredictor(object):
 
         self.config.batch_size = topK
 
-        init_state = self.get_state(evidences)
-
-        #BUG :: one dummy step
-        feed = {}
-        feed[self.nodes.name] = np.array([[self.config.decoder.vocab['DSubTree']] for k in range(topK) ], dtype=np.int32)
-        feed[self.edges.name] = np.array([[SIBLING_EDGE] for k in range(topK)], dtype=np.bool)
-        feed[self.initial_state.name] = init_state
-
-        init_state = self.sess.run(self.decoder.state , feed)[0][0]
-
+        init_state = self.get_state(evidences)[0]
 
 
         candies = [Candidate(init_state) for k in range(topK)]
@@ -177,8 +168,7 @@ class BayesianPredictor(object):
         while(True):
             # states was batch_size * LSTM_Decoder_state_size
             candies = self.get_next_output_with_fan_out(candies)
-            #print([candy.head.dfs() for candy in candies])
-            #print([candy.rolling for candy in candies])
+            #print([candy.head.bfs() for candy in candies])
 
             if self.check_for_all_STOP(candies): # branch_stack and last_item
                 break
@@ -216,13 +206,11 @@ class BayesianPredictor(object):
 
         [states, beam_ids, beam_ln_probs, top_idx] = self.sess.run([self.decoder.state, self.top_k_indices, self.top_k_values, self.idx] , feed)
 
-        states = states[0] # BUG if num_layers > 1
+        states = states[0]
         next_nodes = [[self.config.decoder.chars[idx] for idx in beam] for beam in beam_ids]
 
-
         # states is still topK * LSTM_Decoder_state_size
-        # next_node is topK * topK
-        # node_probs in  topK * topK
+        # next_node and node_probs is topK * topK
         # log_probabilty is topK
 
         log_probabilty = np.array([candy.log_probabilty for candy in candies])
@@ -232,17 +220,17 @@ class BayesianPredictor(object):
             if candies[i].rolling == False:
                 length[i] = candies[i].length + 1
             else:
-               length[i] = candies[i].length 
- 
+               length[i] = candies[i].length
+
         for i in range(topK): # denotes the candidate
             for j in range(topK): # denotes the items
                 if candies[i].rolling == False and j > 0:
-                   beam_ln_probs[i][j] = -np.inf 
+                   beam_ln_probs[i][j] = -np.inf
                 elif candies[i].rolling == False and j == 0:
                    beam_ln_probs[i][j] = 0.0
- 
+
         new_probs = log_probabilty[:,None]  + beam_ln_probs
-        
+
         new_probs = new_probs / length[:,None]
 
         #print(beam_ln_probs)
@@ -258,9 +246,8 @@ class BayesianPredictor(object):
                 new_candy.state = states[row]
                 new_candy.log_probabilty = new_probs[row][col]
                 new_candy.length += 1
-             
+
                 value2add = next_nodes[row][col]
-                # print(value2add)
 
 
                 if new_candy.last_edge == SIBLING_EDGE:
@@ -269,27 +256,27 @@ class BayesianPredictor(object):
                     new_candy.tree_currNode = new_candy.tree_currNode.addAndProgressChildNode(Node(value2add))
 
 
-                # before updating the last item lets check for penultimate value
-                if new_candy.last_edge == CHILD_EDGE and new_candy.last_item in ['DBranch', 'DExcept', 'DLoop']:
+                if new_candy.last_edge == CHILD_EDGE and new_candy.last_item in ['DBranch', 'DExcept', 'DLoop']: # conditionsal branches
+                    new_candy.branch_stack.append(new_candy.tree_currNode)
+                    new_candy.last_item = value2add
+                    new_candy.last_edge = CHILD_EDGE
+
+                elif value2add in ['DBranch', 'DExcept', 'DLoop']:
                      new_candy.branch_stack.append(new_candy.tree_currNode)
-
-                #now uodate the last item
-                new_candy.last_item = value2add
-
-
-                if value2add in ['DBranch', 'DExcept', 'DLoop']:
-                     new_candy.branch_stack.append(new_candy.tree_currNode)
-                     new_candy.last_edge = SIBLING_EDGE
+                     new_candy.last_edge = CHILD_EDGE # redirect path to the right
+                     new_candy.last_item = value2add
 
                 elif value2add == 'STOP':
-                     if len(new_candy.branch_stack) == 0:
+                    new_candy.last_item = value2add
+                    if len(new_candy.branch_stack) == 0:
                           new_candy.rolling = False
-                     else:
+                    else:
                           new_candy.tree_currNode = new_candy.branch_stack.pop()
                           new_candy.last_item = new_candy.tree_currNode.val
-                          new_candy.last_edge = CHILD_EDGE
+                          new_candy.last_edge = SIBLING_EDGE # need to go down after pop now that this is bfs
                 else:
-                     new_candy.last_edge = SIBLING_EDGE
+                        new_candy.last_item = value2add
+                        new_candy.last_edge = SIBLING_EDGE # keep going down
 
             new_candies.append(new_candy)
 

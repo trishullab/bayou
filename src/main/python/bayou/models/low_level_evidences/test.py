@@ -44,11 +44,13 @@ from bayou.models.low_level_evidences.node import plot_path
 evidence = {
     "apicalls": [
         "readLine",
-        "split"
+        "split",
+        "add"
       ],
       "types": [
         "BufferedReader",
-        "FileReader"
+        "FileReader",
+        "ArrayList"
       ]
     }
 
