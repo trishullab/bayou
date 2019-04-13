@@ -37,7 +37,7 @@ def plot(clargs):
     with open(os.path.join(clargs.save, 'config.json')) as f:
         config = read_config(json.load(f), chars_vocab=True)
 
-
+    config.batch_size = 1    
     clargs.continue_from = None
     reader = Reader(clargs, config, infer=True)
 
