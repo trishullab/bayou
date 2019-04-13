@@ -53,7 +53,7 @@ evidence = {
 
 
 def test(clargs):
-    clargs.continue_from = True
+    clargs.continue_from = True #None
 
     with open(os.path.join(clargs.save, 'config.json')) as f:
         config = read_config(json.load(f), chars_vocab=True)

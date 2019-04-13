@@ -58,7 +58,7 @@ class Candidate():
         self.rolling = True
 
 
-    def copy(self):
+    '''def copy(self):
 
         new_candidate = Candidate(self.state)
         new_candidate.length = self.length
@@ -71,7 +71,7 @@ class Candidate():
 
 
         return new_candidate
-
+   '''
 
 
 
@@ -256,7 +256,7 @@ class BayesianPredictor(object):
         # rows mean which of the original candidate was finally selected
         new_candies = []
         for row, col in zip(rows, cols):
-            new_candy = candies[row].copy()
+            new_candy = deepcopy(candies[row]) #candies[row].copy()
             if new_candy.rolling:
                 new_candy.state = states[row]
                 new_candy.log_probabilty = new_probs[row][col]
@@ -285,7 +285,6 @@ class BayesianPredictor(object):
 
             #el
                 if value2add == 'STOP':
-                     new_candy.rolling = False
                      if len(new_candy.branch_stack) == 0:
                           new_candy.rolling = False
                      else:
