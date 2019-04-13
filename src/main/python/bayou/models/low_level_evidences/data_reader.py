@@ -120,7 +120,7 @@ class Reader():
             done += 1
             if done % 100000 == 0:
                 print('Extracted data for {} programs'.format(done), end='\n')
-                # break
+                break
 
         print('{:8d} programs/asts in training data'.format(done))
 

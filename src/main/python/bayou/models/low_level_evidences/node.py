@@ -33,6 +33,39 @@ class Node():
         return self.child
 
 
+    #
+    #
+    # def copy(self):
+    #     child = None
+    #     sibling = None
+    #     if (self.child != None):
+    #         child = self.child.copy()
+    #     if (self.sibling != None):
+    #         sibling = self.sibling.copy()
+    #
+    #     return Node(self.val, child, sibling)
+    #
+    #
+    def copyWTrackingLast(self, lastNode, trackNode):
+        child = None
+        sibling = None
+
+        if (self.child != None):
+            child, trackNode = self.child.copyWTrackingLast(lastNode, trackNode)
+        if (self.sibling != None):
+            sibling, trackNode = self.sibling.copyWTrackingLast(lastNode, trackNode)
+
+
+
+        returnNode = Node(self.val, child, sibling)
+
+        if self is lastNode:
+            trackNode = returnNode
+
+
+        return returnNode , trackNode
+
+
     def bfs(self):
 
         buffer = []
@@ -85,6 +118,7 @@ class Node():
             edge_type = item_triple[2]
 
             buffer.append((item.val, parent_id, edge_type))
+
 
             if item.child is not None:
                 stack.append((item.child, dfs_id, CHILD_EDGE))
@@ -395,9 +429,9 @@ js4 =  {
       }
 }
 
-if "__name__" == "__main__":
+if __name__ == "__main__":
     for i, _js in enumerate([js, js1, js2, js3, js4]):
          ast = get_ast(_js['ast']['_nodes'])
-         path = ast.bfs()
+         path = ast.dfs()
          dot = plot_path(i, path)
          print(path)

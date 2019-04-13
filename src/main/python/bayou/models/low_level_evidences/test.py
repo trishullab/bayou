@@ -43,12 +43,10 @@ from bayou.models.low_level_evidences.node import plot_path
 
 evidence = {
     "apicalls": [
-        "readLine",
-        "split"
+        "add",
       ],
       "types": [
-        "BufferedReader",
-        "FileReader"
+        "ArrayList",
       ]
     }
 
@@ -58,6 +56,14 @@ def test(clargs):
 
     with open(os.path.join(clargs.save, 'config.json')) as f:
         config = read_config(json.load(f), chars_vocab=True)
+
+    config.decoder.max_ast_depth = 1
+    iWantRandom = False
+
+    if (iWantRandom):
+        config.batch_size = 1
+    else:
+        config.batch_size = 5
 
     reader = Reader(clargs, config, infer=True)
 
@@ -75,6 +81,9 @@ def test(clargs):
     feed_dict.update({edges_placeholder: reader.edges})
     feed_dict.update({targets_placeholder: reader.targets})
 
+
+
+
     dataset = tf.data.Dataset.from_tensor_slices((nodes_placeholder, edges_placeholder, targets_placeholder, *evidence_placeholder))
     batched_dataset = dataset.batch(config.batch_size)
     iterator = batched_dataset.make_initializable_iterator()
@@ -87,15 +96,25 @@ def test(clargs):
     # allEvSigmas = predictor.get_ev_sigma()
     # print(allEvSigmas)
 
-    path_head = predictor.beam_search(evidence)
-    path = path_head.dfs()
-
-    randI = random.randint(0,100)
-    dot = plot_path(randI,path)
-    print(randI)
-    print(path)
 
 
+    ## DFS
+    if (iWantRandom):
+        path_head = predictor.random_search(evidence)
+        path = path_head.dfs()
+
+        randI = random.randint(0,1000)
+        dot = plot_path(randI,path)
+        print(randI)
+        print(path)
+    else:
+        ## BEAM SEARCH
+        candies = predictor.beam_search(evidence, topK=config.batch_size)
+        for i, candy in enumerate(candies):
+            path = candy.head.dfs()
+            dot = plot_path(i,path)
+            print(path)
+            print()
 
     return path
 
@@ -104,6 +123,8 @@ def test(clargs):
 #%%
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(formatter_class=argparse.RawDescriptionHelpFormatter)
+    parser.add_argument('input_file', type=str, nargs=1,
+                        help='input data file')
     parser.add_argument('--python_recursion_limit', type=int, default=10000,
                         help='set recursion limit for the Python interpreter')
     parser.add_argument('--save', type=str, required=True,

@@ -59,7 +59,7 @@ class Model():
                                 [-1, self.decoder.cell1.output_size])
             logits = tf.matmul(output, self.decoder.projection_w) + self.decoder.projection_b
             self.ln_probs = tf.nn.log_softmax(logits)
-
+            self.idx = tf.multinomial(logits, 1)
 
             # 1. generation loss: log P(Y | Z)
             cond = tf.not_equal(tf.reduce_sum(self.encoder.psi_mean, axis=1), 0)
