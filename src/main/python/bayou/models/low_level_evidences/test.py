@@ -43,7 +43,8 @@ from bayou.models.low_level_evidences.node import plot_path
 
 evidence = {
     "apicalls": [
-        "readLine"
+        "readLine",
+        "split"
       ],
       "types": [
         "BufferedReader",
@@ -64,7 +65,7 @@ def test(clargs):
     if (iWantRandom):
         config.batch_size = 1
     else:
-        config.batch_size = 10
+        config.batch_size = 20
 
     reader = Reader(clargs, config, infer=True)
 

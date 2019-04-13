@@ -185,7 +185,7 @@ class BayesianPredictor(object):
 
             i+=1
 
-            if i == 10:
+            if i == MAX_GEN_UNTIL_STOP:
                 break
 
         return candies
@@ -223,9 +223,6 @@ class BayesianPredictor(object):
         # states is still topK * LSTM_Decoder_state_size
         # next_node is topK * topK
         # node_probs in  topK * topK
-
-
-        # node_probs is topK*topK
         # log_probabilty is topK
 
         log_probabilty = np.array([candy.log_probabilty for candy in candies])
