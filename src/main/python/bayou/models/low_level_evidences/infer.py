@@ -226,11 +226,9 @@ class BayesianPredictor(object):
 
         new_probs = log_probabilty[:,None]  + beam_ln_probs
 
-        new_probs = new_probs / length[:,None]
+        len_norm_probs = new_probs / length[:,None]
 
-        #print(beam_ln_probs)
-
-        rows, cols = np.unravel_index(np.argsort(new_probs, axis=None)[::-1], new_probs.shape)
+        rows, cols = np.unravel_index(np.argsort(len_norm_probs, axis=None)[::-1], new_probs.shape)
         rows, cols = rows[:topK], cols[:topK]
 
         # rows mean which of the original candidate was finally selected
