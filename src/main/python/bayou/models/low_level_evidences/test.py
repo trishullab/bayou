@@ -32,35 +32,48 @@ from bayou.models.low_level_evidences.node import plot_path
 
 # evidence = {
 #     "apicalls": [
-#         "remove",
-#         "add"
+#         "remove"
 #       ],
 #       "types": [
 #         "HashMap",
 #         "ArrayList"
 #       ]
 #     }
-#
+
+
+# evidence = {
+#     "apicalls": [
+#         "readLine"
+#       ],
+#       "types": [
+#         "BufferedReader",
+#         "FileReader"
+#       ]
+#     }
+
 evidence = {
     "apicalls": [
         "readLine",
+        "split",
+        "add"
       ],
       "types": [
         "BufferedReader",
-        "FileReader"
+        "FileReader",
+        "ArrayList"
       ]
     }
 
 # evidence = {
 #     "apicalls": [
-#         "write",
+#         "write"
 #       ],
 #       "types": [
 #         "BufferedWriter",
 #         "FileWriter"
 #       ]
 #     }
-
+#
 # evidence = {
 #     "apicalls": [
 #         "next",
