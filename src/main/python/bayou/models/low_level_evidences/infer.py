@@ -226,7 +226,7 @@ class BayesianPredictor(object):
 
         new_probs = log_probabilty[:,None]  + beam_ln_probs
 
-        len_norm_probs = new_probs / length[:,None]
+        len_norm_probs = new_probs #/ length[:,None]
 
         rows, cols = np.unravel_index(np.argsort(len_norm_probs, axis=None)[::-1], new_probs.shape)
         rows, cols = rows[:topK], cols[:topK]

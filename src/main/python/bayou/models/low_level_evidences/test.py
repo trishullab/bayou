@@ -40,16 +40,16 @@ from bayou.models.low_level_evidences.node import plot_path
 #         "ArrayList"
 #       ]
 #     }
-
-# evidence = {
-#     "apicalls": [
-#         "readLine",
-#       ],
-#       "types": [
-#         "BufferedReader",
-#         "FileReader"
-#       ]
-#     }
+#
+evidence = {
+    "apicalls": [
+        "readLine",
+      ],
+      "types": [
+        "BufferedReader",
+        "FileReader"
+      ]
+    }
 
 # evidence = {
 #     "apicalls": [
@@ -60,16 +60,16 @@ from bayou.models.low_level_evidences.node import plot_path
 #         "FileWriter"
 #       ]
 #     }
-
-evidence = {
-    "apicalls": [
-        "next",
-        "remove"
-      ],
-      "types": [
-        "Iterator"
-      ]
-    }
+#
+# evidence = {
+#     "apicalls": [
+#         "next",
+#         "remove"
+#       ],
+#       "types": [
+#         "Iterator"
+#       ]
+#     }
 
 def test(clargs):
     clargs.continue_from = True #None
@@ -83,7 +83,7 @@ def test(clargs):
     if (iWantRandom):
         config.batch_size = 1
     else:
-        config.batch_size = 10
+        config.batch_size = 50
 
     reader = Reader(clargs, config, infer=True)
 
