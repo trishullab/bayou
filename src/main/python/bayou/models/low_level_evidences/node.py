@@ -241,8 +241,9 @@ def read_DBranch(js_branch):
 
 
 
-def plot_path(i, path):
+def plot_path(i, path, prob):
     dot = Digraph(comment='Program AST', format='eps')
+    dot.node(str(prob), str(prob)[:6])
     for dfs_id, item in enumerate(path):
         node_value , parent_id , edge_type = item
         dot.node( str(dfs_id) , node_value )

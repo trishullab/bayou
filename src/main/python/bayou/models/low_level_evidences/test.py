@@ -41,17 +41,35 @@ from bayou.models.low_level_evidences.node import plot_path
 #       ]
 #     }
 
+# evidence = {
+#     "apicalls": [
+#         "readLine",
+#       ],
+#       "types": [
+#         "BufferedReader",
+#         "FileReader"
+#       ]
+#     }
+
+# evidence = {
+#     "apicalls": [
+#         "write",
+#       ],
+#       "types": [
+#         "BufferedWriter",
+#         "FileWriter"
+#       ]
+#     }
+
 evidence = {
     "apicalls": [
-        "readLine",
-        "split"
+        "next",
+        "remove"
       ],
       "types": [
-        "BufferedReader",
-        "FileReader"
+        "Iterator"
       ]
     }
-
 
 def test(clargs):
     clargs.continue_from = True #None
@@ -65,7 +83,7 @@ def test(clargs):
     if (iWantRandom):
         config.batch_size = 1
     else:
-        config.batch_size = 20
+        config.batch_size = 10
 
     reader = Reader(clargs, config, infer=True)
 
@@ -107,16 +125,17 @@ def test(clargs):
 
         randI = random.randint(0,1000)
         dot = plot_path(randI,path)
-        print(randI)
-        print(path)
+        # print(randI)
+        # print(path)
     else:
         ## BEAM SEARCH
         candies = predictor.beam_search(evidence, topK=config.batch_size)
         for i, candy in enumerate(candies):
             path = candy.head.dfs()
-            dot = plot_path(i,path)
-            print(path)
-            print()
+            prob = candy.log_probabilty
+            dot = plot_path(i,path, prob)
+            # print(path)
+            # print()
 
     return path
 

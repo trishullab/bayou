@@ -58,26 +58,6 @@ class Candidate():
         self.rolling = True
 
 
-    '''def copy(self):
-
-        new_candidate = Candidate(self.state)
-        new_candidate.length = self.length
-        new_candidate.log_probabilty = self.log_probabilty
-        new_candidate.rolling = self.rolling
-        new_candidate.last_item = self.last_item
-        new_candidate.last_edge = self.last_edge
-
-        new_candidate.head, new_candidate.tree_currNode = self.head.copyWTrackingLast(self.tree_currNode, None)
-
-
-        return new_candidate
-   '''
-
-
-
-
-
-
 
 class BayesianPredictor(object):
 
@@ -188,6 +168,9 @@ class BayesianPredictor(object):
             if i == MAX_GEN_UNTIL_STOP:
                 break
 
+
+        candies.sort(key=lambda x: x.log_probabilty)
+
         return candies
 
 
@@ -216,7 +199,7 @@ class BayesianPredictor(object):
 
         [states, beam_ids, beam_ln_probs, top_idx] = self.sess.run([self.decoder.state, self.top_k_indices, self.top_k_values, self.idx] , feed)
 
-        states = states[0] # BUG if num_layers > 1
+        states = states[0]
         next_nodes = [[self.config.decoder.chars[idx] for idx in beam] for beam in beam_ids]
 
 
@@ -232,17 +215,17 @@ class BayesianPredictor(object):
             if candies[i].rolling == False:
                 length[i] = candies[i].length + 1
             else:
-               length[i] = candies[i].length 
- 
+               length[i] = candies[i].length
+
         for i in range(topK): # denotes the candidate
             for j in range(topK): # denotes the items
                 if candies[i].rolling == False and j > 0:
-                   beam_ln_probs[i][j] = -np.inf 
+                   beam_ln_probs[i][j] = -np.inf
                 elif candies[i].rolling == False and j == 0:
                    beam_ln_probs[i][j] = 0.0
- 
+
         new_probs = log_probabilty[:,None]  + beam_ln_probs
-        
+
         new_probs = new_probs / length[:,None]
 
         #print(beam_ln_probs)
@@ -258,7 +241,7 @@ class BayesianPredictor(object):
                 new_candy.state = states[row]
                 new_candy.log_probabilty = new_probs[row][col]
                 new_candy.length += 1
-             
+
                 value2add = next_nodes[row][col]
                 # print(value2add)
 
