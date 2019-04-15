@@ -169,7 +169,7 @@ class BayesianPredictor(object):
                 break
 
 
-        candies.sort(key=lambda x: x.log_probabilty)
+        candies.sort(key=lambda x: x.log_probabilty, reverse=True)
 
         return candies
 
@@ -226,7 +226,7 @@ class BayesianPredictor(object):
 
         new_probs = log_probabilty[:,None]  + beam_ln_probs
 
-        len_norm_probs = new_probs #/ length[:,None]
+        len_norm_probs = new_probs / np.power(length[:,None], 0.0)
 
         rows, cols = np.unravel_index(np.argsort(len_norm_probs, axis=None)[::-1], new_probs.shape)
         rows, cols = rows[:topK], cols[:topK]
@@ -253,14 +253,13 @@ class BayesianPredictor(object):
                 # before updating the last item lets check for penultimate value
                 if new_candy.last_edge == CHILD_EDGE and new_candy.last_item in ['DBranch', 'DExcept', 'DLoop']:
                      new_candy.branch_stack.append(new_candy.tree_currNode)
+                     new_candy.last_edge = SIBLING_EDGE
+                     new_candy.last_item = value2add
 
-                #now uodate the last item
-                new_candy.last_item = value2add
-
-
-                if value2add in ['DBranch', 'DExcept', 'DLoop']:
+                elif value2add in ['DBranch', 'DExcept', 'DLoop']:
                      new_candy.branch_stack.append(new_candy.tree_currNode)
                      new_candy.last_edge = SIBLING_EDGE
+                     new_candy.last_item = value2add
 
                 elif value2add == 'STOP':
                      if len(new_candy.branch_stack) == 0:
@@ -271,6 +270,7 @@ class BayesianPredictor(object):
                           new_candy.last_edge = CHILD_EDGE
                 else:
                      new_candy.last_edge = SIBLING_EDGE
+                     new_candy.last_item = value2add
 
             new_candies.append(new_candy)
 

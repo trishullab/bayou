@@ -240,6 +240,14 @@ def read_DBranch(js_branch):
      return nodeC
 
 
+def colnum_string(n):
+    n = n + 26*26*26 +26*26 +26 +1
+    string = ""
+    while n > 0:
+        n, remainder = divmod(n - 1, 26)
+        string = chr(65 + remainder) + string
+    return string
+
 
 def plot_path(i, path, prob):
     dot = Digraph(comment='Program AST', format='eps')
@@ -251,7 +259,9 @@ def plot_path(i, path, prob):
         label += " / " + str(dfs_id)
         if dfs_id > 0:
             dot.edge( str(parent_id) , str(dfs_id), label=label, constraint='true', direction='LR')
-    dot.render('plots/' + 'program-ast-' + str(i) + '.gv')
+
+    stri = colnum_string(i)
+    dot.render('plots/' + 'program-ast-' + stri + '.gv')
     return dot
 
 

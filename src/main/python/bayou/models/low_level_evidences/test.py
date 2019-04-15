@@ -60,7 +60,7 @@ evidence = {
 #         "FileWriter"
 #       ]
 #     }
-#
+
 # evidence = {
 #     "apicalls": [
 #         "next",
@@ -133,6 +133,7 @@ def test(clargs):
         for i, candy in enumerate(candies):
             path = candy.head.dfs()
             prob = candy.log_probabilty
+
             dot = plot_path(i,path, prob)
             # print(path)
             # print()
