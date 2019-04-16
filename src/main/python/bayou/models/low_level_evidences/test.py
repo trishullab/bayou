@@ -51,18 +51,18 @@ from bayou.models.low_level_evidences.node import plot_path
 #       ]
 #     }
 
-evidence = {
-    "apicalls": [
-        "readLine",
-        "split",
-        "add"
-      ],
-      "types": [
-        "BufferedReader",
-        "FileReader",
-        "ArrayList"
-      ]
-    }
+# evidence = {
+#     "apicalls": [
+#         "readLine",
+#         "split",
+#         "add"
+#       ],
+#       "types": [
+#         "BufferedReader",
+#         "FileReader",
+#         "ArrayList"
+#       ]
+#     }
 
 # evidence = {
 #     "apicalls": [
@@ -74,15 +74,15 @@ evidence = {
 #       ]
 #     }
 #
-# evidence = {
-#     "apicalls": [
-#         "next",
-#         "remove"
-#       ],
-#       "types": [
-#         "Iterator"
-#       ]
-#     }
+evidence = {
+    "apicalls": [
+        "next",
+        "remove"
+      ],
+      "types": [
+        "Iterator"
+      ]
+    }
 
 def test(clargs):
     clargs.continue_from = True #None
@@ -142,16 +142,21 @@ def test(clargs):
         # print(path)
     else:
         ## BEAM SEARCH
-        candies = predictor.beam_search(evidence, topK=config.batch_size)
-        for i, candy in enumerate(candies):
-            path = candy.head.dfs()
-            prob = candy.log_probabilty
+        # candies = predictor.beam_search(evidence, topK=config.batch_size)
+        # for i, candy in enumerate(candies):
+        #     path = candy.head.dfs()
+        #     prob = candy.log_probabilty
+        #
+        #     dot = plot_path(i,path, prob)
+        #     print(path)
+        #     # print()
+        jsons = predictor.get_jsons_from_beam_search(evidence, topK=config.batch_size)
 
-            dot = plot_path(i,path, prob)
-            # print(path)
-            # print()
+        with open('output_jsons.json', 'w') as f:
+            json.dump({'evidences': evidence, 'asts': jsons}, fp=f, indent=2)
 
-    return path
+
+    return
 
 
 

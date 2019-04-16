@@ -37,7 +37,7 @@ def plot(clargs):
     with open(os.path.join(clargs.save, 'config.json')) as f:
         config = read_config(json.load(f), chars_vocab=True)
 
-    config.batch_size = 1    
+    config.batch_size = 1
     clargs.continue_from = None
     reader = Reader(clargs, config, infer=True)
 
@@ -119,7 +119,7 @@ def deriveAndScatter(f, predictor, evList, max_nums=10000):
         api_call = get_api(get_calls_from_ast(shortProgram['ast']['_nodes']))
         if api_call != 'N/A':
             labels.append(api_call)
-            psis.append(predictor.get_a1b1(shortProgram)[0])
+            psis.append(predictor.get_encoder_mean_variance(shortProgram)[0])
             item_num += 1
 
         if item_num > max_nums:

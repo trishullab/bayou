@@ -134,7 +134,7 @@ class BayesianPredictor(object):
 
 
 
-    def beam_search(self, evidences, topK=10):
+    def beam_search(self, evidences, topK):
 
         self.config.batch_size = topK
 
@@ -281,107 +281,123 @@ class BayesianPredictor(object):
 
 
 
+    def get_jsons_from_beam_search(self, evidences, topK):
 
-    def random_search(self, evidences):
+        candidates = self.beam_search(evidences, topK)
 
-        # got the state, to be used subsequently
-        state = self.get_state(evidences)
-        start_node = Node("DSubTree")
-        head, final_state = self.consume_siblings_until_STOP(state, start_node)
-
-        return head.sibling
-
-
-    def get_prediction(self, node, edge, state):
-        feed = {}
-        feed[self.nodes.name] = np.array([[self.config.decoder.vocab[node]]], dtype=np.int32)
-        feed[self.edges.name] = np.array([[edge]], dtype=np.bool)
-        feed[self.initial_state.name] = state
-
-        [state,idx] = self.sess.run([self.decoder.state, self.idx] , feed)
-        idx = idx[0][0]
-        state = state[0]
-        prediction = self.config.decoder.chars[idx]
-
-        return Node(prediction), state
+        candidates = [candidate for candidate in candidates if candidate.rolling is False]
+        # candidates = candidates[0:1]
+        # print(candidates[0].head.dfs())
+        candidate_jsons = [self.paths_to_ast(candidate.head) for candidate in candidates]
+        return candidate_jsons
 
 
+    def paths_to_ast(self, head_node):
+        """
+        Converts a AST
+        :param paths: the set of paths
+        :return: the AST
+        """
+        json_nodes = []
+        ast = {'node': 'DSubTree', '_nodes': json_nodes}
+        self.expand_all_siblings_till_STOP(json_nodes, head_node.sibling)
 
-    def consume_siblings_until_STOP(self, state, init_node):
-        # all the candidate solutions starting with a DSubTree node
-        head = candidate = init_node
-        if init_node.val == 'STOP':
-            return head
-
-        stack_QUEUE = []
-
-        while True:
-
-            predictionNode, state = self.get_prediction(candidate.val, SIBLING_EDGE, state)
-            candidate = candidate.addAndProgressSiblingNode(predictionNode)
+        return ast
 
 
-            prediction = predictionNode.val
-            if prediction in ['DBranch', 'DExcept', 'DLoop']:
-                stack_QUEUE.append((candidate, prediction))
-
-            elif prediction == 'STOP':
-
-                while len(stack_QUEUE) != 0:
-                    q_candidate, branching_type = stack_QUEUE.pop()
-                    if branching_type == 'DBranch':
-                        q_candidate.child, state = self.consume_DBranch(state)
-                    elif branching_type == 'DExcept':
-                        q_candidate.child, state = self.consume_DExcept(state)
-                    elif branching_type == 'DLoop':
-                        q_candidate.child, state = self.consume_DLoop(state)
-                #end of inner while
-                break
-
-        #END OF WHILE
-        return head, state
+    def expand_all_siblings_till_STOP(self, json_nodes, head_node):
+        """
+        Updates the given list of AST nodes with those along the path starting from pathidx until STOP is reached.
+        If a DBranch, DExcept or DLoop is seen midway when going through the path, recursively updates the respective
+        node type.
+        :param nodes: the list of AST nodes to update
+        :param path: the path
+        :param pathidx: index of path at which update should start
+        :return: the index at which STOP was encountered if there were no recursive updates, otherwise -1
+        """
 
 
-    def consume_DExcept(self, state):
-        tryStatementNode, state = self.get_prediction('DExcept', CHILD_EDGE, state)
-        tryBranch , state = self.consume_siblings_until_STOP(state, tryStatementNode)
+        while head_node.val != 'STOP':
+            node_value = head_node.val
+            astnode = {}
+            if node_value == 'DBranch':
+                astnode['node'] = node_value
+                astnode['_cond'] = []
+                astnode['_then'] = []
+                astnode['_else'] = []
+                self.update_DBranch(astnode, head_node.child)
+                json_nodes.append(astnode)
+            elif node_value == 'DExcept':
+                astnode['node'] = node_value
+                astnode['_try'] = []
+                astnode['_catch'] = []
+                self.update_DExcept(astnode, head_node.child)
+                json_nodes.append(astnode)
+            elif node_value == 'DLoop':
+                astnode['node'] = node_value
+                astnode['_cond'] = []
+                astnode['_body'] = []
+                self.update_DLoop(astnode, head_node.child)
+                json_nodes.append(astnode)
+            else:
+                json_nodes.append({'node': 'DAPICall', '_call': node_value})
 
-        catchStartNode, state = self.get_prediction(tryStatementNode.val, CHILD_EDGE, state)
-        catchBranch, state = self.consume_siblings_until_STOP(state, catchStartNode)
+            head_node = head_node.sibling
 
-        tryBranch.child = catchStartNode
-
-        return tryBranch, state
-
-
-
-    def consume_DLoop(self, state):
-        loopConditionNode, state = self.get_prediction('DLoop', CHILD_EDGE, state)
-        loopConditionNode.sibling = Node('STOP')
-
-        loopStartNode, state = self.get_prediction(loopConditionNode.val, CHILD_EDGE, state)
-        loopBranch, state = self.consume_siblings_until_STOP(state, loopStartNode)
-
-        loopConditionNode.child = loopBranch
-
-        return loopConditionNode, state
-
-
-
-    def consume_DBranch(self, state):
-        ifStatementNode, state = self.get_prediction('DBranch', CHILD_EDGE, state)
-        ifThenBranch , state = self.consume_siblings_until_STOP(state, ifStatementNode)
-
-        #
-        elseBranchStartNode, state = self.get_prediction(ifStatementNode.val, CHILD_EDGE, state)
-        elseBranch, state = self.consume_siblings_until_STOP(state, elseBranchStartNode)
-        #
-        ifThenBranch.child = elseBranch
-
-        return ifThenBranch, state
+        return
 
 
-    def get_a1b1(self, evidences):
+    def update_DBranch(self, astnode, loop_node):
+        """
+        Updates a DBranch AST node with nodes from the path starting at pathidx
+        :param astnode: the AST node to update
+        :param path: the path
+        :param pathidx: index of path at which update should start
+        """
+        # self.expand_all_siblings_till_STOP(astnode['_cond'], loop_node, pathidx+1)
+
+        astnode['_cond'] = json_nodes = [{'node': 'DAPICall', '_call': loop_node.val}]
+        self.expand_all_siblings_till_STOP(astnode['_then'], loop_node.sibling)
+        self.expand_all_siblings_till_STOP(astnode['_else'], loop_node.child)
+        return
+
+    def update_DExcept(self, astnode, loop_node):
+        """
+        Updates a DExcept AST node with nodes from the path starting at pathidx
+        :param astnode: the AST node to update
+        :param path: the path
+        :param pathidx: index of path at which update should start
+        """
+        self.expand_all_siblings_till_STOP(astnode['_try'], loop_node)
+        self.expand_all_siblings_till_STOP(astnode['_catch'], loop_node.child)
+        return
+
+    def update_DLoop(self, astnode, loop_node):
+        """
+        Updates a DLoop AST node with nodes from the path starting at pathidx
+        :param astnode: the AST node to update
+        :param path: the path
+        :param pathidx: index of path at which update should start
+        """
+        self.expand_all_siblings_till_STOP(astnode['_cond'], loop_node)
+        self.expand_all_siblings_till_STOP(astnode['_body'], loop_node.child)
+        return
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    def get_encoder_mean_variance(self, evidences):
         # setup initial states and feed
 
         rdp = [ev.read_data_point(evidences, infer=True) for ev in self.config.evidence]
