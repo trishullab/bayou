@@ -21,7 +21,6 @@ MAX_LOOP_NUM = 3
 MAX_BRANCHING_NUM = 3
 
 
-
 class TooLongLoopingException(Exception):
     pass
 
@@ -47,31 +46,28 @@ class Node():
 
     def check_nested_branch(self):
         head = self
+        count = 0
         while(head != None):
             if head.val == 'DBranch':
-                head_child = head
-                count = 0
-                while(head_child != None):
-                    if head_child.val == 'DBranch':
-                        count += 1
-                    head_child = head_child.child
+                count_Else = head.child.child.check_nested_branch() #else
+                count_Then = head.child.sibling.check_nested_branch() #then
+                count = 1 + max(count_Then, count_Else)
                 if count > MAX_BRANCHING_NUM:
                     raise TooLongBranchingException
             head = head.sibling
+        return count
 
     def check_nested_loop(self):
         head = self
+        count = 0
         while(head != None):
             if head.val == 'DLoop':
-                head_child = head
-                count = 0
-                while(head_child != None):
-                    if head_child.val == 'DLoop':
-                        count += 1
-                    head_child = head_child.child
+                count = 1 + head.child.child.check_nested_loop()
+
                 if count > MAX_LOOP_NUM:
                     raise TooLongLoopingException
             head = head.sibling
+        return count
 
 
 
@@ -175,11 +171,13 @@ def get_ast(js, idx=0):
          future = get_ast(js, i+1)
          future = future.sibling
 
-         ##
-         if nodeC.val == 'STOP' and nodeC.sibling.val == 'STOP' and nodeC.child.val == 'DBranch':
-             branching = nodeC.child
-         else:
-             branching = Node('DBranch', child=nodeC, sibling=future)
+         #
+         # if nodeC.val == 'STOP' and nodeC.sibling.val == 'STOP' and nodeC.child.val == 'DBranch':
+         #     branching = nodeC.child
+         # elif nodeC.val == 'STOP' and nodeC.child.val == 'STOP' and nodeC.sibling.val == 'DBranch':
+         #     branching = nodeC.sibling
+         # else:
+         branching = Node('DBranch', child=nodeC, sibling=future)
 
          curr_Node.sibling = branching
          curr_Node = curr_Node.sibling

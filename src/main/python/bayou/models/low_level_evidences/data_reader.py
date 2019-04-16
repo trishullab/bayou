@@ -93,7 +93,7 @@ class Reader():
 
 
         data_points = []
-        done, ignored = 0, 0
+        done, ignored_for_branch, ignored_for_loop = 0, 0, 0
         self.decoder_api_dict = decoderDict(infer, self.config.decoder)
 
         f = open(filename , 'rb')
@@ -119,15 +119,19 @@ class Reader():
                 data_points.append((evidences, parsed_data_array))
                 done += 1
 
-            except (TooLongLoopingException, TooLongBranchingException) as e:
-                ignored += 1
+            except (TooLongLoopingException) as e1:
+                ignored_for_loop += 1
+
+            except (TooLongBranchingException) as e2:
+                ignored_for_branch += 1
 
             if done % 100000 == 0:
                 print('Extracted data for {} programs'.format(done), end='\n')
                 # break
 
         print('{:8d} programs/asts in training data'.format(done))
-        print('{:8d} programs/asts missed in training data'.format(ignored))
+        print('{:8d} programs/asts missed in training data for loop'.format(ignored_for_loop))
+        print('{:8d} programs/asts missed in training data for branch'.format(ignored_for_branch))
 
         # randomly shuffle to avoid bias towards initial data points during training
         random.shuffle(data_points)
