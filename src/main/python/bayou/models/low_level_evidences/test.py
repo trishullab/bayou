@@ -131,10 +131,10 @@ def test(clargs):
 
 
 
-    ## DFS
+    ## breadth_first_search
     if (iWantRandom):
         path_head = predictor.random_search(evidence)
-        path = path_head.dfs()
+        path = path_head.breadth_first_search()
 
         randI = random.randint(0,1000)
         dot = plot_path(randI,path)
@@ -144,7 +144,7 @@ def test(clargs):
         ## BEAM SEARCH
         # candies = predictor.beam_search(evidence, topK=config.batch_size)
         # for i, candy in enumerate(candies):
-        #     path = candy.head.dfs()
+        #     path = candy.head.breadth_first_search()
         #     prob = candy.log_probabilty
         #
         #     dot = plot_path(i,path, prob)

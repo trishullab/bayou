@@ -92,7 +92,7 @@ def train(clargs):
             sess.run(iterator.initializer, feed_dict=feed_dict)
             avg_loss = 0.
             allEvSigmas = sess.run(model.allEvSigmas)
-            
+
             for b in range(config.num_batches):
                 # run the optimizer
                 loss, _ = sess.run([model.loss, model.train_op])
@@ -137,7 +137,7 @@ if __name__ == '__main__':
     clargs = parser.parse_args(
      # ['--continue_from', 'save',
      ['--config','config.json',
-     '/home/ubuntu/DATA-extracted-for-CACM-train.json'])
+     '/home/rm38/Research/Bayou/Corpus/raw_synthesis_data/DATA-extracted-for-CACM-train.json'])
     sys.setrecursionlimit(clargs.python_recursion_limit)
     if clargs.config and clargs.continue_from:
         parser.error('Do not provide --config if you are continuing from checkpointed model')

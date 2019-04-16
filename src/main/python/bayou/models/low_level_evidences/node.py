@@ -71,42 +71,7 @@ class Node():
 
 
 
-
-    def bfs(self):
-
-        buffer = []
-        stack = []
-        bfs_id = None
-        parent_id = 0
-        if self is not None:
-            stack.append((self, parent_id, SIBLING_EDGE))
-            bfs_id = 0
-
-
-        while( len(stack) > 0 ):
-
-            item_triple = stack.pop()
-            item  = item_triple[0]
-            parent_id = item_triple[1]
-            edge_type = item_triple[2]
-
-            buffer.append((item.val, parent_id, edge_type))
-
-
-            if item.sibling is not None:
-                stack.append((item.sibling, bfs_id , SIBLING_EDGE))
-
-            if item.child is not None:
-                stack.append((item.child, bfs_id, CHILD_EDGE))
-
-
-            bfs_id += 1
-
-        return buffer
-
-
-
-    def dfs(self):
+    def breadth_first_search(self):
 
         buffer = []
         stack = []
@@ -144,11 +109,18 @@ class Node():
 
 
 
+def get_ast_from_json(js):
+    ast = get_ast(js, idx=0)
+    real_head = Node("DSubTree")
+    real_head.child = ast
+    return real_head
+
+
 def get_ast(js, idx=0):
      #print (idx)
      cons_calls = []
      i = idx
-     curr_Node = Node("DSubTree")
+     curr_Node = Node("Dummy_Fist_Sibling")
      head = curr_Node
      while i < len(js):
          if js[i]['node'] == 'DAPICall':
@@ -160,7 +132,7 @@ def get_ast(js, idx=0):
      if i == len(js):
          curr_Node.sibling = Node('STOP')
          curr_Node = curr_Node.sibling
-         return head
+         return head.sibling
 
      node_type = js[i]['node']
 
@@ -171,17 +143,11 @@ def get_ast(js, idx=0):
          future = get_ast(js, i+1)
          future = future.sibling
 
-         #
-         # if nodeC.val == 'STOP' and nodeC.sibling.val == 'STOP' and nodeC.child.val == 'DBranch':
-         #     branching = nodeC.child
-         # elif nodeC.val == 'STOP' and nodeC.child.val == 'STOP' and nodeC.sibling.val == 'DBranch':
-         #     branching = nodeC.sibling
-         # else:
          branching = Node('DBranch', child=nodeC, sibling=future)
 
          curr_Node.sibling = branching
          curr_Node = curr_Node.sibling
-         return head
+         return head.sibling
 
      if node_type == 'DExcept':
 
@@ -193,7 +159,7 @@ def get_ast(js, idx=0):
          exception = Node('DExcept' , child=nodeT, sibling=future)
          curr_Node.sibling = exception
          curr_Node = curr_Node.sibling
-         return head
+         return head.sibling
 
 
      if node_type == 'DLoop':
@@ -207,28 +173,22 @@ def get_ast(js, idx=0):
          curr_Node.sibling = loop
          curr_Node = curr_Node.sibling
 
-         return head
+         return head.sibling
 
 
 def read_DLoop(js_branch):
+    # assert len(pC) <= 1
      nodeC = get_ast(js_branch['_cond'])  # will have at most 1 "path"
-     nodeC = nodeC.sibling
-     # assert len(pC) <= 1
-
      nodeB  = get_ast(js_branch['_body'])
-     nodeB = nodeB.sibling
-
      nodeC.child = nodeB
+
      return nodeC
 
 
 def read_DExcept(js_branch):
 
      nodeT = get_ast(js_branch['_try'])
-     nodeT = nodeT.sibling
      nodeC = get_ast(js_branch['_catch'])
-     nodeC = nodeC.sibling
-
      nodeT.child = nodeC
 
      return nodeT
@@ -237,16 +197,12 @@ def read_DExcept(js_branch):
 def read_DBranch(js_branch):
 
      nodeC = get_ast(js_branch['_cond'])  # will have at most 1 "path"
-     nodeC = nodeC.sibling
      # assert len(pC) <= 1
-
      nodeT = get_ast(js_branch['_then'])
-     nodeT = nodeT.sibling
      #nodeC.child = nodeT
-     nodeC.sibling = nodeT
-
      nodeE = get_ast(js_branch['_else'])
-     nodeE = nodeE.sibling
+
+     nodeC.sibling = nodeT
      nodeC.child = nodeE
 
      return nodeC
@@ -454,7 +410,7 @@ js4 =  {
 
 if __name__ == "__main__":
     for i, _js in enumerate([js, js1, js2, js3, js4]):
-         ast = get_ast(_js['ast']['_nodes'])
-         path = ast.dfs()
-         dot = plot_path(i, path)
+         ast = get_ast_from_json(_js['ast']['_nodes'])
+         path = ast.breadth_first_search()
+         # dot = plot_path(i, path)
          print(path)

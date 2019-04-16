@@ -23,7 +23,7 @@ import json
 
 from bayou.models.low_level_evidences.model import Model
 from bayou.models.low_level_evidences.architecture import BayesianEncoder, BayesianDecoder
-from bayou.models.low_level_evidences.node import CHILD_EDGE, SIBLING_EDGE, Node, get_ast
+from bayou.models.low_level_evidences.node import CHILD_EDGE, SIBLING_EDGE, Node
 from bayou.models.low_level_evidences.utils import read_config
 
 MAX_GEN_UNTIL_STOP = 20
@@ -48,7 +48,7 @@ class Candidate():
         self.head = self.tree_currNode
 
         self.last_item = self.tree_currNode.val
-        self.last_edge = SIBLING_EDGE
+        self.last_edge = CHILD_EDGE 
         self.branch_stack = []
 
         self.length = 1
@@ -140,16 +140,6 @@ class BayesianPredictor(object):
 
         init_state = self.get_state(evidences)
 
-        #BUG :: one dummy step
-        feed = {}
-        feed[self.nodes.name] = np.array([[self.config.decoder.vocab['DSubTree']] for k in range(topK) ], dtype=np.int32)
-        feed[self.edges.name] = np.array([[SIBLING_EDGE] for k in range(topK)], dtype=np.bool)
-        feed[self.initial_state.name] = init_state
-
-        init_state = self.sess.run(self.decoder.state , feed)[0][0]
-
-
-
         candies = [Candidate(init_state) for k in range(topK)]
         candies[0].log_probabilty = -0.0
 
@@ -157,7 +147,7 @@ class BayesianPredictor(object):
         while(True):
             # states was batch_size * LSTM_Decoder_state_size
             candies = self.get_next_output_with_fan_out(candies)
-            #print([candy.head.dfs() for candy in candies])
+            #print([candy.head.breadth_first_search() for candy in candies])
             #print([candy.rolling for candy in candies])
 
             if self.check_for_all_STOP(candies): # branch_stack and last_item
@@ -287,7 +277,7 @@ class BayesianPredictor(object):
 
         candidates = [candidate for candidate in candidates if candidate.rolling is False]
         # candidates = candidates[0:1]
-        # print(candidates[0].head.dfs())
+        # print(candidates[0].head.breadth_first_search())
         candidate_jsons = [self.paths_to_ast(candidate.head) for candidate in candidates]
         return candidate_jsons
 

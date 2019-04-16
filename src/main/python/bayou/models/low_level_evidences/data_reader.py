@@ -23,7 +23,7 @@ from collections import Counter
 from copy import deepcopy
 
 from bayou.models.low_level_evidences.utils import gather_calls, dump_config
-from bayou.models.low_level_evidences.node import Node, get_ast, CHILD_EDGE, SIBLING_EDGE, TooLongLoopingException, TooLongBranchingException
+from bayou.models.low_level_evidences.node import Node, get_ast_from_json, CHILD_EDGE, SIBLING_EDGE, TooLongLoopingException, TooLongBranchingException
 
 
 
@@ -100,20 +100,20 @@ class Reader():
         for program in ijson.items(f, 'programs.item'):
             try:
                 evidences = [ev.read_data_point(program, infer) for ev in self.config.evidence]
-                ast_node_graph = get_ast(program['ast']['_nodes'])
+                ast_node_graph = get_ast_from_json(program['ast']['_nodes'])
 
                 ast_node_graph.check_nested_branch()
                 ast_node_graph.check_nested_loop()
 
-                path = ast_node_graph.dfs()[1:] #omitting the DSubTree->DSubTree node
+                path = ast_node_graph.breadth_first_search()
                 parsed_data_array = []
-                for curr_node_val, parent_node_id, edge_type in path:
+                for i, (curr_node_val, parent_node_id, edge_type) in enumerate(path):
                     curr_node_id = self.decoder_api_dict.get_or_add_node_val_from_callMap(curr_node_val)
-                    # now parent id is already evaluated since this is top-down dfs
+                    # now parent id is already evaluated since this is top-down breadth_first_search
                     parent_call = path[parent_node_id][0]
                     parent_call_id = self.decoder_api_dict.get_node_val_from_callMap(parent_call)
 
-                    if not (curr_node_id is None or parent_call_id is None):
+                    if i > 0 and not (curr_node_id is None or parent_call_id is None): # I = 0 denotes DSubtree ----sibling---> DSubTree
                         parsed_data_array.append((parent_call_id, edge_type, curr_node_id))
 
                 data_points.append((evidences, parsed_data_array))
