@@ -14,7 +14,7 @@
           "tile": 1,
           "max_depth": -1,
           "max_nums": 8,
-          "ev_drop_prob":0.8,
+          "ev_drop_prob":0.9,
           "ev_call_drop_prob":0.9
       },
       {
@@ -24,7 +24,7 @@
           "tile": 1,
           "max_depth": -1,
           "max_nums": 8,
-          "ev_drop_prob":0.8,
+          "ev_drop_prob":0.9,
           "ev_call_drop_prob":0.9
       },
       {
@@ -34,8 +34,8 @@
           "tile": 1,
           "max_depth": -1,
           "max_nums": 8,
-          "ev_drop_prob":0.8,
-          "ev_call_drop_prob":0.7
+          "ev_drop_prob":0.9,
+          "ev_call_drop_prob":0.9
       }
     ],
     "decoder": {

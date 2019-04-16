@@ -17,6 +17,18 @@ from graphviz import Digraph
 CHILD_EDGE = True
 SIBLING_EDGE = False
 
+MAX_LOOP_NUM = 3
+MAX_BRANCHING_NUM = 3
+
+
+
+class TooLongLoopingException(Exception):
+    pass
+
+
+class TooLongBranchingException(Exception):
+    pass
+
 
 class Node():
     def __init__(self, call, child=None, sibling=None):
@@ -33,37 +45,35 @@ class Node():
         return self.child
 
 
-    #
-    #
-    # def copy(self):
-    #     child = None
-    #     sibling = None
-    #     if (self.child != None):
-    #         child = self.child.copy()
-    #     if (self.sibling != None):
-    #         sibling = self.sibling.copy()
-    #
-    #     return Node(self.val, child, sibling)
-    #
-    #
-    def copyWTrackingLast(self, lastNode, trackNode):
-        child = None
-        sibling = None
+    def check_nested_branch(self):
+        head = self
+        while(head != None):
+            if head.val == 'DBranch':
+                head_child = head
+                count = 0
+                while(head_child != None):
+                    if head_child.val == 'DBranch':
+                        count += 1
+                    head_child = head_child.child
+                if count > MAX_BRANCHING_NUM:
+                    raise TooLongBranchingException
+            head = head.sibling
 
-        if (self.child != None):
-            child, trackNode = self.child.copyWTrackingLast(lastNode, trackNode)
-        if (self.sibling != None):
-            sibling, trackNode = self.sibling.copyWTrackingLast(lastNode, trackNode)
+    def check_nested_loop(self):
+        head = self
+        while(head != None):
+            if head.val == 'DLoop':
+                head_child = head
+                count = 0
+                while(head_child != None):
+                    if head_child.val == 'DLoop':
+                        count += 1
+                    head_child = head_child.child
+                if count > MAX_LOOP_NUM:
+                    raise TooLongLoopingException
+            head = head.sibling
 
 
-
-        returnNode = Node(self.val, child, sibling)
-
-        if self is lastNode:
-            trackNode = returnNode
-
-
-        return returnNode , trackNode
 
 
     def bfs(self):
@@ -165,8 +175,12 @@ def get_ast(js, idx=0):
          future = get_ast(js, i+1)
          future = future.sibling
 
+         ##
+         if nodeC.val == 'STOP' and nodeC.sibling.val == 'STOP' and nodeC.child.val == 'DBranch':
+             branching = nodeC.child
+         else:
+             branching = Node('DBranch', child=nodeC, sibling=future)
 
-         branching = Node('DBranch', child=nodeC, sibling=future)
          curr_Node.sibling = branching
          curr_Node = curr_Node.sibling
          return head

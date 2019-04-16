@@ -137,7 +137,7 @@ if __name__ == '__main__':
     clargs = parser.parse_args(
      # ['--continue_from', 'save',
      ['--config','config.json',
-     '/home/ubuntu/CACM_data/DATA-extr-fr-CACM-wEvidence.json'])
+     '/home/ubuntu/DATA-extracted-for-CACM-train.json'])
     sys.setrecursionlimit(clargs.python_recursion_limit)
     if clargs.config and clargs.continue_from:
         parser.error('Do not provide --config if you are continuing from checkpointed model')
