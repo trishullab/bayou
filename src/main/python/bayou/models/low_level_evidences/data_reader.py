@@ -102,8 +102,8 @@ class Reader():
                 evidences = [ev.read_data_point(program, infer) for ev in self.config.evidence]
                 ast_node_graph = get_ast_from_json(program['ast']['_nodes'])
 
-                ast_node_graph.check_nested_branch()
-                ast_node_graph.check_nested_loop()
+                ast_node_graph.child.check_nested_branch()
+                ast_node_graph.child.check_nested_loop()
 
                 path = ast_node_graph.breadth_first_search()
                 parsed_data_array = []

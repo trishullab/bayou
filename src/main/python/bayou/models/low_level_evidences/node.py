@@ -412,5 +412,5 @@ if __name__ == "__main__":
     for i, _js in enumerate([js, js1, js2, js3, js4]):
          ast = get_ast_from_json(_js['ast']['_nodes'])
          path = ast.breadth_first_search()
-         # dot = plot_path(i, path)
+         dot = plot_path(i, path, 0.0)
          print(path)
