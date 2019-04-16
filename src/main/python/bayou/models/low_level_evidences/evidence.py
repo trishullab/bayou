@@ -109,11 +109,11 @@ class Sets(Evidence):
 
     def exists(self, inputs, config, infer):
         i = tf.expand_dims(tf.reduce_sum(inputs, axis=1),axis=1)
-        # Drop a few types of evidences during training
-        if not infer:
-            i_shaped_zeros = tf.zeros_like(i)
-            rand = tf.random_uniform( (config.batch_size,1) )
-            i = tf.where(tf.less(rand, self.ev_drop_prob) , i, i_shaped_zeros)
+        # # Drop a few types of evidences during training
+        # if not infer:
+        #     i_shaped_zeros = tf.zeros_like(i)
+        #     rand = tf.random_uniform( (config.batch_size,1) )
+        #     i = tf.where(tf.less(rand, self.ev_drop_prob) , i, i_shaped_zeros)
 
         i = tf.reduce_sum(i, axis=1)
 
@@ -128,11 +128,11 @@ class Sets(Evidence):
     def encode(self, inputs, config, infer):
         with tf.variable_scope(self.name):
 
-            # Drop some inputs
-            if not infer:
-                inp_shaped_zeros = tf.zeros_like(inputs)
-                rand = tf.random_uniform( (config.batch_size, self.max_nums) )
-                inputs = tf.where(tf.less(rand, self.ev_call_drop_prob) , inputs, inp_shaped_zeros)
+            # # Drop some inputs
+            # if not infer:
+            #     inp_shaped_zeros = tf.zeros_like(inputs)
+            #     rand = tf.random_uniform( (config.batch_size, self.max_nums) )
+            #     inputs = tf.where(tf.less(rand, self.ev_call_drop_prob) , inputs, inp_shaped_zeros)
 
             inputs = tf.reshape(inputs, [-1])
 

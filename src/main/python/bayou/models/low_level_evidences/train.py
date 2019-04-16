@@ -90,17 +90,15 @@ def train(clargs):
         #epocLoss , epocGenL , epocKlLoss = [], [], []
         for i in range(config.num_epochs):
             sess.run(iterator.initializer, feed_dict=feed_dict)
-            start = time.time()
-            avg_loss = 0. #, avg_gen_loss, avg_RE_loss , avg_FS_loss , avg_KL_loss = 0.,0.,0.,0.,0.
+            avg_loss = 0.
+            allEvSigmas = sess.run(model.allEvSigmas)
+            
             for b in range(config.num_batches):
                 # run the optimizer
                 loss, _ = sess.run([model.loss, model.train_op])
-                # allEvSigmas = sess.run(model.allEvSigmas)
-                # s = sess.run(merged_summary, feed)
-                # writer.add_summary(s,i)
-
-                end = time.time()
                 avg_loss += np.mean(loss)
+
+
 
 
 
@@ -110,6 +108,7 @@ def train(clargs):
                           'loss: {:.3f}, \n\t'.format
                           (step, config.num_epochs * config.num_batches, i + 1 ,avg_loss/(b+1)))
 
+
             if (i+1) % config.checkpoint_step == 0:
                 checkpoint_dir = os.path.join(clargs.save, 'model{}.ckpt'.format(i+1))
                 saver.save(sess, checkpoint_dir)
@@ -117,6 +116,7 @@ def train(clargs):
                 print('Model checkpointed: {}. Average for epoch , '
                       'loss: {:.3f}'.format
                       (checkpoint_dir, avg_loss / config.num_batches))
+                print(allEvSigmas)
 
 
 #%%

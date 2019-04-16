@@ -105,7 +105,7 @@ class Reader():
                 ast_node_graph.check_nested_branch()
                 ast_node_graph.check_nested_loop()
 
-                path = ast_node_graph.dfs()
+                path = ast_node_graph.dfs()[1:] #omitting the DSubTree->DSubTree node
                 parsed_data_array = []
                 for curr_node_val, parent_node_id, edge_type in path:
                     curr_node_id = self.decoder_api_dict.get_or_add_node_val_from_callMap(curr_node_val)
@@ -124,7 +124,7 @@ class Reader():
 
             if done % 100000 == 0:
                 print('Extracted data for {} programs'.format(done), end='\n')
-                break
+                # break
 
         print('{:8d} programs/asts in training data'.format(done))
         print('{:8d} programs/asts missed in training data'.format(ignored))

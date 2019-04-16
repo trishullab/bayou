@@ -4,7 +4,7 @@
     "batch_size": 50,
     "num_epochs": 100,
     "learning_rate": 0.0006,
-    "print_step": 50,
+    "print_step": 100,
     "checkpoint_step":1,
     "evidence": [
       {
@@ -14,8 +14,8 @@
           "tile": 1,
           "max_depth": -1,
           "max_nums": 8,
-          "ev_drop_prob":0.9,
-          "ev_call_drop_prob":0.9
+          "ev_drop_prob":1.0,
+          "ev_call_drop_prob":1.0
       },
       {
           "name": "types",
@@ -24,8 +24,8 @@
           "tile": 1,
           "max_depth": -1,
           "max_nums": 8,
-          "ev_drop_prob":0.9,
-          "ev_call_drop_prob":0.9
+          "ev_drop_prob":1.0,
+          "ev_call_drop_prob":1.0
       },
       {
           "name": "keywords",
@@ -34,13 +34,13 @@
           "tile": 1,
           "max_depth": -1,
           "max_nums": 8,
-          "ev_drop_prob":0.9,
-          "ev_call_drop_prob":0.9
+          "ev_drop_prob":1.0,
+          "ev_call_drop_prob":1.0
       }
     ],
     "decoder": {
         "units": 256,
-        "num_layers": 1,
+        "num_layers": 3,
         "max_ast_depth": 64
     }
 }
