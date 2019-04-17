@@ -30,59 +30,59 @@ from bayou.models.low_level_evidences.utils import read_config
 from bayou.models.low_level_evidences.data_reader import Reader
 from bayou.models.low_level_evidences.node import plot_path
 
-# evidence = {
-#     "apicalls": [
-#         "remove"
-#       ],
-#       "types": [
-#         "HashMap",
-#         "ArrayList"
-#       ]
-#     }
-
-
-# evidence = {
-#     "apicalls": [
-#         "readLine"
-#       ],
-#       "types": [
-#         "BufferedReader",
-#         "FileReader"
-#       ]
-#     }
-
-# evidence = {
-#     "apicalls": [
-#         "readLine",
-#         "split",
-#         "add"
-#       ],
-#       "types": [
-#         "BufferedReader",
-#         "FileReader",
-#         "ArrayList"
-#       ]
-#     }
-
-# evidence = {
-#     "apicalls": [
-#         "write"
-#       ],
-#       "types": [
-#         "BufferedWriter",
-#         "FileWriter"
-#       ]
-#     }
-#
-evidence = {
+evidence1 = {
     "apicalls": [
-        "next",
         "remove"
       ],
       "types": [
-        "Iterator"
+        "HashMap",
+        "ArrayList"
       ]
     }
+
+
+evidence2 = {
+     "apicalls": [
+         "readLine"
+       ],
+       "types": [
+         "BufferedReader",
+         "FileReader"
+       ]
+     }
+
+evidence = {
+    "apicalls": [
+        "readLine",
+        "split",
+        "add"
+      ],
+      "types": [
+        "BufferedReader",
+        "FileReader",
+        "ArrayList"
+      ]
+    }
+
+evidence4 = {
+    "apicalls": [
+        "write"
+      ],
+      "types": [
+        "BufferedWriter",
+        "FileWriter"
+      ]
+    }
+
+evidence5 = {
+   "apicalls": [
+       "next",
+       "remove"
+     ],
+     "types": [
+       "Iterator"
+     ]
+   }
 
 def test(clargs):
     clargs.continue_from = True #None
@@ -142,18 +142,18 @@ def test(clargs):
         # print(path)
     else:
         ## BEAM SEARCH
-        # candies = predictor.beam_search(evidence, topK=config.batch_size)
-        # for i, candy in enumerate(candies):
-        #     path = candy.head.breadth_first_search()
-        #     prob = candy.log_probabilty
+        candies = predictor.beam_search(evidence, topK=config.batch_size)
+        for i, candy in enumerate(candies):
+             path = candy.head.breadth_first_search()
+             prob = candy.log_probabilty
         #
-        #     dot = plot_path(i,path, prob)
+             dot = plot_path(i,path, prob)
         #     print(path)
         #     # print()
-        jsons = predictor.get_jsons_from_beam_search(evidence, topK=config.batch_size)
+        #jsons = predictor.get_jsons_from_beam_search(evidence, topK=config.batch_size)
 
-        with open('output_jsons.json', 'w') as f:
-            json.dump({'evidences': evidence, 'asts': jsons}, fp=f, indent=2)
+        #with open('output_jsons.json', 'w') as f:
+        #    json.dump({'evidences': evidence, 'asts': jsons}, fp=f, indent=2)
 
 
     return

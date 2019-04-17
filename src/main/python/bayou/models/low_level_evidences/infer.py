@@ -48,7 +48,7 @@ class Candidate():
         self.head = self.tree_currNode
 
         self.last_item = self.tree_currNode.val
-        self.last_edge = CHILD_EDGE 
+        self.last_edge = CHILD_EDGE
         self.branch_stack = []
 
         self.length = 1
@@ -138,7 +138,7 @@ class BayesianPredictor(object):
 
         self.config.batch_size = topK
 
-        init_state = self.get_state(evidences)
+        init_state = self.get_state(evidences)[0]
 
         candies = [Candidate(init_state) for k in range(topK)]
         candies[0].log_probabilty = -0.0
@@ -216,7 +216,7 @@ class BayesianPredictor(object):
 
         new_probs = log_probabilty[:,None]  + beam_ln_probs
 
-        len_norm_probs = new_probs / np.power(length[:,None], 1.0)
+        len_norm_probs = new_probs #/ np.power(length[:,None], 1.0)
 
         rows, cols = np.unravel_index(np.argsort(len_norm_probs, axis=None)[::-1], new_probs.shape)
         rows, cols = rows[:topK], cols[:topK]
