@@ -61,8 +61,8 @@ class Candidate():
 
 class BayesianPredictor(object):
 
-    def __init__(self, save, sess, config, iterator):
-        self.sess = sess
+    def __init__(self, save, config):
+        self.sess  = tf.InteractiveSession()
 
         self.config = config
         # load the saved config

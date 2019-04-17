@@ -51,7 +51,7 @@ evidence2 = {
        ]
      }
 
-evidence = {
+evidence3 = {
     "apicalls": [
         "readLine",
         "split",
@@ -84,6 +84,10 @@ evidence5 = {
      ]
    }
 
+
+evidence_dict = {'trash':evidence1, 'reader':evidence2, 'splitter':evidence3, 'writer':evidence4, 'iterator':evidence5}
+
+
 def test(clargs):
     clargs.continue_from = True #None
 
@@ -96,40 +100,18 @@ def test(clargs):
     if (iWantRandom):
         config.batch_size = 1
     else:
-        config.batch_size = 50
+        config.batch_size = 10
 
-    reader = Reader(clargs, config, infer=True)
-
-	# Placeholders for tf data
-
-    nodes_placeholder = tf.placeholder(reader.nodes.dtype, reader.nodes.shape)
-    edges_placeholder = tf.placeholder(reader.edges.dtype, reader.edges.shape)
-    targets_placeholder = tf.placeholder(reader.targets.dtype, reader.targets.shape)
-    evidence_placeholder = [tf.placeholder(input.dtype, input.shape) for input in reader.inputs]
-
-    # reset batches
-
-    feed_dict={fp: f for fp, f in zip(evidence_placeholder, reader.inputs)}
-    feed_dict.update({nodes_placeholder: reader.nodes})
-    feed_dict.update({edges_placeholder: reader.edges})
-    feed_dict.update({targets_placeholder: reader.targets})
-
-
-
-
-    dataset = tf.data.Dataset.from_tensor_slices((nodes_placeholder, edges_placeholder, targets_placeholder, *evidence_placeholder))
-    batched_dataset = dataset.batch(config.batch_size)
-    iterator = batched_dataset.make_initializable_iterator()
-
-    sess = tf.InteractiveSession()
-    predictor = BayesianPredictor(clargs.save, sess, config, iterator) # goes to infer.BayesianPredictor
+    predictor = BayesianPredictor(clargs.save, config) # goes to infer.BayesianPredictor
     # testing
     # sess.run(iterator.initializer, feed_dict=feed_dict)
 
     # allEvSigmas = predictor.get_ev_sigma()
     # print(allEvSigmas)
 
+    evidence = evidence_dict[clargs.evidence]
 
+    # print (evidence)
 
     ## breadth_first_search
     if (iWantRandom):
@@ -163,14 +145,12 @@ def test(clargs):
 #%%
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(formatter_class=argparse.RawDescriptionHelpFormatter)
-    parser.add_argument('input_file', type=str, nargs=1,
-                        help='input data file')
+
     parser.add_argument('--python_recursion_limit', type=int, default=10000,
                         help='set recursion limit for the Python interpreter')
     parser.add_argument('--save', type=str, required=True,
                         help='checkpoint model during training here')
-    parser.add_argument('--evidence', type=str, default='all',
-                        choices=['apicalls', 'types', 'keywords', 'all'],
+    parser.add_argument('--evidence', type=str, default='evidence1',
                         help='use only this evidence for inference queries')
     parser.add_argument('--output_file', type=str, default=None,
                         help='output file to print probabilities')

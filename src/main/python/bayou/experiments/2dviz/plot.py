@@ -39,28 +39,9 @@ def plot(clargs):
 
     config.batch_size = 1
     clargs.continue_from = None
-    reader = Reader(clargs, config, infer=True)
-
-	# Placeholders for tf data
-    nodes_placeholder = tf.placeholder(reader.nodes.dtype, reader.nodes.shape)
-    edges_placeholder = tf.placeholder(reader.edges.dtype, reader.edges.shape)
-    targets_placeholder = tf.placeholder(reader.targets.dtype, reader.targets.shape)
-    evidence_placeholder = [tf.placeholder(input.dtype, input.shape) for input in reader.inputs]
-
-    # reset batches
-
-    feed_dict={fp: f for fp, f in zip(evidence_placeholder, reader.inputs)}
-    feed_dict.update({nodes_placeholder: reader.nodes})
-    feed_dict.update({edges_placeholder: reader.edges})
-    feed_dict.update({targets_placeholder: reader.targets})
-
-    dataset = tf.data.Dataset.from_tensor_slices((nodes_placeholder, edges_placeholder, targets_placeholder, *evidence_placeholder))
-    batched_dataset = dataset.batch(config.batch_size)
-    iterator = batched_dataset.make_initializable_iterator()
 
 
-    sess = tf.InteractiveSession()
-    predictor = BayesianPredictor(clargs.save, sess, config, iterator)
+    predictor = BayesianPredictor(clargs.save, config)
 
 
     # Plot for indicidual evidences
@@ -191,8 +172,6 @@ def get_calls_from_ast(ast):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-    parser.add_argument('input_file', type=str, nargs=1,
-                        help='input data file')
     parser.add_argument('--python_recursion_limit', type=int, default=10000,
                     help='set recursion limit for the Python interpreter')
     parser.add_argument('--save', type=str, default='save',
