@@ -14,8 +14,8 @@
           "tile": 1,
           "max_depth": -1,
           "max_nums": 8,
-          "ev_drop_prob":1.0,
-          "ev_call_drop_prob":1.0
+          "ev_drop_prob":0.8,
+          "ev_call_drop_prob":0.9
       },
       {
           "name": "types",
@@ -24,8 +24,8 @@
           "tile": 1,
           "max_depth": -1,
           "max_nums": 8,
-          "ev_drop_prob":1.0,
-          "ev_call_drop_prob":1.0
+          "ev_drop_prob":0.8,
+          "ev_call_drop_prob":0.9
       },
       {
           "name": "keywords",
@@ -34,13 +34,13 @@
           "tile": 1,
           "max_depth": -1,
           "max_nums": 8,
-          "ev_drop_prob":1.0,
-          "ev_call_drop_prob":1.0
+          "ev_drop_prob":0.8,
+          "ev_call_drop_prob":0.75
       }
     ],
     "decoder": {
         "units": 256,
-        "num_layers": 3,
-        "max_ast_depth": 64
+        "num_layers": 1,
+        "max_ast_depth": 32
     }
 }

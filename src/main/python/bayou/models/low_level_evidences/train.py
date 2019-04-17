@@ -91,15 +91,11 @@ def train(clargs):
         for i in range(config.num_epochs):
             sess.run(iterator.initializer, feed_dict=feed_dict)
             avg_loss = 0.
-            allEvSigmas = sess.run(model.allEvSigmas)
 
             for b in range(config.num_batches):
                 # run the optimizer
-                loss, _ = sess.run([model.loss, model.train_op])
+                loss, _, allEvSigmas = sess.run([model.loss, model.train_op, model.allEvSigmas])
                 avg_loss += np.mean(loss)
-
-
-
 
 
                 step = i * config.num_batches + b + 1
@@ -107,8 +103,11 @@ def train(clargs):
                     print('{}/{} (epoch {}) '
                           'loss: {:.3f}, \n\t'.format
                           (step, config.num_epochs * config.num_batches, i + 1 ,avg_loss/(b+1)))
-
-
+                    print(allEvSigmas)
+                if step % 10000 == 0:
+                    checkpoint_dir = os.path.join(clargs.save, 'model_temp{}.ckpt'.format(step))
+                    saver.save(sess, checkpoint_dir)
+                
             if (i+1) % config.checkpoint_step == 0:
                 checkpoint_dir = os.path.join(clargs.save, 'model{}.ckpt'.format(i+1))
                 saver.save(sess, checkpoint_dir)
@@ -116,7 +115,6 @@ def train(clargs):
                 print('Model checkpointed: {}. Average for epoch , '
                       'loss: {:.3f}'.format
                       (checkpoint_dir, avg_loss / config.num_batches))
-                print(allEvSigmas)
 
 
 #%%
@@ -137,7 +135,7 @@ if __name__ == '__main__':
     clargs = parser.parse_args(
      # ['--continue_from', 'save',
      ['--config','config.json',
-     '/home/rm38/Research/Bayou/Corpus/raw_synthesis_data/DATA-extracted-for-CACM-train.json'])
+     '/home/ubuntu/DATA-extracted-for-CACM-train.json'])
     sys.setrecursionlimit(clargs.python_recursion_limit)
     if clargs.config and clargs.continue_from:
         parser.error('Do not provide --config if you are continuing from checkpointed model')
