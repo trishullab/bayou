@@ -172,6 +172,8 @@ def get_calls_from_ast(ast):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+    parser.add_argument('input_file', type=str, nargs=1,
+                        help='input data file')
     parser.add_argument('--python_recursion_limit', type=int, default=10000,
                     help='set recursion limit for the Python interpreter')
     parser.add_argument('--save', type=str, default='save',

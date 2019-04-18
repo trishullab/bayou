@@ -25,10 +25,12 @@ import textwrap
 import time
 import random
 
+from itertools import chain
 from bayou.models.low_level_evidences.infer import BayesianPredictor
 from bayou.models.low_level_evidences.utils import read_config
 from bayou.models.low_level_evidences.data_reader import Reader
 from bayou.models.low_level_evidences.node import plot_path
+from bayou.models.low_level_evidences.evidence import Keywords
 
 evidence1 = {
     "apicalls": [
@@ -100,7 +102,7 @@ def test(clargs):
     if (iWantRandom):
         config.batch_size = 1
     else:
-        config.batch_size = 10
+        config.batch_size = 100
 
     predictor = BayesianPredictor(clargs.save, config) # goes to infer.BayesianPredictor
     # testing
@@ -110,13 +112,15 @@ def test(clargs):
     # print(allEvSigmas)
 
     evidence = evidence_dict[clargs.evidence]
-
+    keywords = list(chain.from_iterable([Keywords.split_camel(c) for c in evidence['apicalls']])) + \
+        list(chain.from_iterable([Keywords.split_camel(t) for t in evidence['types']]))
+    evidence['keywords'] = list(set([k.lower() for k in keywords if k.lower() not in Keywords.STOP_WORDS]))
     # print (evidence)
 
     ## breadth_first_search
     if (iWantRandom):
         path_head = predictor.random_search(evidence)
-        path = path_head.breadth_first_search()
+        path = path_head.depth_first_search()
 
         randI = random.randint(0,1000)
         dot = plot_path(randI,path)
@@ -126,7 +130,7 @@ def test(clargs):
         ## BEAM SEARCH
         candies = predictor.beam_search(evidence, topK=config.batch_size)
         for i, candy in enumerate(candies):
-             path = candy.head.breadth_first_search()
+             path = candy.head.depth_first_search()
              prob = candy.log_probabilty
         #
              dot = plot_path(i,path, prob)

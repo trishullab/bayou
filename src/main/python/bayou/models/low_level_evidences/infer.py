@@ -48,7 +48,7 @@ class Candidate():
         self.head = self.tree_currNode
 
         self.last_item = self.tree_currNode.val
-        self.last_edge = CHILD_EDGE
+        self.last_edge = SIBLING_EDGE
         self.branch_stack = []
 
         self.length = 1
@@ -243,12 +243,12 @@ class BayesianPredictor(object):
                 # before updating the last item lets check for penultimate value
                 if new_candy.last_edge == CHILD_EDGE and new_candy.last_item in ['DBranch', 'DExcept', 'DLoop']:
                      new_candy.branch_stack.append(new_candy.tree_currNode)
-                     new_candy.last_edge = SIBLING_EDGE
+                     new_candy.last_edge = CHILD_EDGE
                      new_candy.last_item = value2add
 
                 elif value2add in ['DBranch', 'DExcept', 'DLoop']:
                      new_candy.branch_stack.append(new_candy.tree_currNode)
-                     new_candy.last_edge = SIBLING_EDGE
+                     new_candy.last_edge = CHILD_EDGE
                      new_candy.last_item = value2add
 
                 elif value2add == 'STOP':
@@ -257,7 +257,7 @@ class BayesianPredictor(object):
                      else:
                           new_candy.tree_currNode = new_candy.branch_stack.pop()
                           new_candy.last_item = new_candy.tree_currNode.val
-                          new_candy.last_edge = CHILD_EDGE
+                          new_candy.last_edge = SIBLING_EDGE
                 else:
                      new_candy.last_edge = SIBLING_EDGE
                      new_candy.last_item = value2add

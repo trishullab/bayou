@@ -71,7 +71,7 @@ class Node():
 
 
 
-    def breadth_first_search(self):
+    def depth_first_search(self):
 
         buffer = []
         stack = []
@@ -91,11 +91,13 @@ class Node():
             buffer.append((item.val, parent_id, edge_type))
 
 
+            if item.sibling is not None:
+                stack.append((item.sibling, dfs_id , SIBLING_EDGE))
+
             if item.child is not None:
                 stack.append((item.child, dfs_id, CHILD_EDGE))
 
-            if item.sibling is not None:
-                stack.append((item.sibling, dfs_id , SIBLING_EDGE))
+
 
             dfs_id += 1
 
@@ -112,7 +114,7 @@ class Node():
 def get_ast_from_json(js):
     ast = get_ast(js, idx=0)
     real_head = Node("DSubTree")
-    real_head.child = ast
+    real_head.sibling = ast
     return real_head
 
 
@@ -141,8 +143,6 @@ def get_ast(js, idx=0):
          nodeC = read_DBranch(js[i])
 
          future = get_ast(js, i+1)
-         future = future.sibling
-
          branching = Node('DBranch', child=nodeC, sibling=future)
 
          curr_Node.sibling = branching
@@ -154,7 +154,6 @@ def get_ast(js, idx=0):
          nodeT = read_DExcept(js[i])
 
          future = get_ast(js, i+1)
-         future = future.sibling
 
          exception = Node('DExcept' , child=nodeT, sibling=future)
          curr_Node.sibling = exception
@@ -165,9 +164,7 @@ def get_ast(js, idx=0):
      if node_type == 'DLoop':
 
          nodeC = read_DLoop(js[i])
-
          future = get_ast(js, i+1)
-         future = future.sibling
 
          loop = Node('DLoop', child=nodeC, sibling=future)
          curr_Node.sibling = loop
@@ -189,9 +186,13 @@ def read_DExcept(js_branch):
 
      nodeT = get_ast(js_branch['_try'])
      nodeC = get_ast(js_branch['_catch'])
-     nodeT.child = nodeC
 
-     return nodeT
+     dummyNode = Node('STOP')
+
+     dummyNode.child = nodeT
+     dummyNode.sibling = nodeC
+
+     return dummyNode
 
 
 def read_DBranch(js_branch):
@@ -202,8 +203,8 @@ def read_DBranch(js_branch):
      #nodeC.child = nodeT
      nodeE = get_ast(js_branch['_else'])
 
-     nodeC.sibling = nodeT
-     nodeC.child = nodeE
+     nodeC.sibling = nodeE
+     nodeC.child = nodeT
 
      return nodeC
 
@@ -402,6 +403,30 @@ js4 =  {
                 "_returns": "void"
               }
             ]
+          },
+          {
+            "_cond": [],
+            "node": "DBranch",
+            "_then": [
+              {
+                "_throws": [
+                  "java.awt.HeadlessException"
+                ],
+                "_call": "javax.swing.JOptionPane.showMessageDialog(java.awt.Component,java.lang.Object)",
+                "node": "DAPICall",
+                "_returns": "void"
+              }
+            ],
+            "_else": [
+              {
+                "_throws": [
+                  "java.awt.HeadlessException"
+                ],
+                "_call": "javax.swing.JOptionPane.showMessageDialog(java.awt.Component,java.lang.Object)",
+                "node": "DAPICall",
+                "_returns": "void"
+              }
+            ]
           }
         ],
         "node": "DSubTree"
@@ -411,6 +436,6 @@ js4 =  {
 if __name__ == "__main__":
     for i, _js in enumerate([js, js1, js2, js3, js4]):
          ast = get_ast_from_json(_js['ast']['_nodes'])
-         path = ast.breadth_first_search()
+         path = ast.depth_first_search()
          dot = plot_path(i, path, 0.0)
          print(path)

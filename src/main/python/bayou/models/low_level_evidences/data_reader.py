@@ -102,10 +102,10 @@ class Reader():
                 evidences = [ev.read_data_point(program, infer) for ev in self.config.evidence]
                 ast_node_graph = get_ast_from_json(program['ast']['_nodes'])
 
-                ast_node_graph.child.check_nested_branch()
-                ast_node_graph.child.check_nested_loop()
+                ast_node_graph.sibling.check_nested_branch()
+                ast_node_graph.sibling.check_nested_loop()
 
-                path = ast_node_graph.breadth_first_search()
+                path = ast_node_graph.depth_first_search()
                 parsed_data_array = []
                 for i, (curr_node_val, parent_node_id, edge_type) in enumerate(path):
                     curr_node_id = self.decoder_api_dict.get_or_add_node_val_from_callMap(curr_node_val)
