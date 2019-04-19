@@ -102,7 +102,7 @@ def test(clargs):
     if (iWantRandom):
         config.batch_size = 1
     else:
-        config.batch_size = 50
+        config.batch_size = 20
 
     predictor = BayesianPredictor(clargs.save, config) # goes to infer.BayesianPredictor
     # testing
@@ -123,7 +123,7 @@ def test(clargs):
         path = path_head.depth_first_search()
 
         randI = random.randint(0,1000)
-        dot = plot_path(randI,path)
+        dot = plot_path(randI,path,1.0)
         # print(randI)
         # print(path)
     else:
@@ -154,7 +154,7 @@ if __name__ == '__main__':
                         help='set recursion limit for the Python interpreter')
     parser.add_argument('--save', type=str, required=True,
                         help='checkpoint model during training here')
-    parser.add_argument('--evidence', type=str, default='evidence1',
+    parser.add_argument('--evidence', type=str, default='splitter',
                         help='use only this evidence for inference queries')
     parser.add_argument('--output_file', type=str, default=None,
                         help='output file to print probabilities')

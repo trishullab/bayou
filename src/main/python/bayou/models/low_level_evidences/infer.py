@@ -374,19 +374,6 @@ class BayesianPredictor(object):
         return
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
     def get_encoder_mean_variance(self, evidences):
         # setup initial states and feed
 
@@ -401,3 +388,103 @@ class BayesianPredictor(object):
         [  encMean, encCovar ] = self.sess.run([ self.encoder.psi_mean , self.encoder.psi_covariance], feed)
 
         return encMean[0], encCovar[0]
+
+
+
+
+
+
+
+    def random_search(self, evidences):
+
+        # got the state, to be used subsequently
+        state = self.get_state(evidences)
+        start_node = Node("DSubTree")
+        head, final_state = self.consume_siblings_until_STOP(state, start_node)
+
+        return head.sibling
+
+
+    def get_prediction(self, node, edge, state):
+        feed = {}
+        feed[self.nodes.name] = np.array([[self.config.decoder.vocab[node]]], dtype=np.int32)
+        feed[self.edges.name] = np.array([[edge]], dtype=np.bool)
+        feed[self.initial_state.name] = state
+
+        [state,idx] = self.sess.run([self.decoder.state, self.idx] , feed)
+        idx = idx[0][0]
+        state = state[0]
+        prediction = self.config.decoder.chars[idx]
+
+        return Node(prediction), state
+
+
+
+    def consume_siblings_until_STOP(self, state, init_node):
+        # all the candidate solutions starting with a DSubTree node
+        head = candidate = init_node
+        if init_node.val == 'STOP':
+            return head
+
+        stack_QUEUE = []
+
+        while True:
+
+            predictionNode, state = self.get_prediction(candidate.val, SIBLING_EDGE, state)
+            candidate = candidate.addAndProgressSiblingNode(predictionNode)
+
+
+            prediction = predictionNode.val
+            if prediction == 'DBranch':
+                candidate.child, state = self.consume_DBranch(state)
+            elif prediction == 'DExcept':
+                candidate.child, state = self.consume_DExcept(state)
+            elif prediction == 'DLoop':
+                candidate.child, state = self.consume_DLoop(state)
+            #end of inner while
+
+            elif prediction == 'STOP':
+                break
+
+        #END OF WHILE
+        return head, state
+
+
+    def consume_DExcept(self, state):
+        catchStartNode, state = self.get_prediction('DExcept', CHILD_EDGE, state)
+
+        tryStartNode, state = self.get_prediction(catchStartNode.val, CHILD_EDGE, state)
+        tryBranch , state = self.consume_siblings_until_STOP(state, tryStartNode)
+
+        catchBranch, state = self.consume_siblings_until_STOP(state, catchStartNode)
+
+        catchStartNode.child = tryStartNode
+
+        return tryBranch, state
+
+
+
+    def consume_DLoop(self, state):
+        loopConditionNode, state = self.get_prediction('DLoop', CHILD_EDGE, state)
+        loopStartNode, state = self.get_prediction(loopConditionNode.val, CHILD_EDGE, state)
+        loopBranch, state = self.consume_siblings_until_STOP(state, loopStartNode)
+
+        loopConditionNode.sibling = Node('STOP')
+        loopConditionNode.child = loopBranch
+
+        return loopConditionNode, state
+
+
+
+    def consume_DBranch(self, state):
+        ifStatementNode, state = self.get_prediction('DBranch', CHILD_EDGE, state)
+        thenBranchStartNode, state = self.get_prediction(ifStatementNode.val, CHILD_EDGE, state)
+
+        thenBranch , state = self.consume_siblings_until_STOP(state, thenBranchStartNode)
+        ifElseBranch, state = self.consume_siblings_until_STOP(state, ifStatementNode)
+
+
+        #
+        ifElseBranch.child = thenBranch
+
+        return ifThenBranch, state
