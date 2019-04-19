@@ -186,13 +186,9 @@ def read_DExcept(js_branch):
 
      nodeT = get_ast(js_branch['_try'])
      nodeC = get_ast(js_branch['_catch'])
+     nodeC.child = nodeT
 
-     dummyNode = Node('STOP')
-
-     dummyNode.child = nodeT
-     dummyNode.sibling = nodeC
-
-     return dummyNode
+     return nodeC
 
 
 def read_DBranch(js_branch):

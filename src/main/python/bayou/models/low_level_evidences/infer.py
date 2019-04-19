@@ -112,7 +112,7 @@ class BayesianPredictor(object):
 
 
 
-    def get_state(self, evidences, num_psi_samples=100):
+    def get_state(self, evidences, num_psi_samples=1000):
         # get the contrib from evidence to the initial state
         rdp = [ev.read_data_point(evidences, infer=True) for ev in self.config.evidence]
         inputs = [ev.wrangle([ev_rdp for k in range(self.config.batch_size)]) for ev, ev_rdp in zip(self.config.evidence, rdp)]
@@ -138,9 +138,9 @@ class BayesianPredictor(object):
 
         self.config.batch_size = topK
 
-        init_state = self.get_state(evidences)[0]
+        init_state = self.get_state(evidences)
 
-        candies = [Candidate(init_state) for k in range(topK)]
+        candies = [Candidate(init_state[0]) for k in range(topK)]
         candies[0].log_probabilty = -0.0
 
         i = 0

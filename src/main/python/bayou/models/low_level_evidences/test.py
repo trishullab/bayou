@@ -102,7 +102,7 @@ def test(clargs):
     if (iWantRandom):
         config.batch_size = 1
     else:
-        config.batch_size = 100
+        config.batch_size = 50
 
     predictor = BayesianPredictor(clargs.save, config) # goes to infer.BayesianPredictor
     # testing
