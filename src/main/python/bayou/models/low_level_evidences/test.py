@@ -136,10 +136,11 @@ def test(clargs):
              dot = plot_path(i,path, prob)
         #     print(path)
         #     # print()
-        #jsons = predictor.get_jsons_from_beam_search(evidence, topK=config.batch_size)
+        jsons = predictor.get_jsons_from_beam_search(evidence, topK=config.batch_size)
 
-        #with open('output_jsons.json', 'w') as f:
-        #    json.dump({'evidences': evidence, 'asts': jsons}, fp=f, indent=2)
+
+        with open('asts/output_' + clargs.evidence + '.json', 'w') as f:
+           json.dump({'evidences': evidence, 'asts': jsons}, fp=f, indent=2)
 
 
     return
@@ -161,6 +162,11 @@ if __name__ == '__main__':
 
     #clargs = parser.parse_args()
     clargs = parser.parse_args()
+
+    if not os.path.exists(os.getcwd() + '/asts'):
+        os.makedirs('asts')
+    if not os.path.exists(os.getcwd() + '/plots'):
+        os.makedirs('plots')
 
     sys.setrecursionlimit(clargs.python_recursion_limit)
     test(clargs)
