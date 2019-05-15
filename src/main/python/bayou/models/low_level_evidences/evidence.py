@@ -48,7 +48,8 @@ class Evidence(object):
             elif name == 'keywords':
                 e = Keywords()
             else:
-                raise TypeError('Invalid evidence name: {}'.format(name))
+                continue
+                print('Invalid evidence name: {}'.format(name))
             e.name = name
             e.init_config(evidence, chars_vocab)
             evidences.append(e)

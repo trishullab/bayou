@@ -76,6 +76,10 @@ class BayesianPredictor(object):
         nodes = tf.transpose(self.nodes)
         edges = tf.transpose(self.edges)
 
+
+        with tf.variable_scope('Embedding'):
+            emb = tf.get_variable('emb', [config.decoder.vocab_size, config.decoder.units])
+            
         with tf.variable_scope("Encoder"):
             self.encoder = BayesianEncoder(config, ev_data, infer=True)
             samples_1 = tf.random_normal([config.batch_size, config.latent_size], mean=0., stddev=1., dtype=tf.float32)
@@ -84,7 +88,7 @@ class BayesianPredictor(object):
         # setup the decoder with psi as the initial state
         with tf.variable_scope("Decoder"):
 
-            emb = tf.get_variable('emb', [config.decoder.vocab_size, config.decoder.units])
+            # emb = tf.get_variable('emb', [config.decoder.vocab_size, config.decoder.units])
             lift_w = tf.get_variable('lift_w', [config.latent_size, config.decoder.units])
             lift_b = tf.get_variable('lift_b', [config.decoder.units])
 
