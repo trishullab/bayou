@@ -85,18 +85,19 @@ class BayesianDecoder(object):
 
         with tf.variable_scope('decoder_network'):
             # the decoder (modified from tensorflow's seq2seq library to fit tree RNNs)
-            self.state = self.initial_state
-            self.outputs = []
-            # self.states = []
-            for i, inp in enumerate(emb_inp):
-                if i > 0:
-                    tf.get_variable_scope().reuse_variables()
-                with tf.variable_scope('cell1'):  # handles CHILD_EDGE
-                    output1, state1 = self.cell1(inp, self.state)
-                with tf.variable_scope('cell2'):  # handles SIBLING_EDGE
-                    output2, state2 = self.cell2(inp, self.state)
+            with tf.variable_scope('rnn'):
+                self.state = self.initial_state
+                self.outputs = []
+                # self.states = []
+                for i, inp in enumerate(emb_inp):
+                    if i > 0:
+                        tf.get_variable_scope().reuse_variables()
+                    with tf.variable_scope('cell1'):  # handles CHILD_EDGE
+                        output1, state1 = self.cell1(inp, self.state)
+                    with tf.variable_scope('cell2'):  # handles SIBLING_EDGE
+                        output2, state2 = self.cell2(inp, self.state)
 
-                output = tf.where(self.edges[i], output1, output2)
-                self.state = [tf.where(self.edges[i], state1[j], state2[j])
-                              for j in range(config.decoder.num_layers)]
-                self.outputs.append(output)
+                    output = tf.where(self.edges[i], output1, output2)
+                    self.state = [tf.where(self.edges[i], state1[j], state2[j])
+                                  for j in range(config.decoder.num_layers)]
+                    self.outputs.append(output)
