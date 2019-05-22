@@ -56,8 +56,9 @@ def infer_asts(clargs):
         programs = json.load(f)['programs']
 
     for i, prog in enumerate(programs):
-        print('processing %ith program' % i)
-        sample_prog(prog, clargs.percentage)
+        print('processing %ith program for %s' % (i, clargs.input_file[0]))
+        if clargs.percentage != 1.0:
+            sample_prog(prog, clargs.percentage)
         keywords = list(chain.from_iterable([Keywords.split_camel(c) for c in prog['apicalls']])) + \
             list(chain.from_iterable([Keywords.split_camel(t) for t in prog['types']])) + prog['keywords']
         prog['keywords'] = list(set([k.lower() for k in keywords if k.lower() not in Keywords.STOP_WORDS]))
