@@ -46,7 +46,7 @@ done
 # wait for processes to finish
 echo "wait for processes to finish..."
 for idx in $(seq 1 $counter); do
-    while [ ! -f out_asts/out_asts_${idx}.json ]; do
+    while [ ! -f ${asts_dir}/out_asts_${idx}.json ]; do
         echo ${idx}
         sleep 5
     done
