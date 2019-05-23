@@ -17,7 +17,7 @@ echo ${input_file} >> ${log}
 echo "compute metrics"
 for metric in $metrics; do
     echo "computing for $metric"
-    (echo "$metric: " ; java -jar ast_quality_perf_test-1.0-jar-with-dependencies.jar
+    (echo "$metric: " ; java -jar ast_quality_perf_test-1.0-jar-with-dependencies.jar \
         -f ${input_file} --metric ${metric} --top 10)>> ${log} 2>&1
 done
 
