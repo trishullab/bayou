@@ -2,6 +2,7 @@
 
 # taking positional parameters
 input_file=$1
+# the input file size must be divided by $splits evenly
 splits=$2
 percentage=$3
 echo "input_file is $input_file, splits is $splits, percentage is $percentage"
@@ -60,7 +61,7 @@ rm -rf ${splits_dir}
 output_file=${new_data_stem}-merged-out.json
 python3 ../../scripts/merge_by_folder.py ${asts_dir} --output_file ${output_file}
 echo "finish merging ast files"
-# rm -rf ${asts_dir}
+rm -rf ${asts_dir}
 
 #compute metrics
 #echo "Computing metrics..."
