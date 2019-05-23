@@ -51,6 +51,7 @@ for idx in $(seq 1 $counter); do
         sleep 5
     done
 done
+echo "sleep 200 seconds for pending write" ; sleep 200 ; echo "finish sleeping"
 echo "finish all processes"
 rm -rf ${splits_dir}
 
@@ -59,7 +60,7 @@ rm -rf ${splits_dir}
 output_file=${new_data_stem}-merged-out.json
 python3 ../../scripts/merge_by_folder.py ${asts_dir} --output_file ${output_file}
 echo "finish merging ast files"
-rm -rf ${asts_dir}
+# rm -rf ${asts_dir}
 
 #compute metrics
 #echo "Computing metrics..."
