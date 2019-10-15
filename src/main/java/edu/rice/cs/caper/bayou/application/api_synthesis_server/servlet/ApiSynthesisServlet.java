@@ -17,6 +17,7 @@ package edu.rice.cs.caper.bayou.application.api_synthesis_server.servlet;
 
 import edu.rice.cs.caper.bayou.application.api_synthesis_server.Configuration;
 import edu.rice.cs.caper.bayou.application.api_synthesis_server.synthesis.*;
+import edu.rice.cs.caper.bayou.application.api_synthesis_server.synthesis_logging.SynthesisLoggerNone;
 import edu.rice.cs.caper.bayou.application.api_synthesis_server.synthesis_logging.SynthesisLoggerS3;
 import edu.rice.cs.caper.programming.numbers.NatNum32;
 import edu.rice.cs.caper.servlet.*;
@@ -294,10 +295,10 @@ public class ApiSynthesisServlet extends SizeConstrainedPostBodyServlet implemen
         writeObjectToServletOutputStream(responseBody, resp);
 
         /*
-         * Log result to S3.  Do in other thread so that this thread becomes available again to process client requests.
+         * Log result.  Do in other thread so that this thread becomes available again to process client requests.
          */
         _synthesisLoggerThreadPool.submit(
-                () -> new SynthesisLoggerS3(_synthesisLogBucketName).log(requestId, code, results));
+                () -> new SynthesisLoggerNone().log(requestId, code, results));
 
         _logger.debug("exiting");
     }

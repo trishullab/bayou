@@ -17,6 +17,7 @@ package edu.rice.cs.caper.bayou.application.api_synthesis_server.servlet;
 
 import edu.rice.cs.caper.bayou.application.api_synthesis_server.Configuration;
 import edu.rice.cs.caper.bayou.application.api_synthesis_server.synthesis_logging.SynthesisQualityFeedbackLogger;
+import edu.rice.cs.caper.bayou.application.api_synthesis_server.synthesis_logging.SynthesisQualityFeedbackLoggerNone;
 import edu.rice.cs.caper.bayou.application.api_synthesis_server.synthesis_logging.SynthesisQualityFeedbackLoggerS3;
 import edu.rice.cs.caper.servlet.CorsHeaderSetter;
 import edu.rice.cs.caper.servlet.ErrorJsonResponse;
@@ -49,8 +50,7 @@ public class ApiSynthesisResultQualityFeedbackServlet extends SizeConstrainedPos
     /**
      * The place to store user feedback.
      */
-    private final SynthesisQualityFeedbackLogger _feedbackLogger
-            = new SynthesisQualityFeedbackLoggerS3(Configuration.SynthesisQualityFeedbackLogBucketName);
+    private final SynthesisQualityFeedbackLogger _feedbackLogger = new SynthesisQualityFeedbackLoggerNone();
 
 
     /**

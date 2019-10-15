@@ -15,7 +15,6 @@ limitations under the License.
 */
 package edu.rice.cs.caper.bayou.application.api_synthesis_server.servlet;
 
-import com.amazonaws.services.dynamodbv2.xspec.S;
 import edu.rice.cs.caper.programming.numbers.NatNum32;
 import edu.rice.cs.caper.servlet.ErrorJsonResponse;
 import org.eclipse.jetty.http.HttpStatus;
