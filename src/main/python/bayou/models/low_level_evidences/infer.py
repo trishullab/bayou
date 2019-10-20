@@ -65,6 +65,7 @@ class BayesianPredictor(object):
         self.sess  = tf.InteractiveSession()
 
         self.config = config
+        config.decoder.max_ast_depth = 1
         # load the saved config
         self.inputs = [ev.placeholder(config) for ev in config.evidence]
         ev_data = self.inputs
@@ -109,6 +110,20 @@ class BayesianPredictor(object):
         saver.restore(self.sess, ckpt.model_checkpoint_path)
 
 
+
+    def infer(self, evidences, num_psi_samples=100, beam_width=50):
+        """
+        Returns an ordered (by probability) list of ASTs from the model, given evidences, using beam search
+        :param evidences: the input evidences
+        :param num_psi_samples: number of samples of the intent, averaged before AST construction
+        :param beam_width: width of the beam search
+        :return: list of ASTs ordered by their probabilities
+        """
+        asts = self.get_jsons_from_beam_search(evidences, beam_width)
+        return_asts = []
+        for ast in asts:
+            return_asts.append({'ast':ast, 'probability':0.01})
+        return return_asts
 
 
 
@@ -291,8 +306,8 @@ class BayesianPredictor(object):
         json_nodes = []
         ast = {'node': 'DSubTree', '_nodes': json_nodes}
         self.expand_all_siblings_till_STOP(json_nodes, head_node.sibling)
-
-        return ast
+        
+        return ast #{ 'ast': ast, 'probability':0.01 }
 
 
     def expand_all_siblings_till_STOP(self, json_nodes, head_node):

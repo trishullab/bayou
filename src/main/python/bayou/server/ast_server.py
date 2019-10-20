@@ -24,7 +24,7 @@ import bayou.models.low_level_evidences.evidence
 import bayou.models.core.infer
 import bayou.models.low_level_evidences.infer
 from bayou.models.low_level_evidences.evidence import Keywords
-from bayou.models.low_level_evidences.utils import gather_calls
+from bayou.models.low_level_evidences.utils import gather_calls, read_config
 
 
 # called when a POST request is sent to the server at the index path
@@ -157,14 +157,9 @@ if __name__ == '__main__':
         print("===================================")
 
         with open(os.path.join(args.save_dir, 'config.json')) as f:
-            model_type = json.load(f)['model']
-        if model_type == 'core':
-            model = bayou.models.core.infer.BayesianPredictor
-        elif model_type == 'lle':
             model = bayou.models.low_level_evidences.infer.BayesianPredictor
-        else:
-            raise ValueError('Invalid model type in config: ' + model_type)
-        bp = model(args.save_dir, sess)  # create a predictor that can generates ASTs from evidence
+            config = read_config(json.load(f), chars_vocab=True)
+        bp = model(args.save_dir, config)  # create a predictor that can generates ASTs from evidence
 
         # route POST requests to / to _handle_http_post_request_index(...)
         http_server.add_url_rule("/", "index", lambda: _handle_http_post_request_index(bp), methods=['POST'])
