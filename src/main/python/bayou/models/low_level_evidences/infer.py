@@ -306,7 +306,7 @@ class BayesianPredictor(object):
         json_nodes = []
         ast = {'node': 'DSubTree', '_nodes': json_nodes}
         self.expand_all_siblings_till_STOP(json_nodes, head_node.sibling)
-        
+
         return ast #{ 'ast': ast, 'probability':0.01 }
 
 
@@ -352,7 +352,7 @@ class BayesianPredictor(object):
         return
 
 
-    def update_DBranch(self, astnode, loop_node):
+    def update_DBranch(self, astnode, branch_node):
         """
         Updates a DBranch AST node with nodes from the path starting at pathidx
         :param astnode: the AST node to update
@@ -360,21 +360,23 @@ class BayesianPredictor(object):
         :param pathidx: index of path at which update should start
         """
         # self.expand_all_siblings_till_STOP(astnode['_cond'], loop_node, pathidx+1)
-
-        astnode['_cond'] = json_nodes = [{'node': 'DAPICall', '_call': loop_node.val}]
-        self.expand_all_siblings_till_STOP(astnode['_then'], loop_node.sibling)
-        self.expand_all_siblings_till_STOP(astnode['_else'], loop_node.child)
+        if branch_node.val != 'STOP':
+            astnode['_cond'] = json_nodes = [{'node': 'DAPICall', '_call': branch_node.val}]
+        else:
+            astnode['_cond'] = []
+        self.expand_all_siblings_till_STOP(astnode['_then'], branch_node.sibling)
+        self.expand_all_siblings_till_STOP(astnode['_else'], branch_node.child)
         return
 
-    def update_DExcept(self, astnode, loop_node):
+    def update_DExcept(self, astnode, except_node):
         """
         Updates a DExcept AST node with nodes from the path starting at pathidx
         :param astnode: the AST node to update
         :param path: the path
         :param pathidx: index of path at which update should start
         """
-        self.expand_all_siblings_till_STOP(astnode['_try'], loop_node)
-        self.expand_all_siblings_till_STOP(astnode['_catch'], loop_node.child)
+        self.expand_all_siblings_till_STOP(astnode['_try'], except_node)
+        self.expand_all_siblings_till_STOP(astnode['_catch'], except_node.child)
         return
 
     def update_DLoop(self, astnode, loop_node):
