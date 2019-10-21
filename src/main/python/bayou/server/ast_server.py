@@ -55,7 +55,7 @@ def _handle_generate_asts_request(request_dict, predictor):
 
     evidence_json_str = request_dict['evidence']  # get the evidence string from the request (also JSON)
 
-    asts = _generate_asts(evidence_json_str, predictor)
+    asts = _generate_asts(evidence_json_str, predictor, True)
     logging.debug(asts)
     return asts
 
@@ -94,13 +94,18 @@ def _generate_asts(evidence_json: str, predictor, okay_check=False):
 
 # Include in here any conditions that dictate whether an AST should be returned or not
 def _okay(js, ast, predictor):
-    calls = [predictor.callmap[call['_call']] for call in gather_calls(ast['ast'])]
+    #calls = [call['_call'] for call in gather_calls(ast['ast'])]
+    calls = gather_calls(ast['ast'])
+    #print('Calls: ' + str(calls))
     apicalls = list(set(chain.from_iterable(
         [bayou.models.low_level_evidences.evidence.APICalls.from_call(call) for call in calls])))
+    #print('Apicalls: ' + str(apicalls))
     types = list(set(chain.from_iterable(
         [bayou.models.low_level_evidences.evidence.Types.from_call(call) for call in calls])))
+    #print('Types: ' + str(types))
     keywords = list(set(chain.from_iterable(
         [bayou.models.low_level_evidences.evidence.Keywords.from_call(call) for call in calls])))
+    #print('Keywords: ' + str(keywords))
 
     ev_okay = all([c in apicalls for c in js['apicalls']]) and all([t in types for t in js['types']]) \
         and all([k in keywords for k in js['keywords']])
