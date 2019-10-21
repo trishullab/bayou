@@ -55,21 +55,21 @@ def _handle_generate_asts_request(request_dict, predictor):
 
     evidence_json_str = request_dict['evidence']  # get the evidence string from the request (also JSON)
 
-    asts = _generate_asts(evidence_json_str, predictor, True)
+    asts = _generate_asts(evidence_json_str, predictor, okay_check=True)
     logging.debug(asts)
     return asts
 
 
-def _generate_asts(evidence_json: str, predictor, okay_check=False):
+def _generate_asts(evidence_json: str, predictor, okay_check=True):
     logging.debug("entering")
 
     js = json.loads(evidence_json)  # parse evidence as a JSON string
 
     # enhance keywords evidence from others
-    keywords = list(chain.from_iterable([Keywords.split_camel(c) for c in js['apicalls']])) + \
-        list(chain.from_iterable([Keywords.split_camel(t) for t in js['types']])) + \
-        js['keywords']
-    js['keywords'] = list(set([k.lower() for k in keywords if k.lower() not in Keywords.STOP_WORDS]))
+    #keywords = list(chain.from_iterable([Keywords.split_camel(c) for c in js['apicalls']])) + \
+    #    list(chain.from_iterable([Keywords.split_camel(t) for t in js['types']])) + \
+    #    js['keywords']
+    #js['keywords'] = list(set([k.lower() for k in keywords if k.lower() not in Keywords.STOP_WORDS]))
 
     #
     # Generate ASTs from evidence.
@@ -81,10 +81,13 @@ def _generate_asts(evidence_json: str, predictor, okay_check=False):
     #
     if okay_check:
         okay_asts = []
+        not_okay_asts = []
         for ast in asts:
             if _okay(js, ast, predictor):
                 okay_asts.append(ast)
-        okay_asts = asts if okay_asts == [] else okay_asts
+            else:
+                not_okay_asts.append(ast)
+        okay_asts.extend(not_okay_asts)
     else:
         okay_asts = asts
 
