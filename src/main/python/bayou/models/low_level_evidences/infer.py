@@ -111,7 +111,7 @@ class BayesianPredictor(object):
 
 
 
-    def infer(self, evidences, num_psi_samples=100, beam_width=50):
+    def infer(self, evidences):
         """
         Returns an ordered (by probability) list of ASTs from the model, given evidences, using beam search
         :param evidences: the input evidences
@@ -119,7 +119,7 @@ class BayesianPredictor(object):
         :param beam_width: width of the beam search
         :return: list of ASTs ordered by their probabilities
         """
-        asts = self.get_jsons_from_beam_search(evidences, beam_width)
+        asts = self.get_jsons_from_beam_search(evidences, self.config.batch_size)
 
         return asts
 
