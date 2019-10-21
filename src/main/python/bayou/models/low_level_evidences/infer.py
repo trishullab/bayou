@@ -120,10 +120,8 @@ class BayesianPredictor(object):
         :return: list of ASTs ordered by their probabilities
         """
         asts = self.get_jsons_from_beam_search(evidences, beam_width)
-        return_asts = []
-        for ast in asts:
-            return_asts.append({'ast':ast, 'probability':0.01})
-        return return_asts
+
+        return asts
 
 
 
@@ -293,11 +291,11 @@ class BayesianPredictor(object):
         candidates = [candidate for candidate in candidates if candidate.rolling is False]
         # candidates = candidates[0:1]
         # print(candidates[0].head.breadth_first_search())
-        candidate_jsons = [self.paths_to_ast(candidate.head) for candidate in candidates]
+        candidate_jsons = [self.paths_to_ast(candidate.head, candidate.log_probabilty) for candidate in candidates]
         return candidate_jsons
 
 
-    def paths_to_ast(self, head_node):
+    def paths_to_ast(self, head_node, log_prob):
         """
         Converts a AST
         :param paths: the set of paths
@@ -307,7 +305,7 @@ class BayesianPredictor(object):
         ast = {'node': 'DSubTree', '_nodes': json_nodes}
         self.expand_all_siblings_till_STOP(json_nodes, head_node.sibling)
 
-        return ast #{ 'ast': ast, 'probability':0.01 }
+        return { 'ast': ast, 'probability':np.exp(log_prob) }
 
 
     def expand_all_siblings_till_STOP(self, json_nodes, head_node):
